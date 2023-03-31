@@ -1,0 +1,16 @@
+name: timeout-gen.test-app
+cluster: local
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  timeout-gen:
+    base_image: timeout-gen
+    parameters:
+      start_message: 0
+    variables:
+      max_seconds_per_task:	10
+      repeated: yes
+    schedule_mode: HEAD
+    environments:
+      - SLEEP_SECONDS=20

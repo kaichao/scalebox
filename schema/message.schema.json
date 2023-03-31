@@ -1,0 +1,23 @@
+{
+    "$id": "https://scalebox.dev/message.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "title": "task message",
+    "description": "A representation of scalebox message",
+    "type": "object",
+    "properties": {
+      "body": {
+        "description": "message body",
+        "type": "string"
+      },
+      "arrayBody": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "sourceIP": {
+        "description": "ip_addr for source job",
+        "type": "string"
+      }
+    }
+  }

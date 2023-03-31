@@ -1,0 +1,11 @@
+name: task-exec-files.test-app
+cluster: local
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  task-exec-files:
+    base_image: task-exec-files
+    parameters:
+      start_message: 0
+    schedule_mode: HEAD

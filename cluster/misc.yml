@@ -1,0 +1,65 @@
+version: '3.8'
+services:
+  postgres-proxy:
+    image: edoburu/pgbouncer
+    environment:
+      - DB_USER=${POSTGRES_USER}
+      - DB_PASSWORD=${POSTGRES_PASSWORD}
+      - DB_HOST=${PGHOST}
+      - DB_PORT=${PGPORT}
+      - DB_NAME=${POSTGRES_DB}
+      - AUTH_TYPE=plain
+      - ADMIN_USERS=postgres,scalebox
+      - TCP_KEEPCNT=10
+      - TCP_KEEPIDLE=60
+      - TCP_KEEPINTVL=20
+      # - POOL_MODE=session,transaction,statement
+      # - TCP_KEEPALIVE=
+      # - TCP_USER_TIMEOUT=2500
+    ports:
+      - "5432:5432"
+
+  grpc-proxy:
+    image: kaichao/envoy-grpc-proxy
+    restart: unless-stopped
+    ports:
+      - 50051:50051
+    environment:
+      - SERVICE_NAME=grpc-host.org
+      - SERVICE_PORT=50051
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - /var/log/envoy:/var/log/envoy
+
+  dbadmin:
+    image: adminer:4.8.1
+    restart: unless-stopped
+    environment:
+      - ADMINER_DEFAULT_SERVER=database
+    ports:
+      - 8080:8080
+
+  pgadmin4:
+    image: dpage/pgadmin4:4.29
+    restart: unless-stopped
+    ports:
+      - 8081:80
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=myname@mail.org
+      - PGADMIN_DEFAULT_PASSWORD=SuperSecret
+    depends_on:
+     - database
+
+  redis:
+    image: redis:5
+    command: redis-server --requirepass 123456
+    ports:
+      - "6379:6379"
+    volumes:
+      - ${PWD}/DATA/redis-data:/data  
+
+  redis-Insight:
+    image: redislabs/redisinsight:1.9.0
+    restart: unless-stopped
+    ports:
+      - "9221:9221"

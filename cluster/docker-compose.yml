@@ -1,0 +1,73 @@
+version: '3.8'
+services:
+  controld:
+    image: hub.cstcloud.cn/scalebox/controld
+    restart: unless-stopped
+    container_name: controld
+    # hostname: host1
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "5"
+    depends_on:
+     - database
+    ports:
+      - 50051:50051
+    environment:
+      - CLUSTER=${CLUSTER}
+      - PGHOST=${PGHOST}
+      - PGPORT=${PGPORT}
+      - LOG_LEVEL=WARN
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ${HOME}/.scalebox/log/controld:/var/log/scalebox/controld
+
+  actuator:
+    image: hub.cstcloud.cn/scalebox/actuator
+    restart: unless-stopped
+    container_name: actuator
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    environment:
+      - CLUSTER=${CLUSTER}
+      - GRPC_SERVER=controld:50051
+      - PGHOST=${PGHOST}
+      - PGPORT=${PGPORT}
+      - LOG_LEVEL=WARN
+    cap_add:
+# # update default route, for CentOS8
+      - NET_ADMIN
+    volumes:
+      - /etc/localtime:/etc/localtime
+      - ${HOME}/.scalebox/log/actuator:/var/log/scalebox/actuator
+    depends_on:
+      - controld
+
+  database:
+    image: hub.cstcloud.cn/scalebox/database
+    restart: unless-stopped
+    container_name: database
+    environment:
+#      - TZ='GMT-8'
+#      - PGTZ='GMT-8'
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes:
+      # - ${PWD}/PGDATA:/var/lib/postgresql/data
+      - pgdata:/var/lib/postgresql/data
+      - /etc/localtime:/etc/localtime
+    ports:
+      - 5432:5432
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "scalebox"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  pgdata:

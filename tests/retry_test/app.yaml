@@ -1,0 +1,16 @@
+name: retry_test.test-app
+cluster: local
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  retry_test:
+    base_image: retry_test
+    schedule_mode: HEAD
+    variables:
+      repeated: yes
+    parameters:
+      start_message: 0
+      retry_rules: "['1','2:3']"
+    sink_jobs:
+      - retry_test

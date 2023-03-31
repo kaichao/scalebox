@@ -1,0 +1,43 @@
+{
+    "$id": "https://scalebox.dev/task_exec.schema.json",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "description": "Interaction data between sidecar scripts and agent",
+    "type": "object",
+    "required": [ "statusCode" ],
+    "properties": {
+      "statusCode": {
+        "description": "Formatted Name",
+        "type": "string"
+      },
+      "inputBytes": {
+        "type": "string"
+      },
+      "inputFiles": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "outputBytes": {
+        "type": "string"
+      },
+      "outputFiles": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "timestamps": {
+        "type": "array",
+        "items": {
+          "type": "string"
+        }
+      },
+      "sinkJob": {
+        "type": "string"
+      },
+      "messageText": {
+        "type": "string"
+      }
+    }
+  }

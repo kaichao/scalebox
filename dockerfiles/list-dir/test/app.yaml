@@ -1,0 +1,25 @@
+name: test.list-dir
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  list-dir:
+    base_image: hub.cstcloud.cn/scalebox/list-dir
+    schedule_mode: HEAD
+    variables:
+      repeated: yes
+    parameters:
+      start_message: ${DIR_NAME}
+    command: docker run -d --rm --privileged --network=host %ENVS% %VOLUMES% %IMAGE%
+    paths:
+      - /:/local:ro
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - REGEX_FILTER=${REGEX_FILTER}
+      - RSYNC_PASSWORD=${RSYNC_PASSWORD}
+    sink_jobs:
+      - sink-module
+
+  sink-module:
+    base_image: hub.cstcloud.cn/scalebox/agent

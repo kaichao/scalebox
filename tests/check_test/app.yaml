@@ -1,0 +1,13 @@
+name: check_test.test-app
+cluster: local
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  check_test:
+    base_image: check_test
+    schedule_mode: HEAD
+    variables:
+      repeated: yes
+    parameters:
+      start_message: ANY

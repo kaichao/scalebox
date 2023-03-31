@@ -1,0 +1,19 @@
+name: hello-scalebox.example.scalebox
+cluster: local
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  hello-scalebox:
+    base_image: hub.cstcloud.cn/scalebox/hello-scalebox
+    schedule_mode: HEAD
+    variables:
+      repeated: yes
+      max_seconds_per_task: 100
+      grpc_server: 127.0.0.1:50051
+      output_text_size: 1024
+      text_tranc_mode: HEAD
+      local_ip_index: 1
+      locale_mode: NONE
+    parameters:
+      start_message: scalebox
