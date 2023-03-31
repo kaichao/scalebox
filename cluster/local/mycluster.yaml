@@ -4,10 +4,10 @@ label: Global Definition Cluster bio-down
 
 clusters:
   local:
-    base_dir: /gfs
-    base_data_dir: /gfs/mydata
-    # base_log_dir: /gfs/mylog
-    uname: ${USER}
+    parameters:
+      base_dir: /gfs
+      base_data_dir: /gfs/mydata
+      uname: ${USER}
     memo: local cluster
     hosts:
       h0:

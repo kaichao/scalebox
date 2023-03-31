@@ -13,9 +13,10 @@ specs:
 
 clusters:
   bio-down:
-    base_dir: /gfs
-    base_data_dir: /gfs/mydata
-    uid: root
+    parameters:
+      base_dir: /gfs
+      base_data_dir: /gfs/mydata
+      uid: root
     memo: bio-down cluster
     hosts:
       h0:
