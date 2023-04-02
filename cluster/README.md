@@ -1,11 +1,17 @@
 # Scalebox集群
 
+Scalebox集群是运行scalebox应用的硬件资源集合。分为
+- 内联集群（Inline Cluster）：由Scalebox直接管理的计算资源组成的集群。支持静态资源分配、动态资源分配两种方式。
+- 外部集群（External Cluster）：有外部调度系统管理的计算资源组成的集群，可支持用slurm、k8s等。
+
 ## Scalebox集群介绍
 ### 头节点
 头节点上安装了单个scalebox集群的管理服务，主要包括：
 - controld：面向actuator、计算节点，提供基于grpc的控制端应用服务；
 - database：基于postgresql的数据库，存放app、job、task、slot等相关数据，面向controld等提供数据存储、检索等服务。
 - actuator：启动端，负责在计算节点上启动slot。
+
+头节点以及头节点服务（controld/actuator/database）可为多个集群所共享。
 
 ### 计算节点
 计算节点分为两类：

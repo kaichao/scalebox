@@ -11,6 +11,8 @@ jobs:
     schedule_mode: HEAD
     parameters:
       start_message: ANY
+    variables:
+      repeated: yes
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
       - GROUP_SIZE=${GROUP_SIZE}

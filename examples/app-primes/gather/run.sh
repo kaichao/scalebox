@@ -19,5 +19,5 @@ echo -n $count $sum > result.txt
 
 # save the result to t_app, and set the status of the application to FINISHED
 if [[ "$count" = "${NUM_GROUPS}" ]]; then
-    scalebox app set-finished -job-id=${JOB_ID} "Result is "${sum}
+    scalebox app set-finished --job-id=${JOB_ID} "Result is "${sum}
 fi

@@ -15,7 +15,6 @@ services:
     ports:
       - 50051:50051
     environment:
-      - CLUSTER=${CLUSTER}
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
@@ -33,7 +32,6 @@ services:
         max-size: "50m"
         max-file: "5"
     environment:
-      - CLUSTER=${CLUSTER}
       - GRPC_SERVER=controld:50051
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
@@ -58,7 +56,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      # - ${PWD}/PGDATA:/var/lib/postgresql/data
       - pgdata:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime
     ports:
