@@ -9,10 +9,10 @@ jobs:
     label: domain decomposition
     base_image: app-primes/scatter
     schedule_mode: HEAD
+    variables:
+      source_ip_attached: yes
     parameters:
       start_message: ANY
-    variables:
-      repeated: yes
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
       - GROUP_SIZE=${GROUP_SIZE}
@@ -23,6 +23,8 @@ jobs:
     label: calc primes
     base_image: app-primes/calc
     # schedule_mode: HEAD
+    # queue_mode: IN-MEM
+    queue_mode: BY-HOST
     hosts:
       - ${CALC_HOST}:${NUM_PARALLEL}
     parameters:
@@ -40,4 +42,4 @@ jobs:
       - NUM_GROUPS=${NUM_GROUPS}
     variables:
       # should be 'yes', to support session
-      repeated: yes
+      always_running: yes

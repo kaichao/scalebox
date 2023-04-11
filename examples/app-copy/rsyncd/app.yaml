@@ -1,0 +1,29 @@
+name: scalebox.rsync-server
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  rsyncd:
+    base_image: hub.cstcloud.cn/scalebox/rsyncd
+    # schedule_mode: HEAD
+    # hosts:
+    #   - h0:1
+    # environments:
+    #   - GRPC_SERVER=159.226.237.136:50051
+    parameters:
+      start_message: ANY
+    paths:
+      - /:/data
+
+  rsyncd-ssh:
+    base_image: hub.cstcloud.cn/scalebox/rsyncd
+    # schedule_mode: HEAD
+    # hosts:
+    #   - h0:1
+    # environments:
+    #   - GRPC_SERVER=159.226.237.136:50051
+    parameters:
+      start_message: ANY
+    paths:
+      - /:/data

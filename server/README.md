@@ -75,7 +75,7 @@ cat ~/docker-scalebox/cluster/id_rsa.pub >> ${HOME}/.ssh/authorized_keys
 ```bash
 hostname -i
 ```
-- 前一步的本地IP地址不正确，则需要设置local/defs.mk文件中LOCAL_IP_INDEX或LOCAL_ADDR变量
+- 前一步的本地IP地址不正确，则需要设置defs.mk文件中LOCAL_IP_INDEX或LOCAL_ADDR变量
 
 可通过以下命令```hostname -I```找到正确的本地IP地址。
 - 示例
