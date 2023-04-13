@@ -9,8 +9,8 @@ jobs:
     parameters:
       start_message: 0
     variables:
-      max_seconds_per_task:	10
-      repeated: yes
+      task_timeout_seconds:	10
+      always_running: yes
     schedule_mode: HEAD
     environments:
       - SLEEP_SECONDS=20

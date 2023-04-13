@@ -8,7 +8,7 @@ jobs:
     base_image: retry_test
     schedule_mode: HEAD
     variables:
-      repeated: yes
+      always_running: yes
     parameters:
       start_message: 0
       retry_rules: "['1','2:3']"

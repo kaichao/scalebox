@@ -8,7 +8,7 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/list-dir
     schedule_mode: HEAD
     variables:
-      repeated: yes
+      always_running: yes
     parameters:
       start_message: ${DIR_NAME}
     command: docker run -d --rm --privileged --network=host %ENVS% %VOLUMES% %IMAGE%

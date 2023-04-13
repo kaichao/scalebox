@@ -21,10 +21,9 @@ default:
 all: reset import
 
 reset: down
-	@# docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 	@ rm -rf ${HOME}/.scalebox/log/cli
 	@ mkdir -p ${HOME}/.scalebox/log/cli
-	@ docker volume rm -f cluster_pgdata
+	@ docker volume rm -f server_pgdata
 	@ docker-compose up -d
 	@ sleep 25
 
@@ -39,6 +38,8 @@ up:
 
 down:
 	@ docker-compose down
+	@ # clear all containers
+	@ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 clean:
 	@ pdsh -w $(NODES) 'docker rm -f $$(docker ps -qa)' | dshbak -c
