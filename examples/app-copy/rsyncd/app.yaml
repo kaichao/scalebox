@@ -14,7 +14,7 @@ jobs:
     parameters:
       start_message: ANY
     paths:
-      - /:/data
+      - /:/local
 
   rsyncd-ssh:
     base_image: hub.cstcloud.cn/scalebox/rsyncd
@@ -26,4 +26,4 @@ jobs:
     parameters:
       start_message: ANY
     paths:
-      - /:/data
+      - /:/local
