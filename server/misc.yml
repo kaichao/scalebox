@@ -35,7 +35,7 @@ services:
     image: adminer:4.8.1
     restart: unless-stopped
     environment:
-      - ADMINER_DEFAULT_SERVER=database
+      - ADMINER_DEFAULT_SERVER=localhost
     ports:
       - 8080:8080
 
@@ -47,8 +47,6 @@ services:
     environment:
       - PGADMIN_DEFAULT_EMAIL=myname@mail.org
       - PGADMIN_DEFAULT_PASSWORD=SuperSecret
-    depends_on:
-     - database
 
   redis:
     image: redis:5
