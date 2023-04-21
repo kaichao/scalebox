@@ -78,10 +78,15 @@ prepare:
 	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
 
 get-cli:
-	docker pull hub.cstcloud.cn/scalebox/cli \
-	&& os=`uname| tr '[:upper:]' '[:lower:]'` \
+	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \
 	&& cid=$$(docker create hub.cstcloud.cn/scalebox/cli) \
 	&& docker cp $$cid:/usr/local/bin/scalebox-$$os-$$arch ~/bin/scalebox \
 	&& docker rm -v $$cid
+
+pull-all: get-cli
+	@ for i in database actuator controld agent base cli; do \
+		echo $$i; \
+		docker pull hub.cstcloud.cn/scalebox/$$i; \
+	done
