@@ -16,15 +16,15 @@ clusters:
     parameters:
       base_dir: /gfs
       base_data_dir: /gfs/mydata
-      uid: root
-    memo: bio-down cluster
+      uname: root
+    comment: bio-down cluster
     hosts:
       h0:
         label: head node
         ip_addr: 10.0.6.100
         role: head
         spec: bio-vm-00
-        memo: CentOS 8
+        comment: CentOS 8
       n0:
         ip_addr: 10.0.6.101
         spec: bio-vm-00

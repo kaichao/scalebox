@@ -8,15 +8,26 @@ include defs.mk
 # hostname -i
 # local_ip_index=4
 # local_addr=$$(hostname -I| cut -d ' ' -f ${local_ip_index})
+
+UNAME := $(shell uname)
+
 ifeq ($(origin LOCAL_ADDR), undefined)
-	ifeq ($(origin LOCAL_IP_INDEX), undefined)
-	    LOCAL_ADDR := $$(hostname -i)
+	ifeq ($(UNAME), Linux)
+		ifeq ($(origin LOCAL_IP_INDEX), undefined)
+		    LOCAL_ADDR := $$(hostname -i)
+		else
+	    	LOCAL_ADDR := $$(hostname -I| cut -d ' ' -f ${LOCAL_IP_INDEX})
+    	endif
+	else ifeq ($(UNAME), Darwin)
+		LOCAL_ADDR := $$(ifconfig|grep "inet "|grep -v 127.0.0.1|head -1|cut -d ' ' -f 2)
 	else
-	    LOCAL_ADDR := $$(hostname -I| cut -d ' ' -f ${LOCAL_IP_INDEX})
-    endif
+		$(info This is neither a Linux nor a macOS system)
+	endif
+
 endif
 
 default:
+	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
 
 all: reset import
 
@@ -39,7 +50,7 @@ up:
 down:
 	@ docker-compose down
 	@ # clear all containers
-	@ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
+	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 clean:
 	@ pdsh -w $(NODES) 'docker rm -f $$(docker ps -qa)' | dshbak -c
@@ -51,7 +62,31 @@ list:
 	@ echo "================"
 	@ docker ps -a
 
-actuator-passwordless:
-	@ mkdir -p $(SHARED_DIR) && cp id_rsa.pub $(SHARED_DIR)
-	@ pdsh -w $(NODES) 'cat $(SHARED_DIR)/id_rsa.pub >> ${HOME}/.ssh/authorized_keys' | dshbak -c
-	@ rm -f $(SHARED_DIR)/id_rsa.pub
+# actuator-passwordless:
+# 	@ mkdir -p $(SHARED_DIR) && cp id_rsa.pub $(SHARED_DIR)
+# 	@ pdsh -w $(NODES) 'cat $(SHARED_DIR)/id_rsa.pub >> ${HOME}/.ssh/authorized_keys' | dshbak -c
+# 	@ rm -f $(SHARED_DIR)/id_rsa.pub
+
+prepare:
+	@ mkdir -p ~/.ssh ~/.scalebox/log
+	@ chmod 700 ~/.ssh
+	@ echo "alias app='scalebox app'" >> ~/.bash_profile
+	@ echo "alias job='scalebox job'" >> ~/.bash_profile
+	@ echo "alias task='scalebox task'" >> ~/.bash_profile
+	@ echo "export PATH=/usr/local/bin:/usr/local/sbin/:\$$PATH" >> ~/.bashrc
+	@ # setup passwordless ssh from actuator to node
+	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
+
+get-cli:
+	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
+	&& arch=`uname -m` \
+	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \
+	&& cid=$$(docker create hub.cstcloud.cn/scalebox/cli) \
+	&& docker cp $$cid:/usr/local/bin/scalebox-$$os-$$arch ~/bin/scalebox \
+	&& docker rm -v $$cid
+
+pull-all: get-cli
+	@ for i in database actuator controld agent base cli; do \
+		echo $$i; \
+		docker pull hub.cstcloud.cn/scalebox/$$i; \
+	done

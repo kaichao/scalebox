@@ -7,14 +7,5 @@ jobs:
   hello-scalebox:
     base_image: hub.cstcloud.cn/scalebox/hello-scalebox
     schedule_mode: HEAD
-    # queue_mode: IN-MEM
-    variables:
-      # always_running: yes
-      task_timeout_seconds: 100
-      grpc_server: 127.0.0.1:50051
-      output_text_size: 1024
-      text_tranc_mode: HEAD
-      local_ip_index: 1
-      timezone_mode: NONE
     parameters:
       start_message: scalebox
