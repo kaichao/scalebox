@@ -24,7 +24,7 @@ jobs:
     base_image: app-primes/calc
     # schedule_mode: HEAD
     # queue_mode: IN-MEM
-    queue_mode: BY-HOST
+    # queue_mode: BY-HOST
     hosts:
       - ${CALC_HOST}:${NUM_PARALLEL}
     parameters:

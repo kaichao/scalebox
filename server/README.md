@@ -18,7 +18,7 @@ Scalebox集群是运行scalebox应用的硬件资源集合。分为
 - 内部计算节点：scalebox内部调度管理的计算节点，通过免密ssh启动slot；
 - 外部计算节点：通过外部调度程序（slurm/k8s等）启动的计算节点，在节点上启动slot。
 
-## 二、Scalebox单节点集群安装
+## 二、Scalebox单节点集群安装及配置
 - 操作系统：
   - CentOS 7以上（其他版本的Linux待测试）
   - macos 10.15(amd64)以上（ARM版的macos待测试）
@@ -105,7 +105,7 @@ LOCAL_ADDR=192.168.56.21
 cd ~/docker-scalebox/cluster && make all
 ```
 
-## 三、Scalebox多节点集群安装
+## 三、Scalebox多节点集群安装及配置
 
 ### 3.1 头节点安装
 
@@ -148,6 +148,12 @@ yum install -y htop dstat pv
   - podman ？版本；
   - singularity 3.8；
 - k8s集群
+
+### 3.5 集群定义文件
+
+- 参照bio-down目录，完成集群定义文件mycluster.yaml
+- 将新集群名称，加入到Makefile文件的clusters变量中
+- 确认计算容器中的本地IP获取正确，可按需定制及集群定义中parameters的local_ip_index，保证每个计算节点能正确获取本地IP地址。
 
 
 ### 3.5 启动scalebox集群控制端
