@@ -22,7 +22,7 @@ Scalebox集群是运行scalebox应用的硬件资源集合。分为
 - 操作系统：
   - CentOS 7以上（其他版本的Linux待测试）
   - macos 10.15(amd64)以上（ARM版的macos待测试）
-- 容器化引擎：DockerCE 20.10+
+- 容器化引擎：DockerCE 20.10+(rootless)
 - docker-compose: 1.29.2+
 - 安装dstat、htop、rsync、zstd、gmake、git、rsync等工具软件，用于性能监控等
 
@@ -47,7 +47,36 @@ yum install -y htop dstat rsync pv pdsh wget make
 
 基于Homebrew，安装所需基本软件
 
-### 2.3 以当前用户身份，下载安装docker-scalebox
+### 2.3 以当前用户身份，下载安装docker (rootless)
+- 参考文档
+
+[Run the Docker daemon as a non-root user (Rootless mode)](https://docs.docker.com/engine/security/rootless/)
+
+- 设置环境变量
+```bash
+cat >> ${HOME}/.bashrc << EOF
+export XDG_RUNTIME_DIR=${HOME}/.docker/run
+export PATH=${HOME}/bin:$PATH
+export DOCKER_HOST=unix://${HOME}/.docker/run/docker.sock
+EOF
+
+source ~/.bashrc
+```
+- 安装rootless docker
+```bash
+curl -fsSL https://get.docker.com/rootless | sh
+```
+
+- 启动rootless docker
+```bash
+nohup dockerd-rootless.sh &
+```
+
+- 验证docker有效
+```bash
+docker run --rm hello-world
+```
+### 2.4 以当前用户身份，下载安装docker-scalebox
 - 安装docker-compose
 ```bash
 mkdir -p ~/bin
@@ -63,7 +92,7 @@ chmod +x ~/bin/docker-compose
 cd && git clone https://github.com/kaichao/docker-scalebox
 ```
 
-### 2.4 配置docker-scalebox
+### 2.5 配置docker-scalebox
 
 #### 准备运行环境
 - 创建运行相关目录
@@ -100,7 +129,7 @@ LOCAL_ADDR=192.168.56.21
 #### 重新启动shell，使得配置生效
 
 
-### 2.5 启动scalebox控制端
+### 2.6 启动scalebox控制端
 ```bash
 cd ~/docker-scalebox/cluster && make all
 ```
