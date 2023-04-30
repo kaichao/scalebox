@@ -38,7 +38,7 @@ reset: down
 	@ docker-compose up -d
 	@ sleep 25
 
-import:
+import: get-cli
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
 	@ for c in $(clusters); do \
 		LOCAL_ADDR=$(LOCAL_ADDR) scalebox app create $$c/mycluster.yaml; \
@@ -73,11 +73,13 @@ prepare:
 	@ echo "alias app='scalebox app'" >> ~/.bash_profile
 	@ echo "alias job='scalebox job'" >> ~/.bash_profile
 	@ echo "alias task='scalebox task'" >> ~/.bash_profile
-	@ echo "export PATH=/usr/local/bin:/usr/local/sbin/:\$$PATH" >> ~/.bashrc
+	@ echo "export PATH=/usr/local/bin:/usr/local/sbin:\$$PATH" >> ~/.bashrc
 	@ # setup passwordless ssh from actuator to node
 	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
+	@ chmod 600 ~/.ssh/authorized_keys
 
 get-cli:
+	@ mkdir -p ~/bin
 	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \
@@ -85,7 +87,7 @@ get-cli:
 	&& docker cp $$cid:/usr/local/bin/scalebox-$$os-$$arch ~/bin/scalebox \
 	&& docker rm -v $$cid
 
-pull-all: get-cli
+pull-all:
 	@ for i in database actuator controld agent base cli; do \
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
