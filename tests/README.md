@@ -52,13 +52,13 @@ variables:
 
 ```mermaid
 flowchart TB
-    scatter-->calc
-    calc-->gather
-    subgraph cluster2
+  scatter-->calc
+  calc-->gather
+  subgraph cluster2
     calc
-    end
-    subgraph cluster1
+  end
+  subgraph cluster1
     scatter
     gather
-    end
+  end
 ```

@@ -9,8 +9,6 @@ jobs:
     label: domain decomposition
     base_image: app-primes/scatter
     schedule_mode: HEAD
-    variables:
-      source_ip_attached: yes
     parameters:
       start_message: ANY
     environments:
@@ -22,13 +20,8 @@ jobs:
   calc:
     label: calc primes
     base_image: app-primes/calc
-    # schedule_mode: HEAD
-    # queue_mode: IN-MEM
-    # queue_mode: BY-HOST
     hosts:
       - ${CALC_HOST}:${NUM_PARALLEL}
-    parameters:
-      tasks_per_queue: 500
     environments:
       - LENGTH=${GROUP_SIZE}
     sink_jobs:

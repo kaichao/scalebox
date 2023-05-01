@@ -19,7 +19,7 @@ services:
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
     volumes:
-      - /etc/localtime:/etc/localtime
+      - /etc/localtime:/etc/localtime:ro
       - ${HOME}/.scalebox/log/controld:/var/log/scalebox/controld
 
   actuator:
@@ -37,11 +37,13 @@ services:
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
     cap_add:
-# # update default route, for CentOS8
+    #   update default route, for CentOS8
       - NET_ADMIN
     volumes:
-      - /etc/localtime:/etc/localtime
+      - /etc/localtime:/etc/localtime:ro
       - ${HOME}/.scalebox/log/actuator:/var/log/scalebox/actuator
+    # for k8s
+      - ${HOME}/.kube:/root/.kube
     depends_on:
       - controld
 
@@ -57,7 +59,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - /etc/localtime:/etc/localtime
+      - /etc/localtime:/etc/localtime:ro
     ports:
       - 5432:5432
     healthcheck:
