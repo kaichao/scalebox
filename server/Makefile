@@ -50,6 +50,7 @@ up:
 down:
 	@ docker-compose down
 	@ # clear all containers
+	@ docker ps -a|grep goagent|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 clean:
