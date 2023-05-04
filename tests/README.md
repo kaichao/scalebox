@@ -62,3 +62,13 @@ flowchart TB
     gather
   end
 ```
+
+## 基于singularity的质数计算：[hello-scalebox-singularity](./hello-scalebox-singularity/)
+singularity是scalebox支持的docker之外的一种容器引擎，支持用docker的镜像库中的镜像。
+
+可设置command参数，使用singularity容器引擎来运行容器。
+
+```
+  hello-scalebox:
+    command: singularity run {{ENVS}} {{VOLUMES}} docker://{{IMAGE}}
+```
