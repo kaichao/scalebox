@@ -38,14 +38,14 @@ ret_code=0
     code=$?
     if [ $code -ne 0 ]; then
         ret_code=$code
-        echo "Error send-message, message:"$line 2>&
+        echo "Error send-message, message:"$line >&2
     fi
 done
 
 code=${PIPESTATUS[0]}
 if [ $code -ne 0 ]; then
     ret_code=$code
-    echo "Error run list-files.sh "$1 2>&
+    echo "Error run list-files.sh "$1 >&2
 fi
 
 exit $ret_code
