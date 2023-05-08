@@ -1,10 +1,15 @@
+FROM golang:1.20.4
+
+COPY url_parser.go /src/
+RUN cd /src && go build url_parser.go && strip url_parser
+
 FROM hub.cstcloud.cn/scalebox/agent
 
 LABEL maintainer="kaichao"
 
-# # the newest curlftpfs may not compatible, the following is OK.
-# # $ curlftpfs --version
-# # curlftpfs 0.9.2 libcurl/7.74.0 fuse/2.9
+# the newest curlftpfs may not compatible, the following is OK.
+# $ curlftpfs --version
+# curlftpfs 0.9.2 libcurl/7.74.0 fuse/2.9
 RUN \
     apt-get update \
     && apt-get install -y curlftpfs \
@@ -21,7 +26,7 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
-COPY --from=hub.cstcloud.cn/scalebox/rsync-agent /app/bin/url_parser /app/bin/ 
+COPY --from=0 /src/url_parser /app/bin/ 
 
 RUN mkdir -p /remote
 

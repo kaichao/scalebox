@@ -5,7 +5,13 @@
 if [[ $SOURCE_URL =~ (ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/.*) ]]; then
     ftp_url=${BASH_REMATCH[1]}
     echo ftp_url:$ftp_url >&2
-    curlftpfs -o ssl ${ftp_url} /remote
+    if [[ $SOURCE_URL =~ (ftp://([^:]+:[^@]+@)[^/:]+(:[^/]+)?)(/.*) ]]; then
+        # non-anonymous ftp
+        curlftpfs -o ssl ${ftp_url} /remote
+    else
+        # anonymous ftp
+        curlftpfs ${ftp_url} /remote
+    fi
 else
-    echo "SOURCE_URL did not match regex!" >&2
+    echo "[INFO] SOURCE_URL is not valid ftp url."
 fi
