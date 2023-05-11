@@ -47,11 +47,13 @@ import: get-cli
 up:
 	@ docker-compose up -d
 
-down:
+down: clean-agents
 	@ docker-compose down
-	@ # clear all containers
-	@ docker ps -a|grep goagent|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
+
+clean-agents:
+	@ # clear all agent-containers
+	@ docker ps -a|grep goagent|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 clean:
 	@ pdsh -w $(NODES) 'docker rm -f $$(docker ps -qa)' | dshbak -c

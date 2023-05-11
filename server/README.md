@@ -76,6 +76,7 @@ nohup dockerd-rootless.sh &
 ```bash
 docker run --rm hello-world
 ```
+
 ### 2.4 以当前用户身份，下载安装docker-scalebox
 - 安装docker-compose
 ```bash
@@ -131,7 +132,7 @@ LOCAL_ADDR=192.168.56.21
 
 ### 2.6 启动scalebox控制端
 ```bash
-cd ~/docker-scalebox/cluster && make all
+cd ~/docker-scalebox/server && make all
 ```
 
 ## 三、Scalebox多节点集群安装及配置
@@ -184,9 +185,7 @@ yum install -y htop dstat pv
 - 将新集群名称，加入到Makefile文件的clusters变量中
 - 确认计算容器中的本地IP获取正确，可按需定制及集群定义中parameters的local_ip_index，保证每个计算节点能正确获取本地IP地址。
 
-
 ### 3.5 启动scalebox集群控制端
 ```bash
-cd ~/docker-scalebox/cluster && make all
+cd ~/docker-scalebox/server && make all
 ```
-
