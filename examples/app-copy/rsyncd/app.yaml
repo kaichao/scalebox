@@ -6,11 +6,7 @@ parameters:
 jobs:
   rsyncd:
     base_image: hub.cstcloud.cn/scalebox/rsyncd
-    # schedule_mode: HEAD
-    # hosts:
-    #   - h0:1
-    # environments:
-    #   - GRPC_SERVER=159.226.237.136:50051
+    schedule_mode: NODE
     parameters:
       start_message: ANY
     paths:
@@ -18,11 +14,9 @@ jobs:
 
   rsyncd-ssh:
     base_image: hub.cstcloud.cn/scalebox/rsyncd
-    # schedule_mode: HEAD
-    # hosts:
-    #   - h0:1
-    # environments:
-    #   - GRPC_SERVER=159.226.237.136:50051
+    schedule_mode: NODE
+    environments:
+      - MODE=rsyncd-ssh
     parameters:
       start_message: ANY
     paths:

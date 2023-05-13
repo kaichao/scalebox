@@ -14,18 +14,10 @@ jobs:
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
       - GROUP_SIZE=${GROUP_SIZE}
+      - REMOTE_SERVER=${SERVER_2}
+      - APP_ID=${APP_ID_2}
     sink_jobs:
       - calc
-
-  calc:
-    label: calc primes
-    base_image: app-primes/calc
-    hosts:
-      - ${CALC_HOST}:${NUM_PARALLEL}
-    environments:
-      - LENGTH=${GROUP_SIZE}
-    sink_jobs:
-      - gather
 
   gather:
     label: Summary of results

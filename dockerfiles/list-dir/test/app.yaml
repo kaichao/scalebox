@@ -1,4 +1,4 @@
-name: test.list-dir
+name: list-dir.test
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
@@ -11,7 +11,7 @@ jobs:
       always_running: yes
     parameters:
       start_message: ${DIR_NAME}
-    command: docker run -d --rm --privileged --network=host %ENVS% %VOLUMES% %IMAGE%
+    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
     paths:
       - /:/local:ro
     environments:

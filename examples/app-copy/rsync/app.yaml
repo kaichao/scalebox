@@ -1,0 +1,40 @@
+name: file-copy.scalebox
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  list-dir:
+    base_image: hub.cstcloud.cn/scalebox/list-dir
+    schedule_mode: HEAD
+    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
+    variables:
+      always_running: yes
+    parameters:
+      key_group_regex: ^(.+)$
+      start_message: ${DIR_NAME}
+    paths:
+      - /:/local:ro
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - REGEX_FILTER=${REGEX_FILTER}
+      - RSYNC_PASSWORD=${RSYNC_PASSWORD}
+    sink_jobs:
+      - file-copy
+
+  file-copy:
+    base_image: hub.cstcloud.cn/scalebox/rsync-copy
+    schedule_mode: HEAD
+    command: docker run -d --privileged --rm --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
+    variables:
+      always_running: yes
+    parameters:
+      key_group_regex: ${KEY_GROUP_REGEX}
+      key_group_submatch: ${KEY_GROUP_SUBMATCH}
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - TARGET_URL=${TARGET_URL}
+      - ENABLE_LOCAL_RELAY=${ENABLE_LOCAL_RELAY}
+      - RAM_DISK_GB=
+    paths:
+      - /:/local

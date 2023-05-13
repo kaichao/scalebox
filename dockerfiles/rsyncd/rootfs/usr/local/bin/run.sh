@@ -2,7 +2,7 @@
 
 set -e
 
-if [ $TRANSPORT_TYPE = "rsync" ]; then
+if [ $MODE = "rsyncd" ]; then
     echo "starting rsyncd on port $RSYNC_PORT"
     rsync --daemon --port $RSYNC_PORT --no-detach --log-file /dev/stdout 
 else 

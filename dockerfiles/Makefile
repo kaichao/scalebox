@@ -1,4 +1,4 @@
-dirs:=filelist ftp-copy rsync-agent rsyncd rsync-copy
+dirs:=cron list-dir ftp-copy rsync-copy rsyncd
 
 build:
 	@for dir in $(dirs); do \

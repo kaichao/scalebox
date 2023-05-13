@@ -5,12 +5,11 @@ label: Global Definition Cluster bio-down
 clusters:
   local:
     parameters:
-      base_dir: /gfs
-      base_data_dir: /gfs/mydata
+      base_dir: /tmp
+      base_data_dir: /tmp/mydata
       uname: ${USER}
     memo: local cluster
     hosts:
       h0:
         label: head node
         ip_addr: ${LOCAL_ADDR}
-        role: head

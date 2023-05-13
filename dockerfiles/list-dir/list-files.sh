@@ -33,12 +33,14 @@ elif [ "${MODE}" = "RSYNC" ]; then
         | sed 's/^[^/]\+\//\//' \
         | awk -v p="$data_dir" '$0=p$0' \
         | egrep "${REGEX_FILTER}" 
+# rsync: [Receiver] read error: Connection reset by peer (104)
+# rsync error: error in socket IO (code 10) at io.c(806) [Receiver=3.2.7]
+# [INFO]pipe_status:10 0 0 0 0 0
+
 else
     if [ "${MODE}" = "FTP" ]; then
 
-        # echo aaaaaaaaa >&2
         # if ! mountpoint -q /remote; then
-        # echo bbbbbbbbb >&2
         #     echo "FTP_URL:"$FTP_URL >&2
         #     if [[ $SOURCE_URL =~ (ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/.*) ]]; then
         #         ftp_url=${BASH_REMATCH[1]}
@@ -47,7 +49,6 @@ else
         #     else
         #         echo "FTP_URL did not match regex!" >&2
         #     fi
-
         # fi
         # # curlftpfs -o ssl ${FTP_URL} /remote
         LOCAL_ROOT="/remote"${REMOTE_ROOT}

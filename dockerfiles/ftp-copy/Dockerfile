@@ -1,15 +1,24 @@
-FROM kaichao/ftp-copy
+FROM hub.cstcloud.cn/scalebox/agent
 
 LABEL maintainer="kaichao"
 
-ENV REMOTE_URL= \
-    LOCAL_ROOT=/ \
-    NUM_PGET_CONN=4 \
-    ACTION=PUSH \
+RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bullseye-testing.list \
+    && apt-get update \
+    && apt-get install -y curlftpfs lftp \
+    && apt-get clean autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=hub.cstcloud.cn/scalebox/list-dir /app/bin/url_parser /app/bin/ 
+
+RUN mkdir -p /local /work
+
+COPY *.sh /app/bin/
+
+ENV SOURCE_URL= \
+    TARGET_URL= \
+    ACTION= \
     ENABLE_RECHECK_SIZE=yes \
-    ENABLE_LOCAL_RELAY= \
-    RAM_DISK_GB=
-
-COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin /usr/local/sbin
-
-ENTRYPOINT ["goagent"]
+    NUM_PGET_CONN=4 \
+    ENABLE_LOCAL_RELAY=no \
+    RAM_DISK_GB= 

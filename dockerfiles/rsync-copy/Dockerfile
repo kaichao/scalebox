@@ -1,15 +1,27 @@
-FROM hub.cstcloud.cn/scalebox/rsync-agent
+FROM hub.cstcloud.cn/scalebox/agent
 
 LABEL maintainer="kaichao"
+
+# install the newest version, rsync 3.2.7, zstd 1.5.4
+RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bullseye-testing.list \ 
+    && apt-get update \
+    && apt-get install -y rsync openssh-client zstd \
+    && apt-get clean autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
+COPY --from=hub.cstcloud.cn/scalebox/list-dir /app/bin/url_parser /app/bin/ 
+
+WORKDIR /work
 
 ENV SOURCE_URL= \
     TARGET_URL= \
     RSYNC_PASSWORD= \
     ZSTD_CLEVEL=3 \
     ENABLE_ZSTD= \
-    # Break through the permissions of some file storage
+    # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY= \
     SERVER_CONTAINERIZED=
-
 
 COPY *.sh /app/bin/
