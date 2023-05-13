@@ -71,16 +71,16 @@ for file in ${arr[@]}; do
     if [ $code -ne 0 ]; then
         if [ $code -eq 23 ];then
             # rsync error: some files/attrs were not transferred (see previous errors) (code 23) at main.c(1819) [generator=3.2.3]
-            code=100
+            code=23
         elif [ $code -eq 11 ];then
             # Input/output error (5)
             # rsync error: error in file IO (code 11) at receiver.c(871) [receiver=3.2.3]
-            code=101
+            code=10111
         elif [ $code -eq 255 ];then
             # ssh: connect to host 60.245.209.223 port 22: Connection timed out
             # rsync: connection unexpectedly closed (0 bytes received so far) [sender]
             # rsync error: unexplained error (code 255) at io.c(231) [sender=3.2.6]
-            code=101
+            code=255
         else
             echo ret_code=$code
             # code == 10
@@ -98,8 +98,8 @@ ds1=$(date --iso-8601=ns)
 if [ $code -eq 0 ]; then
 cat << EOF > /work/task-exec.json
 {
-	"inputBytes":$total_bytes,
-	"outputBytes":$total_bytes,
+    "inputBytes":$total_bytes,
+    "outputBytes":$total_bytes,
     "timestamps":["${ds0}","${ds1}"]
 }
 EOF
@@ -113,14 +113,4 @@ cat << EOF > /work/task-exec.json
 EOF
 fi
 
-if [ $code -lt -127 ];then
-    echo "actual ret_code:"$code
-    ret_code=-127
-elif [ $code -gt 127 ];then
-    echo "actual ret_code:"$code
-    ret_code=127
-else
-    ret_code=$code
-fi
-
-exit $ret_code
+exit $code

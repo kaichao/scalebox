@@ -3,7 +3,7 @@
 arr1=($(/app/bin/url_parser ${SOURCE_URL}))
 arr2=($(/app/bin/url_parser ${TARGET_URL}))
 
-MODE / REMOTE_HOST / REMOTE_PORT  / REMOTE_ROOT / REMOTE_USER
+# MODE / REMOTE_HOST / REMOTE_PORT  / REMOTE_ROOT / REMOTE_USER
 
 if [[ (${arr1[0]} == "LOCAL") && ((${arr2[0]} == "SSH") || (${arr2[0]} == "RSYNC")) ]]; then
     action="PUSH"
@@ -44,12 +44,10 @@ env
 chmod +x /env.sh
 
 if [[ ${remote_mode} ==  "SSH" ]]; then
-    version=$(ssh -p $remote_port ${remote_user}@${remote_host} rsync -V|grep version|awk '{print $3}')
+    version=$(ssh -p $remote_port ${remote_user}@${remote_host} rsync --version|grep version|awk '{print $3}')
     # version="3.2.3"
     if $(dpkg --compare-versions ${version} "ge" "3.2.3"); then 
         touch /rsync_ver_ge_323
     fi
     ssh -p ${remote_port} ${remote_user}@${remote_host} mkdir -p ${remote_root}
 fi
-
-exit $?
