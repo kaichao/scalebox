@@ -34,7 +34,7 @@ cat << EOF > /work/task-exec.json
     "outputBytes":${output_bytes},
     "userText":"user-defined text\nHello scalebox in message-${m}",
     "timestamps":["2018-03-19T18:35:03-08:00","2019-11-05T17:50:20.154+08:00","2020-11-05T17:50:20.154918+08:00","2021-11-05T17:50:20.154918780+08:00","2022-11-17T08:52:21,963572856+08:00"],
-    "sinkJob":"task-exec-files",
+    "sinkJob":"task-perspective",
     "messageBody":"1"
 }
 EOF
@@ -48,7 +48,7 @@ cat << EOF > /work/task-exec.json
     "statusCode":0,
     "inputFiles":[${input_files}],
     "outputFiles":[${output_files}],
-    "sinkJob":"task-exec-files",
+    "sinkJob":"task-perspective",
     "messageBody":"2"
 }
 EOF
