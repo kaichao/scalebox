@@ -169,7 +169,7 @@ yum install -y epel-release
 yum install -y htop dstat pv
 ```
 
-- 参照目录 ```bio-down```下的```mycluster.yaml```，定义计算节点配置文件，并更新```Makefile```中的```clusters```变量
+- 参照目录 ```inline-cluster```下的```mycluster.yaml```，定义计算节点配置文件，并更新```Makefile```中的```clusters```变量
 
 ### 3.4 外部计算节点
 - 操作系统：CentOS 7以上
@@ -181,7 +181,7 @@ yum install -y htop dstat pv
 
 ### 3.5 集群定义文件
 
-- 参照bio-down目录，完成集群定义文件mycluster.yaml
+- 参照```inline-cluster```目录，完成集群定义文件```mycluster.yaml```
 - 将新集群名称，加入到Makefile文件的clusters变量中
 - 确认计算容器中的本地IP获取正确，可按需定制及集群定义中parameters的local_ip_index，保证每个计算节点能正确获取本地IP地址。
 

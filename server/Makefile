@@ -1,4 +1,4 @@
-clusters ?= local bio-down
+clusters ?= local inline-cluster external-cluster
 
 include defs.mk
 

@@ -1,0 +1,18 @@
+version: '1.0.0'
+
+label: Global Definition Cluster external-cluster
+
+clusters:
+  fhpc:
+    parameters:
+      base_dir: /gfs
+      base_data_dir: /gfs/mydata
+      uname: ${USER}
+      conn_url: fhpc://<myserver>:<myport>
+    total_resources:
+      # CPU cores
+      num_cores: 48
+      # Memory(GB)
+      mem_gb: 256.0
+      # Disk(GB)
+      disk: 29000.0

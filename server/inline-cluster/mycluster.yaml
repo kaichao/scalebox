@@ -1,9 +1,9 @@
 version: '1.0.0'
 
-label: Global Definition Cluster bio-down
+label: Global Definition Cluster inline-cluster
 
 specs:
-  bio-vm-00:
+  inline-vm-00:
     # CPU cores
     num_cores: 4
     # Memory(GB)
@@ -12,28 +12,28 @@ specs:
     disk: 200.0
 
 clusters:
-  bio-down:
+  inline-cluster:
     parameters:
       base_dir: /gfs
       base_data_dir: /gfs/mydata
       uname: root
-    comment: bio-down cluster
+    comment: inline-cluster
     hosts:
       h0:
         label: head node
         ip_addr: 10.0.6.100
         role: head
-        spec: bio-vm-00
+        spec: inline-vm-00
         comment: CentOS 8
       n0:
         ip_addr: 10.0.6.101
-        spec: bio-vm-00
+        spec: inline-vm-00
       n1:
         ip_addr: 10.0.6.102
-        spec: bio-vm-00
+        spec: inline-vm-00
       n2:
         ip_addr: 10.0.6.103
-        spec: bio-vm-00
+        spec: inline-vm-00
       n3:
         ip_addr: 10.0.6.104
-        spec: bio-vm-00
+        spec: inline-vm-00
