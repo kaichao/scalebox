@@ -6,11 +6,11 @@
     "required": [ "statusCode" ],
     "properties": {
       "statusCode": {
-        "description": "Formatted Name",
-        "type": "string"
+        "description": "Exit status code for user code completion",
+        "type": "integer"
       },
       "inputBytes": {
-        "type": "string"
+        "type": "integer"
       },
       "inputFiles": {
         "type": "array",
@@ -19,7 +19,7 @@
         }
       },
       "outputBytes": {
-        "type": "string"
+        "type": "integer"
       },
       "outputFiles": {
         "type": "array",

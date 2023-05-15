@@ -95,3 +95,13 @@ pull-all:
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
 	done
+
+auto-keygen-actuator:
+	@ make -C ../dockerfiles/actuator build
+	@ docker tag my-actuator hub.cstcloud.cn/scalebox/actuator
+	@ docker rmi my-actuator
+
+update-pubkey: auto-keygen-actuator
+	@ cid=`docker create hub.cstcloud.cn/scalebox/actuator` \
+	&& docker cp $$cid:/root/.ssh/id_rsa.pub ${PWD} \
+	&& docker rm -v $$cid

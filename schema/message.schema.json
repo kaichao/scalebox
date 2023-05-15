@@ -16,7 +16,7 @@
         }
       },
       "sourceIP": {
-        "description": "ip_addr for source job",
+        "description": "ip_addr for source task",
         "type": "string"
       }
     }
