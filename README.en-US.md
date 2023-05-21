@@ -75,7 +75,7 @@ This repository contains:
 
 ## Contributing
 
-Feel free to dive in! [Open an issue](https://github.com/kaichao/docker-scalebox/issues/new) or submit Pull Requests.
+Feel free to dive in! [Open an issue](https://github.com/kaichao/scalebox/issues/new) or submit Pull Requests.
 
 ## License
 

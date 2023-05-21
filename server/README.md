@@ -1,15 +1,24 @@
 # Scalebox集群
 
-Scalebox集群是运行scalebox应用的硬件资源集合。分为
-- 内联集群（Inline Cluster）：由Scalebox直接管理的计算资源组成的集群。支持静态资源分配、动态资源分配两种方式。
-- 外部集群（External Cluster）：有外部调度系统管理的计算资源组成的集群，可支持用slurm、k8s等。
+Scalebox集群是运行scalebox应用的软硬件资源集合。分为
+- 内联集群（Inline Cluster）：集群计算资源由Scalebox直接管理。按其资源集合是否支持扩展，分为固定集群、可扩展集群（比如公有云）；按任务调度分配方式，分为资源预分配、资源动态分配。
+- 外部集群（External Cluster）：集群计算资源由外部调度系统管理，可支持用slurm、k8s等。
+
+Scalebox的主要对象：
+- 集群Cluster：
+- 主机Host：
+- 应用App：
+- Job：
+- 任务Task：
+- Slot：
+
 
 ## 一、Scalebox集群介绍
 ### 1.1 头节点
 头节点上安装了单个scalebox集群的管理服务，主要包括：
 - actuator：启动端，负责在计算节点上启动slot；针对内联集群，直接通过免密ssh启动；针对外部集群，通过调用集群调度系统来启动。
 - controld：面向actuator、计算节点，提供基于grpc的控制端应用服务；
-- database：基于postgresql的数据库，存放app、job、task、slot等相关数据，面向controld等提供数据存储、检索等服务；也可面向计算节点、命令行工具提供直接数据库访问。
+- database：基于postgresql的核心数据库，存放app、job、task、slot等相关数据，面向controld等提供数据存储、检索等服务；也可面向计算节点、命令行工具提供直接数据库访问。
 
 头节点以及头节点服务（controld/actuator/database），可为多个集群所共享。
 
@@ -22,19 +31,24 @@ Scalebox集群是运行scalebox应用的硬件资源集合。分为
 - 操作系统：
   - CentOS 7以上（其他版本的Linux待测试）
   - macos 10.15(amd64)以上（ARM版的macos待测试）
-- 容器化引擎：DockerCE 20.10+(rootless)
+- 容器化引擎：DockerCE / rootless docker，版本20.10+
 - docker-compose: 1.29.2+
-- 安装dstat、htop、rsync、zstd、gmake、git、rsync等工具软件，用于性能监控等
+- 安装dstat、htop、rsync、zstd、gmake、git、rsync等工具软件，用于性能监控、开发运行等
 
 ### 2.1 安装CentOS 7/8下基本软件
 - 以root用户安装
 ```bash
 yum install -y epel-release
 yum install -y htop dstat rsync pv pdsh wget make
+```
+- CentOS 7安装git v2
+
+```sh
+yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
+
+yum install -y git
 
 ```
-- 安装git v2
-
 
 - sshd
   - turn off UseDNS/GSSAPIAuthentication
@@ -47,10 +61,19 @@ yum install -y htop dstat rsync pv pdsh wget make
 
 基于Homebrew，安装所需基本软件
 
-### 2.3 以当前用户身份，下载安装docker (rootless)
-- 参考文档
+### 2.3 安装docker及docker-compose
+安装docker可以有两种方式：
+- 以root用户安装docker-ce，docker可供本节点的所有用户共享，或
+- 以当前用户安装rootless docker
 
+#### 2.3.1 安装docker-ce
+
+
+#### 2.3.2 安装rootless docker
+- 参考文档
 [Run the Docker daemon as a non-root user (Rootless mode)](https://docs.docker.com/engine/security/rootless/)
+
+- 新增用户scalebox，并以scalebox用户进行后续操作
 
 - 设置环境变量
 ```bash
@@ -72,12 +95,12 @@ curl -fsSL https://get.docker.com/rootless | sh
 nohup dockerd-rootless.sh &
 ```
 
-- 验证docker有效
+#### 2.3.3 验证docker有效
 ```bash
 docker run --rm hello-world
 ```
 
-### 2.4 以当前用户身份，下载安装docker-scalebox
+### 2.3.4 以scalebox用户，下载安装docker-compose
 - 安装docker-compose
 ```bash
 mkdir -p ~/bin
@@ -85,17 +108,30 @@ wget -O ~/bin/docker-compose https://github.com/docker/compose/releases/download
 chmod +x ~/bin/docker-compose
 ```
 
-- 下载docker-scalebox
+### 2.4 scalebox的安装配置
 
-在${HOME}下，下载docker-scalebox
+#### 2.4.1 下载scalebox
+
+在${HOME}下，下载scalebox
 
 ```bash
-cd && git clone https://github.com/kaichao/docker-scalebox
+cd && git clone https://github.com/kaichao/scalebox && cd scalebox && git checkout dev
 ```
 
-### 2.5 配置docker-scalebox
+#### 2.4.2 获取最新容器镜像及命令行工具
+```bash
+cd ~/scalebox/server
+make pull-all
+make get-cli
+```
 
-#### 准备运行环境
+#### 2.4.3 更新系统缺省的公钥（可选）
+```bash
+cd ~/scalebox/server
+make update-pubkey
+```
+
+#### 2.4.4 准备运行环境
 - 创建运行相关目录
 - 设置环境变量
 - 设置内联集群内的免密ssh
@@ -104,11 +140,7 @@ cd && git clone https://github.com/kaichao/docker-scalebox
 make prepare
 ```
 
-#### 获取最新的命令行工具
-```bash
-make get-cli
-```
-#### 配置本地IP地址
+#### 2.4.5 配置头节点服务的本地IP地址
 - 通过以下命令，检查本地IP地址是否需要设定
 ```bash
 hostname -i
@@ -120,33 +152,32 @@ hostname -i
 ```
 [user@node-1 local]$ hostname -I
 10.0.2.21 192.168.56.21 172.17.0.1 172.20.0.1 172.19.0.1 172.22.0.1 
-
-则可以设置为：
-LOCAL_IP_INDEX=2
-或
-LOCAL_ADDR=192.168.56.21
 ```
+则可在defs.mak中设置为：
+```LOCAL_IP_INDEX=2```
+或
+```LOCAL_ADDR=192.168.56.21```
 
-#### 重新启动shell，使得配置生效
+#### 2.4.6 退出当前shell，并重新登录，使得配置生效
 
 
-### 2.6 启动scalebox控制端
+#### 2.4.7 启动scalebox控制端
 ```bash
-cd ~/docker-scalebox/server && make all
+cd ~/scalebox/server && make all
 ```
 
 ## 三、Scalebox多节点集群安装及配置
 
 ### 3.1 头节点安装
 
-在单集群基础上，安装time-server、pdsh、pv、rsync
+在单集群基础上，头节点安装time-server、pdsh、pv、rsync
 ```sh
 yum install -y pdsh pdsh-rcmd-ssh
 export PDSH_RCMD_TYPE=ssh
 ```
 
 ### 3.2 设置集群的共享存储
-设置可用于计算节点间共享的存储，可以是基于NFS或glusterfs等。
+设置可用于计算节点间的外部共享存储，共享存储可以是NFS或glusterfs等。
 
 并设置defs.mk中的```SHARED_DIR```变量
 
@@ -187,5 +218,5 @@ yum install -y htop dstat pv
 
 ### 3.5 启动scalebox集群控制端
 ```bash
-cd ~/docker-scalebox/server && make all
+cd ~/scalebox/server && make all
 ```

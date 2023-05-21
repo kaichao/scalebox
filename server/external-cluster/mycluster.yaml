@@ -3,7 +3,7 @@ version: '1.0.0'
 label: Global Definition Cluster external-cluster
 
 clusters:
-  fhpc:
+  external-cluster:
     parameters:
       base_dir: /gfs
       base_data_dir: /gfs/mydata

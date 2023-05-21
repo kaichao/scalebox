@@ -70,16 +70,11 @@ list:
 # 	@ pdsh -w $(NODES) 'cat $(SHARED_DIR)/id_rsa.pub >> ${HOME}/.ssh/authorized_keys' | dshbak -c
 # 	@ rm -f $(SHARED_DIR)/id_rsa.pub
 
-prepare:
-	@ mkdir -p ~/.ssh ~/.scalebox/log
-	@ chmod 700 ~/.ssh
-	@ echo "alias app='scalebox app'" >> ~/.bash_profile
-	@ echo "alias job='scalebox job'" >> ~/.bash_profile
-	@ echo "alias task='scalebox task'" >> ~/.bash_profile
-	@ echo "export PATH=/usr/local/bin:/usr/local/sbin:\$$PATH" >> ~/.bashrc
-	@ # setup passwordless ssh from actuator to node
-	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
-	@ chmod 600 ~/.ssh/authorized_keys
+pull-all:
+	@ for i in database actuator controld agent base cli; do \
+		echo $$i; \
+		docker pull hub.cstcloud.cn/scalebox/$$i; \
+	done
 
 get-cli:
 	@ mkdir -p ~/bin
@@ -90,12 +85,6 @@ get-cli:
 	&& docker cp $$cid:/usr/local/bin/scalebox-$$os-$$arch ~/bin/scalebox \
 	&& docker rm -v $$cid
 
-pull-all:
-	@ for i in database actuator controld agent base cli; do \
-		echo $$i; \
-		docker pull hub.cstcloud.cn/scalebox/$$i; \
-	done
-
 auto-keygen-actuator:
 	@ make -C ../dockerfiles/actuator build
 	@ docker tag my-actuator hub.cstcloud.cn/scalebox/actuator
@@ -105,3 +94,14 @@ update-pubkey: auto-keygen-actuator
 	@ cid=`docker create hub.cstcloud.cn/scalebox/actuator` \
 	&& docker cp $$cid:/root/.ssh/id_rsa.pub ${PWD} \
 	&& docker rm -v $$cid
+
+prepare:
+	@ mkdir -p ~/.ssh ~/.scalebox/log
+	@ chmod 700 ~/.ssh
+	@ echo "alias app='scalebox app'" >> ~/.bash_profile
+	@ echo "alias job='scalebox job'" >> ~/.bash_profile
+	@ echo "alias task='scalebox task'" >> ~/.bash_profile
+	@ echo "export PATH=/usr/local/bin:/usr/local/sbin:\$$PATH" >> ~/.bashrc
+	@ # setup passwordless ssh from actuator to node
+	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
+	@ chmod 600 ~/.ssh/authorized_keys
