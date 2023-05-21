@@ -53,8 +53,9 @@ func main() {
 	}
 	reg := regexp.MustCompile("^(([^@]+)@)?([^:/]+)(:([0-9]+))?(/.*)$")
 	ss := reg.FindStringSubmatch(url)
-	if ss == nil {
-		fmt.Printf("ERROR_FORMAT, url:%s", url)
+	if len(ss) == 0 {
+		fmt.Fprintf(os.Stderr, "ERROR_FORMAT in url, url:%s\n", url)
+		os.Exit(1)
 	}
 	uname := ss[2]
 	host := ss[3]

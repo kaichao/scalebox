@@ -1,6 +1,11 @@
 #!/bin/bash
 
 arr=($(/app/bin/url_parser ${SOURCE_URL}))
+code=$?
+if [ $code -ne 0 ]; then
+    # url format error
+    exit $code
+fi
 
 export MODE="${arr[0]}"
 if [ "${MODE}" = "ERROR_FORMAT" ]; then
