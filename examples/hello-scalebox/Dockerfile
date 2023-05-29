@@ -1,4 +1,4 @@
-FROM hub.cstcloud.cn/scalebox/agent
+FROM hub.cstcloud.cn/scalebox/agent:0.9
 
 LABEL maintainer="kaichao"
 

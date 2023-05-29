@@ -1,7 +1,7 @@
 version: '3.8'
 services:
   controld:
-    image: hub.cstcloud.cn/scalebox/controld
+    image: hub.cstcloud.cn/scalebox/controld:0.9
     restart: unless-stopped
     container_name: controld
     # hostname: host1
@@ -23,7 +23,7 @@ services:
       - ${HOME}/.scalebox/log/controld:/var/log/scalebox/controld
 
   actuator:
-    image: hub.cstcloud.cn/scalebox/actuator
+    image: hub.cstcloud.cn/scalebox/actuator:0.9
     restart: unless-stopped
     container_name: actuator
     logging:
@@ -48,7 +48,7 @@ services:
       - controld
 
   database:
-    image: hub.cstcloud.cn/scalebox/database
+    image: hub.cstcloud.cn/scalebox/database:0.9
     restart: unless-stopped
     container_name: database
     environment:
