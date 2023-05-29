@@ -1,8 +1,10 @@
 # Scalebox集群
 
 Scalebox集群是运行scalebox应用的软硬件资源集合。分为
-- 内联集群（Inline Cluster）：集群计算资源由Scalebox直接管理。按其资源集合是否支持扩展，分为固定集群、可扩展集群（比如公有云）；按任务调度分配方式，分为资源预分配、资源动态分配。
-- 外部集群（External Cluster）：集群计算资源由外部调度系统管理，可支持用slurm、k8s等。
+- 内联集群（Inline Cluster）：资源由Scalebox直接管理的计算集群。
+  - 按其资源集合可否扩展，分为固定集群、可扩展集群（比如公有云）；
+  - 按作业调度分配方式，分为资源预分配、资源动态分配。
+- 外部集群（External Cluster）：资源由外部系统管理的计算集群，可支持用slurm、k8s等外部程序。
 
 Scalebox的主要对象：
 - 集群Cluster：
@@ -30,7 +32,7 @@ Scalebox的主要对象：
 ## 二、Scalebox单节点集群安装及配置
 - 操作系统：
   - CentOS 7以上（其他版本的Linux待测试）
-  - macos 10.15(amd64)以上（ARM版的macos待测试）
+  - macOS 10.15(amd64)以上（ARM版的macos待测试）
 - 容器化引擎：DockerCE / rootless docker，版本20.10+
 - docker-compose: 1.29.2+
 - 安装dstat、htop、rsync、zstd、gmake、git、rsync等工具软件，用于性能监控、开发运行等
@@ -47,7 +49,6 @@ yum install -y htop dstat rsync pv pdsh wget make
 yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
 
 yum install -y git
-
 ```
 
 - sshd
@@ -207,7 +208,7 @@ yum install -y htop dstat pv
 - 单机容器化引擎：
   - Docker 20.10以上
   - podman ？版本；
-  - singularity 3.8；
+  - singularity 3.8以上
 - k8s集群
 
 ### 3.5 集群定义文件
@@ -216,7 +217,9 @@ yum install -y htop dstat pv
 - 将新集群名称，加入到Makefile文件的clusters变量中
 - 确认计算容器中的本地IP获取正确，可按需定制及集群定义中parameters的local_ip_index，保证每个计算节点能正确获取本地IP地址。
 
-### 3.5 启动scalebox集群控制端
+### 3.5 启动scalebox集群服务端
 ```bash
 cd ~/scalebox/server && make all
 ```
+
+至此，scalebox服务端安装完成，可以通过[scalebox/examples](../examples)中的```hello-scalebox```、```app-primes```两个应用来测试平台安装是否正确。

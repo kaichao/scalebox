@@ -90,10 +90,12 @@ auto-keygen-actuator:
 	@ docker tag my-actuator hub.cstcloud.cn/scalebox/actuator
 	@ docker rmi my-actuator
 
-update-pubkey: auto-keygen-actuator
+get-pubkey:
 	@ cid=`docker create hub.cstcloud.cn/scalebox/actuator` \
 	&& docker cp $$cid:/root/.ssh/id_rsa.pub ${PWD} \
 	&& docker rm -v $$cid
+
+update-pubkey: auto-keygen-actuator get-pubkey
 
 prepare:
 	@ mkdir -p ~/.ssh ~/.scalebox/log
