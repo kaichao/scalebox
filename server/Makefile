@@ -73,7 +73,7 @@ list:
 pull-all:
 	@ for i in database actuator controld agent base cli; do \
 		echo $$i; \
-		docker pull hub.cstcloud.cn/scalebox/$$i; \
+		docker pull hub.cstcloud.cn/scalebox/$$i:0.9; \
 	done
 
 get-cli:
@@ -81,7 +81,7 @@ get-cli:
 	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \
-	&& cid=$$(docker create hub.cstcloud.cn/scalebox/cli) \
+	&& cid=$$(docker create hub.cstcloud.cn/scalebox/cli:0.9) \
 	&& docker cp $$cid:/usr/local/bin/scalebox-$$os-$$arch ~/bin/scalebox \
 	&& docker rm -v $$cid
 
