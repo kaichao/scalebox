@@ -15,6 +15,12 @@ if [[ $REMOTE_MODE == 'SSH' ]]; then
         fi
     fi
     ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
+    if [ $JUMP_SERVERS ]; then
+        servers=$(jump_servers ${JUMP_SERVERS})
+        ssh_args=$ssh_args" -J '${servers}'"
+    fi
+    echo "ssh_args:"$ssh_args
+
     #  ssh args in /root/.ssh/config
     rsync_url=${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_ROOT}
 else

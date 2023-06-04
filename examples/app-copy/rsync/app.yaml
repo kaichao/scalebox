@@ -1,7 +1,7 @@
 name: file-copy.scalebox
 cluster: ${CLUSTER}
-# parameters:
-#   initial_status: RUNNING
+parameters:
+  initial_status: RUNNING
 
 jobs:
   list-dir:
@@ -29,7 +29,7 @@ jobs:
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - TARGET_URL=${TARGET_URL}
-      - ENABLE_LOCAL_RELAY=${ENABLE_LOCAL_RELAY}
+      - JUMP_SERVERS=${JUMP_SERVERS}
       - RSYNC_PASSWORD=${RSYNC_PASSWORD}
     paths:
       - /:/local

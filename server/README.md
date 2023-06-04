@@ -94,6 +94,14 @@ curl -fsSL https://get.docker.com/rootless | sh
 - 启动rootless docker
 ```bash
 nohup dockerd-rootless.sh &
+
+systemctl --user start docker
+
+```
+- 设置rootless docker的自启动
+```sh
+systemctl --user enable docker
+sudo loginctl enable-linger $(whoami)
 ```
 
 #### 2.3.3 验证docker有效
