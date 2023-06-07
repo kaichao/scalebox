@@ -20,7 +20,7 @@ variables:
 
 流控管理通过设置容器的环境变量ACTION_CHECK（缺省值为:/app/bin/check.sh）来实现。若ACTION_CHECK返回值非0，则该容器将跳过server端消息获取，从而不能进行后续处理流程。
 
-## 应用交互：[task-exec-files](./task-exec-files/)
+## 任务透视：[task-perspective](./task-perspective/)
 
 用户应用程序与平台交互，通过以下3个文件实现
 - /work/timestamps.txt：纪录用户程序分段的时间戳，可以纪录task运行数据库中。格式如下：
@@ -42,7 +42,7 @@ variables:
 	  "outputBytes":"<output_bytes>",
     "userText":"user-defined text\nHello scalebox in message-${m}",
     "timestamps":["2018-03-19T18:35:03-08:00","2019-11-05T17:50:20.154+08:00","2020-11-05T17:50:20.154918+08:00","2021-11-05T17:50:20.154918780+08:00","2022-11-17T08:52:21,963572856+08:00"],
-    "sinkJob":"task-exec-files",
+    "sinkJob":"task-perspective",
     "messageBody":"1"
 }
 ```

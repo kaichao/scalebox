@@ -3,7 +3,7 @@
 质数计算应用[app-primes](../../examples/app-primes/)是scalebox的一个应用示例。
 其模块的结构示意图如下：
 ```mermaid
-flowchart
+flowchart TD
   subgraph cluster
     scatter --> calc
     calc --> gather

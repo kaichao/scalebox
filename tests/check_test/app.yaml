@@ -7,7 +7,5 @@ jobs:
   check_test:
     base_image: check_test
     schedule_mode: HEAD
-    variables:
-      always_running: yes
     parameters:
       start_message: ANY

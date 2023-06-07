@@ -1,6 +1,6 @@
 version: '1.0.0'
 
-label: Global Definition Cluster bio-down
+label: Global Definition Cluster local
 
 clusters:
   local:

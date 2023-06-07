@@ -1,4 +1,4 @@
-IMAGE_NAME:=task-exec-files
+IMAGE_NAME:=my-actuator
 
 build:
 	docker build --network=host -t $(IMAGE_NAME) .

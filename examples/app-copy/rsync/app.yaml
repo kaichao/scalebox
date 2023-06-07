@@ -7,9 +7,8 @@ jobs:
   list-dir:
     base_image: hub.cstcloud.cn/scalebox/list-dir
     schedule_mode: HEAD
-    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
     variables:
-      always_running: yes
+      reserved_on_exit: yes
     parameters:
       key_group_regex: ^(.+)$
       start_message: ${DIR_NAME}
@@ -25,16 +24,12 @@ jobs:
   file-copy:
     base_image: hub.cstcloud.cn/scalebox/rsync-copy
     schedule_mode: HEAD
-    command: docker run -d --privileged --rm --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
-    variables:
-      always_running: yes
     parameters:
-      key_group_regex: ${KEY_GROUP_REGEX}
-      key_group_submatch: ${KEY_GROUP_SUBMATCH}
+      key_group_regex: ^([^/]+)/.+$
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - TARGET_URL=${TARGET_URL}
-      - ENABLE_LOCAL_RELAY=${ENABLE_LOCAL_RELAY}
-      - RAM_DISK_GB=
+      - JUMP_SERVERS=${JUMP_SERVERS}
+      - RSYNC_PASSWORD=${RSYNC_PASSWORD}
     paths:
       - /:/local
