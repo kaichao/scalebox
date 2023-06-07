@@ -41,11 +41,13 @@ Scalebox的主要对象：
 - 以root用户安装
 ```bash
 yum install -y epel-release
-yum install -y htop dstat rsync pv pdsh wget make
+yum install -y htop dstat glances rsync pv pdsh wget make
 ```
 - CentOS 7安装git v2
 
 ```sh
+yum -y remove git
+
 yum install -y https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm
 
 yum install -y git
@@ -174,6 +176,7 @@ hostname -i
 ```bash
 cd ~/scalebox/server && make all
 ```
+至此，scalebox控制端启动完成。下一步，可以到[examples](../examples/)目录下，运行```hello-scalebox、app-primes```两个应用案例。
 
 ## 三、Scalebox多节点集群安装及配置
 

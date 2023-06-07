@@ -97,7 +97,7 @@ get-pubkey:
 
 update-pubkey: auto-keygen-actuator get-pubkey
 
-prepare:
+prepare: get-pubkey
 	@ mkdir -p ~/.ssh ~/.scalebox/log
 	@ chmod 700 ~/.ssh
 	@ echo "alias app='scalebox app'" >> ~/.bash_profile
