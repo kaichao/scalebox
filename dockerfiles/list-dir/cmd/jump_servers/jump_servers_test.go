@@ -51,7 +51,6 @@ func TestSplit(test *testing.T) {
 	}
 
 	for _, t := range cases {
-
 		if got := split(t.input); !reflect.DeepEqual(got, t.want) {
 			test.Errorf("split(%s), got = %v; want %v", t.input, got, t.want)
 		}

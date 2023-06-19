@@ -1,4 +1,4 @@
-FROM hub.cstcloud.cn/scalebox/agent
+FROM debian:11-slim
 
 LABEL maintainer="kaichao"
 
@@ -32,3 +32,8 @@ COPY rootfs/ /
 
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
 COPY --from=hub.cstcloud.cn/scalebox/list-dir /app/bin/url_parser /app/bin/ 
+
+COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
+RUN mkdir -p /work /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
+WORKDIR /work
+ENTRYPOINT [ "goagent" ]

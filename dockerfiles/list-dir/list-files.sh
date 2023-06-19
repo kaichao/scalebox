@@ -9,7 +9,14 @@ if [ "${MODE}" = "SSH" ]; then
     else 
         rsync_url=${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_ROOT}/${data_dir}
     fi
-    rsync -avn -e "ssh -p ${REMOTE_PORT}" ${rsync_url} \
+
+    if [ $JUMP_SERVERS ]; then
+        servers=$(/app/bin/jump_servers ${JUMP_SERVERS})
+        ssh_args=$ssh_args" -J '${servers}'"
+        echo "ssh_args:"$ssh_args
+    fi
+
+    rsync -avn -e "ssh -p ${REMOTE_PORT} ${ssh_args}" ${rsync_url} \
         | grep ^\- | awk {'print $5'}  \
         | sed 's/^[^/]\+\//\//' \
         | awk -v p="$data_dir" '$0=p$0' \

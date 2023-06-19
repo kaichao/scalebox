@@ -1,4 +1,4 @@
-FROM hub.cstcloud.cn/scalebox/agent
+FROM debian:11-slim
 
 LABEL maintainer="kaichao"
 
@@ -22,3 +22,8 @@ ENV SOURCE_URL= \
     NUM_PGET_CONN=4 \
     ENABLE_LOCAL_RELAY=no \
     RAM_DISK_GB= 
+
+COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
+RUN mkdir -p /work /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
+WORKDIR /work
+ENTRYPOINT [ "goagent" ]
