@@ -11,7 +11,7 @@ if [ "${MODE}" = "SSH" ]; then
     fi
 
     if [ $JUMP_SERVERS ]; then
-        servers=$(/app/bin/jump_servers ${JUMP_SERVERS})
+        servers=$(/usr/local/bin/jump_servers ${JUMP_SERVERS})
         ssh_args=$ssh_args" -J '${servers}'"
         echo "ssh_args:"$ssh_args
     fi

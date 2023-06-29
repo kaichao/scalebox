@@ -1,7 +1,7 @@
 #!/bin/bash
 
-arr1=($(/app/bin/url_parser ${SOURCE_URL}))
-arr2=($(/app/bin/url_parser ${TARGET_URL}))
+arr1=($(/usr/local/bin/url_parser ${SOURCE_URL}))
+arr2=($(/usr/local/bin/url_parser ${TARGET_URL}))
 
 MODE / REMOTE_HOST / REMOTE_PORT  / REMOTE_ROOT / REMOTE_USER
 

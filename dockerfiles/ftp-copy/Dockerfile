@@ -9,7 +9,7 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY --from=hub.cstcloud.cn/scalebox/list-dir /app/bin/url_parser /app/bin/ 
+COPY --from=hub.cstcloud.cn/scalebox/list-dir /usr/local/bin/url_parser /usr/local/bin/ 
 
 RUN mkdir -p /local /work
 

@@ -38,7 +38,7 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
-COPY --from=0 /go/src/url_parser /go/src/jump_servers /app/bin/ 
+COPY --from=0 /go/src/url_parser /go/src/jump_servers /usr/local/bin/ 
 
 RUN mkdir -p /remote
 
@@ -46,7 +46,8 @@ ENV SOURCE_URL= \
     REGEX_FILTER= \
     RSYNC_PASSWORD=
 
-COPY *.sh /app/bin/
+COPY setup.sh run.sh /app/bin/
+COPY list-files.sh /usr/local/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
 RUN mkdir -p /work /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc

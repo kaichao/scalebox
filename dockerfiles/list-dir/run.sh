@@ -1,6 +1,6 @@
 #!/bin/bash
 
-arr=($(/app/bin/url_parser ${SOURCE_URL}))
+arr=($(/usr/local/bin/url_parser ${SOURCE_URL}))
 code=$?
 if [ $code -ne 0 ]; then
     # url format error
@@ -34,7 +34,7 @@ fi
 env
 
 ret_code=0
-/app/bin/list-files.sh $1 | while read line; do 
+/usr/local/bin/list-files.sh $1 | while read line; do 
     if [[ $line == ./* ]]; then
         # remove prefix './'
         line=${line:2}
