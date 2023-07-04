@@ -61,3 +61,12 @@ services:
     restart: unless-stopped
     ports:
       - "9221:9221"
+
+  registry:
+    image: registry:2.8
+    restart: unless-stopped
+    container_name: registry
+    volumes:
+      - ${HOME}/.scalebox/registry:/var/lib/registry \
+    ports:
+      - 5000:5000
