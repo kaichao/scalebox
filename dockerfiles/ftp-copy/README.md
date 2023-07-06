@@ -22,7 +22,7 @@ FILE_NAME: Relative file path to SOURCE_URL/TARGET_URL
 ## Error Code
 | Code   | Description  |
 |  ----  | ----  |
-|  11  |  'For PUSH'/'PUSH_RECHECK', error copying files to /work |
+|  11  |  For 'PUSH'/'PUSH_RECHECK', error copying files to /work |
 |  12  |  'PUSH'/'PUSH_RECHECK', ftp put error |
 |  13  |  'PUSH_RECHECK', error getting newly uploaded file |
 |  14  |  'PUSH'/'PUSH_RECHECK', Error while verify the remote and local file sizes are not the same |

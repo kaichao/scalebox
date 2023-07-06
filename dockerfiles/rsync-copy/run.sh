@@ -1,12 +1,25 @@
 #!/bin/bash
 
+m=$1
+if [ -z "$SOURCE_URL" ]; then
+    arr=($(echo $1 | tr "%" " ")) 
+    if [ ${#arr[@]} -ge 2 ]; then
+        export SOURCE_URL="${arr[0]}"
+        m="${arr[1]}"
+    elif [ ${#arr[@]} -eq 1 ]; then
+        echo "SOURCE_URL is null, and not included in the input message" >&2
+        exit 11
+    fi
+fi
+
+/app/bin/_setup.sh; code=$?
+if [[ $code -ne 0 ]]; then
+    exit $code
+fi
+
 # --cc=xxh3 , xxh3 Hash
 # --compress --compress-choice=zstd
-
 . /env.sh
-
-#  LOCAL_ROOT/REMOTE_ROOT have been added prefix '/local'
-# env
 
 if [[ $REMOTE_MODE == 'SSH' ]]; then 
     if [[ $ENABLE_ZSTD == 'yes' ]]; then 
@@ -39,7 +52,7 @@ fi
 echo [DEBUG]rsync_url:$rsync_url >&2
 
 declare -i total_bytes=0 bytes
-arr=($(echo $1 | tr "," " "))
+arr=($(echo $m | tr "," " "))
 # multiple files to copy
 ds0=$(date --iso-8601=ns)
 for file in ${arr[@]}; do
@@ -109,14 +122,8 @@ cat << EOF > /work/task-exec.json
     "timestamps":["${ds0}","${ds1}"]
 }
 EOF
-    send-message $1
+    send-message $m
     code=$?
-else
-cat << EOF > /work/task-exec.json
-{
-	"statusCode":$code
-}
-EOF
 fi
 
 exit $code

@@ -6,7 +6,7 @@
 
 | parameter name   | Description  |
 |  ----  | ----  |
-| SOURCE_URL<br>TARGET_URL  | These two URL parameters represent the root directory on the remote ssh/rsync-server and the local root directory. The format of the remote URL is , and the format of the local URL is {local-path}. |
+| SOURCE_URL<br/>TARGET_URL  | These two URL parameters represent the root directory on the remote ssh/rsync-server and the local root directory. The format of the remote URL is , and the format of the local URL is {local-path}. |
 
 ## Input Message
 

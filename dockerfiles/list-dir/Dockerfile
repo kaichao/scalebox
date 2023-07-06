@@ -46,7 +46,7 @@ ENV SOURCE_URL= \
     REGEX_FILTER= \
     RSYNC_PASSWORD=
 
-COPY setup.sh run.sh /app/bin/
+COPY run.sh /app/bin/
 COPY list-files.sh /usr/local/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/

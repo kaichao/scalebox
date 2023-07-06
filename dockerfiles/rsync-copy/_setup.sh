@@ -1,7 +1,12 @@
 #!/bin/bash
 
-arr1=($(/app/bin/url_parser ${SOURCE_URL}))
-arr2=($(/app/bin/url_parser ${TARGET_URL}))
+arr1=($(/usr/local/bin/url_parser ${SOURCE_URL}))
+arr2=($(/usr/local/bin/url_parser ${TARGET_URL}))
+
+echo SOURCE_URL
+echo "${arr1[@]}"
+echo TARGET_URL
+echo "${arr2[@]}"
 
 # MODE / REMOTE_HOST / REMOTE_PORT  / REMOTE_ROOT / REMOTE_USER
 
@@ -23,7 +28,7 @@ elif [[ (${arr2[0]} == "LOCAL") && ((${arr1[0]} == "SSH") || (${arr1[0]} == "RSY
     remote_user=${arr1[4]}
 else
     echo "Only one local and one remote allowed!" >&2
-    exit
+    exit 21
 fi
 
 cat > /env.sh << EOF
