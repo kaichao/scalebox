@@ -1,9 +1,9 @@
-FROM debian:11-slim
+FROM debian:12-slim
 
 LABEL maintainer="kaichao"
 
-# install the newest version, rsync 3.2.7, zstd 1.5.4
-RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bullseye-testing.list \ 
+# install the newest version, rsync 3.2.7, zstd 1.5.5, openssh 9.3p1
+RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bookworm-testing.list \ 
     && apt-get update \
     && apt-get install -y rsync openssh-client zstd \
     && apt-get clean autoclean \
