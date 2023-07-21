@@ -1,4 +1,4 @@
 #!/bin/bash
 
-rm -f /work/result.txt
-touch /work/result.txt
+rm -f /tmp/result.txt
+touch /tmp/result.txt
