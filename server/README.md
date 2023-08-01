@@ -41,7 +41,7 @@ Scalebox的主要对象：
 - 以root用户安装
 ```bash
 yum install -y epel-release
-yum install -y htop dstat glances rsync pv pdsh wget make
+yum install -y rsync pv pdsh wget make dstat nmon glances htop
 ```
 - CentOS 7安装git v2
 
@@ -74,7 +74,7 @@ yum install -y git
 ```sh
 yum install -y yum-utils
 yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-yum install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 systemctl start docker
 systemctl enable docker
 ```
