@@ -36,6 +36,10 @@ services:
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
+      - LOCAL_ADDR=${LOCAL_ADDR}
+      # for external cluster to start external slots
+      - HEAD_SSH_USER=${USER}
+      - HEAD_SSH_PORT=10022
     cap_add:
     #   update default route, for CentOS8
       - NET_ADMIN

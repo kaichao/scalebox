@@ -34,5 +34,7 @@ jobs:
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
     variables:
-      # should be 'yes', to support session
-      always_running: yes
+      # for session support
+      # slot_options: always_running,reserved_on_exit
+      sleep_seconds: 10
+      max_sleep_count: 30

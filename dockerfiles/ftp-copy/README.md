@@ -1,6 +1,6 @@
 ## ftp-copy
 
-## Introductioin
+## Introduction
 
 ftp-copy is used to copy files from/to ftp-server, while lftp does the actual file transfer.
 

@@ -29,6 +29,8 @@ Singularity容器有两种存在形式：
 ```sh
 singularity pull hello-world.sif docker://hello-world
 
+singularity pull singularity/scalebox/hello-scalebox.sif docker://hub.cstcloud.cn/scalebox/hello-scalebox
+
 singularity run hello-world.sif
 
 singularity run docker://hello-world
