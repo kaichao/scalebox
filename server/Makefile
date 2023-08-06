@@ -45,10 +45,10 @@ import: get-cli
 	done
 
 up:
-	@ docker-compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 
 down: clean-agents
-	@ docker-compose down
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose down
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 clean-agents:
