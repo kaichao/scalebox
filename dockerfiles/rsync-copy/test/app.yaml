@@ -1,4 +1,4 @@
-name: list-dir.test
+name: rsync-copy.test
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
@@ -7,8 +7,6 @@ jobs:
   list-dir:
     base_image: hub.cstcloud.cn/scalebox/list-dir
     schedule_mode: HEAD
-    # variables:
-    #   always_running: yes
     parameters:
       start_message: ${DIR_NAME}
     command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
@@ -17,9 +15,16 @@ jobs:
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - REGEX_FILTER=${REGEX_FILTER}
-      - RSYNC_PASSWORD=${RSYNC_PASSWORD}
     sink_jobs:
-      - sink-module
+      - ftp-copy
 
-  sink-module:
-    base_image: hub.cstcloud.cn/scalebox/agent
+  ftp-copy:
+    base_image: hub.cstcloud.cn/scalebox/rsync-copy
+    schedule_mode: HEAD
+    variables:
+      always_running: yes
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - TARGET_URL=${TARGET_URL}
+    paths:
+      - /:/local

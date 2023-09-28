@@ -1,9 +1,9 @@
 #!/bin/bash
 
-arr1=($(/app/bin/url_parser ${SOURCE_URL}))
-arr2=($(/app/bin/url_parser ${TARGET_URL}))
+arr1=($(/usr/local/bin/url_parser ${SOURCE_URL}))
+arr2=($(/usr/local/bin/url_parser ${TARGET_URL}))
 
-MODE / REMOTE_HOST / REMOTE_PORT  / REMOTE_ROOT / REMOTE_USER
+# MODE / REMOTE_HOST / REMOTE_PORT  / REMOTE_ROOT / REMOTE_USER
 
 if [[ (${arr1[0]} == "LOCAL") && (${arr2[0]} == "FTP") ]]; then
     if [[ $ACTION != '' ]]; then 
@@ -18,8 +18,8 @@ elif [[ (${arr2[0]} == "LOCAL") && (${arr1[0]} == "FTP")]]; then
     local_root=${TARGET_URL}
     remote_url=${SOURCE_URL}
 else
-    echo "Only one local and one remote allowed!" >&2
-    exit
+    echo "Only one local and one remote ftp allowed!" >&2
+    exit 21
 fi
 
 cat > /env.sh << EOF

@@ -1,14 +1,9 @@
-FROM golang:1.20.4
-
-COPY jump_server/jump_servers.go /src/
-RUN cd /src && go build jump_servers.go && strip jump_servers
-
-FROM hub.cstcloud.cn/scalebox/agent
+FROM debian:12-slim
 
 LABEL maintainer="kaichao"
 
-# install the newest version, rsync 3.2.7, zstd 1.5.4
-RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bullseye-testing.list \ 
+# install the newest version, rsync 3.2.7, zstd 1.5.5, openssh 9.3p1
+RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bookworm-testing.list \ 
     && apt-get update \
     && apt-get install -y rsync openssh-client zstd \
     && apt-get clean autoclean \
@@ -16,10 +11,7 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
-COPY --from=hub.cstcloud.cn/scalebox/list-dir /app/bin/url_parser /app/bin/ 
-COPY --from=0 /src/jump_servers /app/bin/ 
-
-WORKDIR /work
+COPY --from=hub.cstcloud.cn/scalebox/list-dir /usr/local/bin/* /usr/local/bin/ 
 
 ENV SOURCE_URL= \
     TARGET_URL= \
@@ -33,3 +25,8 @@ ENV SOURCE_URL= \
     SERVER_CONTAINERIZED=
 
 COPY *.sh /app/bin/
+
+COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
+RUN mkdir -p /work /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
+WORKDIR /work
+ENTRYPOINT [ "goagent" ]

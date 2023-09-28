@@ -41,7 +41,7 @@ Scalebox的主要对象：
 - 以root用户安装
 ```bash
 yum install -y epel-release
-yum install -y htop dstat glances rsync pv pdsh wget make
+yum install -y rsync pv pdsh wget make dstat nmon glances htop
 ```
 - CentOS 7安装git v2
 
@@ -71,8 +71,24 @@ yum install -y git
 
 #### 2.3.1 安装docker-ce
 
+```sh
+yum install -y yum-utils
+yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
+yum install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+systemctl start docker
+systemctl enable docker
+```
 
 #### 2.3.2 安装rootless docker
+
+- 以Rocky Linux 9 x64为例
+以root安装必须软件
+```sh
+dnf install -y fuse-overlayfs
+dnf install -y iptables
+modprobe ip_tables
+```
+
 - 参考文档
 [Run the Docker daemon as a non-root user (Rootless mode)](https://docs.docker.com/engine/security/rootless/)
 
@@ -80,14 +96,11 @@ yum install -y git
 
 - 设置环境变量
 ```bash
-cat >> ${HOME}/.bashrc << EOF
-export XDG_RUNTIME_DIR=${HOME}/.docker/run
-export PATH=${HOME}/bin:$PATH
-export DOCKER_HOST=unix://${HOME}/.docker/run/docker.sock
-EOF
 
-source ~/.bashrc
+echo "export DOCKER_HOST=unix:///run/user/$(id -u)/docker.sock" >> ~/.bashrc
+echo "export DOCKER_HOST=unix:///run/user/$(id -u)/docker.sock" >> ~/.bash_profile
 ```
+
 - 安装rootless docker
 ```bash
 curl -fsSL https://get.docker.com/rootless | sh
@@ -95,15 +108,9 @@ curl -fsSL https://get.docker.com/rootless | sh
 
 - 启动rootless docker
 ```bash
-nohup dockerd-rootless.sh &
-
+systemctl --user enable docker
 systemctl --user start docker
 
-```
-- 设置rootless docker的自启动
-```sh
-systemctl --user enable docker
-sudo loginctl enable-linger $(whoami)
 ```
 
 #### 2.3.3 验证docker有效

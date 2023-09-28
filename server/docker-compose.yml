@@ -36,6 +36,10 @@ services:
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
+      - LOCAL_ADDR=${LOCAL_ADDR}
+      # for external cluster to start external slots
+      - HEAD_SSH_USER=${USER}
+      - HEAD_SSH_PORT=10022
     cap_add:
     #   update default route, for CentOS8
       - NET_ADMIN
@@ -51,6 +55,8 @@ services:
     image: hub.cstcloud.cn/scalebox/database
     restart: unless-stopped
     container_name: database
+    # Set postgresql max connections at runtime
+    # command: postgres -c 'max_connections=800'
     environment:
 #      - TZ='GMT-8'
 #      - PGTZ='GMT-8'

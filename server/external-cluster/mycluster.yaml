@@ -9,6 +9,7 @@ clusters:
       base_data_dir: /gfs/mydata
       uname: ${USER}
       conn_url: fhpc://<myserver>:<myport>
+      grpc_server: 10.100.1.30
     total_resources:
       # CPU cores
       num_cores: 48

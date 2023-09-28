@@ -5,8 +5,8 @@ parameters:
 
 jobs:
   hello-scalebox:
-    base_image: hub.cstcloud.cn/scalebox/hello-scalebox
-    schedule_mode: HEAD
+    base_image: singularity/scalebox/hello-scalebox.sif
+    # schedule_mode: HEAD
     parameters:
       start_message: scalebox
-    command: singularity run {{ENVS}} {{VOLUMES}} docker://{{IMAGE}}
+    # command: singularity run {{ENVS}} {{VOLUMES}} docker://{{IMAGE}}

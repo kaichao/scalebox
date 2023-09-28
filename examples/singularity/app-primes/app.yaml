@@ -19,9 +19,8 @@ jobs:
 
   calc:
     label: calc primes
-    base_image: app-primes/calc
-    hosts:
-      - ${CALC_HOST}:${NUM_PARALLEL}
+    base_image: singularity/app-primes/calc.sif
+    cluster: external-cluster
     environments:
       - LENGTH=${GROUP_SIZE}
     sink_jobs:

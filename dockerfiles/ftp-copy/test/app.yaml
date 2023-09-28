@@ -1,4 +1,4 @@
-name: list-dir.test
+name: ftp-copy.test
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
@@ -17,9 +17,14 @@ jobs:
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - REGEX_FILTER=${REGEX_FILTER}
-      - RSYNC_PASSWORD=${RSYNC_PASSWORD}
     sink_jobs:
-      - sink-module
+      - ftp-copy
 
-  sink-module:
-    base_image: hub.cstcloud.cn/scalebox/agent
+  ftp-copy:
+    base_image: hub.cstcloud.cn/scalebox/ftp-copy
+    schedule_mode: HEAD
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - TARGET_URL=${TARGET_URL}
+    paths:
+      - /:/local

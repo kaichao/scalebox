@@ -1,6 +1,33 @@
 #!/bin/bash
 
-arr=($(/app/bin/url_parser ${SOURCE_URL}))
+dir=$1
+if [ -z "$SOURCE_URL" ]; then
+    arr=($(echo $1 | tr "%" " ")) 
+    if [ ${#arr[@]} -ge 2 ]; then
+        export SOURCE_URL="${arr[0]}"
+        dir="${arr[1]}"
+        percent_seperated="yes"
+    elif [ ${#arr[@]} -eq 1 ]; then
+        echo "SOURCE_URL is null, and not included in the input message" >&2
+        exit 11
+    fi
+fi
+
+if [[ $SOURCE_URL =~ (ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/.*) ]]; then
+# curlftpfs -f -v -o debug,ftpfs_debug=3 -o allow_other -o ssl ${FTP_URL} /remote
+    ftp_url=${BASH_REMATCH[1]}
+    echo ftp_url:$ftp_url >&2
+    source_ftp="yes"
+    if [[ $SOURCE_URL =~ (ftp://([^:]+:[^@]+@)[^/:]+(:[^/]+)?)(/.*) ]]; then
+        # non-anonymous ftp
+        curlftpfs -o ssl ${ftp_url} /remote
+    else
+        # anonymous ftp
+        curlftpfs ${ftp_url} /remote
+    fi
+fi
+
+arr=($(/usr/local/bin/url_parser ${SOURCE_URL}))
 code=$?
 if [ $code -ne 0 ]; then
     # url format error
@@ -34,11 +61,15 @@ fi
 env
 
 ret_code=0
-/app/bin/list-files.sh $1 | while read line; do 
+/usr/local/bin/list-files.sh $dir | while read line; do 
     if [[ $line == ./* ]]; then
         # remove prefix './'
         line=${line:2}
     fi
+    if [ "${percent_seperated}" = "yes" ]; then
+        line=${SOURCE_URL}%${line}
+    fi
+
     send-message $line
     code=$?
     if [ $code -ne 0 ]; then
@@ -50,7 +81,11 @@ done
 code=${PIPESTATUS[0]}
 if [ $code -ne 0 ]; then
     ret_code=$code
-    echo "Error run list-files.sh "$1 >&2
+    echo "Error run list-files.sh "$dir >&2
+fi
+
+if [ "${source_ftp}" = "yes" ]; then
+    umount /remote
 fi
 
 exit $ret_code

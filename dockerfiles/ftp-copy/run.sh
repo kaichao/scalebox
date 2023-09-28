@@ -1,6 +1,23 @@
 #!/bin/bash
+m=$1
 
-filename=$(basename $1)
+if [ -z "$SOURCE_URL" ]; then
+    arr=($(echo $1 | tr "%" " ")) 
+    if [ ${#arr[@]} -ge 2 ]; then
+        export SOURCE_URL="${arr[0]}"
+        m="${arr[1]}"
+    elif [ ${#arr[@]} -eq 1 ]; then
+        echo "SOURCE_URL is null, and not included in the input message" >&2
+        exit 11
+    fi
+fi
+
+/app/bin/_setup.sh; code=$?
+if [[ $code -ne 0 ]]; then
+    exit $code
+fi
+
+filename=$(basename $m)
 
 . /env.sh
 
@@ -13,18 +30,18 @@ else
 fi
 
 if [[ $remote_root == '/' ]]; then
-    remote_dir=$(dirname /$1)
+    remote_dir=$(dirname /$m)
 else
-    remote_dir=$(dirname ${remote_root}/$1)
+    remote_dir=$(dirname ${remote_root}/$m)
 fi
 
 if [[ $LOCAL_ROOT == '/' ]]; then
-    local_dir=$(dirname "/local"/$1)
+    local_dir=$(dirname "/local"/$m)
 else
-    local_dir=$(dirname "/local"${LOCAL_ROOT}/$1)
+    local_dir=$(dirname "/local"${LOCAL_ROOT}/$m)
 fi
 
-printf "[DEBUG]ACTION=%s, REMOTE_URL=%s, LOCAL_ROOT=%s, file=%s\n"  $ACTION $REMOTE_URL $LOCAL_ROOT $1
+printf "[DEBUG]ACTION=%s, REMOTE_URL=%s, LOCAL_ROOT=%s, file=%s\n"  $ACTION $REMOTE_URL $LOCAL_ROOT $m
 printf "[DEBUG]ftp_ur=%s remote_dir=%s, local_dir=%s, filename=%s \n" $ftp_url $remote_dir $local_dir $filename
 
 if [ "$ENABLE_LOCAL_RELAY" == "yes" ] || [ "$ACTION" == "PUSH_RECHECK" ]; then 

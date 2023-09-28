@@ -8,6 +8,7 @@ clusters:
       base_dir: /tmp
       base_data_dir: /tmp/mydata
       uname: ${USER}
+      port: 22
     memo: local cluster
     hosts:
       h0:

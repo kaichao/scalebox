@@ -35,7 +35,7 @@ reset: down
 	@ rm -rf ${HOME}/.scalebox/log/cli
 	@ mkdir -p ${HOME}/.scalebox/log/cli
 	@ docker volume rm -f server_pgdata
-	@ docker-compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 	@ sleep 25
 
 import: get-cli
@@ -45,10 +45,10 @@ import: get-cli
 	done
 
 up:
-	@ docker-compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 
 down: clean-agents
-	@ docker-compose down
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose down
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 clean-agents:

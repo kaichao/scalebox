@@ -48,3 +48,11 @@ SOURCE_URL=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/ DIR_NAME=2008_12 
 ```sh
 SOURCE_URL=ftp://<ftp-user>:<ftp-pass>@<ftp-host>/<ftp-path> DIR_NAME=. scalebox app create
 ```
+
+## 5. combined-message
+```sh
+SOURCE_URL= DIR_NAME=/etc%postfix scalebox app create
+
+SOURCE_URL= DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs%. REGEX_FILTER=^.+\.txt\$ scalebox app create
+
+```
