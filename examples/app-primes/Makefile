@@ -8,3 +8,6 @@ push:
 
 clean:
 	@for d in $(DIRS); do make -C $$d clean; done
+
+dist:
+	make -C calc dist

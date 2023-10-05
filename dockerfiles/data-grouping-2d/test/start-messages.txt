@@ -1,0 +1,4 @@
+{"datasetID":"ds0","keyGroupRegex":"^([^/]+)/.+([0-9]{4}).+M([0-9][0-9]).+$","keyGroupIndex":"1,3,2","sinkJob":"next-job","groupType":"H","horizontalWidth":3}
+#ds0,ds0/my_path_1234/M03.txt
+#ds0,ds0/my_path_1234/M02.txt
+#ds0,ds0/my_path_1234/M01.txt
