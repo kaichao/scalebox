@@ -27,8 +27,8 @@ func TestEntityParse(t *testing.T) {
 	entity := &Entity{
 		name:      s,
 		datasetID: "ds0",
-		x:         1,
-		y:         1234,
+		x:         "1",
+		y:         "1234",
 	}
 
 	e := dataset0.parseEntity(s)

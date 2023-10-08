@@ -9,8 +9,9 @@ jobs:
     schedule_mode: HEAD
     parameters:
       start_message: ${START_MESSAGE}
-    # environments:
-    #   - INITIAL_DATASET=${INITIAL_DATASET}
+    environments:
+      - COORD_TYPE=${COORD_TYPE}
+      - DATASET_PREFIX=crafts
     sink_jobs:
       - next-job
 

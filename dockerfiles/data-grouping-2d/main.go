@@ -28,20 +28,35 @@ func main() {
 	} else {
 		// new entity
 		ss := strings.Split(keyText, ",")
-		datasetID := ss[0]
+		datasetID := datasetPrefix + ":" + ss[0]
 		name := ss[1]
-		dataset = mapDataset[datasetID]
-		fmt.Printf("dataset-id:%s,dataset:%v\n", datasetID, dataset)
-		logrus.Println("dataset-map:", mapDataset)
+		fmt.Println("dataset-id:", datasetID)
+		// The same set of datasets has the same regex
+		for k, v := range mapDataset {
+			fmt.Printf("k:%s,v:%v\n", k, v)
+			if strings.HasPrefix(k, datasetID) {
+				dataset = v
+				break
+			}
+		}
+
+		// dataset = mapDataset[datasetID]
+		logrus.Printf("dataset-id:%s,dataset:%v, dataset-map:%v", datasetID, dataset, mapDataset)
 		if dataset == nil {
 			fmt.Fprintf(os.Stderr, "dataset %s not found\n", datasetID)
 			os.Exit(1)
 		}
 		entity := dataset.parseEntity(name)
+		entity.datasetID = datasetID + ":" + entity.datasetID
+
+		datasetID = entity.datasetID
+		// set the real dataset
+		dataset = mapDataset[datasetID]
 		dataset.addEntity(entity)
-		logrus.Printf("504,%v", entity)
+		logrus.Printf("entity:%v\n", entity)
+
 		if dataset.checkNewGroupAvailable(entity) {
-			logrus.Println("505:new-group")
+			logrus.Println("new-group added.")
 			dataset.outputNewGroups(entity)
 		}
 	}

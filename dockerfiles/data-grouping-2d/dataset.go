@@ -21,11 +21,9 @@ func (dataset *DataSet) parseEntity(s string) *Entity {
 		}
 	}
 
-	fmt.Println("101")
 	if !regex.MatchString(s) {
 		return nil
 	}
-	fmt.Println("102")
 
 	var kg0, kg1, kg2 string
 	ss := regex.FindStringSubmatch(s)
@@ -43,16 +41,13 @@ func (dataset *DataSet) parseEntity(s string) *Entity {
 	if len(idx) > 2 && len(ss) > idx[2] {
 		kg2 = ss[idx[2]]
 	}
-	x, _ := strconv.Atoi(kg1)
-	y, _ := strconv.Atoi(kg2)
 
 	entity := &Entity{
 		name:      s,
 		datasetID: kg0,
-		x:         x,
-		y:         y,
+		x:         kg1,
+		y:         kg2,
 	}
-	fmt.Println("301")
 
 	return entity
 }
@@ -99,12 +94,14 @@ func (dataset *DataSet) checkNewGroupAvailable(entity *Entity) bool {
 			FROM t_entity
 			WHERE dataset_id=$1 AND x=$2 AND (y BETWEEN $3 AND $4)
 		`
-		arr := dataset.getVerticalGroupRange(entity.y)
+		x, _ := strconv.Atoi(entity.x)
+		y, _ := strconv.Atoi(entity.y)
+		arr := dataset.getVerticalGroupRange(y)
 		for i := 0; i < len(arr)-1; i++ {
 			n0 := arr[i]
 			n1 := arr[i+1]
-			err = db.QueryRow(sqlText, dataset.DatasetID, entity.x, n0, n1).Scan(&cnt)
-			fmt.Printf("x=%d,y0=%d,y1=%d,cnt=%d\n", entity.x, n0, n1, cnt)
+			err = db.QueryRow(sqlText, dataset.DatasetID, x, n0, n1).Scan(&cnt)
+			fmt.Printf("x=%d,y0=%d,y1=%d,cnt=%d\n", x, n0, n1, cnt)
 			if err != nil {
 				logrus.Errorf("sum entity, err=%v\n", err)
 				return false
@@ -181,10 +178,13 @@ func (dataset *DataSet) outputNewGroups(entity *Entity) {
 	var err error
 	if dataset.GroupType == "H" {
 		sqlText := `
-			SELECT GROUP_CONCAT(name, ',')
-			FROM t_entity
-			WHERE dataset_id=$1 AND y=$2
-			ORDER BY 1
+			SELECT GROUP_CONCAT(name)
+			FROM (
+				SELECT name
+				FROM t_entity
+				WHERE dataset_id=$1 AND y=$2
+				ORDER BY 1
+			)
 		`
 		err = db.QueryRow(sqlText, dataset.DatasetID, entity.y).Scan(&txt)
 		if err != nil {
@@ -194,17 +194,22 @@ func (dataset *DataSet) outputNewGroups(entity *Entity) {
 		}
 	} else {
 		sqlText := `
-			SELECT GROUP_CONCAT(name, ',')
-			FROM t_entity
-			WHERE dataset_id=$1 AND x=$2 AND (y BETWEEN $3 AND $4)
-			ORDER BY 1
+			SELECT GROUP_CONCAT(name)
+			FROM (
+				SELECT name 
+				FROM t_entity
+				WHERE dataset_id=$1 AND x=$2 AND (y BETWEEN $3 AND $4)
+				ORDER BY 1
+			)
 		`
-		arr := dataset.getVerticalGroupRange(entity.y)
+		x, _ := strconv.Atoi(entity.x)
+		y, _ := strconv.Atoi(entity.y)
+		arr := dataset.getVerticalGroupRange(y)
 		for i := 0; i < len(arr)-1; i++ {
 			n0 := arr[i]
 			n1 := arr[i+1]
 
-			err = db.QueryRow(sqlText, dataset.DatasetID, entity.x, n0, n1).Scan(&txt)
+			err = db.QueryRow(sqlText, dataset.DatasetID, x, n0, n1).Scan(&txt)
 			if err != nil {
 				logrus.Errorf("sum entity, err=%v\n", err)
 			} else {
@@ -220,9 +225,13 @@ func (dataset *DataSet) loadExistedFiles() {
 func parseDataSet(t string) *DataSet {
 	var ds DataSet
 	if err := json.Unmarshal([]byte(t), &ds); err != nil {
-		fmt.Printf("error parsing, err-info:%v\n", err)
+		// skip non-json format error
+		if !strings.HasPrefix(err.Error(), "invalid character") {
+			fmt.Printf("error parsing, err-info:%v\n", err)
+		}
 		// non-dataset definition
 		return nil
 	}
+	ds.DatasetID = datasetPrefix + ":" + ds.DatasetID
 	return &ds
 }

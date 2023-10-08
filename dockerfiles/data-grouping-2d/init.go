@@ -2,6 +2,7 @@ package main
 
 import (
 	"database/sql"
+	"fmt"
 	"os"
 
 	scalebox "github.com/kaichao/scalebox/golang/misc"
@@ -10,6 +11,7 @@ import (
 
 // DataSet ...
 type DataSet struct {
+	// prefix ':' type ':' sub-id
 	DatasetID string
 
 	KeyGroupRegex string
@@ -29,6 +31,7 @@ type DataSet struct {
 	VerticalLength int
 	// vertical group length
 	GroupLength int
+	// GroupStep   int
 	// vertical interleaved
 	Interleaved bool
 }
@@ -38,8 +41,8 @@ type Entity struct {
 	ID        int
 	name      string
 	datasetID string
-	x         int
-	y         int
+	x         string
+	y         string
 	flag      string
 }
 
@@ -52,6 +55,9 @@ var (
 	messageFile string
 	datasetFile string
 	sqliteFile  string
+
+	datasetPrefix  string
+	isIntegerCoord bool
 )
 
 func init() {
@@ -71,11 +77,14 @@ func init() {
 		sqliteFile = "/tmp/my.db"
 	}
 
+	datasetPrefix = os.Getenv("DATASET_PREFIX")
+	isIntegerCoord = os.Getenv("COORD_TYPE") == "integer"
+
 	// set database connection
 	if db, err = sql.Open("sqlite3", sqliteFile); err != nil {
 		logrus.Fatalln("Unable to open sqlite3 database:", err)
 	}
-	sqlText := `
+	sqlTextInteger := `
 		CREATE TABLE IF NOT EXISTS t_entity (
 			id INTEGER PRIMARY KEY autoincrement,
 			name TEXT,
@@ -89,6 +98,24 @@ func init() {
 		CREATE INDEX IF NOT EXISTS i_entity_2 ON t_entity(dataset_id,x);
 	`
 
+	sqlTextString := `
+		CREATE TABLE IF NOT EXISTS t_entity (
+			id INTEGER PRIMARY KEY autoincrement,
+			name TEXT,
+			dataset_id TEXT,
+			x TEXT,
+			y TEXT,
+			flag TEXT
+		);
+		CREATE UNIQUE INDEX IF NOT EXISTS i_entity_0 ON t_entity(name,dataset_id);
+		CREATE INDEX IF NOT EXISTS i_entity_1 ON t_entity(dataset_id);
+		CREATE INDEX IF NOT EXISTS i_entity_2 ON t_entity(dataset_id,x);
+	`
+
+	sqlText := sqlTextString
+	if isIntegerCoord {
+		sqlText = sqlTextInteger
+	}
 	if _, err = db.Exec(sqlText); err != nil {
 		logrus.Fatal(err)
 	}
@@ -96,7 +123,9 @@ func init() {
 	if lines, err := scalebox.GetTextFileLines(datasetFile); err == nil {
 		for _, line := range lines {
 			dataset := parseDataSet(line)
+			fmt.Println("loaded dataset-id:", dataset.DatasetID, "dataset:", dataset)
 			mapDataset[dataset.DatasetID] = dataset
 		}
 	}
+	fmt.Println("mapDataset:", mapDataset)
 }

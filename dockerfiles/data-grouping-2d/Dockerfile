@@ -27,5 +27,8 @@ ENV \
     DATASET_FILE=/work/.data-grouping/datasets.txt \
     SQLITE_FILE=/work/.data-grouping/my.db \
     ALWAYS_RUNNING=yes \
+    DATASET_PREFIX= \
+    # 'string'/'integer', 'string' -> horizon-only
+    COORD_TYPE= \
     # TRACE / DEBUG / INFO / WARN / ERROR / FATAL / PANIC
     LOG_LEVEL=INFO
