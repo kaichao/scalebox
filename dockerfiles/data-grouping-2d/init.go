@@ -28,9 +28,9 @@ type DataSet struct {
 
 	// for type "V", y-coord
 	VerticalStart  int
-	VerticalLength int
+	VerticalHeight int
 	// vertical group length
-	GroupLength int
+	GroupSize int
 	// GroupStep   int
 	// vertical interleaved
 	Interleaved bool

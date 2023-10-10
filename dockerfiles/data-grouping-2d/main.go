@@ -55,9 +55,8 @@ func main() {
 		dataset.addEntity(entity)
 		logrus.Printf("entity:%v\n", entity)
 
-		if dataset.checkNewGroupAvailable(entity) {
-			logrus.Println("new-group added.")
-			dataset.outputNewGroups(entity)
+		for _, txt := range dataset.getNewGroups(entity) {
+			scalebox.AppendToFile(messageFile, dataset.SinkJob+","+txt)
 		}
 	}
 

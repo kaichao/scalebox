@@ -29,8 +29,8 @@ var (
 
 		"groupType":"V",
 		"verticalStart":1,
-		"verticalLength":10,
-		"groupLength":4,
+		"verticalHeight":10,
+		"groupSize":4,
 		"interleaved":false
 	}
 	`
@@ -42,8 +42,8 @@ var (
 		SinkJob:        "job-1",
 		GroupType:      "V",
 		VerticalStart:  1,
-		VerticalLength: 10,
-		GroupLength:    4,
+		VerticalHeight: 10,
+		GroupSize:      4,
 	}
 
 	jsonDataSet2 = ` {
@@ -54,8 +54,8 @@ var (
 
 		"groupType":"V",
 		"verticalStart":1,
-		"verticalLength":10,
-		"groupLength":4,
+		"verticalHeight":10,
+		"groupSize":4,
 		"interleaved":true
 	}
 	`
@@ -67,8 +67,8 @@ var (
 		SinkJob:        "job-2",
 		GroupType:      "V",
 		VerticalStart:  1,
-		VerticalLength: 10,
-		GroupLength:    4,
+		VerticalHeight: 10,
+		GroupSize:      4,
 		Interleaved:    true,
 	}
 
@@ -80,9 +80,9 @@ var (
 
 		"groupType":"H",
 		"horizontalWidth":24
-		"VerticalStart":  1257010786,
-		"VerticalLength": 4797,
-		"GroupLength":    30
+		"verticalStart":  1257010786,
+		"verticalHeight": 4797,
+		"groupSize":    30
 	}
 	`
 
@@ -94,7 +94,22 @@ var (
 		GroupType:       "H",
 		HorizontalWidth: 24,
 		VerticalStart:   1257010786,
-		VerticalLength:  4797,
-		GroupLength:     30,
+		VerticalHeight:  4797,
+		GroupSize:       30,
 	}
+
+	jsonDataSetCraftsFits = ` {
+		"datasetID":"fits:Dec+6007_09_03/20221019",
+		"keyGroupRegex":"^([^/]+/[^/]+)/.+-M([0-9]+)_([0-9]+).fits.*$",
+		"keyGroupIndex":"1,2,3",
+		"sinkJob":"next-job",
+
+		"groupType":"V",
+		"horizontalWidth":19,
+		"verticalStart":  1,
+		"verticalHeight": 4,
+		"groupSize":    3,
+		"interleaved":true
+	}
+	`
 )

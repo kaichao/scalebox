@@ -12,17 +12,17 @@ func TestCheckNewGroupAvailable_Horizonal(t *testing.T) {
 	s := "ds0/my_path_1234/M01.txt"
 	e := dataset0.parseEntity(s)
 	dataset0.addEntity(e)
-	assert.Equal(t, false, dataset0.checkNewGroupAvailable(e))
+	assert.Equal(t, 0, len(dataset0.getNewGroups(e)))
 
 	s = "ds0/my_path_1234/M02.txt"
 	e = dataset0.parseEntity(s)
 	dataset0.addEntity(e)
-	assert.Equal(t, false, dataset0.checkNewGroupAvailable(e))
+	assert.Equal(t, 0, len(dataset0.getNewGroups(e)))
 
 	s = "ds0/my_path_1234/M03.txt"
 	e = dataset0.parseEntity(s)
 	dataset0.addEntity(e)
-	assert.Equal(t, true, dataset0.checkNewGroupAvailable(e))
+	assert.Equal(t, 1, len(dataset0.getNewGroups(e)))
 }
 
 func TestOutputNewGroups_Horizontal(t *testing.T) {
@@ -36,9 +36,7 @@ func TestOutputNewGroups_Horizontal(t *testing.T) {
 	for _, name := range names {
 		entity := dataset0.parseEntity(name)
 		dataset0.addEntity(entity)
-		if dataset0.checkNewGroupAvailable(entity) {
-			dataset0.outputNewGroups(entity)
-		}
+		fmt.Println(dataset0.getNewGroups(entity))
 	}
 }
 
@@ -70,9 +68,7 @@ func TestOutputNewGroups_Vertical(t *testing.T) {
 		entity := dataset1.parseEntity(name)
 		fmt.Println("entity:", entity)
 		dataset1.addEntity(entity)
-		if dataset1.checkNewGroupAvailable(entity) {
-			dataset1.outputNewGroups(entity)
-		}
+		fmt.Println(dataset1.getNewGroups(entity))
 	}
 }
 
