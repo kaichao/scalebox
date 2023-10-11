@@ -28,6 +28,10 @@ func main() {
 	} else {
 		// new entity
 		ss := strings.Split(keyText, ",")
+		if len(ss) == 1 {
+			logrus.Errorf("entity:%s\nentity format should be prefix,entity_text\n", ss[0])
+			os.Exit(3)
+		}
 		datasetID := datasetPrefix + ":" + ss[0]
 		name := ss[1]
 		fmt.Println("dataset-id:", datasetID)
