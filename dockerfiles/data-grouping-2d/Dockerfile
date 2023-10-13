@@ -18,7 +18,19 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
 
 FROM hub.cstcloud.cn/scalebox/agent
 
+RUN \
+    apt-get update \
+    && apt-get install -y adminer \
+    && apt-get clean autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+RUN echo "ServerName 127.0.0.1" >> /etc/apache2/apache2.conf \
+    && a2enconf adminer
+
 COPY --from=0 /go/src/data-grouping /app/bin/data-grouping 
+COPY adminer/entrypoint.sh /usr/local/bin/
+COPY adminer/conf.php /etc/adminer/
 
 RUN mkdir -p /work/.data-grouping
 ENV \
@@ -32,3 +44,5 @@ ENV \
     COORD_TYPE= \
     # TRACE / DEBUG / INFO / WARN / ERROR / FATAL / PANIC
     LOG_LEVEL=INFO
+
+ENTRYPOINT [ "entrypoint.sh" ]
