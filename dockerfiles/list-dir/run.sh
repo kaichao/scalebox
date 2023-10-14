@@ -60,6 +60,17 @@ fi
 
 env
 
+if [ "$REGEX_2D_DATASET" ]; then
+    meta=$(/usr/local/bin/list-files.sh $dir | get_2d_meta $REGEX_2D_DATASET $INDEX_2D_DATASET)
+    code=$?
+    [[ $code -ne 0 ]] && echo cmd: get_2d_meta, error_code:$code && exit $code
+    echo ${meta} > /work/key-text.txt
+    # key text in file /work/key-text.txt
+    scalebox task add
+    code=$?
+    [[ $code -ne 0 ]] && echo cmd: scalebox task add, error_code:$code && exit $code
+fi
+
 ret_code=0
 /usr/local/bin/list-files.sh $dir | while read line; do 
     if [[ $line == ./* ]]; then

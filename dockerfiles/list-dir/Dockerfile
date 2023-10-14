@@ -13,6 +13,7 @@ COPY cmd /go/src/cmd
 RUN --mount=type=cache,target=/root/.cache/go-build \
     --mount=type=cache,target=/go/pkg/mod \
     go build ./cmd/url_parser && strip url_parser \
+    && go build ./cmd/get_2d_meta && strip get_2d_meta \
     && go build ./cmd/jump_servers && strip jump_servers
 
 FROM debian:11-slim
@@ -38,12 +39,14 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
-COPY --from=0 /go/src/url_parser /go/src/jump_servers /usr/local/bin/ 
+COPY --from=0 /go/src/url_parser /go/src/get_2d_meta /go/src/jump_servers /usr/local/bin/ 
 
 RUN mkdir -p /remote
 
 ENV SOURCE_URL= \
     REGEX_FILTER= \
+    REGEX_2D_DATASET= \
+    INDEX_2D_DATASET= \
     RSYNC_PASSWORD=
 
 COPY run.sh /app/bin/

@@ -56,3 +56,12 @@ SOURCE_URL= DIR_NAME=/etc%postfix scalebox app create
 SOURCE_URL= DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs%. REGEX_FILTER=^.+\.txt\$ scalebox app create
 
 ```
+
+## 6. 2D-dataset
+```sh
+DIR_NAME=/raidz/fast-fz/ZD2022_1_1%Dec+4120_03_03/20221102 \
+REGEX_2D_DATASET='^(.+%)?([^/]+/[^/]+)/.+M([0-9]+)_([0-9]+).+$' \
+INDEX_2D_DATASET='2,3,4' \
+scalebox app create
+
+```

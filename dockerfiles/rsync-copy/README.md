@@ -10,9 +10,12 @@
 
 ## Input Message
 
-FILE_NAME: Relative file path to SOURCE_URL/TARGET_URL
+- FILE_NAME: Relative file path to SOURCE_URL/TARGET_URL
 
-## Error Code
+## Output Message
+
+
+## App Exit Code
 | Code   | Description  |
 |  ----  | ----  |
 |  10  |  Connection timed out |

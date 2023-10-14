@@ -7,8 +7,8 @@ jobs:
   list-dir:
     base_image: hub.cstcloud.cn/scalebox/list-dir
     schedule_mode: HEAD
-    # variables:
-    #   always_running: yes
+    variables:
+      slot_options: always_running
     parameters:
       start_message: ${DIR_NAME}
     command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
@@ -18,8 +18,10 @@ jobs:
       - SOURCE_URL=${SOURCE_URL}
       - REGEX_FILTER=${REGEX_FILTER}
       - RSYNC_PASSWORD=${RSYNC_PASSWORD}
+      - REGEX_2D_DATASET=${REGEX_2D_DATASET}
+      - INDEX_2D_DATASET=${INDEX_2D_DATASET}
     sink_jobs:
-      - sink-module
+      - next-job
 
-  sink-module:
+  next-job:
     base_image: hub.cstcloud.cn/scalebox/agent
