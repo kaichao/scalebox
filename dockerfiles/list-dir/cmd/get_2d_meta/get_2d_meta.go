@@ -80,13 +80,19 @@ func main() {
 
 func getXY(s string) (int, int) {
 	if !regex.MatchString(s) {
+		fmt.Fprintf(os.Stderr, "regex not matched,regex:%s,string:%s\n", os.Args[1], s)
 		return 0, 0
 	}
 	ss := regex.FindStringSubmatch(s)
 	dataset = ss[idx[0]]
-	s1 := ss[idx[1]]
-	s2 := ss[idx[2]]
-	x, _ := strconv.Atoi(s1)
-	y, _ := strconv.Atoi(s2)
+	var x, y int
+	// for 1-d data, set index to 0
+	if idx[1] > 0 {
+		x, _ = strconv.Atoi(ss[idx[1]])
+	}
+	if idx[2] > 0 {
+		y, _ = strconv.Atoi(ss[idx[2]])
+	}
+
 	return x, y
 }
