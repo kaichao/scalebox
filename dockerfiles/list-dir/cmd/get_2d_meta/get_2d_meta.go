@@ -29,6 +29,7 @@ func main() {
 		fmt.Fprintln(os.Stderr, "number of args for get_2d_meta should be 3!")
 		os.Exit(1)
 	}
+
 	regex = regexp.MustCompile(os.Args[1])
 	for _, s := range strings.Split(os.Args[2], ",") {
 		if i, err := strconv.Atoi(s); err == nil {
@@ -68,7 +69,7 @@ func main() {
 	width := maxX - minX + 1
 	height := maxY - minY + 1
 	if width*height != n {
-		fmt.Fprintf(os.Stderr, "%s is not 2d-dataset, numX=%d,numY=%d,count=%d!\n",
+		fmt.Fprintf(os.Stderr, "%s is not a 2d-dataset, numX=%d,numY=%d,count=%d!\n",
 			dataset, width, height, n)
 		os.Exit(3)
 	}

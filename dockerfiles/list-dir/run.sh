@@ -65,6 +65,7 @@ if [ "$REGEX_2D_DATASET" ]; then
     code=$?
     [[ $code -ne 0 ]] && echo cmd: get_2d_meta, error_code:$code && exit $code
     echo ${meta} > /work/key-text.txt
+    echo metadata for 2d-dataset:#${meta}#
     # key text in file /work/key-text.txt
     scalebox task add
     code=$?
