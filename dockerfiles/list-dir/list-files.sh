@@ -1,69 +1,96 @@
 #!/bin/bash
 
-data_dir=$1
+s=$1
+echo "message:"$s >&2
+if [[ $s =~ ^(/[^#]*)#(.+)$ ]]; then
+    # /my-root#my-dir
+    echo "local-dir" >&2
+    data_root=${BASH_REMATCH[1]}
+    dir=${BASH_REMATCH[2]}
+    data_dir="/local${data_root}/$dir"
+    echo dir:$dir >&2
+    echo data-dir:$data_dir >&2
+    
+    # Use percent sign % as separator
+    cd ${data_dir} && find -L . -type f \
+        | sed "s%^\.%${dir}%" \
+        | egrep "${REGEX_FILTER}"
+elif [[ $s =~ ^(ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/[^#]+)#(.+)$ ]]; then
+    # ftp://user:pass@myhost:22/my-root#my-dir
+    # ftp://user:pass@myhost/my-root#my-dir
+    # ftp://myhost/my-root#my-dir
+    ftp_url=${BASH_REMATCH[1]}
+    user_pass=${BASH_REMATCH[2]}
+    data_root=${BASH_REMATCH[4]}
+    dir=${BASH_REMATCH[5]}
+    echo "ftp_url:${ftp_url}"   >&2
+    echo user_pass:${user_pass} >&2
+    echo data_root:${data_root} >&2
+    echo dir:${dir} >&2
 
-if [ "${MODE}" = "SSH" ]; then
-    # "ssh version",  sed-match does not work under macos(Linux-only)
-    if [ $data_dir = "." ]; then
-        rsync_url=${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_ROOT}
-    else 
-        rsync_url=${REMOTE_USER}@${REMOTE_HOST}:${REMOTE_ROOT}/${data_dir}
-    fi
-
-    if [ $JUMP_SERVERS ]; then
-        servers=$(/usr/local/bin/jump_servers ${JUMP_SERVERS})
-        ssh_args=$ssh_args" -J '${servers}'"
-        echo "ssh_args:"$ssh_args
-    fi
-
-    rsync -avn -e "ssh -p ${REMOTE_PORT} ${ssh_args}" ${rsync_url} \
-        | grep ^\- | awk {'print $5'}  \
-        | sed 's/^[^/]\+\//\//' \
-        | awk -v p="$data_dir" '$0=p$0' \
-        | egrep "${REGEX_FILTER}" 
-elif [ "${MODE}" = "RSYNC" ]; then
-    if [ -z ${REMOTE_USER} ]; then
-        rsync_url="rsync://"
+    if [ "$user_pass" == "" ]; then
+        # anonymous ftp
+        curlftpfs ${ftp_url} /remote
     else
-        rsync_url="rsync://"${REMOTE_USER}@
+        # non-anonymous ftp
+        curlftpfs -o ssl ${ftp_url} /remote
     fi
-    if [ $data_dir = "." ]; then
-        rsync_url=${rsync_url}${REMOTE_HOST}:${REMOTE_PORT}${REMOTE_ROOT}
-    else 
-        rsync_url=${rsync_url}${REMOTE_HOST}:${REMOTE_PORT}${REMOTE_ROOT}/${data_dir}
-    fi
-    echo "[INFO]rsync_url:"$rsync_url >&2
+
+    data_dir="/remote${data_root}/$dir"
+    cd ${data_dir} && find -L . -type f \
+        | sed "s%^\.%${dir}%" \
+        | egrep "${REGEX_FILTER}"
+    cd /work
+    umount /remote
+elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^#]+)#(.+)$ ]]; then
+    # rsync://user:pass@myhost:873/my-root#my-dir
+    # rsync://user@myhost/my-root#my-dir
+    rsync_url=${BASH_REMATCH[1]}
+    rsync_pass=${BASH_REMATCH[3]}
+    rsync_port=${BASH_REMATCH[4]}
+    dir=${BASH_REMATCH[5]}
+    rsync_url=${rsync_url//$rsync_pass/}
+    # rsync_url=${rsync_url//$port/}
+    export RSYNC_PASSWORD=${rsync_pass:1}
+
+    echo "rsync_url:${rsync_url}" >&2
+    echo pass:$rsync_pass   >&2
+    echo dir:$dir >&2
 
     # "rsync version"
-    rsync -avn ${rsync_url} \
+    rsync -avn ${rsync_url}/${dir} \
         | grep ^\- | awk {'print $5'} \
-        | sed 's/^[^/]\+\//\//' \
-        | awk -v p="$data_dir" '$0=p$0' \
+        | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
+        | sed "s%^%${dir}\/%" \
         | egrep "${REGEX_FILTER}" 
-# rsync: [Receiver] read error: Connection reset by peer (104)
-# rsync error: error in socket IO (code 10) at io.c(806) [Receiver=3.2.7]
-# [INFO]pipe_status:10 0 0 0 0 0
-
-else
-    if [ "${MODE}" = "FTP" ]; then
-
-        # if ! mountpoint -q /remote; then
-        #     echo "FTP_URL:"$FTP_URL >&2
-        #     if [[ $SOURCE_URL =~ (ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/.*) ]]; then
-        #         ftp_url=${BASH_REMATCH[1]}
-        #         echo ftp_url:$ftp_url >&2
-        #         curlftpfs -o ssl ${ftp_url} /remote
-        #     else
-        #         echo "FTP_URL did not match regex!" >&2
-        #     fi
-        # fi
-        # # curlftpfs -o ssl ${FTP_URL} /remote
-        LOCAL_ROOT="/remote"${REMOTE_ROOT}
+elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/[^#]*)#(.+)$ ]]; then
+    # user@myhost:22/my-root#my-dir
+    # user@myhost/my-root#my-dir
+    echo "rsync-over-ssh" >&2
+    ssh_host=${BASH_REMATCH[1]}
+    ssh_port=${BASH_REMATCH[2]}
+    data_root=${BASH_REMATCH[3]}
+    dir=${BASH_REMATCH[4]}
+    rsync_url="${ssh_host}:${data_root}"
+    echo port:$ssh_port >&2
+    if [ "$ssh_port" == "" ]; then
+        ssh_port="22"
+    else
+        ssh_port=${ssh_port:1}
     fi
-    # MODE = 'LOCAL'
-    cd ${LOCAL_ROOT} && find ${data_dir} -type f \
-        | sed 's/^\.\///' \
-        | egrep "${REGEX_FILTER}"
+    # echo "rsync_url:${rsync_url}" >&2
+    # echo port:$ssh_port >&2
+    # echo dir:$dir  >&2
+
+    ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
+    rsync -avn -L -e "ssh -p ${ssh_port} ${ssh_args}" ${rsync_url}/${dir} \
+        | grep ^\- | awk {'print $5'}  \
+        | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
+        | sed "s%^%${dir}\/%" \
+        | egrep "${REGEX_FILTER}" 
+else
+    echo "wrong message format, message:"$1 >&2
+    exit 21
 fi
 
 # exit status of egrep

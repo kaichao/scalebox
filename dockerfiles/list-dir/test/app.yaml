@@ -1,4 +1,4 @@
-name: list-dir.test
+name: dir-list.test
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
@@ -8,16 +8,14 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/list-dir
     schedule_mode: HEAD
     variables:
-      slot_options: always_running
+      # 10 minutes
+      max_sleep_count: 120
     parameters:
       start_message: ${DIR_NAME}
     command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
-    paths:
-      - /:/local:ro
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - REGEX_FILTER=${REGEX_FILTER}
-      - RSYNC_PASSWORD=${RSYNC_PASSWORD}
       - REGEX_2D_DATASET=${REGEX_2D_DATASET}
       - INDEX_2D_DATASET=${INDEX_2D_DATASET}
     sink_jobs:

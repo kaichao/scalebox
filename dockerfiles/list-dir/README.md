@@ -29,7 +29,7 @@ list-dir supports four types of directories:
 | --- | ---- |
 | local | represented by an absolute path ```</absolute-path> ```|
 | rsync | anonymous access: ```rsync://<rsync-host><rsync-base-dir>```<br/> non-anonymous access: ```rsync://<rsync-user>@<rsync-host><rsync-base-dir>```|
-| rsync-over-ssh | The ssh public key is stored in the ssh-server account to support password-free access <br/> ``` <ssh-user>@<ssh-host><ssh-base-dir>``` <br/>OR<br/> ``` <ssh-host><ssh-base-dir>```, default ssh-user is root |
+| rsync-over-ssh | The ssh public key is stored in the ssh-server account to support password-free access <br/> ``` [<ssh-user>@]<ssh-host>[:<ssh-port>][#<jump-servers>#]<ssh-base-dir>```, default ssh-user is root, default ssh-port is 22. The format of jump-servers is ```[<user1>@]<host1>[:<port1>],[<user>@]<host2>[:<port2>] ``` |
 | ftp | anonymous access: ```ftp://<ftp-host>/<ftp-base-dir>```<br/> non-anonymous access: ```ftp://<ftp-user>:<ftp-pass>@<ftp-host>[:<ftp-port>]/<ftp-base-dir>``` |
 
 ## Input Message

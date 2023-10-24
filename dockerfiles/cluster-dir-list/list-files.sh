@@ -42,6 +42,7 @@ if [ "$SOURCE_CLUSTER" == "" ]; then
         # | sed 's/^\.\///' \
 else
     # rsync-over-ssh
+    ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
     data_dir=$(echo $1 | cut -d "#" -f 1)
     echo remote data-dir:${rsync_prefix}/${dir1}/${dir2} >&2
     rsync -avn -L -e "ssh -p ${ssh_port} ${ssh_args}" ${rsync_prefix}/${dir1}/${dir2} \

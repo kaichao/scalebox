@@ -8,7 +8,7 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/cluster-dir-list
     schedule_mode: HEAD
     variables:
-    # 1 hour
+      # 10 minutes
       max_sleep_count: 120
     parameters:
       start_message: ${START_MESSAGE}
