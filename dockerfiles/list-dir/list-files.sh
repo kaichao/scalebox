@@ -42,7 +42,7 @@ elif [[ $s =~ ^(ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/[^#]+)#(.+)$ ]]; then
         | egrep "${REGEX_FILTER}"
     cd /work
     umount /remote
-elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^#]+)#(.+)$ ]]; then
+elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^#]*)#(.+)$ ]]; then
     # rsync://user:pass@myhost:873/my-root#my-dir
     # rsync://user@myhost/my-root#my-dir
     rsync_url=${BASH_REMATCH[1]}

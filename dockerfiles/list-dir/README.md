@@ -1,8 +1,8 @@
-# list-dir
+# dir-list
 
 ## Introduction
 
-list-dir is a common module in scalebox. Its function is to traverse the file list of the local directory or the rsync/ftp remote directory, generate messages and send it to the subsequent module.
+dir-list is a common module in scalebox. Its function is to traverse the file list of the local directory or the rsync/ftp remote directory, generate messages and send it to the subsequent module.
 
 In this container image, curlftpfs is used to mount ftp-server as a local file system to manipulate metadata.
 

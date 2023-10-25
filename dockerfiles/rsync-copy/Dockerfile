@@ -18,8 +18,7 @@ ENV SOURCE_URL= \
     RSYNC_PASSWORD= \
     # user1@host1,user2@host2
     JUMP_SERVERS= \
-    ZSTD_CLEVEL=3 \
-    ENABLE_ZSTD= \
+    ZSTD_CLEVEL= \
     # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY= \
     SERVER_CONTAINERIZED=

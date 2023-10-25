@@ -4,8 +4,8 @@ parameters:
   initial_status: RUNNING
 
 jobs:
-  list-dir:
-    base_image: hub.cstcloud.cn/scalebox/list-dir
+  dir-list:
+    base_image: hub.cstcloud.cn/scalebox/dir-list
     schedule_mode: HEAD
     variables:
       # 10 minutes

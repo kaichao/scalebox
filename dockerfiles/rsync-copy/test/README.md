@@ -4,14 +4,13 @@
 
 ```sh
 
-SOURCE_URL=root@$(hostname -i)/etc TARGET_URL=/tmp/etc DIR_NAME=. REGEX_FILTER=^.+\.cf\$ scalebox app create
-
-SOURCE_URL= TARGET_URL=/tmp/etc DIR_NAME=root@$(hostname -i)/etc%. REGEX_FILTER=^.+\.cf\$ scalebox app create
+FILE_NAME=scalebox@10.255.128.1/etc~postfix/master.cf~/tmp scalebox app create
 
 ```
 
 ## 2. local to ssh-server
 ```sh
+FILE_NAME=/etc~postfix/master.cf~scalebox@10.255.128.1/tmp scalebox app create
 
 ```
 

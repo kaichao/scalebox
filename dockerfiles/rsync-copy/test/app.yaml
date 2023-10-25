@@ -4,27 +4,14 @@ parameters:
   initial_status: RUNNING
 
 jobs:
-  list-dir:
-    base_image: hub.cstcloud.cn/scalebox/list-dir
-    schedule_mode: HEAD
-    parameters:
-      start_message: ${DIR_NAME}
-    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
-    paths:
-      - /:/local:ro
-    environments:
-      - SOURCE_URL=${SOURCE_URL}
-      - REGEX_FILTER=${REGEX_FILTER}
-    sink_jobs:
-      - ftp-copy
-
-  ftp-copy:
+  rsync-copy:
     base_image: hub.cstcloud.cn/scalebox/rsync-copy
     schedule_mode: HEAD
     variables:
-      always_running: yes
+      max_sleep_count: 120
+      slot_options: enable_trace
+    parameters:
+      start_message: ${FILE_NAME}
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - TARGET_URL=${TARGET_URL}
-    paths:
-      - /:/local

@@ -1,4 +1,4 @@
-IMAGE_NAME:=hub.cstcloud.cn/scalebox/list-dir
+IMAGE_NAME:=hub.cstcloud.cn/scalebox/dir-list
 
 build:
 	DOCKER_BUILDKIT=1 docker build --network=host -t $(IMAGE_NAME) .
