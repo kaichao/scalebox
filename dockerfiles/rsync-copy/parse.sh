@@ -14,8 +14,8 @@ elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/.*)$ ]]; then
     rsync_url=${rsync_url//$rsync_pass/}
     echo "RSYNC $rsync_url ${rsync_pass:1}"
 elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/.*)$ ]]; then
-    # user@myhost:22/my-root#my-dir
-    # user@myhost/my-root#my-dir
+    # user@myhost:22/my-root
+    # user@myhost/my-root
     ssh_host=${BASH_REMATCH[1]}
     ssh_port=${BASH_REMATCH[2]}
     data_root=${BASH_REMATCH[3]}

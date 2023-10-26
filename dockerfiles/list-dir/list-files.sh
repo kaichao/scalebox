@@ -2,8 +2,8 @@
 
 s=$1
 echo "message:"$s >&2
-if [[ $s =~ ^(/[^#]*)#(.+)$ ]]; then
-    # /my-root#my-dir
+if [[ $s =~ ^(/[^~]*)~(.+)$ ]]; then
+    # /my-root~my-dir
     echo "local-dir" >&2
     data_root=${BASH_REMATCH[1]}
     dir=${BASH_REMATCH[2]}
@@ -14,11 +14,12 @@ if [[ $s =~ ^(/[^#]*)#(.+)$ ]]; then
     # Use percent sign % as separator
     cd ${data_dir} && find -L . -type f \
         | sed "s%^\.%${dir}%" \
+        | sed 's/^\.\///' \
         | egrep "${REGEX_FILTER}"
-elif [[ $s =~ ^(ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/[^#]+)#(.+)$ ]]; then
-    # ftp://user:pass@myhost:22/my-root#my-dir
-    # ftp://user:pass@myhost/my-root#my-dir
-    # ftp://myhost/my-root#my-dir
+elif [[ $s =~ ^(ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/[^~]*)~(.+)$ ]]; then
+    # ftp://user:pass@myhost:22/my-root~my-dir
+    # ftp://user:pass@myhost/my-root~my-dir
+    # ftp://myhost/my-root~my-dir
     ftp_url=${BASH_REMATCH[1]}
     user_pass=${BASH_REMATCH[2]}
     data_root=${BASH_REMATCH[4]}
@@ -39,12 +40,13 @@ elif [[ $s =~ ^(ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/[^#]+)#(.+)$ ]]; then
     data_dir="/remote${data_root}/$dir"
     cd ${data_dir} && find -L . -type f \
         | sed "s%^\.%${dir}%" \
+        | sed 's/^\.\///' \
         | egrep "${REGEX_FILTER}"
     cd /work
     umount /remote
-elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^#]*)#(.+)$ ]]; then
-    # rsync://user:pass@myhost:873/my-root#my-dir
-    # rsync://user@myhost/my-root#my-dir
+elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^~]*)~(.+)$ ]]; then
+    # rsync://user:pass@myhost:873/my-root~my-dir
+    # rsync://user@myhost/my-root~my-dir
     rsync_url=${BASH_REMATCH[1]}
     rsync_pass=${BASH_REMATCH[3]}
     rsync_port=${BASH_REMATCH[4]}
@@ -62,10 +64,11 @@ elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^#]*)#(.+)$ ]]; then
         | grep ^\- | awk {'print $5'} \
         | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
         | sed "s%^%${dir}\/%" \
-        | egrep "${REGEX_FILTER}" 
-elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/[^#]*)#(.+)$ ]]; then
-    # user@myhost:22/my-root#my-dir
-    # user@myhost/my-root#my-dir
+        | sed 's/^\.\///' \
+        | egrep "${REGEX_FILTER}"
+elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/[^~]*)~(.+)$ ]]; then
+    # user@myhost:22/my-root~my-dir
+    # user@myhost/my-root~my-dir
     echo "rsync-over-ssh" >&2
     ssh_host=${BASH_REMATCH[1]}
     ssh_port=${BASH_REMATCH[2]}
@@ -87,7 +90,8 @@ elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/[^#]*)#(.+)$ ]]; then
         | grep ^\- | awk {'print $5'}  \
         | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
         | sed "s%^%${dir}\/%" \
-        | egrep "${REGEX_FILTER}" 
+        | sed 's/^\.\///' \
+        | egrep "${REGEX_FILTER}"
 else
     echo "wrong message format, message:"$1 >&2
     exit 21
@@ -101,7 +105,6 @@ status=(${PIPESTATUS[@]})
 echo "[INFO]pipe_status:"${status[*]} >&2
 n=${#status[*]}
 if [ $n == 1 ]; then
-    # line 38
     if [ ${status[0]} -ne 0 ]; then
         echo "[ERROR]local mode, dir: "${LOCAL_ROOT}" not found" >&2
         exit ${status[0]}

@@ -3,7 +3,7 @@
 if [ "$SOURCE_URL" == "" ]; then
     dir=$1
 else
-    dir=$SOURCE_URL#$1
+    dir=$SOURCE_URL~$1
 fi
 
 if [ "$REGEX_2D_DATASET" ]; then
@@ -18,10 +18,10 @@ if [ "$REGEX_2D_DATASET" ]; then
     [[ $code -ne 0 ]] && echo cmd: scalebox task add, error_code:$code && exit $code
 fi
 
-prefix=$(echo $dir | cut -d "#" -f 1)
+prefix=$(echo $dir | cut -d "~" -f 1)
 ret_code=0
 list-files.sh $dir | while read line; do 
-    send-message "${prefix}#${line}"
+    send-message "${prefix}~${line}"
     code=$?
     [[ $code -ne 0 ]] && echo "Error send-message, file:"$line >&2 && exit $code
 done
