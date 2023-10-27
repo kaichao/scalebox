@@ -12,23 +12,30 @@ if [ -e /work/.scalebox/cluster_data.txt ]; then
     done < /work/.scalebox/cluster_data.txt
 fi
 
-file=$(echo $1 | tr "#" "/")
-if [ "$SOURCE_CLUSTER" == "" ] && [ "$TARGET_CLUSTER" == "" ]; then
-    # Both variables are empty
-    #  extract SOURCE_CLUSTER/TARGET_CLUSTER from message-body
-    #   pull:   ${SOURCE_CLUSTER}~${FILE_PATH}
-    #   push:   ~${FILE_PATH}~${TARGET_CLUSTER}
-    if [[ "$file" =~ ^([^~]+)~([^~]+)$ ]]; then
-        SOURCE_CLUSTER=${BASH_REMATCH[1]}
-        file=${BASH_REMATCH[2]}
-    elif [[ "$file" =~ ^~([^~]+)~([^~]+)$ ]]; then
-        file=${BASH_REMATCH[1]}
-        TARGET_CLUSTER=${BASH_REMATCH[2]}
-    else
-        echo no valid SOURCE_CLUSTER or TARGET_CLUSTER
-        exit 11
-    fi
+if [[ $1 == *~* ]]; then
+    m=$1
+else
+    m="${SOURCE_CLUSTER}~$1~${TARGET_CLUSTER}"
 fi
+
+#  extract SOURCE_CLUSTER/TARGET_CLUSTER from message-body
+if [[ "$m" =~ ^([^~]+)~([^~]+)~$ ]]; then
+    #   pull:   ${SOURCE_CLUSTER}~${FILE_PATH}~
+    SOURCE_CLUSTER=${BASH_REMATCH[1]}
+    m=${BASH_REMATCH[2]}
+elif [[ "$m" =~ ^~([^~]+)~([^~]+)$ ]]; then
+    #   push:   ~${FILE_PATH}~${TARGET_CLUSTER}
+    m=${BASH_REMATCH[1]}
+    TARGET_CLUSTER=${BASH_REMATCH[2]}
+else
+    echo "message $m not valid, only one of SOURCE_CLUSTER and TARGET_CLUSTER is allowed in the message body"
+    exit 11
+fi
+
+file=$(echo $m | tr "#" "/")
+
+echo source_cluster:$SOURCE_CLUSTER
+echo target_cluster:$TARGET_CLUSTER
 echo filename:$file
 
 ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
@@ -39,14 +46,6 @@ else
 fi
 
 echo "ssh_args:"$ssh_args
-
-
-# scalebox cluster get-parameter --cluster $SOURCE_CLUSTER rsync_prefix
-# return value:  <ssh-user>@<host>:/<data-dir>#<port>#<jump-servers>
-if [ "$SOURCE_CLUSTER" != "" ] && [ "$TARGET_CLUSTER" != "" ]; then
-    # dual-remote copy
-    exit 0
-fi
 
 if [ "$SOURCE_CLUSTER" != "" ]; then
     cluster=$SOURCE_CLUSTER
@@ -65,22 +64,24 @@ fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 ssh_port=$(echo $v | cut -d "#" -f 2)
 # jump_servers=$(echo $v | cut -d "#" -f 3)
+ssh_args="ssh -p ${ssh_port} ${ssh_args}"
 
 if [ "$SOURCE_CLUSTER" != "" ]; then
     dest_dir=$(dirname /data/$file)
     mkdir -p ${dest_dir}
-    cmd="rsync -ut -L ${rsync_args} -e \"ssh -p ${ssh_port} ${ssh_args}\" ${rsync_prefix}/${file} ${dest_dir}"
+    cmd="rsync -ut -L ${rsync_args} -e \"${ssh_args}\" ${rsync_prefix}/${file} ${dest_dir}"
 else
     cd /data
-    cmd="rsync -Rut -L ${rsync_args} -e \"ssh -p ${ssh_port} ${ssh_args}\" $file $rsync_prefix"
+    cmd="rsync -Rut -L ${rsync_args} -e \"${ssh_args}\" $file $rsync_prefix"
 fi
 
-echo cmd:$cmd
 eval $cmd
 code=$?
 
 if [[ $code -eq 0 ]]; then
-    send-message $(echo $1 | cut -d "#" -f 2)
+    echo "rsync-over-ssh runs successfully."
+    echo cmd:$cmd
+    send-message $(echo $m | cut -d "#" -f 2)
     code=$?
 fi
 

@@ -45,4 +45,7 @@ ENV \
     # TRACE / DEBUG / INFO / WARN / ERROR / FATAL / PANIC
     LOG_LEVEL=INFO
 
+# for adminer
+EXPOSE 80
+
 ENTRYPOINT [ "entrypoint.sh" ]
