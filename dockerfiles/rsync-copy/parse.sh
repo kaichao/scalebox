@@ -4,7 +4,7 @@ s=$1
 if [[ $s =~ ^(/.*)$ ]]; then
     # /my-root
     echo "LOCAL $1"
-elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/.*)$ ]]; then
+elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)?@)??[^:/]+(:[0-9]+)?/.*)$ ]]; then
     # rsync://user:pass@myhost:873/my-root
     # rsync://user@myhost/my-root
     rsync_url=${BASH_REMATCH[1]}

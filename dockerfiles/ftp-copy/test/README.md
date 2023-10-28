@@ -8,6 +8,9 @@ SOURCE_URL=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs TARGET_URL=/tmp/genbank DIR_N
 
 SOURCE_URL= TARGET_URL=/tmp/genbank DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs%. REGEX_FILTER=^.+\.txt\$ scalebox app create
 
+
+FILE_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank~docs/FTv11.1.txt~/tmp scalebox app create
+
 ```
 
 ## 2. non-anonymous ftp-server to local

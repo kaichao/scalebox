@@ -28,7 +28,7 @@ elif [[ "$m" =~ ^~([^~]+)~([^~]+)$ ]]; then
     m=${BASH_REMATCH[1]}
     TARGET_CLUSTER=${BASH_REMATCH[2]}
 else
-    echo "message $m not valid, only one of SOURCE_CLUSTER and TARGET_CLUSTER is allowed in the message body"
+    echo "message $m not valid, only one of SOURCE_CLUSTER and TARGET_CLUSTER is allowed in the message body" >&2
     exit 11
 fi
 

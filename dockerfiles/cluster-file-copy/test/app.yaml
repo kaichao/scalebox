@@ -8,8 +8,8 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/cluster-file-copy
     schedule_mode: HEAD
     variables:
-    # 1 hour
-      max_sleep_count: 720
+    # 10 mins
+      max_sleep_count: 120
     parameters:
       start_message: ${START_MESSAGE}
     sink_jobs:
