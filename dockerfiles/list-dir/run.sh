@@ -19,7 +19,6 @@ if [ "$REGEX_2D_DATASET" ]; then
 fi
 
 prefix=$(echo $dir | cut -d "~" -f 1)
-ret_code=0
 list-files.sh $dir | while read line; do 
     send-message "${prefix}~${line}"
     code=$?
