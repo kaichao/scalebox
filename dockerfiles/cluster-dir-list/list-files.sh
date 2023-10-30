@@ -17,8 +17,8 @@ if [ "$SOURCE_CLUSTER" == "" ]; then
 else
     cluster=$SOURCE_CLUSTER
 fi
-v=cluster_map[$cluster]
-if [ "$v" != "" ]; then
+v=${cluster_map[$cluster]}
+if [ "$v" == "" ]; then
     v=$(scalebox cluster get-parameter --cluster $cluster rsync)
     code=$?
     [[ $code -ne 0 ]] && echo cmd: get_cluster_rsync, error_code:$code && exit $code

@@ -36,7 +36,7 @@ list-dir supports four types of directories:
 
 DIR_NAME: 
 - relative_path: Relative to the subdirectory of SOURCE_URL, use "." to represent the current directory of SOURCE_URL
-- SOURCE_URL + relative_path: percent_sign-seperated 
+- SOURCE_URL + relative_path: #-seperated 
 
 ## Output Message
 

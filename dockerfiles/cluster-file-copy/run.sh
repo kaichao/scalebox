@@ -47,14 +47,27 @@ fi
 
 echo "ssh_args:"$ssh_args
 
+cluster=$CLUSTER_NAME
+v=${cluster_map[$cluster]}
+if [ "$v" == "" ]; then
+    v=$(scalebox cluster get-parameter --cluster $cluster rsync)
+    code=$?
+    [[ $code -ne 0 ]] && echo cmd: get_cluster_rsync, error_code:$code && exit $code
+    cluster_map[$cluster]=$v
+    echo $cluster $v >> /work/.scalebox/cluster_data.txt
+fi
+rsync_prefix=$(echo $v | cut -d "#" -f 1)
+local_root=$(echo $rsync_prefix | cut -d ":" -f 2)
+local_root="/local${local_root}"
+
 if [ "$SOURCE_CLUSTER" != "" ]; then
     cluster=$SOURCE_CLUSTER
 else
     cluster=$TARGET_CLUSTER
 fi
 
-v=cluster_map[$cluster]
-if [ "$v" != "" ]; then
+v=${cluster_map[$cluster]}
+if [ "$v" == "" ]; then
     v=$(scalebox cluster get-parameter --cluster $cluster rsync)
     code=$?
     [[ $code -ne 0 ]] && echo cmd: get_cluster_rsync, error_code:$code && exit $code
@@ -67,11 +80,11 @@ ssh_port=$(echo $v | cut -d "#" -f 2)
 ssh_args="ssh -p ${ssh_port} ${ssh_args}"
 
 if [ "$SOURCE_CLUSTER" != "" ]; then
-    dest_dir=$(dirname /data/$file)
+    dest_dir=$(dirname ${local_root}/$file)
     mkdir -p ${dest_dir}
     cmd="rsync -ut -L ${rsync_args} -e \"${ssh_args}\" ${rsync_prefix}/${file} ${dest_dir}"
 else
-    cd /data
+    cd ${local_root}
     cmd="rsync -Rut -L ${rsync_args} -e \"${ssh_args}\" $file $rsync_prefix"
 fi
 

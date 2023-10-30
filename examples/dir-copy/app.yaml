@@ -1,4 +1,4 @@
-name: dir-copy.test
+name: dir-copy.app
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING

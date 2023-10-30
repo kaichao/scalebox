@@ -32,7 +32,7 @@ case $from_job in
     # ignore
     ;;
 *)
-    #    发送给模块，启动
+    # 发送给dir-list模块，启动
     source_url=$(echo $1 | cut -d "~" -f 1)
     target_url=$(echo $1 | cut -d "~" -f 2)
     echo $target_url > /work/.scalebox/my.txt
