@@ -78,6 +78,7 @@ pull-all:
 
 get-cli:
 	@ mkdir -p ~/bin
+	@ docker pull hub.cstcloud.cn/scalebox/cli
 	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \

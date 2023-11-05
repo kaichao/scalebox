@@ -29,7 +29,7 @@ RUN echo "ServerName 127.0.0.1" >> /etc/apache2/apache2.conf \
     && a2enconf adminer
 
 COPY --from=0 /go/src/data-grouping /app/bin/data-grouping 
-COPY adminer/entrypoint.sh /usr/local/bin/
+COPY adminer/entrypoint.sh /usr/local/bin/goagent.sh
 COPY adminer/conf.php /etc/adminer/
 
 RUN mkdir -p /work/.data-grouping
@@ -48,4 +48,4 @@ ENV \
 # for adminer
 EXPOSE 80
 
-ENTRYPOINT [ "entrypoint.sh" ]
+ENTRYPOINT [ "goagent.sh" ]
