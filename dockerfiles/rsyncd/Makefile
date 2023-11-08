@@ -9,6 +9,10 @@ push:
 	docker push $(IMAGE_BASE)
 	docker push $(IMAGE_AGENT)
 
+pull:
+	docker pull $(IMAGE_BASE)
+	docker pull $(IMAGE_AGENT)
+
 clean:
 	docker rmi $(IMAGE_BASE)
 	docker rmi $(IMAGE_AGENT)

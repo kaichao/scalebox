@@ -70,8 +70,8 @@ list:
 # 	@ pdsh -w $(NODES) 'cat $(SHARED_DIR)/id_rsa.pub >> ${HOME}/.ssh/authorized_keys' | dshbak -c
 # 	@ rm -f $(SHARED_DIR)/id_rsa.pub
 
-pull-all:
-	@ for i in database actuator controld agent base cli; do \
+pull-all: get-cli
+	@ for i in database actuator controld agent base; do \
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
 	done

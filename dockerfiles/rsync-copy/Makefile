@@ -7,6 +7,9 @@ build:
 push:
 	docker push $(IMAGE_NAME)
 
+pull:
+	docker pull $(IMAGE_NAME)
+
 clean:
 	docker rmi $(IMAGE_NAME)
 

@@ -53,6 +53,6 @@ COPY run.sh /app/bin/
 COPY list-files.sh /usr/local/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
-RUN mkdir -p /work /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
+RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 ENTRYPOINT [ "goagent" ]

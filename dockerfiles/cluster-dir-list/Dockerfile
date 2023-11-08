@@ -22,9 +22,9 @@ ENV SOURCE_CLUSTER= \
 COPY run.sh /app/bin/
 COPY list-files.sh /usr/local/bin/
 
-COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
-COPY --from=hub.cstcloud.cn/scalebox/list-dir /usr/local/bin/get_2d_meta /usr/local/bin/
+COPY --from=hub.cstcloud.cn/scalebox/dir-list /usr/local/bin/get_2d_meta /usr/local/bin/
 
+COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 ENTRYPOINT [ "goagent" ]
