@@ -45,14 +45,12 @@ else
     rsync_args=""
 fi
 
-echo "ssh_args:"$ssh_args
-
 cluster=$CLUSTER_NAME
 v=${cluster_map[$cluster]}
 if [ "$v" == "" ]; then
-    v=$(scalebox cluster get-parameter --cluster $cluster rsync)
+    v=$(scalebox cluster get-parameter --cluster $cluster rsync_info)
     code=$?
-    [[ $code -ne 0 ]] && echo cmd: get_cluster_rsync, error_code:$code && exit $code
+    [[ $code -ne 0 ]] && echo "cmd: get_cluster rsync_info, cluster:$cluster, error_code:$code" >&2 && exit $code
     cluster_map[$cluster]=$v
     echo $cluster $v >> /work/.scalebox/cluster_data.txt
 fi
@@ -68,16 +66,18 @@ fi
 
 v=${cluster_map[$cluster]}
 if [ "$v" == "" ]; then
-    v=$(scalebox cluster get-parameter --cluster $cluster rsync)
+    v=$(scalebox cluster get-parameter --cluster $cluster rsync_info)
     code=$?
-    [[ $code -ne 0 ]] && echo cmd: get_cluster_rsync, error_code:$code && exit $code
+    [[ $code -ne 0 ]] && echo "cmd: get_cluster rsync_info, cluster:$cluster, error_code:$code" >&2 && exit $code
     cluster_map[$cluster]=$v
     echo $cluster $v >> /work/.scalebox/cluster_data.txt
 fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 ssh_port=$(echo $v | cut -d "#" -f 2)
-# jump_servers=$(echo $v | cut -d "#" -f 3)
+[ "$ssh_port" == "" ] && ssh_port="22"
+jump_servers=$(echo $v | cut -d "#" -f 3)
 ssh_args="ssh -p ${ssh_port} ${ssh_args}"
+[ "$jump_servers" != "" ] && ssh_args="$ssh_args -J $jump_servers"
 
 if [ "$SOURCE_CLUSTER" != "" ]; then
     dest_dir=$(dirname ${local_root}/$file)
@@ -88,14 +88,13 @@ else
     cmd="rsync -Rut -L ${rsync_args} -e \"${ssh_args}\" $file $rsync_prefix"
 fi
 
-eval $cmd
-code=$?
+eval $cmd; code=$?
 
 if [[ $code -eq 0 ]]; then
     echo "rsync-over-ssh runs successfully."
-    echo cmd:$cmd
-    send-message $(echo $m | cut -d "#" -f 2)
-    code=$?
+    m=$(echo $m | cut -d "#" -f 2)
+    send-message $m; code=$?
+    [[ $code -ne 0 ]] && echo "error send-message for file :$m" >&2 && exit $code
 fi
 
 exit $code

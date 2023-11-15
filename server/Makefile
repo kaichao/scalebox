@@ -38,7 +38,7 @@ reset: down
 	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 	@ sleep 25
 
-import: get-cli
+import:
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
 	@ for c in $(clusters); do \
 		LOCAL_ADDR=$(LOCAL_ADDR) scalebox app create $$c/mycluster.yaml; \

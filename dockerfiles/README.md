@@ -5,6 +5,7 @@ scalebox应用中常见的公用模块。
 
 ## file-related
 
+### module list
 |  模块名 | 模块描述 |
 |  ----  | ---- | 
 | cluster-dir-list  | 集群内目录的文件列表   | 
@@ -13,6 +14,14 @@ scalebox应用中常见的公用模块。
 | rsync-copy  | 基于rsync-over-ssh、rsync的远端文件复制 |
 | ftp-copy  | 基于ftp的远端文件复制 |
 | rsyncd  | rsync的服务端 |
+
+- Cluster related configuration
+| 配置参数   | 描述  |
+|  ----  | ----  |
+| base_data_dir | The cluster's data base directory |
+| storage_endpoint | <user>@<ip-addr>:[<port>],default port is 22 |
+| relay_endpoint | <user>@<ip-addr>:[<port>]<user>@<ip-addr>:[<port>] |
+
 
 ## data-grouping-2d
 基于2维数据集的数据分组，是数据处理中的常见模式。将数据集中数据实体按id组织为2维数据集，并支持x、y方向上对数据进行分组。
