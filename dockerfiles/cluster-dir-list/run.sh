@@ -19,15 +19,12 @@ if [ "$REGEX_2D_DATASET" ]; then
     echo ${meta} > /work/key-text.txt
     echo "metadata for 2d-dataset:#${meta}#"
     # key text in file /work/key-text.txt
-    scalebox task add
-    code=$?
+    scalebox task add; code=$?
     [[ $code -ne 0 ]] && echo cmd: scalebox task add, error_code:$code >&2 && exit $code
 fi
 
-ret_code=0
 list-files.sh $dir | while read line; do 
-    send-message ${line}
-    code=$?
+    send-message ${line}; code=$?
     [[ $code -ne 0 ]] && echo "Error send-message, file:"$line >&2 && exit $code
 done
 

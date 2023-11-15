@@ -12,21 +12,21 @@ if [ -e /work/.scalebox/cluster_data.txt ]; then
     done < /work/.scalebox/cluster_data.txt
 fi
 
-if [ "$SOURCE_CLUSTER" == "" ]; then
-    cluster=$CLUSTER_NAME
-else
-    cluster=$SOURCE_CLUSTER
-fi
+cluster=$SOURCE_CLUSTER
+[ "$cluster" == "" ] && cluster=$CLUSTER_NAME
+
 v=${cluster_map[$cluster]}
 if [ "$v" == "" ]; then
-    v=$(scalebox cluster get-parameter --cluster $cluster rsync)
-    code=$?
-    [[ $code -ne 0 ]] && echo cmd: get_cluster_rsync, error_code:$code && exit $code
+    v=$(scalebox cluster get-parameter --cluster $cluster rsync_info); code=$?
+    [[ $code -ne 0 ]] && echo "cmd: get_cluster rsync_info, cluster:$cluster, error_code:$code" >&2 && exit $code
     cluster_map[$cluster]=$v
     echo $cluster $v >> /work/.scalebox/cluster_data.txt
 fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 ssh_port=$(echo $v | cut -d "#" -f 2)
+[ "$ssh_port" == "" ] && ssh_port="22"
+jump_servers=$(echo $v | cut -d "#" -f 3)
+
 dir1=$(echo $1 | cut -d "#" -f 1)
 dir2=$(echo $1 | cut -d "#" -f 2)
 
@@ -43,9 +43,10 @@ if [ "$SOURCE_CLUSTER" == "" ]; then
 else
     # rsync-over-ssh
     ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
-    data_dir=$(echo $1 | cut -d "#" -f 1)
+    ssh_args="ssh -p ${ssh_port} ${ssh_args}"
+    [ "$jump_servers" != "" ] && ssh_args="$ssh_args -J $jump_servers"
     echo remote data-dir:${rsync_prefix}/${dir1}/${dir2} >&2
-    rsync -avn -L -e "ssh -p ${ssh_port} ${ssh_args}" ${rsync_prefix}/${dir1}/${dir2} \
+    rsync -avn -L -e "${ssh_args}" ${rsync_prefix}/${dir1}/${dir2} \
         | grep ^\- | awk {'print $5'}  \
         | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
         | sed "s/^/${dir2}\//" \
@@ -75,9 +76,7 @@ for ((i=n-1; i>=0; i--)); do
             code=0
         fi
     fi
-    if [ $code -ne 0 ]; then
-        break
-    fi
+    [[ $code -ne 0 ]] && break
 done
 
 exit $code
