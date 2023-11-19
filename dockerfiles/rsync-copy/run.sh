@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# support singularity
+mkdir -p ${WORK_DIR}/.scalebox
+cd ${WORK_DIR}
+
 m=$1
 if [ "$SOURCE_URL" == "" ] || [ "$TARGET_URL" == "" ]; then
     if [[ ! $m =~ ^([^~]*)~([^~]*)~([^~]*)$ ]]; then
@@ -119,7 +123,7 @@ if [ $code -ne 0 ]; then
     elif [ $code -eq 11 ];then
         # Input/output error (5)
         # rsync error: error in file IO (code 11) at receiver.c(871) [receiver=3.2.3]
-        code=10111
+        code=11
     elif [ $code -eq 255 ];then
         # ssh: connect to host 60.245.209.223 port 22: Connection timed out
         # rsync: connection unexpectedly closed (0 bytes received so far) [sender]
@@ -132,11 +136,10 @@ if [ $code -ne 0 ]; then
         # rsync error: error in socket IO (code 10) at clientserver.c(138) [Receiver=3.2.6]
     fi
 fi
-
 [[ $code -ne 0 ]] && exit $code
 
-echo $ds0 >> /work/timestamps.txt
-echo $ds1 >> /work/timestamps.txt
+echo $ds0 >> ${WORK_DIR}/timestamps.txt
+echo $ds1 >> ${WORK_DIR}/timestamps.txt
 # cat << EOF > /work/task-exec.json
 # {
 #     "inputBytes":$total_bytes,
@@ -144,5 +147,6 @@ echo $ds1 >> /work/timestamps.txt
 #     "timestamps":["${ds0}","${ds1}"]
 # }
 # EOF
-send-message $m
-exit $?
+send-message $m; code=$?
+
+exit $code

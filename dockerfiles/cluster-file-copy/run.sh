@@ -1,15 +1,19 @@
 #!/bin/bash
 
+# support singularity
+mkdir -p ${WORK_DIR}/.scalebox
+cd ${WORK_DIR}
+
 # create hashtable cluster_map
 declare -A cluster_map
-if [ -e /work/.scalebox/cluster_data.txt ]; then
+if [ -e ${WORK_DIR}/.scalebox/cluster_data.txt ]; then
     while read line; do
         # separate key and value
         key=$(echo $line | cut -d " " -f 1)
         value=$(echo $line | cut -d " " -f 2)
         # put key value to hashtable
         cluster_map[$key]=$value
-    done < /work/.scalebox/cluster_data.txt
+    done < ${WORK_DIR}/.scalebox/cluster_data.txt
 fi
 
 if [[ $1 == *~* ]]; then
@@ -52,7 +56,7 @@ if [ "$v" == "" ]; then
     code=$?
     [[ $code -ne 0 ]] && echo "cmd: get_cluster rsync_info, cluster:$cluster, error_code:$code" >&2 && exit $code
     cluster_map[$cluster]=$v
-    echo $cluster $v >> /work/.scalebox/cluster_data.txt
+    echo $cluster $v >> ${WORK_DIR}/.scalebox/cluster_data.txt
 fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 local_root=$(echo $rsync_prefix | cut -d ":" -f 2)
@@ -70,7 +74,7 @@ if [ "$v" == "" ]; then
     code=$?
     [[ $code -ne 0 ]] && echo "cmd: get_cluster rsync_info, cluster:$cluster, error_code:$code" >&2 && exit $code
     cluster_map[$cluster]=$v
-    echo $cluster $v >> /work/.scalebox/cluster_data.txt
+    echo $cluster $v >> ${WORK_DIR}/.scalebox/cluster_data.txt
 fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 ssh_port=$(echo $v | cut -d "#" -f 2)

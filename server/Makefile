@@ -70,7 +70,7 @@ list:
 # 	@ pdsh -w $(NODES) 'cat $(SHARED_DIR)/id_rsa.pub >> ${HOME}/.ssh/authorized_keys' | dshbak -c
 # 	@ rm -f $(SHARED_DIR)/id_rsa.pub
 
-pull-all: get-cli
+pull-all:
 	@ for i in database actuator controld agent base; do \
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
@@ -78,7 +78,7 @@ pull-all: get-cli
 
 get-cli:
 	@ mkdir -p ~/bin
-	@ docker pull hub.cstcloud.cn/scalebox/cli
+	# @ docker pull hub.cstcloud.cn/scalebox/cli
 	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \
