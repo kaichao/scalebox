@@ -18,6 +18,8 @@ ENV SOURCE_CLUSTER= \
     JUMP_SERVER_OPTION= \
     # default value : 3
     ZSTD_CLEVEL= \
+    # directory capacity limit
+    DIR_LIMIT_GB= \
     # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY=
 

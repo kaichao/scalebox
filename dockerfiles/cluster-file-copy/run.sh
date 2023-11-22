@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # support singularity
-mkdir -p ${WORK_DIR}/.scalebox
+[[ ! $WORK_DIR ]] && echo "[ERROR] WORK_DIR is null, Check the permissions of the directory /tmp/scalebox." >&2 && exit 110
+echo [DEBUG] WORK_DIR:${WORK_DIR}: >&2
 cd ${WORK_DIR}
 
 # create hashtable cluster_map
@@ -99,6 +100,8 @@ if [[ $code -eq 0 ]]; then
     m=$(echo $m | cut -d "#" -f 2)
     send-message $m; code=$?
     [[ $code -ne 0 ]] && echo "error send-message for file :$m" >&2 && exit $code
+else
+    echo "[ERROR], cmd=$cmd"
 fi
 
 exit $code

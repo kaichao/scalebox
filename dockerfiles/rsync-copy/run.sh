@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # support singularity
-mkdir -p ${WORK_DIR}/.scalebox
+[[ ! $WORK_DIR ]] && echo "[ERROR] WORK_DIR is null, Check the permissions of the directory /tmp/scalebox." >&2 && exit 110
+echo [DEBUG] WORK_DIR:${WORK_DIR}: >&2
 cd ${WORK_DIR}
 
 m=$1
