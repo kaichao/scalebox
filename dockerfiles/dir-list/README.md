@@ -6,7 +6,7 @@ dir-list is a common module in scalebox. Its function is to traverse the file li
 
 In this container image, curlftpfs is used to mount ftp-server as a local file system to manipulate metadata.
 
-list-dir supports four types of directories:
+dir-list supports four types of directories:
 - local: Local Directory
 - rsync-over-ssh: Server directory backed by the ssh-based rsync protocol
 - native rsync: Server directory that supports the standard rsync protocol

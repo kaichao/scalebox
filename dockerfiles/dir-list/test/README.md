@@ -1,4 +1,4 @@
-# examples for list-dir
+# examples for dir-list
 
 ## 1. local path
 

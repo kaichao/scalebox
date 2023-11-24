@@ -1,4 +1,4 @@
-# examples for list-dir & rsync-copy
+# examples for dir-list & rsync-copy
 
 ## 1. ssh-server to local
 

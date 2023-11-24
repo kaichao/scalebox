@@ -35,7 +35,7 @@ Scalebox的主要对象：
   - macOS 10.15(amd64)以上（ARM版的macos待测试）
 - 容器化引擎：DockerCE / rootless docker，版本20.10+
 - docker-compose: 1.29.2+
-- 安装dstat、htop、rsync、zstd、gmake、git、rsync等工具软件，用于性能监控、开发运行等
+- 安装dstat、htop、rsync、zstd、gmake、git、rsync、glances、dstat、pdsh等工具软件，用于性能监控、开发运行等
 
 ### 2.1 安装CentOS 7/8下基本软件
 - 以root用户安装
@@ -241,3 +241,6 @@ cd ~/scalebox/server && make all
 ```
 
 至此，scalebox服务端安装完成，可以通过[scalebox/examples](../examples)中的```hello-scalebox```、```app-primes```两个应用来测试平台安装是否正确。
+
+## 四、Scalebox多集群安装及跨集群应用配置
+

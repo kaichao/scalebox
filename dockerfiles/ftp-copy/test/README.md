@@ -1,4 +1,4 @@
-# examples for list-dir & ftp-copy
+# examples for dir-list & ftp-copy
 
 ## 1. anonymous ftp-server to local
 
