@@ -4,8 +4,8 @@
 [[ ! $DIR_LIMIT_GB ]] && exit 0
 
 # DIR_LIMIT_GB=/Users/kaichao/WORK/workspace,4
-dir0=$(echo $DIR_LIMIT_GB | cut -d "," -f 1)
-limit_gb=$(echo $DIR_LIMIT_GB | cut -d "," -f 2)
+dir0=$(echo $DIR_LIMIT_GB | cut -d "#" -f 1)
+limit_gb=$(echo $DIR_LIMIT_GB | cut -d "#" -f 2)
 
 dir=${dir0}
 if [[ $dir =~ ^([^/].*)$ ]]; then
@@ -16,7 +16,7 @@ if [[ $dir =~ ^([^/].*)$ ]]; then
     dir=$cluster_root/$dir
 fi
 dir="/local"$dir
-echo [DEBUG]check-dir=$dir,limit-gb=${limit_gb}gb
+echo [DEBUG]check-dir=$dir,limit-gb=${limit_gb}GB
 
 mb=($(du -ms $dir)); code=$?
 [[ $code -ne 0 ]] && echo "[ERROR] get dir MB, dir:$dir, error_code:$code" >&2 && exit $code
