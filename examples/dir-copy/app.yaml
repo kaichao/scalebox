@@ -1,0 +1,47 @@
+name: dir-copy.app
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+  default_message_router: message-router
+
+jobs:
+  dir-list:
+    base_image: hub.cstcloud.cn/scalebox/dir-list
+    schedule_mode: HEAD
+    variables:
+      # 10 minutes
+      max_sleep_count: 120
+    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - REGEX_FILTER=${REGEX_FILTER}
+      - REGEX_2D_DATASET=${REGEX_DATASET}
+      - INDEX_2D_DATASET=${INDEX_DATASET}
+
+  rsync-copy:
+    base_image: hub.cstcloud.cn/scalebox/rsync-copy
+    schedule_mode: HEAD
+    variables:
+    # 10 minutes
+      max_sleep_count: 120
+
+  ftp-copy:
+    base_image: hub.cstcloud.cn/scalebox/ftp-copy
+    schedule_mode: HEAD
+    variables:
+    # 10 minutes
+      max_sleep_count: 120
+
+  message-router:
+    base_image: dir-copy/message-router
+    schedule_mode: HEAD
+    parameters:
+      start_message: ${DIR_NAME}
+    variables:
+    # 10 minutes
+      max_sleep_count: 120
+    sink_jobs:
+     - dir-list
+     - rsync-copy
+     - ftp-copy
+    

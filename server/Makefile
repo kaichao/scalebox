@@ -38,7 +38,7 @@ reset: down
 	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 	@ sleep 25
 
-import: get-cli
+import:
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
 	@ for c in $(clusters); do \
 		LOCAL_ADDR=$(LOCAL_ADDR) scalebox app create $$c/mycluster.yaml; \
@@ -71,13 +71,14 @@ list:
 # 	@ rm -f $(SHARED_DIR)/id_rsa.pub
 
 pull-all:
-	@ for i in database actuator controld agent base cli; do \
+	@ for i in database actuator controld agent base; do \
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
 	done
 
 get-cli:
 	@ mkdir -p ~/bin
+	# @ docker pull hub.cstcloud.cn/scalebox/cli
 	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \

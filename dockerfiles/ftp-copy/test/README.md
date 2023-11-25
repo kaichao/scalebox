@@ -1,4 +1,4 @@
-# examples for list-dir & ftp-copy
+# examples for dir-list & ftp-copy
 
 ## 1. anonymous ftp-server to local
 
@@ -7,6 +7,9 @@
 SOURCE_URL=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs TARGET_URL=/tmp/genbank DIR_NAME=. REGEX_FILTER=^.+\.txt\$ scalebox app create
 
 SOURCE_URL= TARGET_URL=/tmp/genbank DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs%. REGEX_FILTER=^.+\.txt\$ scalebox app create
+
+
+FILE_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank~docs/FTv11.1.txt~/tmp scalebox app create
 
 ```
 

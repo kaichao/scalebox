@@ -1,0 +1,19 @@
+name: data-grouping.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  data-grouping:
+    base_image: hub.cstcloud.cn/scalebox/data-grouping-2d
+    schedule_mode: HEAD
+    parameters:
+      start_message: ${START_MESSAGE}
+    environments:
+      - COORD_TYPE=${COORD_TYPE}
+      - DATASET_PREFIX=crafts
+    sink_jobs:
+      - next-job
+
+  next-job:
+    base_image: hub.cstcloud.cn/scalebox/agent

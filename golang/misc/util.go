@@ -55,7 +55,7 @@ func ExecShellCommand(myCmd string) string {
 // GetTextFileLines ...
 func GetTextFileLines(textFile string) ([]string, error) {
 	if _, err := os.Stat(textFile); err != nil {
-		return []string{}, nil
+		return []string{}, err
 	}
 
 	fileContent, err := ioutil.ReadFile(textFile)

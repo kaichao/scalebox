@@ -1,0 +1,41 @@
+name: cluster-dir-copy.app
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+  default_message_router: message-router
+
+jobs:
+  cluster-dir-list:
+    base_image: hub.cstcloud.cn/scalebox/cluster-dir-list
+    schedule_mode: HEAD
+    variables:
+    # 1 hour
+      max_sleep_count: 120
+    environments:
+      - SOURCE_CLUSTER=${SOURCE_CLUSTER}
+      - REGEX_FILTER=${REGEX_FILTER}
+      - REGEX_2D_DATASET=${REGEX_DATASET}
+      - INDEX_2D_DATASET=${INDEX_DATASET}
+
+  data-grouping:
+    base_image: hub.cstcloud.cn/scalebox/data-grouping-2d
+
+  cluster-file-copy:
+    base_image: hub.cstcloud.cn/scalebox/cluster-file-copy
+    schedule_mode: HEAD
+    variables:
+    # 10 minutes
+      max_sleep_count: 120
+
+  message-router:
+    base_image: cluster-dir-copy/message-router
+    schedule_mode: HEAD
+    parameters:
+      start_message: ${DIR_NAME}
+    variables:
+    # 10 minutes
+      max_sleep_count: 120
+    sink_jobs:
+     - cluster-dir-list
+     - data-grouping
+     - cluster-file-copy

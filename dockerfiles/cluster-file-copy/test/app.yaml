@@ -1,0 +1,19 @@
+name: cluster-file-copy.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  cluster-file-copy:
+    base_image: hub.cstcloud.cn/scalebox/cluster-file-copy
+    schedule_mode: HEAD
+    variables:
+    # 10 mins
+      max_sleep_count: 120
+    parameters:
+      start_message: ${START_MESSAGE}
+    sink_jobs:
+      - next-job
+
+  next-job:
+    base_image: hub.cstcloud.cn/scalebox/agent
