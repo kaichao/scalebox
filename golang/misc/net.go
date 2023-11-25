@@ -2,11 +2,13 @@ package misc
 
 import (
 	"fmt"
-	"log"
 	"net"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
+
+	"github.com/sirupsen/logrus"
 )
 
 // GetLocalIP ...
@@ -25,8 +27,9 @@ func GetLocalIP() string {
 	localIP := strings.Split(string(out), " ")[0]
 	// remove '\n'
 	localIP = strings.Replace(localIP, "\n", "", -1)
-	if localIP == "" {
-		log.Printf("get_local_ip error\n")
+	reIPv4 := regexp.MustCompile("^([0-9]+\\.){3}[0-9]+$")
+	if reIPv4.MatchString(localIP) {
+		logrus.Warnf("error get_local_ip, localIP=%s\n", localIP)
 	}
 	return localIP
 }

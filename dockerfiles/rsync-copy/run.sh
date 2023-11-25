@@ -35,6 +35,9 @@ if [ "$SOURCE_URL" == "" ] || [ "$TARGET_URL" == "" ]; then
         exit 24
     fi
     m=$s2
+else
+    source_url=$SOURCE_URL
+    target_url=$TARGET_URL
 fi
 
 arr_source=($(/app/bin/parse.sh $source_url))

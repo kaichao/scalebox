@@ -24,10 +24,10 @@ elif [[ $s =~ ^(ftp://([^:]+:[^@]+@)?[^/:]+(:[^/]+)?)(/[^~]*)~(.+)$ ]]; then
     user_pass=${BASH_REMATCH[2]}
     data_root=${BASH_REMATCH[4]}
     dir=${BASH_REMATCH[5]}
-    echo "ftp_url:${ftp_url}"   >&2
-    echo user_pass:${user_pass} >&2
-    echo data_root:${data_root} >&2
-    echo dir:${dir} >&2
+    # echo "ftp_url:${ftp_url}"   >&2
+    # echo user_pass:${user_pass} >&2
+    # echo data_root:${data_root} >&2
+    # echo dir:${dir} >&2
 
     if [ "$user_pass" == "" ]; then
         # anonymous ftp
@@ -55,9 +55,9 @@ elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^~]*)~(.+)$ ]]; then
     # rsync_url=${rsync_url//$port/}
     export RSYNC_PASSWORD=${rsync_pass:1}
 
-    echo "rsync_url:${rsync_url}" >&2
-    echo pass:$rsync_pass   >&2
-    echo dir:$dir >&2
+    # echo "rsync_url:${rsync_url}" >&2
+    # echo pass:$rsync_pass   >&2
+    # echo dir:$dir >&2
 
     # "rsync version"
     rsync -avn ${rsync_url}/${dir} \

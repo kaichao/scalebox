@@ -2,12 +2,15 @@ package main
 
 import (
 	"bufio"
+	"database/sql"
 	"fmt"
-	"math"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
+
+	_ "github.com/mattn/go-sqlite3"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -41,39 +44,51 @@ func main() {
 		fmt.Fprintln(os.Stderr, "number of indexes for get_2d_meta should be 3!")
 		os.Exit(2)
 	}
-	var (
-		minX = math.MaxInt32
-		minY = math.MaxInt32
-		maxX = -1
-		maxY = -1
-	)
+
+	var err error
+	db, err = sql.Open("sqlite3", sqliteFile)
+	if err != nil {
+		logrus.Errorf("Unable to open sqlite3 database:%v\n", err)
+	}
+	defer db.Close()
+	initialize()
+
+	// var (
+	// 	minX = math.MaxInt32
+	// 	minY = math.MaxInt32
+	// 	maxX = -1
+	// 	maxY = -1
+	// )
 	var n int
 	scanner := bufio.NewScanner(os.Stdin)
 	for scanner.Scan() {
 		line := scanner.Text()
 		x, y := getXY(line)
-		if x < minX {
-			minX = x
-		}
-		if x > maxX {
-			maxX = x
-		}
-		if y < minY {
-			minY = y
-		}
-		if y > maxY {
-			maxY = y
-		}
+		saveEntity(x, y)
+		// if x < minX {
+		// 	minX = x
+		// }
+		// if x > maxX {
+		// 	maxX = x
+		// }
+		// if y < minY {
+		// 	minY = y
+		// }
+		// if y > maxY {
+		// 	maxY = y
+		// }
 		n++
 	}
-	width := maxX - minX + 1
-	height := maxY - minY + 1
-	if width*height != n {
-		fmt.Fprintf(os.Stderr, "%s is not a 2d-dataset, numX=%d,numY=%d,count=%d!\n",
-			dataset, width, height, n)
-		os.Exit(3)
-	}
+	width, minY, height := getStat(n)
+	// width := maxX - minX + 1
+	// height := maxY - minY + 1
+	// if width*height != n {
+	// 	fmt.Fprintf(os.Stderr, "%s is not a 2d-dataset, numX=%d,numY=%d,count=%d!\n",
+	// 		dataset, width, height, n)
+	// 	os.Exit(3)
+	// }
 
+	// replace all blank char
 	format := regexp.MustCompile("\\s+").ReplaceAllString(fmtDataSet, "")
 	fmt.Printf(format, dataset, width, minY, height)
 	os.Exit(0)

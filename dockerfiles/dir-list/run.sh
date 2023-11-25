@@ -9,13 +9,15 @@ fi
 if [ "$REGEX_2D_DATASET" ]; then
     meta=$(list-files.sh $dir | get_2d_meta $REGEX_2D_DATASET $INDEX_2D_DATASET)
     code=$?
-    [[ $code -ne 0 ]] && echo cmd: get_2d_meta, error_code:$code && exit $code
-    echo ${meta} > /work/key-text.txt
-    echo metadata for 2d-dataset:#${meta}#
-    # key text in file /work/key-text.txt
-    scalebox task add
-    code=$?
-    [[ $code -ne 0 ]] && echo cmd: scalebox task add, error_code:$code && exit $code
+    if [[ $code -eq 0 ]]; then
+        echo ${meta} > /work/key-text.txt
+        echo metadata for 2d-dataset:#${meta}#
+        # key text in file /work/key-text.txt
+        scalebox task add; code=$?
+        [[ $code -ne 0 ]] && echo "[ERROR] scalebox task add metadata:${meta}, error_code:$code" >&2 && exit $code
+    elif [[ $code -eq 3 ]]; then
+        echo "[WARN] get_2d_metadata, error_code:$code" >&2
+    fi
 fi
 
 prefix=$(echo $dir | cut -d "~" -f 1)
