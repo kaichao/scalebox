@@ -16,7 +16,7 @@ RUN --mount=type=cache,target=/root/.cache/go-build \
     # CGO_ENABLED=0 \
     go build 
 
-FROM hub.cstcloud.cn/scalebox/agent
+FROM debian:12-slim
 
 RUN \
     apt-get update \
@@ -27,6 +27,9 @@ RUN \
 
 RUN echo "ServerName 127.0.0.1" >> /etc/apache2/apache2.conf \
     && a2enconf adminer
+
+COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
+RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 
 COPY --from=0 /go/src/data-grouping /app/bin/data-grouping 
 COPY adminer/entrypoint.sh /usr/local/bin/goagent.sh
@@ -47,5 +50,6 @@ ENV \
 
 # for adminer
 EXPOSE 80
+WORKDIR /work
 
 ENTRYPOINT [ "goagent.sh" ]

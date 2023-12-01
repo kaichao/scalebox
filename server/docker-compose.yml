@@ -42,6 +42,7 @@ services:
       # for external cluster to start external slots
       - HEAD_SSH_USER=${USER}
       - HEAD_SSH_PORT=10022
+      - TRACE_EXECUTOR=yes
     ports:
       - 50062:8080
     cap_add:

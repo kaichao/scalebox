@@ -61,6 +61,8 @@ if [ "$v" == "" ]; then
 fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 local_root=$(echo $rsync_prefix | cut -d ":" -f 2)
+local_external_relay=$(echo $v | cut -d "#" -f 3)
+local_internal_relay=$(echo $v | cut -d "#" -f 4)
 local_root="/local${local_root}"
 
 if [ "$SOURCE_CLUSTER" != "" ]; then
@@ -80,7 +82,19 @@ fi
 rsync_prefix=$(echo $v | cut -d "#" -f 1)
 ssh_port=$(echo $v | cut -d "#" -f 2)
 [ "$ssh_port" == "" ] && ssh_port="22"
-jump_servers=$(echo $v | cut -d "#" -f 3)
+remote_external_relay=$(echo $v | cut -d "#" -f 3)
+remoate_internal_relay=$(echo $v | cut -d "#" -f 4)
+
+if [ "$RELAY_OPTIONS" == "local" ]; then
+    jump_servers=$local_internal_relay
+elif [ "$RELAY_OPTIONS" == "remote" ]; then
+    jump_servers=$remote_external_relay
+elif [ "$RELAY_OPTIONS" == "local#remote" ]; then
+    jump_servers="$local_internal_relay,$remote_external_relay"
+elif [ "$RELAY_OPTIONS" == "remote#local" ]; then
+    jump_servers="$remote_external_relay,$local_internal_relay"
+fi
+
 ssh_args="ssh -p ${ssh_port} ${ssh_args}"
 [ "$jump_servers" != "" ] && ssh_args="$ssh_args -J $jump_servers"
 
@@ -93,6 +107,7 @@ else
     cmd="rsync -Rut -L ${rsync_args} -e \"${ssh_args}\" $file $rsync_prefix"
 fi
 
+echo rsync-cmd:#$cmd#
 eval $cmd; code=$?
 
 if [[ $code -eq 0 ]]; then
@@ -101,7 +116,7 @@ if [[ $code -eq 0 ]]; then
     send-message $m; code=$?
     [[ $code -ne 0 ]] && echo "error send-message for file :$m" >&2 && exit $code
 else
-    echo "[ERROR], cmd=$cmd"
+    echo "[ERROR], cmd=$cmd, code=$code" >&2
 fi
 
 exit $code

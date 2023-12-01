@@ -28,6 +28,7 @@ endif
 
 default:
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
+	# [[ $(LOCAL_ADDR) =~ ^([0-9]+\.){3}[0-9]+$ ]] && echo valid ip-addr
 
 all: reset import
 
