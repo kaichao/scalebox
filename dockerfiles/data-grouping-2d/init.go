@@ -9,43 +9,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// DataSet ...
-type DataSet struct {
-	// prefix ':' type ':' sub-id
-	DatasetID string
-
-	KeyGroupRegex string
-	KeyGroupIndex string
-
-	RootDir string
-	SinkJob string
-
-	// "H" / "V"
-	GroupType string
-
-	// for type "H", x-coord
-	HorizontalWidth int
-
-	// for type "V", y-coord
-	VerticalStart  int
-	VerticalHeight int
-	// vertical group length
-	GroupSize int
-	// GroupStep   int
-	// vertical interleaved
-	Interleaved bool
-}
-
-// Entity ...
-type Entity struct {
-	ID        int
-	name      string
-	datasetID string
-	x         string
-	y         string
-	flag      string
-}
-
 var (
 	db         *sql.DB
 	mapDataset = make(map[string]*DataSet)
@@ -56,41 +19,34 @@ var (
 	datasetFile string
 	sqliteFile  string
 
-	datasetPrefix  string
-	isIntegerCoord bool
+	datasetPrefix string
 )
 
 func init() {
 	var err error
 	logrus.SetReportCaller(true)
 
-	messageFile = os.Getenv("MESSAGE_FILE")
-	if messageFile == "" {
-		messageFile = "/tmp/messages.txt"
+	workDir := os.Getenv("WORD_DIR")
+	if workDir == "" {
+		workDir = "/work"
 	}
-	datasetFile = os.Getenv("DATASET_FILE")
-	if datasetFile == "" {
-		datasetFile = "/tmp/datasets.txt"
-	}
-	sqliteFile = os.Getenv("SQLITE_FILE")
-	if sqliteFile == "" {
-		sqliteFile = "/tmp/my.db"
-	}
+	messageFile = workDir + "/messages.txt"
+	datasetFile = workDir + "/.scalebox/datasets.txt"
+	sqliteFile = workDir + "/.scalebox/sqlite.db"
 
 	datasetPrefix = os.Getenv("DATASET_PREFIX")
-	isIntegerCoord = os.Getenv("COORD_TYPE") == "integer"
 
 	// set database connection
 	if db, err = sql.Open("sqlite3", sqliteFile); err != nil {
 		logrus.Fatalln("Unable to open sqlite3 database:", err)
 	}
-	sqlTextInteger := `
+	sqlTextFmt := `
 		CREATE TABLE IF NOT EXISTS t_entity (
 			id INTEGER PRIMARY KEY autoincrement,
 			name TEXT,
 			dataset_id TEXT,
-			x INTEGER,
-			y INTEGER,
+			x %s,
+			y %s,
 			flag TEXT
 		);
 		CREATE UNIQUE INDEX IF NOT EXISTS i_entity_0 ON t_entity(name,dataset_id);
@@ -98,26 +54,14 @@ func init() {
 		CREATE INDEX IF NOT EXISTS i_entity_2 ON t_entity(dataset_id,x);
 	`
 
-	sqlTextString := `
-		CREATE TABLE IF NOT EXISTS t_entity (
-			id INTEGER PRIMARY KEY autoincrement,
-			name TEXT,
-			dataset_id TEXT,
-			x TEXT,
-			y TEXT,
-			flag TEXT
-		);
-		CREATE UNIQUE INDEX IF NOT EXISTS i_entity_0 ON t_entity(name,dataset_id);
-		CREATE INDEX IF NOT EXISTS i_entity_1 ON t_entity(dataset_id);
-		CREATE INDEX IF NOT EXISTS i_entity_2 ON t_entity(dataset_id,x);
-	`
-
-	sqlText := sqlTextString
-	if isIntegerCoord {
-		sqlText = sqlTextInteger
+	sqlText := fmt.Sprintf(sqlTextFmt, "TEXT", "TEXT")
+	if os.Getenv("COORD_TYPE") == "integer" {
+		sqlText = fmt.Sprintf(sqlTextFmt, "INTEGER", "INTEGER")
 	}
+
 	if _, err = db.Exec(sqlText); err != nil {
-		logrus.Fatal(err)
+		logrus.Errorln(err)
+		os.Exit(1)
 	}
 
 	if lines, err := scalebox.GetTextFileLines(datasetFile); err == nil {

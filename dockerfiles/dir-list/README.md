@@ -14,7 +14,7 @@ dir-list supports four types of directories:
 
 ## Environment variables
 
-| parameter name   | Description  |
+| variable name   | Description  |
 |  ----  | ----  |
 | SOURCE_URL  | See table below. |
 | REGEX_FILTER | File filtering rules represented by regular expressions |

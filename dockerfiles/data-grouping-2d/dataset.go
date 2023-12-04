@@ -3,12 +3,51 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/sirupsen/logrus"
 )
+
+// DataSet ...
+type DataSet struct {
+	// prefix ':' type ':' sub-id
+	DatasetID string
+
+	KeyGroupRegex string
+	KeyGroupIndex string
+
+	RootDir string
+	SinkJob string
+
+	// "H" / "V"
+	GroupType string
+
+	// for type "H", x-coord
+	HorizontalWidth int
+
+	// for type "V", y-coord
+	VerticalStart  int
+	VerticalHeight int
+	// vertical group length
+	GroupSize int
+	// GroupStep   int
+	// vertical interleaved
+	Interleaved bool
+}
+
+// Entity ...
+type Entity struct {
+	ID        int
+	name      string
+	datasetID string
+	x         string
+	y         string
+	flag      string
+}
 
 func (dataset *DataSet) parseEntity(s string) *Entity {
 	fmt.Println("KeyGroupRegex:", dataset.KeyGroupRegex)
@@ -147,7 +186,7 @@ func (dataset *DataSet) getNewGroups(entity *Entity) []string {
 			return []string{}
 		}
 		logrus.Println("count=", cnt)
-		printSqlite()
+		// printSqlite()
 		if cnt == dataset.HorizontalWidth {
 			return []string{txt}
 		}
@@ -166,15 +205,14 @@ func (dataset *DataSet) getNewGroups(entity *Entity) []string {
 		y, _ := strconv.Atoi(entity.y)
 		arr := dataset.getVerticalGroupRange(y)
 		for i := 0; i < len(arr)-1; i++ {
-			n0 := arr[i]
-			n1 := arr[i+1]
-			err = db.QueryRow(sqlText, dataset.DatasetID, x, n0, n1).Scan(&txt, &cnt)
-			fmt.Printf("x=%d,y0=%d,y1=%d,cnt=%d\n", x, n0, n1, cnt)
+			y0 := arr[i]
+			y1 := arr[i+1]
+			err = db.QueryRow(sqlText, dataset.DatasetID, x, y0, y1).Scan(&txt, &cnt)
 			if err != nil {
 				logrus.Errorf("sum entity, err=%v\n", err)
 				return []string{}
 			}
-			length := n1 - n0 + 1
+			length := y1 - y0 + 1
 			if cnt == length {
 				groups = append(groups, txt)
 			}
@@ -190,12 +228,15 @@ func (dataset *DataSet) loadExistedFiles() {
 func parseDataSet(t string) *DataSet {
 	var ds DataSet
 	if err := json.Unmarshal([]byte(t), &ds); err != nil {
-		// skip non-json format error
-		if !strings.HasPrefix(err.Error(), "invalid character") {
-			fmt.Printf("error parsing, err-info:%v\n", err)
+		if regexp.MustCompile("{.+}").MatchString(t) {
+			// enclosed in curly braces， but not valid json format
+			fmt.Fprintf(os.Stderr, "Not valid json format, string=%s, err-info=%v\n", t, err)
 		}
-		// non-dataset definition
 		return nil
+	}
+	if ds.VerticalHeight == 0 {
+		// if VerticalHeight not set, then set max-int
+		ds.VerticalHeight = math.MaxInt32
 	}
 	if datasetPrefix != "" {
 		ds.DatasetID = datasetPrefix + ":" + ds.DatasetID

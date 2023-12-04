@@ -7,6 +7,7 @@ jobs:
   data-grouping:
     base_image: hub.cstcloud.cn/scalebox/data-grouping-2d
     schedule_mode: HEAD
+    command: docker run -d -P {{ENVS}} {{VOLUMES}} {{IMAGE}}
     parameters:
       start_message: ${START_MESSAGE}
     environments:

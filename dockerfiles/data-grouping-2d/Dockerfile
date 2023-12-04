@@ -26,7 +26,8 @@ RUN \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 RUN echo "ServerName 127.0.0.1" >> /etc/apache2/apache2.conf \
-    && a2enconf adminer
+    && a2enconf adminer \
+    && sed -i 's/80/8080/' /etc/apache2/ports.conf
 
 COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
@@ -35,21 +36,17 @@ COPY --from=0 /go/src/data-grouping /app/bin/data-grouping
 COPY adminer/entrypoint.sh /usr/local/bin/goagent.sh
 COPY adminer/conf.php /etc/adminer/
 
-RUN mkdir -p /work/.data-grouping
 ENV \
     ACTION_RUN=/app/bin/data-grouping \
-    MESSAGE_FILE=/work/messages.txt \
-    DATASET_FILE=/work/.data-grouping/datasets.txt \
-    SQLITE_FILE=/work/.data-grouping/my.db \
     ALWAYS_RUNNING=yes \
     DATASET_PREFIX= \
     # 'string'/'integer', 'string' -> horizon-only
-    COORD_TYPE= \
+    COORD_TYPE=integer \
     # TRACE / DEBUG / INFO / WARN / ERROR / FATAL / PANIC
     LOG_LEVEL=INFO
 
 # for adminer
-EXPOSE 80
+EXPOSE 8080
 WORKDIR /work
 
 ENTRYPOINT [ "goagent.sh" ]
