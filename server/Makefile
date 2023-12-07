@@ -33,8 +33,6 @@ default:
 all: reset import
 
 reset: down
-	@ rm -rf ${HOME}/.scalebox/log/cli
-	@ mkdir -p ${HOME}/.scalebox/log/cli
 	@ docker volume rm -f server_pgdata
 	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 	@ sleep 25
