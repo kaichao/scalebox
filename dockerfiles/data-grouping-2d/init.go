@@ -15,10 +15,8 @@ var (
 
 	logger *logrus.Logger
 
-	messageFile string
-	datasetFile string
-	sqliteFile  string
-
+	datasetFile   string
+	workDir       string
 	datasetPrefix string
 )
 
@@ -26,18 +24,16 @@ func init() {
 	var err error
 	logrus.SetReportCaller(true)
 
-	workDir := os.Getenv("WORD_DIR")
+	workDir = os.Getenv("WORD_DIR")
 	if workDir == "" {
 		workDir = "/work"
 	}
-	messageFile = workDir + "/messages.txt"
 	datasetFile = workDir + "/.scalebox/datasets.txt"
-	sqliteFile = workDir + "/.scalebox/sqlite.db"
 
 	datasetPrefix = os.Getenv("DATASET_PREFIX")
 
 	// set database connection
-	if db, err = sql.Open("sqlite3", sqliteFile); err != nil {
+	if db, err = sql.Open("sqlite3", workDir+"/.scalebox/sqlite.db"); err != nil {
 		logrus.Fatalln("Unable to open sqlite3 database:", err)
 	}
 	sqlTextFmt := `

@@ -33,6 +33,7 @@ func main() {
 		logrus.Errorf("entity:%s\nentity format should be prefix,entity_text\n", ss[0])
 		os.Exit(3)
 	}
+
 	datasetID := ss[0]
 	if datasetPrefix != "" {
 		datasetID = datasetPrefix + ":" + datasetID
@@ -64,7 +65,7 @@ func main() {
 	logrus.Printf("entity:%v\n", entity)
 
 	for _, txt := range dataset.getNewGroups(entity) {
-		scalebox.AppendToFile(messageFile, dataset.SinkJob+","+txt)
+		scalebox.AppendToFile(workDir+"/messages.txt", dataset.SinkJob+","+txt)
 	}
 
 	os.Exit(code)

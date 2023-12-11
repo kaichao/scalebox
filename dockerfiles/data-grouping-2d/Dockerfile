@@ -29,6 +29,13 @@ RUN echo "ServerName 127.0.0.1" >> /etc/apache2/apache2.conf \
     && a2enconf adminer \
     && sed -i 's/80/8080/' /etc/apache2/ports.conf
 
+RUN \
+    apt-get update \
+    && apt-get install -y sqlite3 \
+    && apt-get clean autoclean \
+    && apt-get autoremove -y \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 
