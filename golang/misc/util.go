@@ -35,15 +35,6 @@ func AppendToFile(fileName string, line string) {
 // ExecShellCommand ...
 //
 //	return stdout
-//
-//	func ExecShellCommand(cmdText string) {
-//		cmd := exec.Command("bash", "-c", cmdText)
-//		if out, err := cmd.Output(); err != nil {
-//			fmt.Fprintln(os.Stderr, err)
-//		} else {
-//			fmt.Println(string(out))
-//		}
-//	}
 func ExecShellCommand(myCmd string) string {
 	cmd := exec.Command("bash", "-c", myCmd)
 	output, err := cmd.Output()
@@ -103,6 +94,11 @@ func ExecShellCommandWithExitCode(command string, timeout int) (int, string, str
 // GetTextFileLines ...
 func GetTextFileLines(textFile string) ([]string, error) {
 	if _, err := os.Stat(textFile); err != nil {
+		_, ok := err.(*os.PathError)
+		if ok && strings.Contains(err.Error(), "no such file or directory") {
+			// file not exists
+			return []string{}, nil
+		}
 		return []string{}, err
 	}
 
