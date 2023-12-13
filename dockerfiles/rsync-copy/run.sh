@@ -84,7 +84,7 @@ case $source_mode in
         rsync -Rut ${rsync_args} -e "${ssh_args}" $m $target_url
         ;;
     "RSYNC")
-        cd $source_url
+        cd "/local"$source_url
         rsync -Rut ${rsync_args} $m $target_url
         ;;
     *)      exit 32 ;;
@@ -157,5 +157,12 @@ echo $ds1 >> ${WORK_DIR}/timestamps.txt
 # }
 # EOF
 send-message $m; code=$?
+
+if [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ]; then
+    # PUSH
+    full_path_file="/local${source_url}/${m}"
+    echo [DEBUG]full_path_file:$full_path_file
+    rm -f $full_path_file
+fi
 
 exit $code

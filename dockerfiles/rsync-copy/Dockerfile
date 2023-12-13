@@ -23,6 +23,7 @@ ENV SOURCE_URL= \
     DIR_LIMIT_GB= \
     # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY= \
+    KEEP_SOURCE_FILE=yes \
     SERVER_CONTAINERIZED=
 
 COPY *.sh /app/bin/

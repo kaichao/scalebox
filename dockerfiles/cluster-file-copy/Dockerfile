@@ -18,6 +18,7 @@ ENV SOURCE_CLUSTER= \
     RELAY_OPTIONS= \
     # default value : 3
     ZSTD_CLEVEL= \
+    KEEP_SOURCE_FILE=yes \
     # directory capacity limit, sep sign is '~'
     DIR_LIMIT_GB= \
     # Break through the permissions in cifs-based file storage

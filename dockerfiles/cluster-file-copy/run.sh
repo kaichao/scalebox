@@ -83,7 +83,7 @@ rsync_prefix=$(echo $v | cut -d "#" -f 1)
 ssh_port=$(echo $v | cut -d "#" -f 2)
 [ "$ssh_port" == "" ] && ssh_port="22"
 remote_external_relay=$(echo $v | cut -d "#" -f 3)
-remoate_internal_relay=$(echo $v | cut -d "#" -f 4)
+remote_internal_relay=$(echo $v | cut -d "#" -f 4)
 
 if [ "$RELAY_OPTIONS" == "local" ]; then
     jump_servers=$local_internal_relay
@@ -117,6 +117,13 @@ if [[ $code -eq 0 ]]; then
     [[ $code -ne 0 ]] && echo "error send-message for file :$m" >&2 && exit $code
 else
     echo "[ERROR], cmd=$cmd, code=$code" >&2
+fi
+
+if [ "$SOURCE_CLUSTER" = "" ] && [ "$KEEP_SOURCE_FILE" = "no" ]; then
+    # PUSH
+    full_path_file="${local_root}/${file}"
+    echo full_path_file:$full_path_file
+    rm -f $full_path_file
 fi
 
 exit $code
