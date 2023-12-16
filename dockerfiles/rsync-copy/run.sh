@@ -95,7 +95,11 @@ case $source_mode in
     "LOCAL")
         ssh_port=${arr_source[2]}
         ssh_args="ssh -p ${ssh_port} ${ssh_args}"
-        dest_dir=$(dirname "/local"${target_url}/$m)
+        if [[ $target_url == /data* ]]; then
+            dest_dir=$(dirname ${target_url}/$m)
+        else
+            dest_dir=$(dirname "/local"${target_url}/$m)
+        fi
         full_file_name=${dest_dir}/$(basename $m)
         echo dest_dir:$dest_dir
         mkdir -p ${dest_dir}
