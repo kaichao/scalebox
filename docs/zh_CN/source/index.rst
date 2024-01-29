@@ -8,7 +8,7 @@ Welcome to Scalebox's documentation!
 
 .. toctree::
    :maxdepth: 2
-   :caption: Introduction
+   :caption: 引言
    :hidden:
 
    research_background
