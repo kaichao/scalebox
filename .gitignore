@@ -3,3 +3,6 @@
 .DS_Store?
 
 /Makefile
+
+docs/en/build
+docs/zh_CN/build
