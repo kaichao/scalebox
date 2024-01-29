@@ -21,8 +21,8 @@ services:
       - LOG_LEVEL=WARN
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${HOME}/.scalebox/log/controld:/var/log/scalebox/controld
-      - /tmp/controld-profile:/profile
+      - /tmp/scalebox/log/controld:/tmp/scalebox/log/controld
+      - /tmp/scalebox/controld-profile:/profile
 
   actuator:
     image: hub.cstcloud.cn/scalebox/actuator
@@ -42,6 +42,7 @@ services:
       # for external cluster to start external slots
       - HEAD_SSH_USER=${USER}
       - HEAD_SSH_PORT=10022
+      - TRACE_EXECUTOR=yes
     ports:
       - 50062:8080
     cap_add:
@@ -49,8 +50,8 @@ services:
       - NET_ADMIN
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - ${HOME}/.scalebox/log/actuator:/var/log/scalebox/actuator
-      - /tmp/actuator-profile:/profile
+      - /tmp/scalebox/log/actuator:/tmp/scalebox/log/actuator
+      - /tmp/scalebox/actuator-profile:/profile
     # for k8s
       - ${HOME}/.kube:/root/.kube
     depends_on:

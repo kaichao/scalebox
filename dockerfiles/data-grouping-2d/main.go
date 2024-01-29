@@ -17,51 +17,55 @@ func main() {
 	}
 
 	keyText := os.Args[1]
-	dataset := parseDataSet(keyText)
 	var code int
+	dataset := parseDataSet(keyText)
 	if dataset != nil {
 		// new dataset
 		mapDataset[dataset.DatasetID] = dataset
-		fmt.Printf("new added dataset:%v\n", dataset)
+		logrus.Printf("new added dataset:%v\ndataset-map:%v\n", dataset, mapDataset)
 		scalebox.AppendToFile(datasetFile, keyText)
-		logrus.Println("dataset-map:", mapDataset)
-	} else {
-		// new entity
-		ss := strings.Split(keyText, ",")
-		if len(ss) == 1 {
-			logrus.Errorf("entity:%s\nentity format should be prefix,entity_text\n", ss[0])
-			os.Exit(3)
-		}
-		datasetID := datasetPrefix + ":" + ss[0]
-		name := ss[1]
-		fmt.Println("dataset-id:", datasetID)
-		// The same set of datasets has the same regex
-		for k, v := range mapDataset {
-			fmt.Printf("k:%s,v:%v\n", k, v)
-			if strings.HasPrefix(k, datasetID) {
-				dataset = v
-				break
-			}
-		}
+		os.Exit(0)
+	}
 
-		// dataset = mapDataset[datasetID]
-		logrus.Printf("dataset-id:%s,dataset:%v, dataset-map:%v", datasetID, dataset, mapDataset)
-		if dataset == nil {
-			fmt.Fprintf(os.Stderr, "dataset %s not found\n", datasetID)
-			os.Exit(1)
-		}
-		entity := dataset.parseEntity(name)
-		entity.datasetID = datasetID + ":" + entity.datasetID
+	// new entity
+	ss := strings.Split(keyText, ",")
+	if len(ss) == 1 {
+		logrus.Errorf("entity:%s\nentity format should be prefix,entity_text\n", ss[0])
+		os.Exit(3)
+	}
 
-		datasetID = entity.datasetID
-		// set the real dataset
-		dataset = mapDataset[datasetID]
-		dataset.addEntity(entity)
-		logrus.Printf("entity:%v\n", entity)
-
-		for _, txt := range dataset.getNewGroups(entity) {
-			scalebox.AppendToFile(messageFile, dataset.SinkJob+","+txt)
+	datasetID := ss[0]
+	if datasetPrefix != "" {
+		datasetID = datasetPrefix + ":" + datasetID
+	}
+	name := ss[1]
+	logrus.Println("dataset-id:", datasetID)
+	// The same set of datasets has the same regex
+	for k, v := range mapDataset {
+		fmt.Printf("k:%s,v:%v\n", k, v)
+		if strings.HasPrefix(k, datasetID) {
+			dataset = v
+			break
 		}
+	}
+
+	// dataset = mapDataset[datasetID]
+	logrus.Printf("dataset-id:%s,dataset:%v, dataset-map:%v", datasetID, dataset, mapDataset)
+	if dataset == nil {
+		fmt.Fprintf(os.Stderr, "dataset %s not found\n", datasetID)
+		os.Exit(1)
+	}
+	entity := dataset.parseEntity(name)
+	entity.datasetID = datasetID + ":" + entity.datasetID
+
+	datasetID = entity.datasetID
+	// set the real dataset
+	dataset = mapDataset[datasetID]
+	dataset.addEntity(entity)
+	logrus.Printf("entity:%v\n", entity)
+
+	for _, txt := range dataset.getNewGroups(entity) {
+		scalebox.AppendToFile(workDir+"/messages.txt", dataset.SinkJob+","+txt)
 	}
 
 	os.Exit(code)

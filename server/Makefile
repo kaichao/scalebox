@@ -28,12 +28,11 @@ endif
 
 default:
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
+	# [[ $(LOCAL_ADDR) =~ ^([0-9]+\.){3}[0-9]+$ ]] && echo valid ip-addr
 
 all: reset import
 
 reset: down
-	@ rm -rf ${HOME}/.scalebox/log/cli
-	@ mkdir -p ${HOME}/.scalebox/log/cli
 	@ docker volume rm -f server_pgdata
 	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
 	@ sleep 25

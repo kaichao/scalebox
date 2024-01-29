@@ -60,6 +60,8 @@ if [[ $ZSTD_CLEVEL != "" ]]; then
     rsync_args="--cc=xxh3 --compress --compress-choice=zstd --compress-level=${ZSTD_CLEVEL}"
 fi
 
+echo "[DEBUG]source_url:$source_url,target_url:$target_url,message:$m"
+
 ds0=$(date --iso-8601=ns)
 case $source_mode in
 "LOCAL")
@@ -69,14 +71,20 @@ case $source_mode in
         ssh_port=${arr_target[2]}
         ssh_args="ssh -p ${ssh_port} ${ssh_args}"
         full_file_name=${dest_dir}/$(basename $m)
+
+        # create directory in target side.
+        my_arr=($(echo $target_url | tr ":" " "))
+        cmd="ssh -p ${ssh_port} ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
+        # echo cmd:$cmd
+        eval $cmd; code=$?
+        # ssh -p ${ssh_port} ${my_arr[0]} "mkdir -p ${my_arr[1]}"
+        [[ $code -ne 0 ]] && echo "[ERROR] mkdir in ssh-server,cmd:$cmd" >&2 && exit $code
+
         cd "/local"$source_url
-        echo source_url:$source_url
-        echo target_url:$target_url
-        echo m:$m
         rsync -Rut ${rsync_args} -e "${ssh_args}" $m $target_url
         ;;
     "RSYNC")
-        cd $source_url
+        cd "/local"$source_url
         rsync -Rut ${rsync_args} $m $target_url
         ;;
     *)      exit 32 ;;
@@ -87,11 +95,12 @@ case $source_mode in
     "LOCAL")
         ssh_port=${arr_source[2]}
         ssh_args="ssh -p ${ssh_port} ${ssh_args}"
-        dest_dir=$(dirname "/local"${target_url}/$m)
+        if [[ $target_url == /data* ]]; then
+            dest_dir=$(dirname ${target_url}/$m)
+        else
+            dest_dir=$(dirname "/local"${target_url}/$m)
+        fi
         full_file_name=${dest_dir}/$(basename $m)
-        echo source_url:$source_url
-        echo target_url:$target_url
-        echo m:$m
         echo dest_dir:$dest_dir
         mkdir -p ${dest_dir}
         rsync -ut ${rsync_args} -e "${ssh_args}" $source_url/$m ${dest_dir}
@@ -152,5 +161,12 @@ echo $ds1 >> ${WORK_DIR}/timestamps.txt
 # }
 # EOF
 send-message $m; code=$?
+
+if [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ]; then
+    # PUSH
+    full_path_file="/local${source_url}/${m}"
+    echo [DEBUG]full_path_file:$full_path_file
+    rm -f $full_path_file
+fi
 
 exit $code

@@ -28,7 +28,7 @@ func GetLocalIP() string {
 	// remove '\n'
 	localIP = strings.Replace(localIP, "\n", "", -1)
 	reIPv4 := regexp.MustCompile("^([0-9]+\\.){3}[0-9]+$")
-	if reIPv4.MatchString(localIP) {
+	if !reIPv4.MatchString(localIP) {
 		logrus.Warnf("error get_local_ip, localIP=%s\n", localIP)
 	}
 	return localIP

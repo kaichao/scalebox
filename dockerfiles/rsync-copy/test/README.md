@@ -19,6 +19,20 @@ FILE_NAME=/etc~postfix/master.cf~scalebox@10.255.128.1/tmp scalebox app create
 FILE_NAME=/~etc/postfix/master.cf~scalebox@10.255.128.1/tmp scalebox app create
 
 FILE_NAME=/etc/postfix~master.cf~scalebox@10.255.128.1/tmp scalebox app create
+```
+
+- KEEP_SOURCE_FILE test
+
+```sh
+touch /tmp/myfile.txt
+
+FILE_NAME=/tmp~myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+
+KEEP_SOURCE_FILE=no FILE_NAME=/tmp~myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+
+FILE_NAME=/tmp~mydir/myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+
+KEEP_SOURCE_FILE=no FILE_NAME=/tmp~mydir/myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
 
 ```
 

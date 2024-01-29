@@ -4,8 +4,8 @@
 [[ ! $DIR_LIMIT_GB ]] && exit 0
 
 # DIR_LIMIT_GB=/Users/kaichao/WORK/workspace,4
-dir0=$(echo $DIR_LIMIT_GB | cut -d "#" -f 1)
-limit_gb=$(echo $DIR_LIMIT_GB | cut -d "#" -f 2)
+dir0=$(echo $DIR_LIMIT_GB | cut -d "~" -f 1)
+limit_gb=$(echo $DIR_LIMIT_GB | cut -d "~" -f 2)
 
 dir=${dir0}
 if [[ $dir =~ ^([^/].*)$ ]]; then

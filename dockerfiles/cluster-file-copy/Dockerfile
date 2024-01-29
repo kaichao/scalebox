@@ -14,11 +14,12 @@ COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
 
 ENV SOURCE_CLUSTER= \
     TARGET_CLUSTER= \
-    # 'source' / 'target' / 'source,target' 
-    JUMP_SERVER_OPTION= \
+    # 'local' / 'remote' / 'local#remote' / 'remote#local' 
+    RELAY_OPTIONS= \
     # default value : 3
     ZSTD_CLEVEL= \
-    # directory capacity limit
+    KEEP_SOURCE_FILE=yes \
+    # directory capacity limit, sep sign is '~'
     DIR_LIMIT_GB= \
     # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY=
