@@ -1,17 +1,25 @@
 # 6. 高级编程特性
 
-## 6.1 超时设置 timeout
+## 6.1 跨集群应用
 
-超时设置 timeout
 
-## 6.2 自动重试 retry
+## 6.2 本地计算（Local Compute）
 
-自动重试 retry
 
-## 6.3 流控设置
+## 6.3 消息路由
 
-流控设置
+开启task头获取功能。
+可用不同程序语言实现。
+- bash
+- python
+- golang
 
-## 6.4 task-perspective
+## 6.4 信号量
 
-task-perspective
+### 信号量名称的命名规范
+
+## 6.5 关键路径模块的task排序
+
+## 6.6 多GPU配置
+
+## 6.7 git应用代码库
