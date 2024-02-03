@@ -162,11 +162,22 @@ echo $ds1 >> ${WORK_DIR}/timestamps.txt
 # EOF
 send-message $m; code=$?
 
-if [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ]; then
-    # PUSH
-    full_path_file="/local${source_url}/${m}"
-    echo [DEBUG]full_path_file:$full_path_file
-    rm -f $full_path_file
+echo source_mode:$source_mode, KEEP_SOURCE_FILE:$KEEP_SOURCE_FILE
+full_path_file="/local${source_url}/${m}"
+echo full_path_file:$full_path_file
+[ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ] && echo $full_path_file >> ${WORK_DIR}/removed-files.txt
+
+
+if [ "$source_mode" = "LOCAL" ]; then
+    echo $full_path_file >> ${WORK_DIR}/input-files.txt
+    echo $full_path_file >> ${WORK_DIR}/output-files.txt
 fi
+
+# if [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ]; then
+#     # PUSH
+#     full_path_file="/local${source_url}/${m}"
+#     echo [DEBUG]full_path_file:$full_path_file
+#     rm -f $full_path_file
+# fi
 
 exit $code
