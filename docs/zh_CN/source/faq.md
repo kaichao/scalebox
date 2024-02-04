@@ -1,4 +1,4 @@
-# 3. FAQ
+# 7. 常见问答集
 
 Frequently Asked Questions
 

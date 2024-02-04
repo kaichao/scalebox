@@ -1,3 +1,0 @@
-# Parallel Programming
-
-Parallel Programming

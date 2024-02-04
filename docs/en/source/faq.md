@@ -1,3 +1,11 @@
-# FAQ
+# 7. FAQ
 
-faq
+Frequently Asked Questions
+
+## 1. 
+
+## 2. 
+
+
+
+

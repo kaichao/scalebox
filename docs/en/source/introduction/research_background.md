@@ -1,3 +1,0 @@
-# Research Background
-
-Research Background

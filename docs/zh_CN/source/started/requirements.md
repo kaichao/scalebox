@@ -1,6 +1,4 @@
-# 2. 安装Scalebox
-
-## 2.1 系统环境需求
+# 6. 环境需求
 
 ### 芯片架构及操作系统
 
@@ -20,10 +18,4 @@
 | podman  | 4.8<sup>+</sup>  | |
 | singularity  | 3.8<sup>+</sup>  | |
 | containerd + nerdctl  | 1.6<sup>+</sup>  | 待测试 |
-
-
-
-## 2.2 头节点安装
-
-## 2.3 计算节点安装
 

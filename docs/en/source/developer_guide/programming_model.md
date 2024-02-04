@@ -1,4 +1,0 @@
-# Programming Model
-
-Programming Model
-

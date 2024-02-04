@@ -1,35 +1,65 @@
-.. scalebox documentation master file, created by
-   sphinx-quickstart on Mon Jan 29 06:19:06 2024.
+.. Scalebox documentation master file, created by
+   sphinx-quickstart on Sun Jan 21 09:48:07 2024.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to scalebox's documentation!
+Welcome to Scalebox Documentation!
 ====================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: Introduction
+   :caption: Get Started
    :hidden:
 
-   introduction/research_background
-   introduction/programming_framework
+   started/what_is_scalebox
+   started/research_background
+   started/parallel_programming
+   started/architecture
+   started/concepts/index
+   started/requirements
    faq
-   help
+   release_notes
 
 .. toctree::
    :maxdepth: 2
    :caption: User Guide
    :hidden:
-   
-   user_guide/architecture
+
+   user/head_install
+   user/node_install
+   user/common_modules
+   user/app_examples
+   user/cmdline
+   user/webui
+   user/adminer
 
 .. toctree::
    :maxdepth: 2
    :caption: Developer Guide
    :hidden:
-   
-   developer_guide/programming_model
 
+   developer/programming_model
+   developer/app_spec
+   developer/app_impl
+   developer/module_impl
+   developer/common_features
+   developer/advanced_features
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Appendix
+   :hidden:
+
+   appendix/cmdline
+   appendix/app_def
+
+.. toctree::
+   :maxdepth: 2
+   :caption: About Us
+   :hidden:
+
+   about_us/contributors
+   about_us/contact_us
 
 Indices and tables
 ==================

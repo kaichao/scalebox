@@ -3,48 +3,63 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to Scalebox's documentation!
+欢迎来到Scalebox的文档库!
 ====================================
 
 .. toctree::
    :maxdepth: 2
-   :caption: 引言
+   :caption: 入门教程
    :hidden:
 
-   introduction/research_background
-   introduction/parallel_programming
+   started/what_is_scalebox
+   started/research_background
+   started/parallel_programming
+   started/architecture
+   started/concepts/index
+   started/requirements
    faq
-   help
+   release_notes
 
 .. toctree::
    :maxdepth: 2
    :caption: 使用指南
    :hidden:
 
-   user_guide/architecture
-   user_guide/install
-   user_guide/common_modules
-   user_guide/app_examples
+   user/head_install
+   user/node_install
+   user/common_modules
+   user/app_examples
+   user/cmdline
+   user/webui
+   user/adminer
 
 .. toctree::
    :maxdepth: 2
    :caption: 开发指南
    :hidden:
 
-   developer_guide/programming_model
-   developer_guide/app_spec
-   developer_guide/app_impl
-   developer_guide/module_impl
-   developer_guide/common_features
-   developer_guide/advanced_features
+   developer/programming_model
+   developer/app_spec
+   developer/app_impl
+   developer/module_impl
+   developer/common_features
+   developer/advanced_features
 
 .. toctree::
    :maxdepth: 2
-   :caption: 引用文档
+   :caption: 附录
    :hidden:
 
-   references/cmdline
-   references/app_def
+   appendix/cmdline
+   appendix/app_def
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 关于我们
+   :hidden:
+
+   about_us/contributors
+   about_us/contact_us
 
 Indices and tables
 ==================
