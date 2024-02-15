@@ -1,10 +1,18 @@
 # 4. 模块设计实现
 
+
+
 ## 4.1 task-key定义
 
 ## 4.2 Dockerfile定义
 
 ## 4.3 脚本编程
+
+sidecar模式：
+run: task的单次运行
+check: 检测run的前置条件
+setup: 设置环境
+teardown: 清除环境
 
 ### 4.3.1 算法运行run.sh
 
@@ -16,6 +24,18 @@
 
 
 ## 4.4 集成测试
+
+用户程序：用任意语言写；
+
+集成程序：一般用bash写。将用户程序的结果写回。
+
+用户程序与集成程序间接口：
+- 运行结果文件：/work/task-exec.json
+- 用户自定义时间戳：/work/timestamps.txt
+- 用户数据文件：/work/user-data.txt
+- 输入文件列表：/work/input-files.txt
+- 输出文件列表：/work/output-files.txt
+- 输出消息文件：/work/output-messages.txt
 
 - 多个初始化消息
 
