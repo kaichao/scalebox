@@ -8,8 +8,8 @@ jobs:
   scatter:
     label: domain decomposition
     base_image: app-primes/scatter
-    schedule_mode: HEAD
     parameters:
+      slot_on_head: yes
       start_message: ANY
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
@@ -29,11 +29,12 @@ jobs:
   gather:
     label: Summary of results
     base_image: app-primes/gather
-    schedule_mode: HEAD
-    environments:
-      - NUM_GROUPS=${NUM_GROUPS}
+    parameters:
+      slot_on_head: yes
     variables:
       # for session support
       # slot_options: always_running,reserved_on_exit
       sleep_seconds: 10
       max_sleep_count: 30
+    environments:
+      - NUM_GROUPS=${NUM_GROUPS}

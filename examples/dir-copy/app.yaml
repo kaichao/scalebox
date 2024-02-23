@@ -7,7 +7,8 @@ parameters:
 jobs:
   dir-list:
     base_image: hub.cstcloud.cn/scalebox/dir-list
-    schedule_mode: HEAD
+    parameters:
+      slot_on_head: yes
     variables:
       # 10 minutes
       max_sleep_count: 120
@@ -20,22 +21,24 @@ jobs:
 
   rsync-copy:
     base_image: hub.cstcloud.cn/scalebox/rsync-copy
-    schedule_mode: HEAD
+    parameters:
+      slot_on_head: yes
     variables:
     # 10 minutes
       max_sleep_count: 120
 
   ftp-copy:
     base_image: hub.cstcloud.cn/scalebox/ftp-copy
-    schedule_mode: HEAD
+    parameters:
+      slot_on_head: yes
     variables:
     # 10 minutes
       max_sleep_count: 120
 
   message-router:
     base_image: dir-copy/message-router
-    schedule_mode: HEAD
     parameters:
+      slot_on_head: yes
       start_message: ${DIR_NAME}
     variables:
     # 10 minutes

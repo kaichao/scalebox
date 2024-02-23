@@ -6,7 +6,6 @@ parameters:
 jobs:
   hello-scalebox:
     base_image: singularity/scalebox/hello-scalebox.sif
-    # schedule_mode: HEAD
     parameters:
+      slot_on_head: yes
       start_message: scalebox
-    # command: singularity run {{ENVS}} {{VOLUMES}} docker://{{IMAGE}}
