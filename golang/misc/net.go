@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/sirupsen/logrus"
@@ -19,7 +20,10 @@ func GetLocalIP() string {
 	var cmd string
 	if localIPIndexStr == "" {
 		cmd = "hostname -i"
-	} else {
+	} else if runtime.GOOS == "darwin" { // macos
+		// 172.*.*.* are used for out-of-band Network/container network
+		cmd = `ifconfig|grep "inet "|grep -v 127.0.0.1|grep -v "inet 172."|head -1|cut -d ' ' -f 2`
+	} else { // linux
 		cmd = fmt.Sprintf("hostname -I | awk '{print $%s}'", localIPIndexStr)
 	}
 

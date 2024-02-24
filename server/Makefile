@@ -19,7 +19,7 @@ ifeq ($(origin LOCAL_ADDR), undefined)
 	    	LOCAL_ADDR := $$(hostname -I| cut -d ' ' -f ${LOCAL_IP_INDEX})
     	endif
 	else ifeq ($(UNAME), Darwin)
-		LOCAL_ADDR := $$(ifconfig|grep "inet "|grep -v 127.0.0.1|head -1|cut -d ' ' -f 2)
+		LOCAL_ADDR := $$(ifconfig|grep "inet "|grep -v 127.0.0.1|grep -v "inet 172."|head -1|cut -d ' ' -f 2)
 	else
 		$(info This is neither a Linux nor a macOS system)
 	endif
