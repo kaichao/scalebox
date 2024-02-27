@@ -1,11 +1,17 @@
 name: check_test.test-app
-cluster: local
+cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
 
 jobs:
   check_test:
-    base_image: check_test
-    schedule_mode: HEAD
+    base_image: hub.cstcloud.cn/scalebox/agent
     parameters:
+      slot_on_head: yes
       start_message: ANY
+    variables:
+      code_path: ${PWD}/code
+      dir_limit_gb: ${DIR_LIMIT_GB}
+      dir_free_gb: ${DIR_FREE_GB}
+    environments:
+      - ACTION_CHECK=${ACTION_CHECK}
