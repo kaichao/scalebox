@@ -19,14 +19,13 @@ ENV SOURCE_CLUSTER= \
     # default value : 3
     ZSTD_CLEVEL= \
     KEEP_SOURCE_FILE=yes \
-    # directory capacity limit, sep sign is '~'
-    DIR_LIMIT_GB= \
     # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY=
 
 COPY *.sh /app/bin/
 
-COPY --from=hub.cstcloud.cn/scalebox/base /usr/local/sbin/ /usr/local/sbin/
+COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/bin/ /usr/local/bin/
+COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/sbin/ /usr/local/sbin/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 ENTRYPOINT [ "goagent" ]
