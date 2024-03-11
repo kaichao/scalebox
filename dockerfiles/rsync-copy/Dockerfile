@@ -13,23 +13,24 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
 COPY --from=hub.cstcloud.cn/scalebox/dir-list /usr/local/bin/* /usr/local/bin/ 
 
-ENV SOURCE_URL= \
+ENV \
+    SOURCE_URL= \
     TARGET_URL= \
     RSYNC_PASSWORD= \
     # user1@host1,user2@host2
     JUMP_SERVERS= \
     ZSTD_CLEVEL= \
-    # directory capacity limit
-    DIR_LIMIT_GB= \
     # Break through the permissions in cifs-based file storage
     ENABLE_LOCAL_RELAY= \
     KEEP_SOURCE_FILE=yes \
-    SERVER_CONTAINERIZED=
+    SERVER_CONTAINERIZED= \
+    WORK_DIR=
 
 COPY parse.sh run.sh /app/bin/
 
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/bin/ /usr/local/bin/
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/sbin/ /usr/local/sbin/
+# COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/bin/ /usr/local/bin/
+# COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/sbin/ /usr/local/sbin/
+COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 ENTRYPOINT [ "goagent" ]

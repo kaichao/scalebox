@@ -10,8 +10,10 @@ elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)?@)??[^:/]+(:[0-9]+)?/.*)$ ]]; then
     rsync_url=${BASH_REMATCH[1]}
     rsync_pass=${BASH_REMATCH[3]}
     rsync_port=${BASH_REMATCH[4]}
+
     # remove rsync_pass from rsync_url
-    rsync_url=${rsync_url//$rsync_pass/}
+    # rsync_url=${rsync_url//$rsync_pass/}
+    rsync_url=$(echo "$rsync_url" | sed "s/${rsync_pass}//")
     echo "RSYNC $rsync_url ${rsync_pass:1}"
 elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/.*)$ ]]; then
     # user@myhost:22/my-root

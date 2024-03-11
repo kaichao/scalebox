@@ -1,9 +1,11 @@
 #!/bin/bash
 
-# support singularity
-[[ ! $WORK_DIR ]] && echo "[ERROR] WORK_DIR is null, Check the permissions of the directory /tmp/scalebox." >&2 && exit 110
-echo [DEBUG] WORK_DIR:${WORK_DIR}: >&2
-cd ${WORK_DIR}
+set -e
+
+# Support singularity
+[[ ! $WORK_DIR ]] && { echo "[ERROR] WORK_DIR is null, Check the permissions of the directory /tmp/scalebox." >&2; exit 110; }
+echo "[DEBUG] WORK_DIR:${WORK_DIR}:" >&2
+cd "${WORK_DIR}"
 
 m=$1
 if [ "$SOURCE_URL" == "" ] || [ "$TARGET_URL" == "" ]; then
@@ -14,22 +16,8 @@ if [ "$SOURCE_URL" == "" ] || [ "$TARGET_URL" == "" ]; then
     s1=${BASH_REMATCH[1]}
     s2=${BASH_REMATCH[2]}
     s3=${BASH_REMATCH[3]}
-    if [ "$SOURCE_URL" != "" ]; then
-        source_url=$SOURCE_URL
-    elif [ "$s1" != "" ]; then
-        source_url=$s1
-    else
-        echo "null source_url, message:"$1 >&2
-        exit 22
-    fi
-    if [ "$TARGET_URL" != "" ]; then
-        target_url=$TARGET_URL
-    elif [ "$s3" != "" ]; then
-        target_url=$s3
-    else
-        echo "null target_url, message:"$1 >&2
-        exit 23
-    fi
+    source_url=${SOURCE_URL:-$s1}
+    target_url=${TARGET_URL:-$s3}
     if [ "$s2" == "" ]; then
         echo "null mesage_body, message:"$1 >&2
         exit 24
@@ -62,7 +50,8 @@ fi
 
 echo "[DEBUG]source_url:$source_url,target_url:$target_url,message:$m"
 
-ds0=$(date --iso-8601=ns)
+date --iso-8601=ns >> ${WORK_DIR}/timestamps.txt
+
 case $source_mode in
 "LOCAL")
     case $target_mode in
@@ -74,7 +63,13 @@ case $source_mode in
 
         # create directory in target side.
         my_arr=($(echo $target_url | tr ":" " "))
-        cmd="ssh -p ${ssh_port} ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
+
+        if [[ $JUMP_SERVERS == "" ]]; then 
+            cmd="ssh -p ${ssh_port} ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
+        else
+            cmd="ssh -p ${ssh_port} -J $JUMP_SERVERS ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
+        fi
+
         # echo cmd:$cmd
         eval $cmd; code=$?
         # ssh -p ${ssh_port} ${my_arr[0]} "mkdir -p ${my_arr[1]}"
@@ -127,7 +122,7 @@ case $source_mode in
 esac
 
 code=$?
-ds1=$(date --iso-8601=ns)
+date --iso-8601=ns >> ${WORK_DIR}/timestamps.txt
 
 if [ $code -ne 0 ]; then
     if [ $code -eq 23 ];then
@@ -151,8 +146,6 @@ if [ $code -ne 0 ]; then
 fi
 [[ $code -ne 0 ]] && exit $code
 
-echo $ds0 >> ${WORK_DIR}/timestamps.txt
-echo $ds1 >> ${WORK_DIR}/timestamps.txt
 # cat << EOF > /work/task-exec.json
 # {
 #     "inputBytes":$total_bytes,
@@ -167,17 +160,9 @@ full_path_file="/local${source_url}/${m}"
 echo full_path_file:$full_path_file
 [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ] && echo $full_path_file >> ${WORK_DIR}/removed-files.txt
 
-
 if [ "$source_mode" = "LOCAL" ]; then
     echo $full_path_file >> ${WORK_DIR}/input-files.txt
     echo $full_path_file >> ${WORK_DIR}/output-files.txt
 fi
-
-# if [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ]; then
-#     # PUSH
-#     full_path_file="/local${source_url}/${m}"
-#     echo [DEBUG]full_path_file:$full_path_file
-#     rm -f $full_path_file
-# fi
 
 exit $code
