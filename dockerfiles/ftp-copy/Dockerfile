@@ -20,8 +20,7 @@ ENV SOURCE_URL= \
     NUM_PGET_CONN=4 \
     ENABLE_LOCAL_RELAY=no
 
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/bin/ /usr/local/bin/
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/sbin/ /usr/local/sbin/
+COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 ENTRYPOINT [ "goagent" ]
