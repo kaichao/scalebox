@@ -20,7 +20,7 @@ FROM debian:11-slim
 
 LABEL maintainer="kaichao"
 
-# the newest curlftpfs may not compatible, the following is OK.
+# the newest curlftpfs may not be compatible, the following is OK.
 # $ curlftpfs --version
 # curlftpfs 0.9.2 libcurl/7.74.0 fuse/2.9
 RUN \
@@ -49,7 +49,7 @@ ENV SOURCE_URL= \
     INDEX_2D_DATASET= \
     RSYNC_PASSWORD=
 
-COPY run.sh /app/bin/
+COPY run.sh /app/share/bin/
 COPY list-files.sh /usr/local/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local /usr/local

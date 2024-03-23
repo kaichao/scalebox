@@ -11,7 +11,7 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
 
 RUN mkdir -p /local /work
 
-COPY *.sh /app/bin/
+COPY *.sh /app/share/bin/
 
 ENV SOURCE_URL= \
     TARGET_URL= \

@@ -21,12 +21,12 @@ else
     exit 11
 fi
 
-arr_source=($(/app/bin/parse.sh $source_url))
+arr_source=($(/app/share/bin/parse.sh $source_url))
 code=$?
 [[ $code -ne 0 ]] && echo error while parse_source_url, error_code:$code, source_url:$source_url >&2 && exit $code
 source_mode=${arr_source[0]}
 
-arr_target=($(/app/bin/parse.sh $target_url))
+arr_target=($(/app/share/bin/parse.sh $target_url))
 code=$?
 [[ $code -ne 0 ]] && echo error while parse_target_url, error_code:$code, source_url:$target_url >&2 && exit $code
 target_mode=${arr_target[0]}
