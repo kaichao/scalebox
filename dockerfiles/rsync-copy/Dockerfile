@@ -11,7 +11,7 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
-COPY --from=hub.cstcloud.cn/scalebox/dir-list /usr/local/bin/* /usr/local/bin/ 
+# COPY --from=hub.cstcloud.cn/scalebox/dir-list /usr/local/bin/* /usr/local/bin/ 
 
 ENV \
     SOURCE_URL= \
@@ -24,6 +24,7 @@ ENV \
     ENABLE_LOCAL_RELAY= \
     KEEP_SOURCE_FILE=yes \
     SERVER_CONTAINERIZED= \
+    RSYNC_TIMEOUT_SECONDS=600 \
     WORK_DIR=
 
 COPY parse.sh run.sh /app/share/bin/

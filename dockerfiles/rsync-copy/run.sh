@@ -70,10 +70,11 @@ case $source_mode in
             cmd="ssh -p ${ssh_port} -J $JUMP_SERVERS ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
         fi
 
-        # echo cmd:$cmd
-        eval $cmd; code=$?
-        # ssh -p ${ssh_port} ${my_arr[0]} "mkdir -p ${my_arr[1]}"
-        [[ $code -ne 0 ]] && echo "[ERROR] mkdir in ssh-server,cmd:$cmd" >&2 && exit $code
+        #  no need.
+        # # echo cmd:$cmd
+        # eval $cmd; code=$?
+        # # ssh -p ${ssh_port} ${my_arr[0]} "mkdir -p ${my_arr[1]}"
+        # [[ $code -ne 0 ]] && echo "[ERROR] mkdir in ssh-server,cmd:$cmd" >&2 && exit $code
 
         cd "/local"$source_url
         rsync -Rut ${rsync_args} -e "${ssh_args}" $m $target_url
@@ -131,6 +132,9 @@ if [ $code -ne 0 ]; then
     elif [ $code -eq 11 ];then
         # Input/output error (5)
         # rsync error: error in file IO (code 11) at receiver.c(871) [receiver=3.2.3]
+        # rsync: write failed on "/dev/shm/scalebox/mydata/mwa/1chx/1257010784/p00058/t1257013666_1257013785/ch131.fits.zst": No space left on device (28)
+        # rsync error: error in file IO (code 11) at receiver.c(393) [receiver=3.1.2]
+
         code=11
     elif [ $code -eq 255 ];then
         # ssh: connect to host 60.245.209.223 port 22: Connection timed out
@@ -144,7 +148,7 @@ if [ $code -ne 0 ]; then
         # rsync error: error in socket IO (code 10) at clientserver.c(138) [Receiver=3.2.6]
     fi
 fi
-[[ $code -ne 0 ]] && exit $code
+[[ $code -ne 0 ]] && echo "ERROR while do rsync: $m" >&2 && exit $code
 
 # cat << EOF > /work/task-exec.json
 # {
@@ -154,15 +158,16 @@ fi
 # }
 # EOF
 send-message $m; code=$?
+[[ $code -ne 0 ]] && echo "ERROR while sending-message: $m" >&2 && exit $code
 
 echo source_mode:$source_mode, KEEP_SOURCE_FILE:$KEEP_SOURCE_FILE
 full_path_file="/local${source_url}/${m}"
 echo full_path_file:$full_path_file
 [ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ] && echo $full_path_file >> ${WORK_DIR}/removed-files.txt
 
-if [ "$source_mode" = "LOCAL" ]; then
+# if [ "$source_mode" = "LOCAL" ]; then
     echo $full_path_file >> ${WORK_DIR}/input-files.txt
     echo $full_path_file >> ${WORK_DIR}/output-files.txt
-fi
+# fi
 
 exit $code

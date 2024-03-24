@@ -6,13 +6,13 @@ parameters:
 jobs:
   rsync-copy:
     base_image: hub.cstcloud.cn/scalebox/rsync-copy
-    schedule_mode: HEAD
     variables:
       max_sleep_count: 120
       slot_options: enable_trace
     parameters:
       start_message: ${FILE_NAME}
+      slot_on_head: yes
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - TARGET_URL=${TARGET_URL}
-      - KEEP_SOURCE_FILE=${KEEP_SOURCE_FILE}
+      - KEEP_SOURCE_FILE=

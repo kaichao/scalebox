@@ -4,21 +4,27 @@
 
 ```sh
 
-FILE_NAME=scalebox@10.255.128.1/etc~postfix/master.cf~/tmp scalebox app create
+FILE_NAME=root@10.0.6.101/etc~postfix/master.cf~/tmp scalebox app create
 
-FILE_NAME=scalebox@10.255.128.1/etc/postfix~master.cf~/tmp scalebox app create
+FILE_NAME=root@10.0.6.101/etc~postfix/master.cf~/tmp/etc scalebox app create
 
-FILE_NAME=scalebox@10.255.128.1/~etc/postfix/master.cf~/tmp scalebox app create
+FILE_NAME=root@10.0.6.101/etc/postfix~master.cf~/tmp scalebox app create
+
+FILE_NAME=root@10.0.6.101/etc/postfix~master.cf~/tmp scalebox app create
+
+
 
 ```
 
 ## 2. local to ssh-server
 ```sh
-FILE_NAME=/etc~postfix/master.cf~scalebox@10.255.128.1/tmp scalebox app create
+FILE_NAME=/etc~postfix/master.cf~root@10.0.6.101/tmp scalebox app create
 
-FILE_NAME=/~etc/postfix/master.cf~scalebox@10.255.128.1/tmp scalebox app create
+FILE_NAME=/etc~postfix/master.cf~root@10.0.6.101/tmp/etc scalebox app create
 
-FILE_NAME=/etc/postfix~master.cf~scalebox@10.255.128.1/tmp scalebox app create
+FILE_NAME=/~etc/postfix/master.cf~root@10.0.6.101/tmp scalebox app create
+
+FILE_NAME=/etc/postfix~master.cf~root@10.0.6.101/tmp scalebox app create
 ```
 
 - KEEP_SOURCE_FILE test
@@ -26,13 +32,13 @@ FILE_NAME=/etc/postfix~master.cf~scalebox@10.255.128.1/tmp scalebox app create
 ```sh
 touch /tmp/myfile.txt
 
-FILE_NAME=/tmp~myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+FILE_NAME=/tmp~myfile.txt~root@10.0.6.101/tmp scalebox app create
 
-KEEP_SOURCE_FILE=no FILE_NAME=/tmp~myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+KEEP_SOURCE_FILE=no FILE_NAME=/tmp~myfile.txt~root@10.0.6.101/tmp scalebox app create
 
-FILE_NAME=/tmp~mydir/myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+FILE_NAME=/tmp~mydir/myfile.txt~root@10.0.6.101/tmp scalebox app create
 
-KEEP_SOURCE_FILE=no FILE_NAME=/tmp~mydir/myfile.txt~scalebox@10.255.128.1/tmp scalebox app create
+KEEP_SOURCE_FILE=no FILE_NAME=/tmp~mydir/myfile.txt~root@10.0.6.101/tmp scalebox app create
 
 ```
 
