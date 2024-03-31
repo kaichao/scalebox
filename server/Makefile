@@ -50,6 +50,8 @@ down: clean-agents
 	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose down
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
+restart: down up
+
 clean-agents:
 	@ # clear all agent-containers
 	@ docker ps -a|grep goagent|awk '{print $$1}'| while read line; do docker rm -f $$line;done

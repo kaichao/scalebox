@@ -40,10 +40,14 @@ code=$?
 target_mode=${arr_target[0]}
 target_url=${arr_target[1]}
 
-ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
+jump_servers_option=""
 if [ $JUMP_SERVERS ]; then
-    ssh_args=$ssh_args" -J '${JUMP_SERVERS}'"
+    jump_servers_option=" -J '${JUMP_SERVERS}' "
 fi
+ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x ${jump_servers_option}"
+# if [ $JUMP_SERVERS ]; then
+#     ssh_args=$ssh_args" -J '${JUMP_SERVERS}'"
+# fi
 if [[ $ZSTD_CLEVEL != "" ]]; then 
     rsync_args="--cc=xxh3 --compress --compress-choice=zstd --compress-level=${ZSTD_CLEVEL}"
 fi
@@ -63,12 +67,13 @@ case $source_mode in
 
         # create directory in target side.
         my_arr=($(echo $target_url | tr ":" " "))
+        cmd="ssh -p ${ssh_port} ${jump_servers_option} ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
 
-        if [[ $JUMP_SERVERS == "" ]]; then 
-            cmd="ssh -p ${ssh_port} ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
-        else
-            cmd="ssh -p ${ssh_port} -J $JUMP_SERVERS ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
-        fi
+        # if [[ $JUMP_SERVERS == "" ]]; then 
+        #     cmd="ssh -p ${ssh_port} ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
+        # else
+        #     cmd="ssh -p ${ssh_port} -J $JUMP_SERVERS ${my_arr[0]} \"mkdir -p ${my_arr[1]}\""
+        # fi
 
         #  no need.
         # # echo cmd:$cmd
@@ -90,7 +95,7 @@ case $source_mode in
     case $target_mode in
     "LOCAL")
         ssh_port=${arr_source[2]}
-        ssh_args="ssh -p ${ssh_port} ${ssh_args}"
+        # ssh_args="ssh -p ${ssh_port} ${ssh_args}"
         if [[ $target_url == /data* ]]; then
             dest_dir=$(dirname ${target_url}/$m)
         else
@@ -99,7 +104,7 @@ case $source_mode in
         full_file_name=${dest_dir}/$(basename $m)
         echo dest_dir:$dest_dir
         mkdir -p ${dest_dir}
-        rsync -ut ${rsync_args} -e "${ssh_args}" $source_url/$m ${dest_dir}
+        rsync -ut ${rsync_args} -e "ssh -p ${ssh_port} ${ssh_args}" $source_url/$m ${dest_dir}
         ;;
     "SSH")      exit 33 ;;
     "RSYNC")    exit 34 ;;
@@ -157,17 +162,34 @@ fi
 #     "timestamps":["${ds0}","${ds1}"]
 # }
 # EOF
-send-message $m; code=$?
-[[ $code -ne 0 ]] && echo "ERROR while sending-message: $m" >&2 && exit $code
 
-echo source_mode:$source_mode, KEEP_SOURCE_FILE:$KEEP_SOURCE_FILE
-full_path_file="/local${source_url}/${m}"
-echo full_path_file:$full_path_file
-[ "$source_mode" = "LOCAL" ] && [ "$KEEP_SOURCE_FILE" = "no" ] && echo $full_path_file >> ${WORK_DIR}/removed-files.txt
+# send-message $m; code=$?
+# [[ $code -ne 0 ]] && echo "ERROR while sending-message: $m" >&2 && exit $code
 
-# if [ "$source_mode" = "LOCAL" ]; then
-    echo $full_path_file >> ${WORK_DIR}/input-files.txt
-    echo $full_path_file >> ${WORK_DIR}/output-files.txt
-# fi
+# Delay writing messages
+echo $m > ${WORK_DIR}/messages.txt
+
+if [ "$source_mode" = "LOCAL" ]; then
+    full_file_name="/local${source_url}/${m}"
+fi
+
+if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+    if [ "$source_mode" = "LOCAL" ]; then
+        # push mode
+        echo "$full_file_name be removed."
+        echo "$full_file_name" > ${WORK_DIR}/removed-files.txt
+    elif [ "$source_mode" = "SSH" ]; then
+        # pull mode, only SSH supported.
+        my_arr=($(echo $source_url | tr ":" " "))
+        cmd="ssh -p ${ssh_port} ${jump_servers_option} ${my_arr[0]} \"rm -f ${my_arr[1]}/$m\""
+        eval $cmd
+        [ $? -ne 0 ] && echo "[WARN] Error while removing remote file:$source_url/$m." > ${WORK_DIR}/custom_out.txt
+    else
+        echo "[WARN] Native rsync cannot support KEEP_SOURCE_FILE option." >&2
+    fi
+fi
+
+echo $full_file_name >> ${WORK_DIR}/input-files.txt
+echo $full_file_name >> ${WORK_DIR}/output-files.txt
 
 exit $code
