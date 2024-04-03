@@ -7,7 +7,9 @@ parameters:
 jobs:
   scatter:
     label: domain decomposition
-    base_image: app-primes/scatter
+    base_image: hub.cstcloud.cn/scalebox/agent
+    variables:
+      code_path: ${PWD}/scatter/code
     parameters:
       slot_on_head: yes
       start_message: ANY
@@ -29,13 +31,13 @@ jobs:
 
   gather:
     label: Summary of results
-    base_image: app-primes/gather
+    base_image: hub.cstcloud.cn/scalebox/agent
+    variables:
+      code_path: ${PWD}/gather/code
+      sleep_seconds: 10
+      max_sleep_count: 100
+      # slot_options: always_running,reserved_on_exit
     parameters:
       slot_on_head: yes
-    variables:
-      # for session support
-      # slot_options: always_running,reserved_on_exit
-      sleep_seconds: 10
-      max_sleep_count: 30
     environments:
       - NUM_GROUPS=${NUM_GROUPS}

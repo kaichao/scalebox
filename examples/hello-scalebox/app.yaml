@@ -6,6 +6,8 @@ parameters:
 jobs:
   hello-scalebox:
     base_image: hub.cstcloud.cn/scalebox/hello-scalebox
+    variables:
+      code_path: ${PWD}/code
     parameters:
       slot_on_head: yes
       start_message: scalebox
