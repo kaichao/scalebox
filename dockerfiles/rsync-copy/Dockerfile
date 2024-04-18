@@ -10,6 +10,16 @@ RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list
     && apt-get autoremove -y \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
+# jq for json parsing in bash
+RUN rm -f /etc/apt/apt.conf.d/docker-clean; \
+    echo 'Binary::apt::APT::Keep-Downloaded-Packages "true";' > /etc/apt/apt.conf.d/keep-cache
+RUN --mount=type=cache,target=/var/cache/apt  \
+    --mount=type=cache,target=/var/lib/apt \
+    apt update \
+    && apt-get install -y jq \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
 # COPY --from=hub.cstcloud.cn/scalebox/dir-list /usr/local/bin/* /usr/local/bin/ 
 

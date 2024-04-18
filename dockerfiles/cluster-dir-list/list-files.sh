@@ -13,7 +13,7 @@ if [ -e /work/.scalebox/cluster_data.txt ]; then
 fi
 
 cluster=$SOURCE_CLUSTER
-[ "$cluster" == "" ] && cluster=$CLUSTER_NAME
+[ "$cluster" == "" ] && cluster=$CLUSTER
 
 v=${cluster_map[$cluster]}
 if [ "$v" == "" ]; then

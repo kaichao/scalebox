@@ -50,7 +50,7 @@ else
     rsync_args=""
 fi
 
-cluster=$CLUSTER_NAME
+cluster=$CLUSTER
 v=${cluster_map[$cluster]}
 if [ "$v" == "" ]; then
     v=$(scalebox cluster get-parameter --cluster $cluster rsync_info)

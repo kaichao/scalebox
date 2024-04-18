@@ -72,14 +72,14 @@ list:
 # 	@ rm -f $(SHARED_DIR)/id_rsa.pub
 
 pull-all:
-	@ for i in database actuator controld agent base; do \
+	@ for i in database actuator controld agent; do \
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
 	done
 
 get-cli:
 	@ mkdir -p ~/bin
-	# @ docker pull hub.cstcloud.cn/scalebox/cli
+	@ docker pull hub.cstcloud.cn/scalebox/cli
 	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
 	&& arch=`uname -m` \
 	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \

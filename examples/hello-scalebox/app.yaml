@@ -5,7 +5,7 @@ parameters:
 
 jobs:
   hello-scalebox:
-    base_image: hub.cstcloud.cn/scalebox/hello-scalebox
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
     variables:
       code_path: ${PWD}/code
     parameters:
