@@ -57,32 +57,32 @@ datasets:
 ## 2.1 模块（Job）定义
 
 ```yaml
-    my-job:
-      label: My First Job
-      base_image: scalebox/agent
-      cluster: my-cluster
-      command: docker run -d --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
-      variables:
-        ...
-      parameters:
-        ...
-      environmens:
-        ...
-      input_datasets:
-        ...
-      output_datasets:
-        ...
-      paths:
-        ...
-      hosts:
-        ...
-      resource_claim:
-        ...
-      sink_jobs:
-        ...
-      sink_vjobs:
-        ...
-      comment: This is new algorithm module.
+  my-job:
+    label: My First Job
+    base_image: scalebox/agent
+    cluster: my-cluster
+    command: docker run -d --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
+    variables:
+      ...
+    parameters:
+      ...
+    environmens:
+      ...
+    input_datasets:
+      ...
+    output_datasets:
+      ...
+    paths:
+      ...
+    hosts:
+      ...
+    resource_claim:
+      ...
+    sink_jobs:
+      ...
+    sink_vjobs:
+      ...
+    comment: This is new algorithm module.
 
 ```
 
@@ -121,24 +121,24 @@ datasets:
 cluster定义的示例如下：
 
 ```yaml
-    mycluster:
-      label: my new clster
-      parameters:
-        uname: myuser
-        port: 10022
-        base_data_dir: /global-fs/scalebox/mydata
-        local_ip_index: 2
-	      num_of_executors : Inline cluster only
-	      channel_size : channel size fo executor, Inline cluster only
-	      conn_url : for External cluster
-        grpc_server: 192.168.3.123:50051
-  	    host_alloc_config:
-      total_resources:
-        num_cores : cpu cores
-	      total_mem_gb :
-	      total_disk_tb :
-      status:
-      comment:
+  mycluster:
+    label: my new clster
+    parameters:
+      uname: myuser
+      port: 10022
+      base_data_dir: /global-fs/scalebox/mydata
+      local_ip_index: 2
+      num_of_executors : Inline cluster only
+	    channel_size : channel size fo executor, Inline cluster only
+	    conn_url : for External cluster
+      grpc_server: 192.168.3.123:50051
+      host_alloc_config:
+    total_resources:
+      num_cores : cpu cores
+      total_mem_gb :
+	    total_disk_tb :
+    status:
+    comment:
 
 ```
 
@@ -229,13 +229,12 @@ cluster定义的示例如下：
 ### task headers参数表
 
 | 参数名称      | 含义 |
-| --------------- | -- |
-| to_ip           |    |
-| to_host         |    |
-| from_ip         |    |
-| from_host       |    |
-| from_job        |    |
-| to_slot         |    |
+| --------------- | ----------------- |
+| to_ip           |                   |
+| to_host         |                   |
+| from_ip         |                   |
+| from_host       |                   |
+| from_job        |                   |
+| to_slot         |                   |
 | slot_broadcast  | 仅用于cli的命令行参数 |
 | host_broadcast  | 仅用于cli的命令行参数 |
-

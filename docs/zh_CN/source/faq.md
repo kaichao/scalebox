@@ -1,4 +1,4 @@
-# 7. 常见问答集
+# 5. 常见问答集
 
 Frequently Asked Questions
 
@@ -7,7 +7,4 @@ Frequently Asked Questions
 - 用```hostname -i```检查本地ip地址是否正确设置？若不正确，则用```hostname -I```列出所有本地IP地址，再在defs.mk中设置变量```LOCAL_ADDR```或```LOCAL_IP_INDEX```
 
 ## 2. 
-
-
-
 

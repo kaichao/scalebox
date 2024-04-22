@@ -13,9 +13,7 @@
 
    started/what_is_scalebox
    started/research_background
-   started/parallel_programming
    started/architecture
-   started/concepts/index
    started/requirements
    faq
    release_notes
@@ -25,13 +23,10 @@
    :caption: 使用指南
    :hidden:
 
-   user/head_install
-   user/node_install
+   user/install
    user/common_modules
    user/app_examples
-   user/cmdline
-   user/webui
-   user/adminer
+   user/tools
 
 .. toctree::
    :maxdepth: 2
