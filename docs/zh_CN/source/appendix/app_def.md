@@ -119,6 +119,7 @@ datasets:
 ## 2.2 集群（Cluster）定义
 
 cluster定义的示例如下：
+
 ```yaml
     mycluster:
       label: my new clster
@@ -130,12 +131,12 @@ cluster定义的示例如下：
 	      num_of_executors : Inline cluster only
 	      channel_size : channel size fo executor, Inline cluster only
 	      conn_url : for External cluster
+        grpc_server: 192.168.3.123:50051
+  	    host_alloc_config:
       total_resources:
         num_cores : cpu cores
 	      total_mem_gb :
 	      total_disk_tb :
-        grpc_server: 192.168.3.123:50051
-	      host_alloc_config:
       status:
       comment:
 
@@ -163,8 +164,8 @@ cluster定义的示例如下：
 除虚拟模板参数CLUSTER_DATA_DIR之外，模板变量必须先定义，再使用。以下是模板变量定义及优先排序（从低到高）
 - /etc/scalebox/environments
 - ${HOME}/.scalebox/environments
-- ${PwD}/scalebox.env
-- ${PwD}/user-defined.env
+- ${PWD}/scalebox.env
+- ${PWD}/user-defined.env
 - 环境变量
 
 虚拟模板变量CLUSTER_DATA_DIR表示job所在集群的base_data_dir，无需定义即可使用。
@@ -207,6 +208,7 @@ cluster定义的示例如下：
 |                          | IS_SINGULARITY         | 容器引擎为singularity或app-tainer                                                                                     |
 
 ### 2.5.2 job-parameters参数表
+
 | 参数名                  | 含义                                                                      |
 | -------------------- | ----------------------------------------------------------------------- |
 | priority             | 优先级                                                                     |
@@ -227,10 +229,13 @@ cluster定义的示例如下：
 ### task headers参数表
 
 | 参数名称      | 含义 |
-| --------- | -- |
-| to_ip     |    |
-| to_host   |    |
-| from_ip   |    |
-| from_host |    |
-| from_job  |    |
+| --------------- | -- |
+| to_ip           |    |
+| to_host         |    |
+| from_ip         |    |
+| from_host       |    |
+| from_job        |    |
+| to_slot         |    |
+| slot_broadcast  | 仅用于cli的命令行参数 |
+| host_broadcast  | 仅用于cli的命令行参数 |
 
