@@ -226,7 +226,7 @@ cluster定义的示例如下：
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，则设置slot出错。                                     |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0             |
 
-### task headers参数表
+### 2.5.3 task-headers参数表
 
 | 参数名称      | 含义 |
 | --------------- | ----------------- |
