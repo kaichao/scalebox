@@ -12,9 +12,8 @@
    :hidden:
 
    started/what_is_scalebox
-   started/research_background
+   started/background
    started/architecture
-   started/requirements
    faq
    release_notes
 

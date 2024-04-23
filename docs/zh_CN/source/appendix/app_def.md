@@ -122,7 +122,7 @@ cluster定义的示例如下：
 
 ```yaml
   mycluster:
-    label: my new clster
+    label: My new clster
     parameters:
       uname: myuser
       port: 10022
