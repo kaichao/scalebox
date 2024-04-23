@@ -15,8 +15,8 @@ release = '0.1.0'
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'recommonmark',
-    'myst-parser'
+    # 'recommonmark',
+    'myst_parser',
     'sphinx_markdown_tables',
     'sphinxcontrib.mermaid',
     'sphinx.ext.autosectionlabel'
@@ -36,9 +36,6 @@ html_static_path = ['_static']
 # html_build_dir = os.environ.get('READTHEDOCS_OUTPUT', 'docs/en/build/html')
 
 #supported markdown
-source_suffix = {
-    '.rst': 'restructuredtext',
-    '.md': 'markdown'
-}
+source_suffix = ['.rst', '.md']
 
 master_doc = 'index'
