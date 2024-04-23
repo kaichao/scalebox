@@ -128,16 +128,16 @@ cluster定义的示例如下：
       port: 10022
       base_data_dir: /global-fs/scalebox/mydata
       local_ip_index: 2
-      num_of_executors : Inline cluster only
-	    channel_size : channel size fo executor, Inline cluster only
-	    conn_url : for External cluster
+      num_of_executors: Inline cluster only
+      channel_size: channel size fo executor, Inline cluster only
+      conn_url: for External cluster
       grpc_server: 192.168.3.123:50051
       host_alloc_config:
     total_resources:
-      num_cores : cpu cores
-      total_mem_gb :
-	    total_disk_tb :
-    status:
+      num_cores: cpu cores
+      total_mem_gb:
+      total_disk_tb:
+    status: ON
     comment:
 
 ```

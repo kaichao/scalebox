@@ -14,7 +14,13 @@ release = '0.1.0'
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['recommonmark','sphinx_markdown_tables','sphinx.ext.autosectionlabel']
+extensions = [
+    'recommonmark',
+    'myst-parser'
+    'sphinx_markdown_tables',
+    'sphinxcontrib.mermaid',
+    'sphinx.ext.autosectionlabel'
+]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
@@ -30,6 +36,9 @@ html_static_path = ['_static']
 # html_build_dir = os.environ.get('READTHEDOCS_OUTPUT', 'docs/en/build/html')
 
 #supported markdown
-source_suffix = ['.rst', '.md']
+source_suffix = {
+    '.rst': 'restructuredtext',
+    '.md': 'markdown'
+}
 
 master_doc = 'index'

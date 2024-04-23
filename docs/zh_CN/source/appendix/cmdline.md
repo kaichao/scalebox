@@ -11,7 +11,7 @@
 
 ## 1.2 子命令
 
-```mermaid
+```{mermaid}
 graph LR
   scalebox --> app
   app --> create
@@ -38,6 +38,7 @@ graph LR
   scalebox --> help
 
 ```
+
 
 ## 1.3 scalebox app 子命令
 
