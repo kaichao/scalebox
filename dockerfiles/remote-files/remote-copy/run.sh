@@ -39,6 +39,9 @@ case $source_mode in
         local_file="/local$source_dir/$1"
         remote_file="$target_dir/$1"
 
+        # source file not exists ?
+        [ ! -f "$local_file" ] && echo "file $local_file not exists, exit " && exit 101
+
         # create directory in remote side.
         remote_dir=$(dirname $remote_file)
         eval "$ssh_cmd mkdir -p $remote_dir"; code=$?

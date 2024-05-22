@@ -19,6 +19,7 @@ services:
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
+      - PG_BATCH_MODE=yes
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/scalebox/log/controld:/tmp/scalebox/log/controld

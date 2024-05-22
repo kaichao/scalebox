@@ -25,15 +25,15 @@ clusters:
         role: head
         spec: inline-vm-00
         comment: CentOS 8
-      n0:
+      n-00:
         ip_addr: 10.0.6.101
         spec: inline-vm-00
-      n1:
+      n-01:
         ip_addr: 10.0.6.102
         spec: inline-vm-00
-      n2:
+      n-02:
         ip_addr: 10.0.6.103
         spec: inline-vm-00
-      n3:
+      n-03:
         ip_addr: 10.0.6.104
         spec: inline-vm-00
