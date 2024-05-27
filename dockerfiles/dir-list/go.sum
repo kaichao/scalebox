@@ -1,8 +1,8 @@
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
-github.com/kaichao/scalebox v0.0.0-20231125140636-f786729ba5ce h1:Q+8Cgk9g7mwQHwskooDIzJtnDUbTvxWwGW12s7RBdkE=
-github.com/kaichao/scalebox v0.0.0-20231125140636-f786729ba5ce/go.mod h1:nWlxsAJXt+lSiWOQn1bbTUc9e79bEnWXo2taH79V8Tk=
+github.com/kaichao/scalebox v0.0.0-20240527031212-cc96ec423599 h1:dwThUltAmb7cJdhmHtBxKvM9mclbW15kfVLfgurnqSs=
+github.com/kaichao/scalebox v0.0.0-20240527031212-cc96ec423599/go.mod h1:p7L6Q1pcb6X3RE/7dpyfVF6cLC1UyxcJFVeSF3DhHbw=
 github.com/mattn/go-sqlite3 v1.14.18 h1:JL0eqdCOq6DJVNPSvArO/bIV9/P7fbGrV00LZHc+5aI=
 github.com/mattn/go-sqlite3 v1.14.18/go.mod h1:2eHXhiwb8IkHr+BDWZGa96P6+rkvnG63S2DGjv9HUNg=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

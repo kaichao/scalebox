@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	misc "github.com/kaichao/scalebox/golang/misc"
+	misc "github.com/kaichao/scalebox/pkg/misc"
 
 	"github.com/sirupsen/logrus"
 )

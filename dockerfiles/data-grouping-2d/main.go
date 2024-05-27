@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	scalebox "github.com/kaichao/scalebox/golang/misc"
+	"github.com/kaichao/scalebox/pkg/misc"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 )
@@ -23,7 +23,7 @@ func main() {
 		// new dataset
 		mapDataset[dataset.DatasetID] = dataset
 		logrus.Printf("new added dataset:%v\ndataset-map:%v\n", dataset, mapDataset)
-		scalebox.AppendToFile(datasetFile, keyText)
+		misc.AppendToFile(datasetFile, keyText)
 		os.Exit(0)
 	}
 
@@ -65,7 +65,7 @@ func main() {
 	logrus.Printf("entity:%v\n", entity)
 
 	for _, txt := range dataset.getNewGroups(entity) {
-		scalebox.AppendToFile(workDir+"/messages.txt", dataset.SinkJob+","+txt)
+		misc.AppendToFile(workDir+"/messages.txt", dataset.SinkJob+","+txt)
 	}
 
 	os.Exit(code)
