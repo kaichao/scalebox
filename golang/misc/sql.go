@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-
-	"github.com/kaichao/scalebox/golang/misc"
+	"strings"
 )
 
 // NewSQLNullString ...
@@ -28,10 +27,15 @@ var (
 func GetDB() *sql.DB {
 	if db == nil {
 		dbHost := os.Getenv("PGHOST")
-		if dbHost == "" {
-			dbHost = misc.GetLocalIP()
-		}
 		dbPort := os.Getenv("PGPORT")
+		if dbHost == "" {
+			dbHost = "localhost"
+		}
+		ss := strings.Split(dbHost, ":")
+		if len(ss) == 2 {
+			dbHost = ss[0]
+			dbPort = ss[1]
+		}
 		if dbPort == "" {
 			dbPort = "5432"
 		}
