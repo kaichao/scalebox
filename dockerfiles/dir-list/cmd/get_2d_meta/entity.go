@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/kaichao/scalebox/golang/misc"
+	"github.com/kaichao/scalebox/pkg/misc"
 	"github.com/sirupsen/logrus"
 )
 

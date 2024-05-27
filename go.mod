@@ -1,4 +1,4 @@
-module github.com/kaichao/scalebox/golang
+module github.com/kaichao/scalebox
 
 go 1.20
 
