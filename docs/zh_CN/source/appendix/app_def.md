@@ -12,6 +12,7 @@ cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
   message_router: message-router
+  is_cluster_admin: yes
   default_sleep_count: 20
   comment: This is a sample app.
 
@@ -175,7 +176,7 @@ cluster定义的示例如下：
 
 ### 2.5.1 job-variables参数表
 
-| 参数名                      | 标准环境变量                 | 含义                                                                                                              |
+| 参数名                    | 标准环境变量             | 含义                                                                                                              |
 | ------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------- |
 | grpc_server              | GRPC_SERVER            | 服务端controld的服务端点（endpoint），${ip_addr}:${port}，port缺省值为50051                                                     |
 | code_path                |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                                                                            |
@@ -204,8 +205,9 @@ cluster定义的示例如下：
 |                          | CLUSTER                | 所在的集群名                                                                                                          |
 |                          | JOB_NAME               | job名                                                                                                            |
 |                          | JOB_ID                 | job_id                                                                                                          |
+|                          | SLOT_ID                | slot_id                                                                                                          |
 |                          | SINK_JOB               | 缺省sink_job                                                                                                      |
-|                          | IS_SINGULARITY         | 容器引擎为singularity或app-tainer                                                                                     |
+|                          | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                                                                     |
 
 ### 2.5.2 job-parameters参数表
 
@@ -215,6 +217,8 @@ cluster定义的示例如下：
 | key_group_regex      | 从消息中提取分组的正则表达式                                                          |
 | key_group_index      | 分组排序的编号                                                                 |
 | task_dist_mode       | task分发模式，'HOST-BOUND'/'SLOT-BOUND'/'GROUP-BOUND'                        |
+| cached_task_queue    | 在服务端对task_queue做cache，'yes'/'no'，缺省为'no'。若设置为'yes'，则len_task_queue缺省值为500  |
+| len_task_queue       | task_queue的长度。若设置该值，则cached_task_queue设为'yes' ;                       |
 | slot_on_head         | 仅在头节点上生成1个slot，'yes'/'no'                                               |
 | start_message        | 给定初始消息                                                                  |
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                                             |
@@ -222,8 +226,8 @@ cluster定义的示例如下：
 | retry_rules          | 基于退出码的重试规则<br>```['exit_code_1:num_retries',...,'exit_code_n:num_retries']``` |
 | slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                                    |
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                                  |
-| tasks_per_queue      | in-mem模式中，task队列长度。缺省值为100                                              |
-| max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，则设置slot出错。                                     |
+| tasks_per_queue      | in-mem模式中，task队列长度。缺省值为100(待删除)                                              |
+| max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。                |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0             |
 
 ### 2.5.3 task-headers参数表
@@ -238,3 +242,15 @@ cluster定义的示例如下：
 | to_slot         |                   |
 | slot_broadcast  | 仅用于cli的命令行参数 |
 | host_broadcast  | 仅用于cli的命令行参数 |
+
+### 2.5.4 host-parameters参数表
+
+| 参数名称      | 含义 |
+| --------------- | ----------------------------- |
+| uname           | ssh登录用户名                   |
+| port            | ssh的端口号                     |
+| node_slot       | 该节点node-agent的slot号        |
+| group_id        | 该节点所属节点组的编号            |
+| slurm_node      | 在slurm调度系统中对应的节点编号    |
+| reg_time        | 在scalebox中注册时间            |
+| slot_job_id     | 在slurm调度系统重，node-agent的slurm job id |

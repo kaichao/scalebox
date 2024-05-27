@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	scalebox "github.com/kaichao/scalebox/golang/misc"
+	misc "github.com/kaichao/scalebox/golang/misc"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -60,7 +61,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	if lines, err := scalebox.GetTextFileLines(datasetFile); err == nil {
+	if lines, err := misc.GetTextFileLines(datasetFile); err == nil {
 		for _, line := range lines {
 			dataset := parseDataSet(line)
 			fmt.Println("loaded dataset-id:", dataset.DatasetID, "dataset:", dataset)

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	scalebox "github.com/kaichao/scalebox/golang/misc"
+	"github.com/kaichao/scalebox/golang/misc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,7 +19,7 @@ func init() {
 		workDir = "/work"
 	}
 	sqliteFile := workDir + "/my.db"
-	scalebox.ExecShellCommand("rm -f " + sqliteFile)
+	misc.ExecShellCommand("rm -f " + sqliteFile)
 }
 
 func initialize() {

@@ -70,6 +70,9 @@ graph LR
 
 ### task add {#task-add}
 
+key-text可放在文件 ```${WORK_DIR}/key-text.txt```，该文件为多行文本，每行为一个消息体。
+
+
 ## 1.5 scalebox semaphore 子命令{#semaphore}
 
 ### 1.5.1 semaphore create{#semaphore-create}
