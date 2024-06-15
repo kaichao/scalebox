@@ -81,6 +81,23 @@ function get_ssh_host() {
     echo $ssh_host
 }
 
+# input:    user@host:10022/my-dir, user@host/mydir
+# output:   user@host:/mydir
+function to_ssh_url() {
+    local url="$1"
+    ss=( $(parse_remote_path "$url") )
+    # echo ${ss[2]}
+    echo ${ss[2]}:${ss[1]}
+}
+#echo $(to_ssh_url "user@host:10022/my-dir")
+#echo $(to_ssh_url "user@host/my-dir")
+
+function get_ssh_port() {
+    local url="$1"
+    ssh_port=$(parse_remote_path "$url"| cut -d' ' -f4)
+    echo $ssh_port
+}
+
 function get_ssh_cmd(){
     local json="$1"
     local url_name="$2"

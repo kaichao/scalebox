@@ -10,6 +10,7 @@ set +o pipefail
 if [ $code -eq 0 ]; then
     send-message $1,$num
     code=$?
+    echo "exit_code:$code"
 fi
 
 exit $code
