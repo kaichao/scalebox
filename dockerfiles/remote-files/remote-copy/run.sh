@@ -29,10 +29,8 @@ fi
 source_dir=$(get_data_root "$source_url")
 target_dir=$(get_data_root "$target_url")
 
-echo "[DEBUG]source_url:$source_url,target_url:$target_url,message:$1" >> custom-out.txt
-echo "[DEBUG]source_dir:$source_dir,target_dir:$target_dir" >> custom-out.txt
-
-echo "[DEBUG]source_mode:$source_mode,target_mode:$target_mode" >> custom-out.txt
+echo "[DEBUG]source_url:$source_url,target_url:$target_url,message:$1" >> ${WORK_DIR}/custom-out.txt
+echo "[DEBUG]source_dir:$source_dir,target_dir:$target_dir" >> ${WORK_DIR}/custom-out.txt
 
 if [[ $ZSTD_CLEVEL != "" ]]; then
     rsync_args="--cc=xxh3 --compress --compress-choice=zstd --compress-level=${ZSTD_CLEVEL}"
@@ -42,6 +40,7 @@ fi
 
 date --iso-8601=ns >> timestamps.txt
 
+echo "[DEBUG]source_mode:$source_mode,target_mode:$target_mode" >> ${WORK_DIR}/custom-out.txt
 case $source_mode in
 "LOCAL")
     case $target_mode in
@@ -75,10 +74,33 @@ case $source_mode in
         echo "[DEBUG] local_file:$local_file" >> ${WORK_DIR}/custom-out.txt
         ;;
     "RSYNC_OVER_SSH") 
+        echo "LOCAL to RSYNC_OVER_SSH" >> ${WORK_DIR}/custom-out.txt
+        target_ssh_option=$(get_ssh_option "$2" "target_url" "target_jump_servers")
+
+        if [[ $source_url == /data/* ]]; then
+            source_file="${source_url}/$1"
+        else
+            source_file="/local${source_url}/$1"
+        fi
+        echo "source_file:$source_file" >> ${WORK_DIR}/custom-out.txt
+
+        target_ssh_url=$(to_ssh_url $target_url)
+        cmd="rsync -ut ${rsync_args} -e \"ssh ${target_ssh_option}\" ${source_file} $target_ssh_url/$1 "
+        echo "cmd=$cmd" >> ${WORK_DIR}/custom-out.txt
+        eval $cmd
+        # rsync -ut ${rsync_args} -e "ssh ${ssh_option}" $source_url/$1 ${dest_dir}
+        code=$?
+        [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
+        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+            cmd="rm -f $source_file"
+            echo cmd_remove_source_file: $cmd >> ${WORK_DIR}/custom-out.txt
+            eval $cmd
+            [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
+        fi
     
     ;;
-    "RSYNC") exit 34;;
-    *)      exit 35 ;;
+    "RSYNC") exit 44 ;;
+    *)      exit 45 ;;
     esac
     ;;
 "SSH")
@@ -133,13 +155,14 @@ case $source_mode in
 
     # ssh user1@node1 "cat /path/to/file" | ssh user2@node2 "cat > /path/to/destination"
         ;;
-    "RSYNC")    exit 34 ;;
-    *)          exit 35;;
+    "RSYNC")    exit 54 ;;
+    *)          exit 55;;
     esac
     ;;
 "RSYNC_OVER_SSH")
     case $target_mode in
     "LOCAL")
+        echo "RSYNC_OVER_SSH to LOCAL" >> ${WORK_DIR}/custom-out.txt
         source_ssh_option=$(get_ssh_option "$2" "source_url" "source_jump_servers")
         local_file="/local$target_dir/$1"
 
@@ -165,20 +188,20 @@ case $source_mode in
             [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
         fi
     ;;
-    "SSH")      exit 36 ;;
-    "RSYNC")    exit 37 ;;
-    *)          exit 38 ;;
+    "SSH")      exit 66 ;;
+    "RSYNC")    exit 67 ;;
+    *)          exit 68 ;;
     esac
     ;;
 "RSYNC")
     case $target_mode in
-    "LOCAL") exit 36 ;;
-    "SSH")      exit 36 ;;
-    "RSYNC")    exit 37 ;;
-    *)          exit 38 ;;
+    "LOCAL") exit 76 ;;
+    "SSH")      exit 77 ;;
+    "RSYNC")    exit 78 ;;
+    *)          exit 79 ;;
     esac
     ;;
-*)          exit 39 ;;
+*)          exit 80 ;;
 esac
 
 date --iso-8601=ns >> ${WORK_DIR}/timestamps.txt

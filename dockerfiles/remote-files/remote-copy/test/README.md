@@ -18,7 +18,7 @@ SOURCE_URL=scalebox@159.226.237.136:10022/raid0/tmp/mwa/tar1257010784 TARGET_URL
 
 SOURCE_URL=scalebox@159.226.237.136:10022/raid0/tmp/mwa/tar1257010784 TARGET_URL=/data1/mydata/mwa/tar FILE_NAME=1257010784/1257015406_1257015435_ch120.dat.tar.zst SOURCE_MODE=RSYNC_OVER_SSH  scalebox app create
 
-SOURCE_URL=scalebox@159.226.237.136:10022/raid0/tmp/mwa/tar1257010784 TARGET_URL=/data1/mydata/mwa/tar FILE_NAME=FILE:filenames.txt SOURCE_MODE=RSYNC_OVER_SSH  scalebox app create
+SOURCE_URL=scalebox@159.226.237.136:10022/raid0/tmp/mwa/tar1301240224 TARGET_URL=/data1/mydata/mwa/tar FILE_NAME=FILE:filenames.txt SOURCE_MODE=RSYNC_OVER_SSH  scalebox app create
 
 ```
 
@@ -29,6 +29,10 @@ SOURCE_URL=/etc TARGET_URL=root@10.0.6.101/tmp/etc FILE_NAME=postfix/master.cf s
 SOURCE_URL=/ TARGET_URL=root@10.0.6.101/tmp/ FILE_NAME=etc/postfix/master.cf scalebox app create
 
 SOURCE_URL=/etc/postfix TARGET_URL=root@10.0.6.101/tmp FILE_NAME=master.cf scalebox app create
+
+
+
+SOURCE_URL=/etc/postfix TARGET_URL=root@10.0.6.101/tmp TARGET_MODE=RSYNC_OVER_SSH FILE_NAME=master.cf scalebox app create
 
 ```
 
