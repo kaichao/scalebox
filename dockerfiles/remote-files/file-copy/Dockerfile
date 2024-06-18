@@ -35,7 +35,7 @@ ENV \
     KEEP_SOURCE_FILE=yes \
     WORK_DIR=
 
-COPY remote-copy/run.sh /app/share/bin/
+COPY file-copy/run.sh /app/share/bin/
 COPY functions.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/

@@ -93,7 +93,7 @@ case $source_mode in
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
             cmd="rm -f $source_file"
-            echo cmd_remove_source_file: $cmd >> ${WORK_DIR}/custom-out.txt
+            echo "cmd_remove_source_file: $cmd" >> ${WORK_DIR}/custom-out.txt
             eval $cmd
             [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
         fi

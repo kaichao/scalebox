@@ -1,4 +1,4 @@
-IMAGE_NAME:=hub.cstcloud.cn/scalebox/remote-copy
+IMAGE_NAME:=hub.cstcloud.cn/scalebox/file-copy
 
 build:
 	DOCKER_BUILDKIT=1 docker build --network=host \
