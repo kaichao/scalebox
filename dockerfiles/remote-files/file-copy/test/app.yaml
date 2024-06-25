@@ -8,10 +8,9 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/file-copy
     variables:
       max_sleep_count: 120
-      # slot_options: enable_trace
+      # slot_options: enable_trace,slot_on_head
     parameters:
       start_message: ${FILE_NAME}
-      # slot_on_head: yes
     environments:
       - SOURCE_URL=${SOURCE_URL}
       - SOURCE_MODE=${SOURCE_MODE}
@@ -19,4 +18,4 @@ jobs:
       - TARGET_MODE=${TARGET_MODE}
       - KEEP_SOURCE_FILE=${KEEP_SOURCE_FILE}
     hosts:
-      - h0:12
+      - h0:1

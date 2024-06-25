@@ -66,10 +66,10 @@ case $source_mode in
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from local to remote, cmd=$cmd, error_code:$code" >&2 && exit $code
 
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
-            echo $local_file >> ${WORK_DIR}/removed-files.txt
+            echo "$local_file" >> ${WORK_DIR}/removed-files.txt
         fi
-        echo $local_file >> ${WORK_DIR}/input-files.txt
-        echo $local_file >> ${WORK_DIR}/output-files.txt
+        echo "$local_file" >> ${WORK_DIR}/input-files.txt
+        echo "$local_file" >> ${WORK_DIR}/output-files.txt
 
         echo "[DEBUG] local_file:$local_file" >> ${WORK_DIR}/custom-out.txt
         ;;
@@ -94,7 +94,7 @@ case $source_mode in
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
             cmd="rm -f $source_file"
             echo "cmd_remove_source_file: $cmd" >> ${WORK_DIR}/custom-out.txt
-            eval $cmd
+            eval "$cmd"
             [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
         fi
     
@@ -165,6 +165,7 @@ case $source_mode in
         echo "RSYNC_OVER_SSH to LOCAL" >> ${WORK_DIR}/custom-out.txt
         source_ssh_option=$(get_ssh_option "$2" "source_url" "source_jump_servers")
         local_file="/local$target_dir/$1"
+        remote_file="$source_dir/$1"
 
         if [[ $target_url == /data/* ]]; then
             dest_dir=$(dirname ${target_url}/$1)
@@ -182,7 +183,7 @@ case $source_mode in
         code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
-            cmd="ssh ${source_ssh_option} $(get_ssh_host $source_url) rm -f $source_file"
+            cmd="ssh ${source_ssh_option} $(get_ssh_host $source_url) rm -f $remote_file"
             echo cmd_remove_source_file: $cmd >> ${WORK_DIR}/custom-out.txt
             eval $cmd
             [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
