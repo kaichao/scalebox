@@ -230,6 +230,7 @@ cluster定义的示例如下：
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                                  |
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。                |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以便指定不同的message-router  |
+| pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算       |
 
 ### 2.5.3 task-headers参数表
 

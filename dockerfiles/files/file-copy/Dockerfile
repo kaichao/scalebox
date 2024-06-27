@@ -33,9 +33,11 @@ ENV \
     TARGET_JUMP_SERVERS= \
     ZSTD_CLEVEL= \
     KEEP_SOURCE_FILE=yes \
+    RSYNCD_MODULE=/root \
+    RSYNC_PASSWORD= \
     WORK_DIR=
 
-COPY file-copy/run.sh /app/share/bin/
+COPY file-copy/code/run.sh /app/share/bin/
 COPY functions.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/

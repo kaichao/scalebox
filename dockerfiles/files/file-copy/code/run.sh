@@ -99,7 +99,20 @@ case $source_mode in
         fi
     
     ;;
-    "RSYNC") exit 44 ;;
+    "RSYNC")
+        export RSYNC_PASSWORD=cas12345
+
+        rsync_url=$(to_rsync_url "$target_url")
+
+        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+            rsync_args=" --remove-source-files ${rsync_args} "
+        fi
+        cmd="cd /local$source_dir && rsync -ut ${rsync_args} $1 $rsync_url"
+        echo "cmd:$cmd"
+
+        eval "$cmd"; code=$?
+        [[ $code -ne 0 ]] && echo "[ERROR] cp file from local to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
+    ;;
     *)      exit 45 ;;
     esac
     ;;
@@ -155,7 +168,7 @@ case $source_mode in
 
     # ssh user1@node1 "cat /path/to/file" | ssh user2@node2 "cat > /path/to/destination"
         ;;
-    "RSYNC")    exit 54 ;;
+    "RSYNC")    exit 54;;
     *)          exit 55;;
     esac
     ;;
@@ -181,7 +194,7 @@ case $source_mode in
         eval $cmd
         # rsync -ut ${rsync_args} -e "ssh ${ssh_option}" $source_url/$1 ${dest_dir}
         code=$?
-        [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
+        [[ $code -ne 0 ]] && echo "[ERROR] cp file from rsync-over-ssh to local, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
             cmd="ssh ${source_ssh_option} $(get_ssh_host $source_url) rm -f $remote_file"
             echo cmd_remove_source_file: $cmd >> ${WORK_DIR}/custom-out.txt
@@ -196,7 +209,20 @@ case $source_mode in
     ;;
 "RSYNC")
     case $target_mode in
-    "LOCAL") exit 76 ;;
+    "LOCAL") 
+        dest_dir=$(dirname "/local"${target_dir}/$1)
+        mkdir -p ${dest_dir}
+        # full_file_name=${dest_dir}/$(basename $1)
+        rsync_url=$(to_rsync_url "$source_url")
+        export RSYNC_PASSWORD=cas12345
+        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+            rsync_args=" --remove-source-files ${rsync_args} "
+        fi
+        cmd="rsync -ut ${rsync_args} $rsync_url/$1 ${dest_dir}"
+        echo "cmd:$cmd"
+        eval "$cmd"; code=$?
+        [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to local, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
+    ;;
     "SSH")      exit 77 ;;
     "RSYNC")    exit 78 ;;
     *)          exit 79 ;;

@@ -80,10 +80,17 @@ SOURCE_URL=root@10.0.6.101/etc TARGET_URL=root@10.0.6.102/tmp/etc FILE_NAME=post
 ```
 ## 4. local to rsync-server
 ```sh
+SOURCE_URL=/tmp TARGET_URL=rsync://root:cas12345@10.0.6.101:50873/tmp FILE_NAME=myfile.txt scalebox app create
 
 ```
 
 ## 5. rsync-server to local
 ```sh
+ssh n0 'echo hello > /tmp/myfile.txt'
+rm -f /tmp/myfile.txt
+
+SOURCE_URL=rsync://root:cas12345@10.0.6.101:50873/tmp TARGET_URL=/tmp FILE_NAME=myfile.txt scalebox app create
+
+SOURCE_URL=rsync://root:cas12345@10.0.6.101:50873/tmp TARGET_URL=/tmp FILE_NAME=myfile.txt KEEP_SOURCE_FILE=no scalebox app create
 
 ```
