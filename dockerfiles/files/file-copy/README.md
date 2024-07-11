@@ -36,6 +36,7 @@ SOURCE_JUMP_SERVERS/TARGET_JUMP_SERVERS
 ## 4. KEEP_SOURCE_FILE的设置
 
 |        | LOCAL | SSH | RSYNC1 | RSYNC2 |
+| ------ | ----- | --- | ------ | ------ |
 | LOCAL  |   X   | yes |  yes   |  yes   |
 |  SSH   |  yes  | yes |   X    |   X    |
 | RSYNC1 |  yes  |  X  |   no   |   X    |

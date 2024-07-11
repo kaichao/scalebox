@@ -174,80 +174,95 @@ cluster定义的示例如下：
 
 ## 2.5 附表
 
-### 2.5.1 job-variables参数表
+### 2.5.1 app-parameters参数表
+| 参数名称           |   含义                        |
+| ---------------  | ----------------------------- |
+| initial_status   | 'RUNNING'/'PAUSED'            |
+| messsage_router  |                               |
+| is_cluster_admin |                               |
 
-| 参数名                    | 标准环境变量             | 含义                                                                                                             |
-| ------------------------ | ---------------------- | --------------------------------------------------------------------------------------------------------------- |
-| grpc_server              | GRPC_SERVER            | 服务端controld的服务端点（endpoint），${ip_addr}:${port}，port缺省值为50051                                          |
-| code_path                |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                                                             |
-| local_ip_index           | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。                                                |
-| task_timeout_seconds     | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124                                            |
-| sleep_interval_seconds   | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒                                                       |
-| max_sleep_count          | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                                                        |
-| dir_limit_gb             | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数                                                  |
-| dir_free_gb              | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数                                        |
+### 2.5.2 job-variables参数表
+
+| 参数名                    | 标准环境变量             | 含义                                                                                          |
+| ------------------------ | ---------------------- | -------------------------------------------------------------------------------------------- |
+| grpc_server              | GRPC_SERVER            | 服务端controld的服务端点（endpoint），${ip_addr}:${port}，port缺省值为50051                        |
+| code_path                |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                                           |
+| local_ip_index           | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。                             |
+| task_timeout_seconds     | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124                          |
+| sleep_interval_seconds   | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒                                    |
+| max_sleep_count          | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                                     |
+| dir_limit_gb             | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数                               |
+| dir_free_gb              | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数                     |
 | progress_counter_diff    | PROGRESS_COUNTER_DIFF  | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值。其值为整数。需在message-router初始化时，创建对应的信号量及初值，信号量名称为：progress_counter_{模块名}:{节点名}，初值为该job在每个节点上task总数。   |
 | output_text_size         | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
-| text_tranc_mode          | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分                                                         |
-| heart_beat_seconds       |                        | 以秒计的心跳间隔                                                                                                   |
-| timezone_mode            |                        | HOST'/'UTC'/'NONE'                                                                                              |
-| max_slot_workdir_gb      |                        |                                                                                                                 |
-| bulk_message_size        | BULK_MESSAGE           | 批处理消息的最大数量，单次将多个消息传给slot。解析时、运行时的共同参数                                                     |
-| slot_options             |                        | 逗号分隔的slot选项                                                                                                |
-|  - with_headers          | WITH_HEADERS           | 启动task运行命令中，增加task头信息头                                                                                |
-|  - always_running        | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）                                                                        |
-|  - reserved_on_exit      |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)                                                         |
-|  - tmpfs_workdir         |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work）                                         |
-|  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local的映射                                                                             |
-|  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/data的映射                                                                              |
-|  - enable_trace          | TRACE                  |  调试程序选项，输出详细信息                                                                                         |
-|  - hide_local_ip         | SOURCE_IP_ATTACHED     | (source_ip_attached)                                                                                            |
-|  - async_task_creation   | ASYNC_TASK_CREATION    |                                                                                                                 |
-|                          | CLUSTER                | 所在的集群名                                                                                                      |
-|                          | JOB_NAME               | 当前job名成                                                                                                      |
-|                          | JOB_ID                 | job_id                                                                                                          |
-|                          | SLOT_ID                | slot_id                                                                                                          |
-|                          | SINK_JOB               | 缺省sink_job的名称                                                                                                 |
-|                          | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                                                                   |
+| text_tranc_mode          | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分                                   |
+| heart_beat_seconds       |                        | 以秒计的心跳间隔                                                                  |
+| timezone_mode            |                        | HOST'/'UTC'/'NONE'                                                             |
+| max_slot_workdir_gb      |                        |                                                                                |
+| slot_options             |                        | 逗号分隔的slot选项                                                               |
+|  - with_headers          | WITH_HEADERS           | 启动task运行命令中，增加task头信息头                                               |
+|  - always_running        | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）                                        |
+|  - reserved_on_exit      |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)                        |
+|  - tmpfs_workdir         |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work）        |
+|  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local的映射                                            |
+|  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/data的映射                                             |
+|  - enable_trace          | TRACE                  |  调试程序选项，输出详细信息                                                        |
+|  - hide_local_ip         | SOURCE_IP_ATTACHED     | (source_ip_attached)                                                           |
+|  - async_task_creation   | ASYNC_TASK_CREATION    |                                                                                |
+|  - slot_on_head   |          |                                                                                                     |
+|                          | CLUSTER                | 所在的集群名                                                                     |
+|                          | JOB_NAME               | 当前job名成                                                                     |
+|                          | JOB_ID                 | job_id                                                                         |
+|                          | SLOT_ID                | slot_id                                                                        |
+|                          | SINK_JOB               | 缺省sink_job的名称                                                               |
+|                          | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                                 |
 
-### 2.5.2 job-parameters参数表
+### 2.5.3 job-parameters参数表
 
-| 参数名                  | 含义                                                                      |
-| -------------------- | ----------------------------------------------------------------------- |
-| priority             | 优先级(暂未使用)                                                                     |
-| key_group_regex      | 从消息中提取分组的正则表达式                                                          |
-| key_group_index      | 分组排序的编号                                                                 |
-| task_dist_mode       | task分发模式，'HOST-BOUND'/'SLOT-BOUND'/'GROUP-BOUND'                        |
-| task_queue_length    | task_queue的长度。若设置该值，则cached_task_queue设为'yes' ;                       |
-| cached_task_queue    | 在服务端对task_queue做cache，'yes'/'no'，缺省为'no'。若设置为'yes'，则len_task_queue缺省值为500(待删除？)  |
-| tasks_per_queue      | in-mem模式中，task队列长度。缺省值为100(待删除)                                              |
-| slot_on_head         | 仅在头节点上生成1个slot，'yes'/'no'                                               |
-| start_message        | 给定初始消息                                                                  |
+| 参数名                  | 含义                                                                        |
+| -------------------- | ----------------------------------------------------------------------------- |
+| priority             | 优先级(暂未使用)                                                                 |
+| key_group_regex      | 从消息中提取分组的正则表达式                                                       |
+| key_group_index      | 分组排序的编号                                                                   |
+| task_dist_mode       | task分发模式，'HOST-BOUND'/'SLOT-BOUND'/'GROUP-BOUND'                           |
+| task_queue_length    | task_queue的长度。若设置该值，则启用task_queue作为task分发方式                       |
+| tasks_per_queue      | in-mem模式中，task队列长度。缺省值为100(待删除)                                   |
+| slot_on_head         | 仅在头节点上生成1个slot，'yes'/'no'       (放到variables中？)                      |
+| start_message        | 给定初始消息，若为'FILE:{filename}'，则将文件中每一行作为一个初始消息                     |
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                                             |
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                                 |
 | retry_rules          | 基于退出码的重试规则<br>```['exit_code_1:num_retries',...,'exit_code_n:num_retries']``` |
-| slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                                    |
-| visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                                  |
+| slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                                 |
+| visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                             |
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。                |
-| message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以便指定不同的message-router  |
-| pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算       |
+| message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
+| pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算     |
+| bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。        |
+| task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为10分钟，清除时间为n+1分钟。避免出现同一task的多次分发。   |
 
-### 2.5.3 task-headers参数表
-
-| 参数名称      | 含义 |
-| --------------- | ----------------- |
-| to_ip           |                   |
-| to_host         |                   |
-| from_ip         |                   |
-| from_host       |                   |
-| from_job        |                   |
-| to_slot         |                   |
-| slot_broadcast  | 仅用于cli的命令行参数 |
-| host_broadcast  | 仅用于cli的命令行参数 |
-
-### 2.5.4 host-parameters参数表
+### 2.5.4 task-headers参数表
 
 | 参数名称      | 含义 |
+| --------------- | ------------------------------------------------- |
+| to_ip           |                                                   |
+| to_host         |                                                   |
+| from_ip         |                                                   |
+| from_host       |                                                   |
+| from_job        |                                                   |
+| to_slot         |                                                   |
+| slot_broadcast  | 仅用于cli的命令行参数，针对所有slot，按广播形式生成一组消息 |
+| host_broadcast  | 仅用于cli的命令行参数，针对所有host，按广播形式生成一组消息 |
+
+### 2.5.5 cluster-parameters参数表
+| 参数名称         |   含义                         |
+| --------------- | ----------------------------- |
+| base_data_dir   |  可通过两种方式引用：虚拟环境变量CLUSTER_DATA_ROOT，容器内/data目录   |
+| uname           | ssh登录用户名                   |
+| port            | ssh登录用户名                   |
+
+### 2.5.6 host-parameters参数表
+
+| 参数名称         |   含义                         |
 | --------------- | ----------------------------- |
 | uname           | ssh登录用户名                   |
 | port            | ssh的端口号                     |
@@ -256,3 +271,10 @@ cluster定义的示例如下：
 | slurm_node      | 在slurm调度系统中对应的节点编号    |
 | reg_time        | 在scalebox中注册时间            |
 | slot_job_id     | 在slurm调度系统重，node-agent的slurm job id |
+
+### 2.5.7 slot-parameters参数表
+
+| 参数名称         | 含义                           |
+| --------------- | ----------------------------- |
+| reg_time        | 注册时间                       |
+| last_access     | 最后访问时间                    |

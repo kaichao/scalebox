@@ -10,8 +10,8 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/agent
     variables:
       code_path: ${PWD}/scatter/code
+      slot_options: slot_on_head
     parameters:
-      slot_on_head: yes
       start_message: ANY
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
@@ -24,6 +24,9 @@ jobs:
     base_image: app-primes/calc
     hosts:
       - ${CALC_HOST}:${NUM_PARALLEL}
+    parameters:
+      bulk_message_size: 10
+      task_cache_expired_minutes: 60
     environments:
       - LENGTH=${GROUP_SIZE}
     sink_jobs:
@@ -36,8 +39,9 @@ jobs:
       code_path: ${PWD}/gather/code
       sleep_seconds: 10
       max_sleep_count: 100
+      slot_options: slot_on_head
       # slot_options: always_running,reserved_on_exit
     parameters:
-      slot_on_head: yes
+      bulk_message_size: 100
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
