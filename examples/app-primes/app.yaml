@@ -16,6 +16,7 @@ jobs:
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
       - GROUP_SIZE=${GROUP_SIZE}
+      - ACTION_RUN=${SCATTER_ACTION_RUN}
     sink_jobs:
       - calc
 
@@ -25,6 +26,7 @@ jobs:
     hosts:
       - ${CALC_HOST}:${NUM_PARALLEL}
     parameters:
+      task_dist_mode: ${TASK_DIST_MODE}
       bulk_message_size: 10
       task_cache_expired_minutes: 60
     environments:
@@ -43,5 +45,6 @@ jobs:
       # slot_options: always_running,reserved_on_exit
     parameters:
       bulk_message_size: 100
+      task_cache_expired_minutes: ${TASK_CACHE_EXPIRED_MINUTES}
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
