@@ -243,13 +243,14 @@ cluster定义的示例如下：
 ### 2.5.4 task-headers参数表
 
 | 参数名称      | 含义 |
-| --------------- | ------------------------------------------------- |
-| to_ip           |                                                   |
-| to_host         |                                                   |
-| from_ip         |                                                   |
-| from_host       |                                                   |
-| from_job        |                                                   |
-| to_slot         |                                                   |
+| --------------- | ----------------------------------------------- |
+| to_ip           | 当前task的待处理主机ip                             |
+| to_host         | 当前task的待处理主机名(t_host主键)                  |
+| from_ip         | 生成task消息的主机ip                               |
+| from_host       | 生成task消息的主机名(t_host主键)                    |
+| from_job        | 生成task消息的job名                               |
+| from_job_last   | 若from_job为消息路由，消息路由之前的from_job         |
+| to_slot         | 当前task的待处理slot_id                           |
 | slot_broadcast  | 仅用于cli的命令行参数，针对所有slot，按广播形式生成一组消息 |
 | host_broadcast  | 仅用于cli的命令行参数，针对所有host，按广播形式生成一组消息 |
 
@@ -257,6 +258,7 @@ cluster定义的示例如下：
 | 参数名称         |   含义                         |
 | --------------- | ----------------------------- |
 | base_data_dir   |  可通过两种方式引用：虚拟环境变量CLUSTER_DATA_ROOT，容器内/data目录   |
+| code_dir        |                               |
 | uname           | ssh登录用户名                   |
 | port            | ssh登录用户名                   |
 

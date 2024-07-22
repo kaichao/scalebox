@@ -7,6 +7,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // NewSQLNullString ...
@@ -34,11 +35,21 @@ func GetDB() *sql.DB {
 	if len(databaseURL) == 0 {
 		pgHost := os.Getenv("PGHOST")
 		pgPort := os.Getenv("PGPORT")
+		if pgHost == "" && os.Getenv("JOB_NAME") != "" {
+			// in agent, set grpc server as default server
+			grpcServer := os.Getenv("GRPC_SERVER")
+			pgHost = strings.Split(grpcServer, ":")[0]
+			fmt.Printf("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
+				time.Now().Format("15:04:05.000"), grpcServer)
+		}
 		if pgHost == "" {
 			pgHost = os.Getenv("LOCAL_ADDR")
-			if pgHost == "" {
-				pgHost = GetLocalIP()
-			}
+		}
+		if pgHost == "" {
+			localIP := GetLocalIP()
+			pgHost = localIP
+			fmt.Printf("[INFO] %s Set localIP %s as default db server.\n",
+				time.Now().Format("15:04:05.000"), localIP)
 		}
 		// ${PGHOST}:${PGPORT}
 		ss := strings.Split(pgHost, ":")
