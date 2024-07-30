@@ -1,5 +1,55 @@
-# 2. 应用定义文件
+# 2. Scalebox应用规范
 
+Scalebox应用是：.....
+
+
+## 2.1 模块定义规范
+
+- 模块定义规范：通过Dockerfile定义容器化规范，以此为基础构建容器镜像。
+
+- 模块内算法以非侵入式调用，作为独立应用程序，封装在容器镜像中。
+
+- 模块定义结构图：
+
+- 主要封装的脚本
+  - run.sh：环境变量ACTION_RUN
+  - check.sh：环境变量ACTION_CHECK
+  - setup.sh：环境变量ACTION_SETUP
+  - teardown.sh：环境变量ACTION_TEARDOWN
+
+
+
+定义模块。
+
+task是每个消息处理的基本单元。task含有body、headers。body是task的唯一标识，headers用于task标识辅助信息。
+
+### 2.1.1 标准task-headers参数表
+
+| 参数名称      | 含义 |
+| --------------- | ----------------------------------------------- |
+| to_ip           | 当前task的待处理主机ip                             |
+| to_host         | 当前task的待处理主机名(t_host主键)                  |
+| from_ip         | 生成task消息的主机ip                               |
+| from_host       | 生成task消息的主机名(t_host主键)                    |
+| from_job        | 生成task消息的job名                               |
+| from_job_last   | 若from_job为消息路由，消息路由之前的from_job         |
+| to_slot         | 当前task的待处理slot_id                           |
+| slot_broadcast  | 仅用于cli的命令行参数，针对所有slot，按广播形式生成一组消息 |
+| host_broadcast  | 仅用于cli的命令行参数，针对所有host，按广播形式生成一组消息 |
+
+其中，from_ip、from_job、from_job_last等，由系统自动生成。
+
+- 针对HOST-BOUND的job，需在代码中设定to_host；或通过job的pod_id相等来设定。
+- 针对SLOT-BOUND的job，需在代码中设定to_slot
+
+### 2.1.2 自定义task-headers
+
+- 自定义header标识task的辅助信息。
+
+- 通过scalebox task add 中，--header header_name=header_value
+
+
+## 2.2 应用定义规范
 应用定义文件是用于定义Scalebox应用程序（App）及其模块（Job）的yaml文本文件，还支持集群（Cluster）和数据集（DataSet）的定义。
 
 应用定义文件的格式示例如下：
@@ -131,7 +181,6 @@ cluster定义的示例如下：
       local_ip_index: 2
       num_of_executors: Inline cluster only
       channel_size: channel size fo executor, Inline cluster only
-      conn_url: for External cluster
       grpc_server: 192.168.3.123:50051
       host_alloc_config:
     total_resources:
@@ -166,8 +215,9 @@ cluster定义的示例如下：
 - /etc/scalebox/environments
 - ${HOME}/.scalebox/environments
 - ${PWD}/scalebox.env
-- ${PWD}/user-defined.env
-- 环境变量
+- ${PWD}/env-defined.env
+- ${PWD}/env-defined_app-defined.env
+- 当前命令行中，已定义的环境变量
 
 虚拟模板变量CLUSTER_DATA_DIR表示job所在集群的base_data_dir，无需定义即可使用。
 
@@ -240,19 +290,6 @@ cluster定义的示例如下：
 | bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。        |
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。   |
 
-### 2.5.4 task-headers参数表
-
-| 参数名称      | 含义 |
-| --------------- | ----------------------------------------------- |
-| to_ip           | 当前task的待处理主机ip                             |
-| to_host         | 当前task的待处理主机名(t_host主键)                  |
-| from_ip         | 生成task消息的主机ip                               |
-| from_host       | 生成task消息的主机名(t_host主键)                    |
-| from_job        | 生成task消息的job名                               |
-| from_job_last   | 若from_job为消息路由，消息路由之前的from_job         |
-| to_slot         | 当前task的待处理slot_id                           |
-| slot_broadcast  | 仅用于cli的命令行参数，针对所有slot，按广播形式生成一组消息 |
-| host_broadcast  | 仅用于cli的命令行参数，针对所有host，按广播形式生成一组消息 |
 
 ### 2.5.5 cluster-parameters参数表
 | 参数名称         |   含义                         |

@@ -11,7 +11,7 @@
    :caption: 入门教程
    :hidden:
 
-   started/what_is_scalebox
+   started/introduction
    started/background
    started/architecture
    faq
@@ -45,7 +45,7 @@
    :hidden:
 
    appendix/cmdline
-   appendix/app_def
+   appendix/app_spec
 
 .. toctree::
    :maxdepth: 2
