@@ -1,29 +1,76 @@
-# 2. Scalebox应用规范
+# 2. Scalebox应用容器化技术规范
 
 Scalebox应用是：.....
 
+## 2.1 术语定义
 
-## 2.1 模块定义规范
+Scalebox的主要术语类型分为：应用定义（app/job/task）、系统运行（cluster/host/slot）两类。如下图所示：
 
+```mermaid
+graph TD
+  subgraph 系统运行
+    cluster --- host
+    host --- slot
+  end    
+
+  subgraph 应用定义
+    app --- job
+    job --- task
+  end
+```
+- 应用定义
+  - app：应用（流水线应用），包括多个job；
+  - job：模块，应用中算法的容器化封装；
+  - task：对应job中每个消息的处理；
+- 系统运行
+  - cluster：集群，一个或多个头节点+若干个计算节点组成
+  - host：节点
+  - slot：计算插槽，对应job在host上的运行
+
+## 2.2 标识符命名规则
+### 2.2.1	文件名命名规则
+文件名字符：数字、英文字母大小写、下划线、点。
+### 2.2.2	URI命名规则
+App、Job等资源通过URI（Uniform Resource Identifier，统一资源标识符）作唯一标识。常见的URI主要包括URL（Uniform Resource Locator，统一资源定位符）、URN（Uniform Resource Name，统一资源名称）两大类。URI 指的是一个资源，URL 指的是用地址定位一个资源，URN 指的是用名称定位一个资源。 即URL 和 URN 是 URI 的子集。
+App、Job等通过URN来定义。
+
+### 2.2.3	版本号命名规则
+App、Job等资源类型可以通过版本表示，版本定义遵循语义化版本.
+版本格式如下：主版本号.次版本号.修订号，版本号递增规则如下：
+·	主版本号：当你做了不兼容的 API 修改，
+·	次版本号：当你做了向下兼容的功能性新增，
+·	修订号：当你做了向下兼容的问题修正。
+
+先行版本号及版本编译元数据可以加到“主版本号.次版本号.修订号”的后面，作为延伸。
+
+## 2.3 模块的构建规范
+
+为解耦模块算法，以非侵入式调用，主算法及相关辅助程序作为独立应用程序，封装在容器镜像中。
 - 模块定义规范：通过Dockerfile定义容器化规范，以此为基础构建容器镜像。
 
-- 模块内算法以非侵入式调用，作为独立应用程序，封装在容器镜像中。
 
-- 模块定义结构图：
+### 2.3.1 模块结构的定义
 
-- 主要封装的脚本
-  - run.sh：环境变量ACTION_RUN
-  - check.sh：环境变量ACTION_CHECK
-  - setup.sh：环境变量ACTION_SETUP
-  - teardown.sh：环境变量ACTION_TEARDOWN
+附图 模块结构示意图
 
 
 
-定义模块。
+- 模块内主要脚本
 
+| 环境变量 | 脚本名 | 脚本说明 |
+| --------------- | ----------- | ------------ |
+| ACTION_RUN      | run.sh      | 主算法脚本      |
+| ACTION_CHECK    | check.sh    | 流控脚本。返回值为0，OK；非0，流控限制 |
+| ACTION_SETUP    | setup.sh    | 初始设置脚本。返回值为0，OK；非0，初始化失败，设置对应slot为错误。 |
+| ACTION_TEARDOWN | teardown.sh | 结束退出脚本。返回值为0，OK；非0，退出失败，设置对应slot为错误。 |
+
+
+- 脚本返回码
+
+
+
+### 2.3.2 标准task-headers参数表
 task是每个消息处理的基本单元。task含有body、headers。body是task的唯一标识，headers用于task标识辅助信息。
-
-### 2.1.1 标准task-headers参数表
 
 | 参数名称      | 含义 |
 | --------------- | ----------------------------------------------- |
@@ -42,14 +89,23 @@ task是每个消息处理的基本单元。task含有body、headers。body是tas
 - 针对HOST-BOUND的job，需在代码中设定to_host；或通过job的pod_id相等来设定。
 - 针对SLOT-BOUND的job，需在代码中设定to_slot
 
-### 2.1.2 自定义task-headers
+### 2.3.3 自定义task-headers
 
 - 自定义header标识task的辅助信息。
 
 - 通过scalebox task add 中，--header header_name=header_value
 
 
-## 2.2 应用定义规范
+
+### 2.3.4 Dockerfile示例
+
+```Dockerfile
+FROM my-image
+
+
+```
+
+## 2.4 应用定义规范
 应用定义文件是用于定义Scalebox应用程序（App）及其模块（Job）的yaml文本文件，还支持集群（Cluster）和数据集（DataSet）的定义。
 
 应用定义文件的格式示例如下：
@@ -167,7 +223,7 @@ datasets:
 
 
 
-## 2.2 集群（Cluster）定义
+## 2.5 集群（Cluster）定义
 
 cluster定义的示例如下：
 
@@ -205,11 +261,11 @@ cluster定义的示例如下：
   - *host_alloc_config*:	动态集群的配置，示例：{"g00": 1, "g01": 1, "other": 2}
 
 
-## 2.3 数据集（Dataset）定义
+## 2.5 数据集（Dataset）定义
 
 数据集定义
 
-## 2.4 应用定义文件中的模板参数
+## 2.6 应用定义文件中的模板参数
 
 除虚拟模板参数CLUSTER_DATA_DIR之外，模板变量必须先定义，再使用。以下是模板变量定义及优先排序（从低到高）
 - /etc/scalebox/environments
@@ -222,16 +278,16 @@ cluster定义的示例如下：
 虚拟模板变量CLUSTER_DATA_DIR表示job所在集群的base_data_dir，无需定义即可使用。
 
 
-## 2.5 附表
+## 2.7 附表
 
-### 2.5.1 app-parameters参数表
+### 2.7.1 app-parameters参数表
 | 参数名称           |   含义                        |
 | ---------------  | ----------------------------- |
 | initial_status   | 'RUNNING'/'PAUSED'            |
 | messsage_router  |                               |
 | is_cluster_admin |                               |
 
-### 2.5.2 job-variables参数表
+### 2.7.2 job-variables参数表
 
 | 参数名                    | 标准环境变量             | 含义                                                                        |
 | ------------------------ | ---------------------- | -------------------------------------------------------------------------- |
@@ -267,7 +323,7 @@ cluster定义的示例如下：
 |                          | SINK_JOB               | 缺省sink_job的名称                                                           |
 |                          | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                             |
 
-### 2.5.3 job-parameters参数表
+### 2.7.3 job-parameters参数表
 
 | 参数名                  | 含义                                                                        |
 | -------------------- | ----------------------------------------------------------------------------- |
@@ -291,7 +347,7 @@ cluster定义的示例如下：
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。   |
 
 
-### 2.5.5 cluster-parameters参数表
+### 2.7.4 cluster-parameters参数表
 | 参数名称         |   含义                         |
 | --------------- | ----------------------------- |
 | base_data_dir   |  可通过两种方式引用：虚拟环境变量CLUSTER_DATA_ROOT，容器内/data目录   |
@@ -299,7 +355,7 @@ cluster定义的示例如下：
 | uname           | ssh登录用户名                   |
 | port            | ssh登录用户名                   |
 
-### 2.5.6 host-parameters参数表
+### 2.7.5 host-parameters参数表
 
 | 参数名称         |   含义                         |
 | --------------- | ----------------------------- |
@@ -311,7 +367,7 @@ cluster定义的示例如下：
 | reg_time        | 在scalebox中注册时间            |
 | slot_job_id     | 在slurm调度系统重，node-agent的slurm job id |
 
-### 2.5.7 slot-parameters参数表
+### 2.7.6 slot-parameters参数表
 
 | 参数名称         | 含义                           |
 | --------------- | ----------------------------- |

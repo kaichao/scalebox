@@ -73,6 +73,7 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
+    shm_size: 8g
     ports:
       - 5432:5432
     healthcheck:
