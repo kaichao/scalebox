@@ -32,7 +32,7 @@ ENV \
     ENTRY_TYPE=FILE \
     WORK_DIR=
 
-COPY remote-dir/run.sh /app/share/bin/
+COPY dir-list/run.sh /app/share/bin/
 COPY functions.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
