@@ -24,7 +24,8 @@ COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
 
 ENV \
     WITH_HEADERS=yes \
-    SOURCE_URL= \
+    PREFIX_URL= \
+    DIR_NAME= \
     JUMP_SERVERS= \
     # SSH/RSYNC-OVER-SSH
     TRANSPORT= \
@@ -32,7 +33,7 @@ ENV \
     ENTRY_TYPE=FILE \
     WORK_DIR=
 
-COPY dir-list/run.sh /app/share/bin/
+COPY dir-list/*.sh /app/share/bin/
 COPY functions.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/

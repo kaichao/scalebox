@@ -1,0 +1,26 @@
+name: dir-list.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  dir-list:
+    base_image: hub.cstcloud.cn/scalebox/dir-listx
+    variables:
+      # 10 minutes
+      max_sleep_count: 120
+    parameters:
+      start_message: ${DIR_NAME}
+      slot_on_head: yes
+    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
+    environments:
+      - PREFIX_URL=${PREFIX_URL}
+      - DIR_NAME=${DIR_NAME}
+      - REGEX_FILTER=${REGEX_FILTER}
+      - REGEX_2D_DATASET=
+      - INDEX_2D_DATASET=
+    sink_jobs:
+      - next-job
+
+  next-job:
+    base_image: hub.cstcloud.cn/scalebox/agent
