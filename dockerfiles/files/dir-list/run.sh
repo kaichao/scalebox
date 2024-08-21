@@ -8,12 +8,14 @@ export REGEX_FILTER=$(get_parameter "$2" "regex_filter")
 export JUMP_SERVERS=$(get_parameter "$2" "jump_servers")
 
 prefix_url=$(get_parameter "$2" "prefix_url")
-dir_name=$(get_parameter "$2" "dir_name")
+
+dir_name=$1
 
 echo prefix_url:$prefix_url
 
 /app/share/bin/list-files.sh "$prefix_url~$dir_name" | while read line; do 
-    send-message "${line}"
+    scalebox task add --header source_url="$prefix_url" "${line}"
+    # send-message "${line}"
     code=$?
     [[ $code -ne 0 ]] && echo "Error send-message, file:"$line >&2 && exit $code
 done

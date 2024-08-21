@@ -15,7 +15,7 @@ jobs:
     command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
     environments:
       - PREFIX_URL=${PREFIX_URL}
-      - DIR_NAME=${DIR_NAME}
+#      - DIR_NAME=${DIR_NAME}
       - REGEX_FILTER=${REGEX_FILTER}
       - REGEX_2D_DATASET=
       - INDEX_2D_DATASET=

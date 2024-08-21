@@ -1,0 +1,34 @@
+name: dir-copy.app
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+  default_message_router: message-router
+
+jobs:
+  dir-list:
+    base_image: hub.cstcloud.cn/scalebox/dir-listx
+    variables:
+      # 10 minutes
+      max_sleep_count: 120
+    parameters:
+      start_message: ${DIR_NAME}
+      slot_on_head: yes
+    command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
+    environments:
+      - PREFIX_URL=${SOURCE_URL}
+      # - DIR_NAME=${DIR_NAME}
+      - REGEX_FILTER=${REGEX_FILTER}
+    sink_jobs:
+      - file-copy
+
+  file-copy:
+    base_image: hub.cstcloud.cn/scalebox/file-copy
+    variables:
+      max_sleep_count: 120
+      # slot_options: enable_trace,slot_on_head
+    environments:
+      - TARGET_URL=${TARGET_URL}
+      - TARGET_MODE=${TARGET_MODE}
+      - KEEP_SOURCE_FILE=${KEEP_SOURCE_FILE}
+    hosts:
+      - h0:1
