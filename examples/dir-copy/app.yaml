@@ -6,45 +6,32 @@ parameters:
 
 jobs:
   dir-list:
-    base_image: hub.cstcloud.cn/scalebox/dir-list
-    parameters:
-      slot_on_head: yes
+    base_image: hub.cstcloud.cn/scalebox/dir-listx
     variables:
       # 10 minutes
       max_sleep_count: 120
+    parameters:
+      start_message: ${DIR_NAME}
+      slot_on_head: yes
     command: docker run -d --rm --privileged --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
     environments:
-      - SOURCE_URL=${SOURCE_URL}
+      - PREFIX_URL=${SOURCE_URL}
       - REGEX_FILTER=${REGEX_FILTER}
-      - REGEX_2D_DATASET=${REGEX_DATASET}
-      - INDEX_2D_DATASET=${INDEX_DATASET}
-
-  rsync-copy:
-    base_image: hub.cstcloud.cn/scalebox/rsync-copy
-    parameters:
-      slot_on_head: yes
-    variables:
-    # 10 minutes
-      max_sleep_count: 120
-
-  ftp-copy:
-    base_image: hub.cstcloud.cn/scalebox/ftp-copy
-    parameters:
-      slot_on_head: yes
-    variables:
-    # 10 minutes
-      max_sleep_count: 120
-
-  message-router:
-    base_image: dir-copy/message-router
-    parameters:
-      slot_on_head: yes
-      start_message: ${DIR_NAME}
-    variables:
-    # 10 minutes
-      max_sleep_count: 120
+      # - REGEX_2D_DATASET=
+      # - INDEX_2D_DATASET=
     sink_jobs:
-     - dir-list
-     - rsync-copy
-     - ftp-copy
-    
+      - file-copy
+
+  file-copy:
+    base_image: hub.cstcloud.cn/scalebox/file-copy
+    variables:
+      max_sleep_count: 120
+      # slot_options: enable_trace,slot_on_head
+    environments:
+      - SOURCE_URL=${SOURCE_URL}
+      - SOURCE_MODE=${SOURCE_MODE}
+      - TARGET_URL=${TARGET_URL}
+      - TARGET_MODE=${TARGET_MODE}
+      - KEEP_SOURCE_FILE=${KEEP_SOURCE_FILE}
+    hosts:
+      - h0:1

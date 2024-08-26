@@ -81,6 +81,8 @@ task是每个消息处理的基本单元。task含有body、headers。body是tas
 | from_job        | 生成task消息的job名                               |
 | from_job_last   | 若from_job为消息路由，消息路由之前的from_job         |
 | to_slot         | 当前task的待处理slot_id                           |
+| to_slot         | 当前task的待处理slot_id                           |
+| repeatable      | 缺省task对应消息在指定时间内不可重复分发，缺省值可通过job的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
 | slot_broadcast  | 仅用于cli的命令行参数，针对所有slot，按广播形式生成一组消息 |
 | host_broadcast  | 仅用于cli的命令行参数，针对所有host，按广播形式生成一组消息 |
 

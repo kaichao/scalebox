@@ -41,7 +41,7 @@ function parse_remote_path() {
         else
             ssh_port=${ssh_port:1}
         fi
-        echo "SSH $data_root $ssh_host $ssh_port"
+        echo "RSYNC_OVER_SSH $data_root $ssh_host $ssh_port"
     else
         echo "wrong message format, message: $1" >&2
         return 26

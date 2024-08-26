@@ -29,3 +29,11 @@ SOURCE_URL=scalebox@10.255.128.1/etc TARGET_URL=/tmp DIR_NAME=postfix REGEX_FILT
 
 SOURCE_URL=scalebox@10.255.128.1/etc/postfix TARGET_URL=/tmp DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox app create
 ```
+
+
+
+```sh
+
+SOURCE_URL=scalebox@159.226.237.136:10022/raid0/tmp/mwa/tar1301240224 TARGET_URL=/data1/tmp DIR_NAME=1301240224 REGEX_FILTER= scalebox app create
+
+```

@@ -78,26 +78,28 @@ case $source_mode in
         target_ssh_option=$(get_ssh_option "$2" "target_url" "target_jump_servers")
 
         if [[ $source_url == /data/* ]]; then
-            source_file="${source_url}/$1"
+            source_dir="${source_url}/"
         else
-            source_file="/local${source_url}/$1"
+            source_dir="/local${source_url}/"
         fi
-        echo "source_file:$source_file" >> ${WORK_DIR}/custom-out.txt
+        echo "source_dir:$source_dir" >> ${WORK_DIR}/custom-out.txt
+        cd $source_dir
 
         target_ssh_url=$(to_ssh_url $target_url)
-        cmd="rsync -ut ${rsync_args} -e \"ssh ${target_ssh_option}\" ${source_file} $target_ssh_url/$1 "
+        # target_ssh_url=$(dirname "$target_ssh_url/$1")
+        cmd="rsync -Rut ${rsync_args} -e \"ssh ${target_ssh_option}\" $1 $target_ssh_url/ "
         echo "cmd=$cmd" >> ${WORK_DIR}/custom-out.txt
         eval $cmd
         # rsync -ut ${rsync_args} -e "ssh ${ssh_option}" $source_url/$1 ${dest_dir}
         code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
-            cmd="rm -f $source_file"
-            echo "cmd_remove_source_file: $cmd" >> ${WORK_DIR}/custom-out.txt
-            eval "$cmd"
-            [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
+            echo "$source_dir/$1" > ${WORK_DIR}/removed-files.txt
+            # cmd="rm -f $1"
+            # echo "cmd_remove_source_file: $cmd" >> ${WORK_DIR}/custom-out.txt
+            # eval "$cmd"
+            # [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
         fi
-    
     ;;
     "RSYNC")
         export RSYNC_PASSWORD=cas12345
