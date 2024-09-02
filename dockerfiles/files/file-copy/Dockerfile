@@ -33,12 +33,14 @@ ENV \
     TARGET_JUMP_SERVERS= \
     ZSTD_CLEVEL= \
     KEEP_SOURCE_FILE=yes \
-    RSYNCD_MODULE=/root \
+    # MD-5 / SHA-1 / SHA-256 / SHA-512 / RIPEMD-160
+    CHECKSUM_ALGO= \
+    RSYNC_BWLIMIT= \
     RSYNC_PASSWORD= \
+    RSYNCD_MODULE=/root \
     WORK_DIR=
 
-COPY file-copy/code/run.sh /app/share/bin/
-COPY functions.sh /app/share/bin/
+COPY file-copy/code/run.sh functions.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc

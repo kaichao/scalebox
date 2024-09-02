@@ -29,12 +29,13 @@ ENV \
     JUMP_SERVERS= \
     # SSH/RSYNC-OVER-SSH
     TRANSPORT= \
+    # MD-5 / SHA-1 / SHA-256 / SHA-512 / RIPEMD-160
+    FILE_CHECKSUM_ALGO= \
     # FILE/DIRECTORY, not for rsync
     ENTRY_TYPE=FILE \
     WORK_DIR=
 
-COPY dir-list/*.sh /app/share/bin/
-COPY functions.sh /app/share/bin/
+COPY dir-list/code/*.sh functions.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
