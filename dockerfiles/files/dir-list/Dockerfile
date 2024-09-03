@@ -25,14 +25,13 @@ COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
 ENV \
     WITH_HEADERS=yes \
     PREFIX_URL= \
-    # DIR_NAME= \
+    # for transport is SSH/RSYNC-OVER-SSH
     JUMP_SERVERS= \
-    # SSH/RSYNC-OVER-SSH
-    TRANSPORT= \
     # MD-5 / SHA-1 / SHA-256 / SHA-512 / RIPEMD-160
     FILE_CHECKSUM_ALGO= \
-    # FILE/DIRECTORY, not for rsync
+    # FILE/DIRECTORY, not for rsync(?)
     ENTRY_TYPE=FILE \
+    RSYNC_PASSWORD= \
     WORK_DIR=
 
 COPY dir-list/code/*.sh functions.sh /app/share/bin/
