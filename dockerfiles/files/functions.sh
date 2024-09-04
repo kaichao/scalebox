@@ -29,7 +29,8 @@ function parse_remote_path() {
         # rsync_url=$(echo "$rsync_url" | sed "s/${rsync_pass}//")
 
         echo "RSYNC $data_root $rsync_url ${rsync_pass:1}"
-    elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/.*)$ ]]; then
+    elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?:?(/.*)$ ]]; then
+        # user@myhost:22:/my-root
         # user@myhost:22/my-root
         # user@myhost/my-root
         ssh_host=${BASH_REMATCH[1]}
@@ -47,7 +48,7 @@ function parse_remote_path() {
         return 26
     fi
 }
-# parse_remote_path "$1"
+parse_remote_path "$1"
 
 function get_ssh_option() {
     local json="$1"
@@ -72,7 +73,6 @@ function get_ssh_option() {
     option="-p ${ssh_port} ${jump_servers_option}"
     echo "$option"
 }
-
 # source "/usr/local/bin/functions.sh"
 # headers='{
 #   "source_jump_servers": "jump-servers:22",
@@ -86,7 +86,6 @@ function get_data_root() {
     data_root=$(parse_remote_path "$url"| cut -d' ' -f2)
     echo "$data_root"
 }
-
 # get_data_root "$headers" "source_url"
 
 function get_mode() {
@@ -102,14 +101,14 @@ function get_ssh_host() {
 }
 
 # input:    user@host:10022/my-dir, user@host/mydir
-# output:   user@host:/mydir
+# output:   user@host:10022:/my-dir, user@host:/mydir
 function to_ssh_url() {
     local url="$1"
     ss=( $(parse_remote_path "$url") )
     # echo ${ss[2]}
     echo "${ss[2]}:${ss[1]}"
 }
-#echo $(to_ssh_url "user@host:10022/my-dir")
+# echo $(to_ssh_url "user@host:10022/my-dir")
 #echo $(to_ssh_url "user@host/my-dir")
 
 function get_ssh_port() {
