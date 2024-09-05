@@ -48,7 +48,7 @@ function parse_remote_path() {
         return 26
     fi
 }
-parse_remote_path "$1"
+# parse_remote_path "$1"
 
 function get_ssh_option() {
     local json="$1"
