@@ -5,7 +5,6 @@ label: Global Definition Cluster local
 clusters:
   local:
     parameters:
-      base_dir: /tmp
       base_data_dir: /tmp/mydata
       uname: ${USER}
       port: 22

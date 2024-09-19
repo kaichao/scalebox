@@ -340,6 +340,7 @@ cluster定义的示例如下：
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                                             |
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                                 |
 | retry_rules          | 基于退出码的重试规则<br>```['exit_code_1:num_retries',...,'exit_code_n:num_retries']``` |
+| enable_default_retrries | 设置常见的retry_rules，包括timeout(124)、...等                                 |
 | slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                                 |
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                             |
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。                |

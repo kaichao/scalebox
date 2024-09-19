@@ -11,9 +11,10 @@
    :caption: 入门教程
    :hidden:
 
-   started/introduction
-   started/background
-   started/architecture
+   started/1_introduction
+   started/2_background
+   started/3_principles
+   started/4_architecture
    faq
    release_notes
 
