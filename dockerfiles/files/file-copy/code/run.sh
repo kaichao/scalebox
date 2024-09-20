@@ -193,6 +193,10 @@ case $source_mode in
         source_ssh_url=$(to_ssh_url $source_url)
         cmd="rsync -ut ${rsync_args} -e \"ssh ${source_ssh_option}\" $source_ssh_url/$1 ${dest_dir}"
         echo "cmd=$cmd" >> ${WORK_DIR}/custom-out.txt
+        if [ -n "$TASK_TIMEOUT_SECONDS" ]; then
+            # 若timeout超时，返回124编码。否则实际完成后，返回0。导致后续脚本错误，误删除出错的源文件
+            cmd="timeout ${TASK_TIMEOUT_SECONDS}s $cmd"
+        fi
         eval $cmd
         # rsync -ut ${rsync_args} -e "ssh ${ssh_option}" $source_url/$1 ${dest_dir}
         code=$?

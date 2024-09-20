@@ -15,6 +15,10 @@ import (
 // GetLocalIP ...
 // hostname -i / -I
 func GetLocalIP() string {
+	localIP := os.Getenv("LOCAL_IP")
+	if localIP != "" {
+		return localIP
+	}
 	// 0=1, 2, 3, .. ,n
 	localIPIndexStr := os.Getenv("LOCAL_IP_INDEX")
 	var cmd string
@@ -28,7 +32,7 @@ func GetLocalIP() string {
 	}
 
 	out, _ := exec.Command("/bin/bash", "-c", cmd).Output()
-	localIP := strings.Split(string(out), " ")[0]
+	localIP = strings.Split(string(out), " ")[0]
 	// remove '\n'
 	localIP = strings.Replace(localIP, "\n", "", -1)
 	reIPv4 := regexp.MustCompile("^([0-9]+\\.){3}[0-9]+$")
