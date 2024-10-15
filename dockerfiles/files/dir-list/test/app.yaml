@@ -17,6 +17,7 @@ jobs:
       - PREFIX_URL=${PREFIX_URL}
 #      - DIR_NAME=${DIR_NAME}
       - REGEX_FILTER=${REGEX_FILTER}
+      - ENTRY_TYPE=${ENTRY_TYPE}
       - REGEX_2D_DATASET=
       - INDEX_2D_DATASET=
     sink_jobs:

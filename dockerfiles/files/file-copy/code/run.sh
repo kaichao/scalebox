@@ -240,6 +240,8 @@ esac
 date --iso-8601=ns >> ${WORK_DIR}/timestamps.txt
 
 # Delay writing messages
-echo $1 > ${WORK_DIR}/messages.txt
 
+if [ -n "$SINK_JOB" ]; then
+    echo $1 > ${WORK_DIR}/messages.txt
+fi
 exit $code

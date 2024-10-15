@@ -1,5 +1,12 @@
 #!/bin/bash
 
+if [[ "$ENTRY_TYPE" == "DIR" ]]; then
+    entry_type="d"
+    rsync_args="--include '*/' --exclude '*'"
+else
+    entry_type="f"
+fi
+
 s=$1
 
 echo "message:"$s >&2
@@ -11,9 +18,10 @@ if [[ $s =~ ^(/[^~]*)~(.+)$ ]]; then
     data_dir="/local${data_root}/$dir"
     echo dir:$dir >&2
     echo data-dir:$data_dir >&2
+    echo "ENTRY_TYPE:$ENTRY_TYPE, entry_type:$entry_type" >&2
     
     # Use percent sign % as separator
-    cd ${data_dir} && find -L . -type f \
+    cd ${data_dir} && find -L . -type $entry_type \
         | sed "s%^\.%${dir}%" \
         | sed 's/^\.\///' \
         | egrep "${REGEX_FILTER}"
@@ -29,11 +37,10 @@ elif [[ $s =~ ^(rsync://([^@:]+(:[^@]+)@)?[^:/]+(:[0-9]+)?/[^~]*)~(.+)$ ]]; then
     export RSYNC_PASSWORD=${rsync_pass:1}
 
     # echo "rsync_url:${rsync_url}" >&2
-    # echo pass:$rsync_pass   >&2
     # echo dir:$dir >&2
 
-    # "rsync version"
-    rsync -avn ${rsync_url}/${dir} \
+    
+    rsync -avn "${rsync_args}" "${rsync_url}/${dir}" \
         | grep ^\- | awk {'print $5'} \
         | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
         | sed "s%^%${dir}\/%" \
@@ -48,23 +55,34 @@ elif [[ $s =~ ^([^@]+@[^:/]+)(:[0-9]+)?(/[^~]*)~(.+)$ ]]; then
     data_root=${BASH_REMATCH[3]}
     dir=${BASH_REMATCH[4]}
     rsync_url="${ssh_host}:${data_root}"
-    echo port:$ssh_port >&2
     if [ "$ssh_port" == "" ]; then
         ssh_port="22"
     else
         ssh_port=${ssh_port:1}
     fi
-    # echo "rsync_url:${rsync_url}" >&2
-    # echo port:$ssh_port >&2
-    # echo dir:$dir  >&2
+
+    echo "rsync_url:${rsync_url}" >&2
+    echo port:$ssh_port >&2
+    echo dir:$dir  >&2
 
     ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x"
-    rsync -avn -L -e "ssh -p ${ssh_port} ${ssh_args}" ${rsync_url}/${dir} \
-        | grep ^\- | awk {'print $5'}  \
-        | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
-        | sed "s%^%${dir}\/%" \
-        | sed 's/^\.\///' \
-        | egrep "${REGEX_FILTER}"
+    echo rsync -avn -L ${rsync_args} -e \"ssh -p ${ssh_port}\" ${rsync_url}/${dir} >&2
+
+    if [[ "$ENTRY_TYPE" == "FILE" ]]; then
+        rsync -avn -L -e "ssh -p ${ssh_port} ${ssh_args}" ${rsync_url}/${dir} \
+            | grep ^\- | awk {'print $5'}  \
+            | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
+            | sed "s%^%${dir}\/%" \
+            | sed 's/^\.\///' \
+            | egrep "${REGEX_FILTER}"
+    elif [[ "$ENTRY_TYPE" == "DIR" ]]; then
+        rsync -avn -L ${rsync_args} -e "ssh -p ${ssh_port}" ${rsync_url}/${dir} \
+            | grep ^dr[w\-]x | awk {'print $5'}  \
+            | awk '{ gsub(/^[^\/]+?\//,""); print $0 }' \
+            | sed "s%^%${dir}\/%" \
+            | sed 's/^\.\///' \
+            | egrep "${REGEX_FILTER}"
+    fi
 else
     echo "wrong message format, message:"$1 >&2
     exit 21
@@ -79,7 +97,7 @@ echo "[INFO]pipe_status:"${status[*]} >&2
 n=${#status[*]}
 if [ $n == 1 ]; then
     if [ ${status[0]} -ne 0 ]; then
-        echo "[ERROR]local mode, dir: "${LOCAL_ROOT}" not found" >&2
+        echo "[ERROR]local mode, dir: ${LOCAL_ROOT} not found" >&2
         exit ${status[0]}
     fi
 fi

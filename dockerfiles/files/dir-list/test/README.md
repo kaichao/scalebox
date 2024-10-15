@@ -17,6 +17,14 @@ PREFIX_URL=/etc/postfix DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox app create
 
 ```
 
+- dir-entry
+
+```sh
+PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER= scalebox app create
+
+PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' scalebox app create
+```
+
 ## 2. rsync-over-ssh
 
 - format
@@ -33,6 +41,14 @@ PREFIX_URL=scalebox@10.255.128.1:22/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ sc
 
 PREFIX_URL=scalebox@10.255.128.1/etc/postfix DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox app create
 
+```
+
+- dir-entry
+
+```sh
+PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER= scalebox app create
+
+PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' scalebox app create
 ```
 
 ## 3. rsync-native

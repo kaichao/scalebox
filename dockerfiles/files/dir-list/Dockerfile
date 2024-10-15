@@ -29,7 +29,7 @@ ENV \
     JUMP_SERVERS= \
     # MD-5 / SHA-1 / SHA-256 / SHA-512 / RIPEMD-160
     FILE_CHECKSUM_ALGO= \
-    # FILE/DIRECTORY, not for rsync(?)
+    # FILE/DIR, not for rsync(?)
     ENTRY_TYPE=FILE \
     RSYNC_PASSWORD= \
     WORK_DIR=
