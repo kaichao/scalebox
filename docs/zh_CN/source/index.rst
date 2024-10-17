@@ -34,9 +34,9 @@
    :hidden:
 
    developer/programming_model
-   developer/app_spec
-   developer/app_impl
-   developer/module_impl
+   developer/app_design
+   developer/mod_build
+   developer/app_build
    developer/common_features
    developer/advanced_features
 

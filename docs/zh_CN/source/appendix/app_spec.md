@@ -1,4 +1,4 @@
-# 2. Scalebox应用容器化技术规范
+# 2. Scalebox应用技术规范
 
 Scalebox应用是：.....
 
@@ -49,35 +49,6 @@ App、Job等资源类型可以通过版本表示，版本定义遵循语义化�
 - 模块定义规范：通过Dockerfile定义容器化规范，以此为基础构建容器镜像。
 
 
-
-
-### 2.3.2 标准task-headers参数表
-task是每个消息处理的基本单元。task含有body、headers。body是task的唯一标识，headers用于task标识辅助信息。
-
-| 参数名称      | 含义 |
-| --------------- | ----------------------------------------------- |
-| to_ip           | 当前task的待处理主机ip                             |
-| to_host         | 当前task的待处理主机名(t_host主键)                  |
-| from_ip         | 生成task消息的主机ip                               |
-| from_host       | 生成task消息的主机名(t_host主键)                    |
-| from_job        | 生成task消息的job名                               |
-| from_job_last   | 若from_job为消息路由，消息路由之前的from_job         |
-| to_slot         | 当前task的待处理slot_id                           |
-| to_slot         | 当前task的待处理slot_id                           |
-| repeatable      | 缺省task对应消息在指定时间内不可重复分发，缺省值可通过job的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
-| slot_broadcast  | 仅用于cli的命令行参数，针对所有slot，按广播形式生成一组消息 |
-| host_broadcast  | 仅用于cli的命令行参数，针对所有host，按广播形式生成一组消息 |
-
-其中，from_ip、from_job、from_job_last等，由系统自动生成。
-
-- 针对HOST-BOUND的job，需在代码中设定to_host；或通过job的pod_id相等来设定。
-- 针对SLOT-BOUND的job，需在代码中设定to_slot
-
-### 2.3.3 自定义task-headers
-
-- 自定义header标识task的辅助信息。
-
-- 通过scalebox task add 中，--header header_name=header_value
 
 
 
