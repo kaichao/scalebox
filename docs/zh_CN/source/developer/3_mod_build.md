@@ -14,7 +14,7 @@ teardown: 清除环境
 
 ### 3.2.1 算法运行run.sh
 
-### 3.2.2 流控检查check.sh
+### 3.2.2 流控检测check.sh
 
 ### 3.2.3 初始设置setup.sh
 

@@ -33,12 +33,12 @@
    :caption: 开发指南
    :hidden:
 
-   developer/programming_model
-   developer/app_design
-   developer/mod_build
-   developer/app_build
-   developer/common_features
-   developer/advanced_features
+   developer/1_programming_model
+   developer/2_app_design
+   developer/3_mod_build
+   developer/4_app_build
+   developer/5_common_features
+   developer/6_advanced_features
 
 .. toctree::
    :maxdepth: 2
