@@ -46,7 +46,7 @@ cluster -> host -> slot
 - 模块级数据并行
 - 模块间流水线并行
 
-## 4.5 Scalebox与已有相关技术对比
+## 4.5 与已有相关技术对比
 
 ### 4.5.1 Scalebox vs. MPI
 
