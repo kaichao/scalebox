@@ -28,8 +28,37 @@
 - task_exec status_code : task-exec history recording
 - ssh / docker status_code (in actuator)
 
-## ret_code vs. exit_code
+## 模块状态码
 
+| Code        | Description |
+| ----------- | ----------- |
+| 1-99 | 应用自定义状态码 |
+
+110：Invalid Input Message Format
+111: Input Message out-of-range
+112：Failed Precondition
+113：Input Not Found
+114：Input Permission Denied
+116：Output Already Exists
+117: Output Not Found
+118: Output Not Valid
+124: Timeout
+121：App Running Exception（Unknown Core Dump）
+
+## 系统状态码
+-1：READY
+-2：QUEUED，READY/RUNNING的中间状态
+-3：RUNNING
+-9：Initial status
+
+## 系统错误码
+-100：UNKNOWN
+-101：EXCEPTION
+-102：Control-Service Access TIMEOUT
+-103：Network Unavailable，Failed to dial target host
+-104：Service Unavailable
+-110：run program not exists
+-111：run program not runnable
 
 
 ## Task status_code (32-bit)

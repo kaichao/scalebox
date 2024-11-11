@@ -48,7 +48,7 @@
    appendix/cmdline
    appendix/app_spec
    appendix/mod_spec
-   appendix/mod_best_practice
+   appendix/best_practice
 
 .. toctree::
    :maxdepth: 2
