@@ -1,0 +1,18 @@
+name: wait-queue.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  wait-queue:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    arguments:
+      slot_options: slot_on_head
+      code_path: ${PWD}/../code
+    environments:
+      - SEMA_NAME=${SEMA_NAME}
+    sink_jobs:
+      - next-job
+
+  next-job:
+    base_image: hub.cstcloud.cn/scalebox/agent

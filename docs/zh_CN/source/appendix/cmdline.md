@@ -30,9 +30,16 @@ graph LR
 
   scalebox --> semaphore[<a href="#semaphore">semaphore</a>]
   semaphore --> sema-create[<a href="#semaphore-create">create</a>]
-  semaphore --> count-down[<a href="#semaphore-count-down">count-down</a>]
   semaphore --> semaphore-get[<a href="#semaphore-get">get</a>]
+  semaphore --> increment[<a href="#semaphore-increment">increment</a>]
+  semaphore --> decrement[<a href="#semaphore-decrement">decrement</a>]
+  semaphore --> increment-n[<a href="#semaphore-increment">increment-n</a>]
   semaphore --> semaphore-group-dist[<a href="#semaphore-group-dist">group-dist</a>]
+
+  scalebox --> variable[<a href="#variable">variable</a>]
+  variable --> variable-create[<a href="#variable-create">create</a>]
+  variable --> variable-get[<a href="#variable-get">get</a>]
+  variable --> variable-set[<a href="#variable-set">set</a>]
 
   scalebox --> cluster
   cluster --> get-parameter
@@ -75,14 +82,74 @@ key-text可放在文件 ```${WORK_DIR}/key-text.txt```，该文件为多行文�
 
 ## 1.5 scalebox semaphore 子命令{#semaphore}
 
-### 1.5.1 semaphore create{#semaphore-create}
+- 公共参数：job-id，或app-id
+- 环境变量：JOB_ID，或APP_ID
+
+### 1.5.1 semaphore create
+
+示例：
+```sh
+scalebox semaphore create sema_name ${int_value}
+scalebox semaphore create --app-id ${app_id} ${sema_name} ${int_value}
+APP_ID=${app_id} scalebox semaphore create ${sema_name} ${int_value}
+
+scalebox semaphore create --job-id ${job_id} ${sema_name} ${int_value}
+JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
+
+```
+
+### 1.5.2 semaphore get
 
 
-### 1.5.2 semaphore count-down{#semaphore-count-down}
+### 1.5.3 semaphore increment
 
+单个/单组（前缀匹配）信号量增一的操作。
 
-### 1.5.3 semaphore get{#semaphore-get}
+### 1.5.4 semaphore decrement
 
+单个/单组（前缀匹配）信号量减一的操作。
 
-### 1.5.4 semaphore group-dist{#semaphore-group-dist}
+### 1.5.5 semaphore increment-n
 
+单个/单组（前缀匹配）信号量加n的操作。
+
+### 1.5.6 semaphore group-dist
+
+- 信号量格式：信号量名:host全名，并且对应主机的group_id不为空。
+
+示例：
+```sh
+APP_ID=3 scalebox semaphore group-dist progress-counter_pull-unpack:r04.main
+```
+
+## 1.6 scalebox variable 子命令{#variable}
+
+- 公共参数：job-id，或app-id
+- 环境变量：JOB_ID，或APP_ID
+
+### 1.6.1 variable create
+
+```sh
+scalebox variable create --app-id ${app_id} var_name ${str_value}
+APP_ID=${app_id} scalebox variable create var_name ${str_value}
+
+scalebox variable create --job-id ${job_id} var_name ${str_value}
+JOB_ID=${job_id} scalebox variable create  var_name ${str_value}
+```
+
+### 1.6.2 variable get
+
+示例：
+```sh
+export APP_ID=${app_id}
+var_val=$(scalebox variable get ${var_name})
+code=$?
+[[ $code -ne 0 ]] && echo "[ERROR] variable-get ${var_name}, exit_code:$code" >&2
+
+```
+### 1.6.3 variable set
+
+示例：
+```sh
+scalebox variable set ${var_name} ${str_value}
+```

@@ -135,17 +135,17 @@ scalebox semaphore get ${sema_name}
 - 信号量增一
 
 ```sh
-scalebox semaphore increase ${sema_name}
+scalebox semaphore increment ${sema_name}
 ```
 
 - 信号量减一
 ```sh
-scalebox semaphore decrease ${sema_name}
+scalebox semaphore decrement ${sema_name}
 ```
 
 - 信号量增减
 ```sh
-scalebox semaphore increase-n {sema_name} ${n}
+scalebox semaphore increment-n {sema_name} ${n}
 ```
 
 - 信号量组距离
