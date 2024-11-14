@@ -9,6 +9,23 @@
 | -e / --env-file   | scalebox.env   | 环境变量文件，设置命令运行的环境变量。 |
 | --debug           | 'no'           | 设置调试标志位，输出更多调试、排错的信息 |
 
+环境变量是Scalebox应用程序中参数传递的重要方法。应用中环境变量定义可来自于多个环境变量定义文件、系统级环境变量，若在不同定义文件、系统级变量中存在重复的变量名，则按照以下顺序加载（若文件不存在，则忽略）：
+
+- 系统级环境变量
+- 用户自定义名的env文件
+- 当前目录下scalebox.env文件
+- ${HOME}/.scalebox/environments
+- /etc/scalebox/environments
+
+其中，用户自定义名的env文件，可按文件名，执行级联加载。
+
+示例如下：
+用户自定义env文件名为：p419_48nodes_1266932744.env，则按优先级从高到低，依次加载文件：
+- p419_48nodes_1266932744.env
+- p419_48nodes.env
+- p419.env
+
+
 ## 1.2 子命令
 
 ```{mermaid}
@@ -27,6 +44,7 @@ graph LR
 
   scalebox --> task[<a href="#task">task</a>]
   task --> task-add[<a href="#task-add">add</a>]
+  task --> task-info[<a href="#task-info">info</a>]
 
   scalebox --> semaphore[<a href="#semaphore">semaphore</a>]
   semaphore --> sema-create[<a href="#semaphore-create">create</a>]
@@ -55,32 +73,62 @@ graph LR
 ```
 
 
-## 1.3 scalebox app 子命令 {#app}
+## 1.3 <span id="app">app 子命令</span>
 
-### 1.3.1 app create{#app-create}
+### 1.3.1 app create
 
-### 1.3.2 app list {#app-list}
+解析应用定义文件，并存到数据库中，完成应用创建。
 
-### 1.3.3 app add-remote {#app-add-remote}
+用法：
+```sh
+scalebox app create
+```
 
-### 1.3.4 app set-finished {#app-set-finished}
+### 1.3.2 app list
 
-### 1.3.5 app get-message-router {#app-get-message-router}
+列出所有应用的基本信息。
+
+用法：
+```sh
+scalebox app list
+```
+
+### 1.3.3 app set-finished
+
+设置应用已完成，修改其状态为'FINISHED'
+
+用法：
+```sh
+scalebox app set-finished --job-id ${job_id}
+```
+
+### 1.3.4 app add-remote
+
+
+### 1.3.5 app get-message-router
   
-## 1.3 scalebox job 子命令 {#job}
+## 1.3 job 子命令 {#job}
 
-### job list {#job-list}
+### job list
 
 ### job info
 
 ## 1.4 scalebox task 子命令{#task}
 
-### task add {#task-add}
+### 1.4.1 task add
 
-key-text可放在文件 ```${WORK_DIR}/key-text.txt```，该文件为多行文本，每行为一个消息体。
+#### 环境变量/参数
+- APP_ID/app-id
+- JOB_ID/job-id
+- SINK_JOB/sink-job
+- 
+- 
+key-text可放在文件 ```${WORK_DIR}/task-body.txt```，该文件为多行文本，每行为一个消息体。
+
+### 1.4.2 task info
 
 
-## 1.5 scalebox semaphore 子命令{#semaphore}
+## 1.5 <span id="semaphore">semaphore子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
@@ -122,7 +170,7 @@ JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
 APP_ID=3 scalebox semaphore group-dist progress-counter_pull-unpack:r04.main
 ```
 
-## 1.6 scalebox variable 子命令{#variable}
+## 1.6 variable子命令{#variable}
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
