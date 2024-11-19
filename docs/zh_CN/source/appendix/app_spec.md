@@ -44,7 +44,7 @@ App、Job等资源类型可以通过版本表示，版本定义遵循语义化�
 先行版本号及版本编译元数据可以加到“主版本号.次版本号.修订号”的后面，作为延伸。
 
 
-## 2.4 应用定义规范
+## 2.3 应用定义规范
 应用定义文件是用于定义Scalebox应用程序（App）及其模块（Job）的yaml文本文件，还支持集群（Cluster）和数据集（DataSet）的定义。
 
 应用定义文件的格式示例如下：
@@ -100,7 +100,7 @@ datasets:
 
 关于job、cluster、dataset的详细定义，见后续章节。
 
-## 2.1 模块（Job）定义
+## 2.4 模块（Job）定义
 
 ```yaml
   my-job:
@@ -197,11 +197,11 @@ cluster定义的示例如下：
   - *host_alloc_config*:	动态集群的配置，示例：{"g00": 1, "g01": 1, "other": 2}
 
 
-## 2.5 数据集（Dataset）定义
+## 2.6 数据集（Dataset）定义
 
 数据集定义
 
-## 2.6 应用定义文件中的模板参数
+## 2.7 应用定义文件中的模板参数
 
 除虚拟模板参数CLUSTER_DATA_DIR之外，模板变量必须先定义，再使用。以下是模板变量定义及优先排序（从低到高）
 - /etc/scalebox/environments
@@ -214,16 +214,16 @@ cluster定义的示例如下：
 虚拟模板变量CLUSTER_DATA_DIR表示job所在集群的base_data_dir，无需定义即可使用。
 
 
-## 2.7 附表
+## 2.8 附表
 
-### 2.7.1 app-parameters参数表
+### 2.8.1 app-parameters参数表
 | 参数名称           |   含义                        |
 | ---------------  | ----------------------------- |
 | initial_status   | 'RUNNING'/'PAUSED'            |
 | messsage_router  |                               |
 | is_cluster_admin |                               |
 
-### 2.7.2 job-arguments参数表
+### 2.8.2 job-arguments参数表
 
 | 参数名                    | 标准环境变量             | 含义                                                                        |
 | ------------------------ | ---------------------- | -------------------------------------------------------------------------- |
@@ -259,7 +259,7 @@ cluster定义的示例如下：
 |                          | SINK_JOB               | 缺省sink_job的名称                                                           |
 |                          | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                             |
 
-### 2.7.3 job-parameters参数表
+### 2.8.3 job-parameters参数表
 
 | 参数名                  | 含义                                                                        |
 | -------------------- | ----------------------------------------------------------------------------- |
@@ -284,7 +284,7 @@ cluster定义的示例如下：
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。   |
 
 
-### 2.7.4 cluster-parameters参数表
+### 2.8.4 cluster-parameters参数表
 | 参数名称         |   含义                         |
 | --------------- | ----------------------------- |
 | base_data_dir   |  可通过两种方式引用：虚拟环境变量CLUSTER_DATA_ROOT，容器内/data目录   |
@@ -292,7 +292,7 @@ cluster定义的示例如下：
 | uname           | ssh登录用户名                   |
 | port            | ssh登录用户名                   |
 
-### 2.7.5 host-parameters参数表
+### 2.8.5 host-parameters参数表
 
 | 参数名称         |   含义                         |
 | --------------- | ----------------------------- |
@@ -304,7 +304,7 @@ cluster定义的示例如下：
 | reg_time        | 在scalebox中注册时间            |
 | slot_job_id     | 在slurm调度系统重，node-agent的slurm job id |
 
-### 2.7.6 slot-parameters参数表
+### 2.8.6 slot-parameters参数表
 
 | 参数名称         | 含义                           |
 | --------------- | ----------------------------- |

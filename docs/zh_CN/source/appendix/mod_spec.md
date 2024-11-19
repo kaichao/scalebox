@@ -119,7 +119,26 @@ headers中包含运行调度信息（to_host、to_slot）
 | WORK_DIR          | WORK_DIR, 工作目录，缺省为/work |
 
 
-## 3.5 封装脚本
+## 3.5 模块内目录
+
+### 数据目录映射
+- 临时目录 ```/dev/shm```、```/tmp```，自动映射到算法容器中
+- 集群数据目录映射到算法容器中的```/cluster_data_root```，同时设置环境```CLUSTER_DATA_ROOT```指向实际的集群数据目录。
+- 计算节点的```/```映射到容器中的```/local```
+
+如需额外目录映射，通过```paths```再做定制映射。
+
+### 代码目录
+
+按以下顺序：
+- 环境变量：ACTION_RUN、ACTION_CHECK、ACTION_SETUP、ACTION_TEARDOWN
+- /app/bin/{run.sh,check.sh,setup.sh,teardown.sh}
+- /app/share/bin/{run.sh,check.sh,setup.sh,teardown.sh}
+
+argument:code_path，映射为容器中的/app/bin。
+
+
+## 3.6 封装脚本
 
 支持用多种语言实现，推荐使用shell。
 
@@ -134,7 +153,7 @@ headers中包含运行调度信息（to_host、to_slot）
 - 本机目录：在目录前加上/local，可访问
 
 
-## 3.6 返回码
+## 3.7 返回码
 
 - 通用返回码
   - 0：OK
@@ -142,10 +161,10 @@ headers中包含运行调度信息（to_host、to_slot）
 
 - 主算法返回码
 
-## 2.3 模块的构建规范
+## 3.8 模块的构建规范
 
 
-### 2.3.4 Dockerfile示例
+### 3.8.1 Dockerfile示例
 
 ```Dockerfile
 FROM my-image

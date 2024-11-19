@@ -26,7 +26,7 @@
 - p419.env
 
 
-## 1.2 子命令
+## 1.2 子命令图
 
 ```{mermaid}
 
@@ -44,7 +44,9 @@ graph LR
 
   scalebox --> task[<a href="#task">task</a>]
   task --> task-add[<a href="#task-add">add</a>]
-  task --> task-info[<a href="#task-info">info</a>]
+  task --> task-get-header[<a href="#task-get-header">get</a>]
+  task --> task-set-header[<a href="#task-set-header">get</a>]
+  task --> task-remove-header[<a href="#task-remove-header">get</a>]
 
   scalebox --> semaphore[<a href="#semaphore">semaphore</a>]
   semaphore --> sema-create[<a href="#semaphore-create">create</a>]
@@ -72,8 +74,7 @@ graph LR
 
 ```
 
-
-## 1.3 <span id="app">app 子命令</span>
+## 1.3 <span id="app">app子命令</span>
 
 ### 1.3.1 app create
 
@@ -107,25 +108,59 @@ scalebox app set-finished --job-id ${job_id}
 
 ### 1.3.5 app get-message-router
   
-## 1.3 job 子命令 {#job}
+## 1.3 <span id="job">job子命令</span>
 
 ### job list
 
 ### job info
 
-## 1.4 scalebox task 子命令{#task}
+## 1.4 <span id="task">task子命令</span>
 
 ### 1.4.1 task add
 
-#### 环境变量/参数
-- APP_ID/app-id
-- JOB_ID/job-id
-- SINK_JOB/sink-job
-- 
-- 
+#### 参数/环境变量
+- app-id/APP_ID
+- job-id/JOB_ID: job-id
+- sink-job/SINK_JOB: sink job-name
+- from-job: job-name
+- remote-server: grpc server for remote cluster.
+- task-file: multiple messages in file
+- ignore-dupkey: add "repeative":"yes" to headers
+- headers: headers in json
+- header/h: add one header
+- to-ip: add "to_ip" to headers
+- to-host: add "to_host" to headers
+- upsert: overwrite existed task
+- async-task-creation
+- disable-local-ip
+
 key-text可放在文件 ```${WORK_DIR}/task-body.txt```，该文件为多行文本，每行为一个消息体。
 
-### 1.4.2 task info
+### 1.4.2 task get-header
+
+获取task头信息。
+
+示例：
+```sh
+scalebox task get-header --task-id 123 from_job
+```
+### 1.4.3 task set-header
+
+设置新的header（若不存在）或覆盖已有header（若存在）。
+
+示例：
+```sh
+scalebox task set-header --task-id 123 my_header value
+```
+
+### 1.4.4 task remove-header
+
+移除已有header。若不存在，则在stderr上打印"my_header not-exists"
+
+示例：
+```sh
+scalebox task remove-header --task-id 123 my_header
+```
 
 
 ## 1.5 <span id="semaphore">semaphore子命令</span>
@@ -170,7 +205,7 @@ JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
 APP_ID=3 scalebox semaphore group-dist progress-counter_pull-unpack:r04.main
 ```
 
-## 1.6 variable子命令{#variable}
+## 1.6 <span id="variable">variable子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
