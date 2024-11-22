@@ -291,6 +291,7 @@ cluster定义的示例如下：
 | code_dir        |                               |
 | uname           | ssh登录用户名                   |
 | port            | ssh登录用户名                   |
+| pg_host         | postgres的连接信息，${pg_ip}[:${pg_port}] |
 
 ### 2.8.5 host-parameters参数表
 

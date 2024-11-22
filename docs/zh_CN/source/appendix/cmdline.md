@@ -44,9 +44,9 @@ graph LR
 
   scalebox --> task[<a href="#task">task</a>]
   task --> task-add[<a href="#task-add">add</a>]
-  task --> task-get-header[<a href="#task-get-header">get</a>]
-  task --> task-set-header[<a href="#task-set-header">get</a>]
-  task --> task-remove-header[<a href="#task-remove-header">get</a>]
+  task --> task-get-header[<a href="#task-get-header">get-header</a>]
+  task --> task-set-header[<a href="#task-set-header">set-header</a>]
+  task --> task-remove-header[<a href="#task-remove-header">remove-header</a>]
 
   scalebox --> semaphore[<a href="#semaphore">semaphore</a>]
   semaphore --> sema-create[<a href="#semaphore-create">create</a>]
@@ -172,7 +172,7 @@ scalebox task remove-header --task-id 123 my_header
 
 示例：
 ```sh
-scalebox semaphore create sema_name ${int_value}
+scalebox semaphore create ${sema_name} ${int_value}
 scalebox semaphore create --app-id ${app_id} ${sema_name} ${int_value}
 APP_ID=${app_id} scalebox semaphore create ${sema_name} ${int_value}
 
@@ -186,15 +186,44 @@ JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
 
 ### 1.5.3 semaphore increment
 
-单个/单组（前缀匹配）信号量增一的操作。
+- 单个/单组（前缀匹配）信号量增一的操作。
+```sh
+val=$(scalebox semaphore increment ${sema_name})
+code=$?
+```
+  - ```code```为操作成功与否的标志。
+    - 0：OK
+    - 1：db error
+    - 2： semaphore not-found
+  - ```val```为新的信号量值（整数）
+
+- 针对组信号量的增一操作。
+
+信号量分组支持以SQL通配符%、_做匹配。
+
+```sh
+val=$(scalebox semaphore increment ${sema_prefix}% )
+code=$?
+```
+  - ```code```为操作成功与否的标志。0为成功
+  - ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量值。
+
 
 ### 1.5.4 semaphore decrement
 
-单个/单组（前缀匹配）信号量减一的操作。
+- 单个/单组（前缀匹配）信号量减一的操作。
+
+用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
 ### 1.5.5 semaphore increment-n
 
 单个/单组（前缀匹配）信号量加n的操作。
+```sh
+val=$(scalebox semaphore increment-n ${sema_name}) ${diff_value}
+code=$?
+```
+
+用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
 ### 1.5.6 semaphore group-dist
 
