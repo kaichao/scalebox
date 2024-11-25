@@ -69,10 +69,10 @@ Scalebox应用程序的构建，按统一技术规范，做用户算法的容器
 
 
 ## 参考文献
-<a id="1">[1]</a> Dijkstra, E. W. (1968). 
-Go to statement considered harmful. 
-Communications of the ACM, 11(3), 147-148.
 
-[1] J. A. Smith and R. L. Doe, "Title of the Article," *Journal of Interesting Studies*, vol. 12, no. 3, pp. 123-145, 2020. doi: 10.1234/jis.2020.12345.
+<a id="1">[1]</a> D. Bernstein, "Containers and Cloud: From LXC to Docker to Kubernetes," IEEE Cloud Computing, vol. 1, no. 3, pp. 81-84, Sept. 2014.
+doi: 10.1109/MCC.2014.51
 
-  <span id="ref-1">[1]</span> J. A. Smith and R. L. Doe, "Title of the Article," *Journal of Interesting Studies*, vol. 12, no. 3, pp. 123-145, 2020. doi: 10.1234/jis.2020.12345.
+<a id="2">[2]</a> M. J. Scheepers, "Virtualization and containerization of application infrastructure: A comparison", Proc. 21st Twente Student Conf. IT,
+2014, pp. 1–7.
+

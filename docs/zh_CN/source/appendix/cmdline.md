@@ -61,6 +61,15 @@ graph LR
   variable --> variable-get[<a href="#variable-get">get</a>]
   variable --> variable-set[<a href="#variable-set">set</a>]
 
+  scalebox --> event[<a href="#event">event</a>]
+  event --> event-task-add[<a href="#event-task-add">task-add</a>]
+  event --> event-slot-add[<a href="#event-slot-add">slot-add</a>]
+  event --> event-misc-add[<a href="#event-misc-add">misc-add</a>]
+
+  scalebox --> global[<a href="#global">global</a>]
+  global --> global-get[<a href="#global-get">get</a>]
+  global --> global-set[<a href="#global-set">set</a>]
+
   scalebox --> cluster
   cluster --> get-parameter
 
@@ -264,4 +273,64 @@ code=$?
 示例：
 ```sh
 scalebox variable set ${var_name} ${str_value}
+```
+
+## 1.7 <span id="event">event子命令</span>
+
+支持各类event的add操作。
+
+### 基本命令： 
+
+- xxxx为："task"/"slot"/"misc"
+
+```sh
+scalebox event xxxx-add "${tag_name}" "${level_name}" ["${code}" ["${txt}" ["${json}"]]]
+```
+- 若code为空，则取值0
+- 若txt为空，则取值""
+- 若json为空，则取值"{}"
+
+```sh
+scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${tag_name}" "${level_name}" ["${code}"]
+```
+
+则txt、json从文件中读取。
+
+
+### 1.7.1 event task-add
+
+通过环境变量TASK_ID或参数 --task-id  指定task-id。
+```sh
+scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
+```
+
+```sh scalebox event task-add ```可简写为 ```sh scalebox event add ```
+
+### 1.7.2 event slot-add
+
+通过环境变量SLOT_ID或参数 --slot-id  指定slot-id。
+```sh
+scalebox event slot-add --slot-id ${slot_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
+```
+
+### 1.7.3 event misc-add
+
+```sh
+scalebox event misc-add ${tag_name} ${level_name} ${code} ${txt} ${json}
+```
+
+## 1.8 <span id="global">global子命令</span>
+
+全局变量
+
+### 1.8.1 global get
+
+```sh
+scalebox global get ${global_name}
+```
+
+### 1.8.2 global set
+
+```sh
+scalebox global set ${global_name} ${global_value}
 ```

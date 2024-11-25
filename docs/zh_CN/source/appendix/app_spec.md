@@ -242,14 +242,12 @@ cluster定义的示例如下：
 | timezone_mode            |                        | HOST'/'UTC'/'NONE'                                                         |
 | max_slot_workdir_gb      |                        |                                                                            |
 | slot_options             |                        | 逗号分隔的slot选项                                                           |
-|  - with_headers          | WITH_HEADERS           | 启动task运行命令中，增加task头信息头                                           |
 |  - always_running        | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）                                   |
 |  - reserved_on_exit      |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)                    |
 |  - tmpfs_workdir         |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）    |
 |  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local的映射                                        |
-|  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/data的映射                                         |
+|  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射                                         |
 |  - enable_trace          | TRACE                  |  调试程序选项，输出详细信息                                                   |
-|  - hide_local_ip         | SOURCE_IP_ATTACHED     | (source_ip_attached)                                                       |
 |  - async_task_creation   | ASYNC_TASK_CREATION    |                                                                            |
 |  - slot_on_head          |                        |                                                                            |
 |                          | CLUSTER                | 所在的集群名                                                                 |
@@ -282,6 +280,7 @@ cluster定义的示例如下：
 | pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算     |
 | bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。        |
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。   |
+| task_id_in_headers | 返回的headers中，包含task_id值。   |
 
 
 ### 2.8.4 cluster-parameters参数表

@@ -38,10 +38,6 @@
 
 ## 6.4 高级消息路由
 
-开启task头获取功能。
-- variables->>slot_options 'with_headers'
-- WITH_HEADERS=yes
-
 - 多message-router实例设置
   - 将所有相关信号量模块放到一个messsage-router中。
   - message-router设定为SLOT-BOUND
