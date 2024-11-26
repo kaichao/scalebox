@@ -73,10 +73,6 @@ graph LR
   scalebox --> cluster
   cluster --> get-parameter
 
-  scalebox --> config
-  config --> config-get[get]
-  config --> config-set[set]  
-
   scalebox --> version
 
   scalebox --> help

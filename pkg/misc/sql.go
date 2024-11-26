@@ -48,8 +48,8 @@ func GetDB() *sql.DB {
 		if pgHost == "" {
 			localIP := GetLocalIP()
 			pgHost = localIP
-			fmt.Printf("[INFO] %s Set localIP %s as default db server.\n",
-				time.Now().Format("15:04:05.000"), localIP)
+			// fmt.Printf("[INFO] %s Set localIP %s as default db server.\n",
+			// 	time.Now().Format("15:04:05.000"), localIP)
 		}
 		// ${PGHOST}:${PGPORT}
 		ss := strings.Split(pgHost, ":")
