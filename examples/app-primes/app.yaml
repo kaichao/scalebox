@@ -8,7 +8,7 @@ jobs:
   scatter:
     label: domain decomposition
     base_image: hub.cstcloud.cn/scalebox/agent
-    variables:
+    arguments:
       code_path: ${PWD}/scatter/code
       slot_options: slot_on_head
     parameters:
@@ -37,7 +37,7 @@ jobs:
   gather:
     label: Summary of results
     base_image: hub.cstcloud.cn/scalebox/agent
-    variables:
+    arguments:
       code_path: ${PWD}/gather/code
       sleep_seconds: 10
       max_sleep_count: 100

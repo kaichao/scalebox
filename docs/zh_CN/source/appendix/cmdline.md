@@ -300,7 +300,7 @@ scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${t
 scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
-```sh scalebox event task-add ```可简写为 ```sh scalebox event add ```
+```scalebox event task-add ``` 可简写为 ``` scalebox event add  ```
 
 ### 1.7.2 event slot-add
 

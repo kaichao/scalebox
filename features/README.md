@@ -12,7 +12,7 @@ parameters:
 ## 超时设置：[timeout-gen](./timeout-gen/)
 在模板定义文件的job定义中，设置
 ```
-variables:
+arguments:
   task_timeout_seconds:	10
 ```
 表示，task的最大运行时间为10秒，若超过10秒，则该task退出，返回timeout错误码。

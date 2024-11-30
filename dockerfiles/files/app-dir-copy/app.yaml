@@ -9,7 +9,7 @@ comments: |
 jobs:
   dir-list:
     base_image: hub.cstcloud.cn/scalebox/dir-listx
-    variables:
+    arguments:
       # 10 minutes
       max_sleep_count: 120
     parameters:
@@ -25,7 +25,7 @@ jobs:
 
   file-copy:
     base_image: hub.cstcloud.cn/scalebox/file-copy
-    variables:
+    arguments:
       max_sleep_count: 120
       # slot_options: enable_trace,slot_on_head
     environments:

@@ -6,7 +6,7 @@ parameters:
 jobs:
   dir-list:
     base_image: hub.cstcloud.cn/scalebox/dir-listx
-    variables:
+    arguments:
       # 10 minutes
       max_sleep_count: 120
     parameters:

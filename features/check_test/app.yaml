@@ -9,7 +9,7 @@ jobs:
     parameters:
       slot_on_head: yes
       start_message: ANY
-    variables:
+    arguments:
       code_path: ${PWD}/code
       dir_limit_gb: ${DIR_LIMIT_GB}
       dir_free_gb: ${DIR_FREE_GB}

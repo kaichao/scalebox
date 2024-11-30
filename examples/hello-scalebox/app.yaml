@@ -1,4 +1,4 @@
-name: hello-scalebox.example.scalebox
+name: hello-scalebox.examples
 cluster: local
 parameters:
   initial_status: RUNNING
@@ -6,7 +6,7 @@ parameters:
 jobs:
   hello-scalebox:
     base_image: hub.cstcloud.cn/scalebox/agent:latest
-    variables:
+    arguments:
       code_path: ${PWD}/code
     parameters:
       slot_on_head: yes

@@ -8,9 +8,8 @@ jobs:
     base_image: timeout-gen
     parameters:
       start_message: 0
-    variables:
+    arguments:
       task_timeout_seconds:	10
-      always_running: yes
     schedule_mode: HEAD
     environments:
       - SLEEP_SECONDS=20

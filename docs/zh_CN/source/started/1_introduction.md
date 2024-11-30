@@ -73,6 +73,12 @@ Scalebox应用程序的构建，按统一技术规范，做用户算法的容器
 <a id="1">[1]</a> D. Bernstein, "Containers and Cloud: From LXC to Docker to Kubernetes," IEEE Cloud Computing, vol. 1, no. 3, pp. 81-84, Sept. 2014.
 doi: 10.1109/MCC.2014.51
 
-<a id="2">[2]</a> M. J. Scheepers, "Virtualization and containerization of application infrastructure: A comparison", Proc. 21st Twente Student Conf. IT,
-2014, pp. 1–7.
+<a id="2">[2]</a> M. J. Scheepers, "Virtualization and containerization of application infrastructure: A comparison", Proc. 21st Twente Student Conf. IT, 2014, pp. 1–7.
+
+<a id="3">[3]</a> J. Watada, A. Roy, R. Kadikar, H. Pham and B. Xu, "Emerging Trends, Techniques and Open Issues of Containerization: A Review," in IEEE Access, vol. 7, pp. 152443-152472, 2019. 
+doi: 10.1109/ACCESS.2019.2945930.
+https://ieeexplore.ieee.org/stamp/stamp.jsp?arnumber=8861307
+
+<a id="4">[4]</a> Alser, M., Lawlor, B., Abdill, R.J. et al. Packaging and containerization of computational methods. Nat Protoc 19, 2529–2539 (2024). 
+https://doi.org/10.1038/s41596-024-00986-0
 

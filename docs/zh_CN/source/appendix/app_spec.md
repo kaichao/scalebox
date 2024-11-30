@@ -108,7 +108,7 @@ datasets:
     base_image: scalebox/agent
     cluster: my-cluster
     command: docker run -d --network=host {{ENVS}} {{VOLUMES}} {{IMAGE}}
-    variables:
+    arguments:
       ...
     parameters:
       ...
@@ -138,7 +138,7 @@ datasets:
 - *base_image*: 容器镜像名
 - *cluster*: 集群名
 - *command*: 容器运行的命令模板
-- *variables*: 容器端的标准变量，通常映射为环境变量
+- *arguments*: 容器端的标准变量，通常映射为环境变量
         ...
 - *parameters*: 模块的服务端参数
         ...
@@ -267,7 +267,6 @@ cluster定义的示例如下：
 | task_dist_mode       | task分发模式，'HOST-BOUND'/'SLOT-BOUND'/'GROUP-BOUND'                           |
 | task_queue_length    | task_queue的长度。若设置该值，则启用task_queue作为task分发方式                       |
 | tasks_per_queue      | in-mem模式中，task队列长度。缺省值为100(待删除)                                   |
-| slot_on_head         | 仅在头节点上生成1个slot，'yes'/'no'       (放到variables中？)                      |
 | start_message        | 给定初始消息，若为'FILE:{filename}'，则将文件中每一行作为一个初始消息                     |
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                                             |
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                                 |

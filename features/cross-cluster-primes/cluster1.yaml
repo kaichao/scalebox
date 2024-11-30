@@ -25,6 +25,6 @@ jobs:
     schedule_mode: HEAD
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
-    variables:
+    arguments:
       # should be 'yes', to support session
-      always_running: yes
+      slot_options: always_running

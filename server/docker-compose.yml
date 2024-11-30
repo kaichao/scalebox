@@ -71,8 +71,8 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      # - /etc/scalebox/my-postgresql.conf:/var/lib/postgresql/data/my-postgresql.conf:ro
-      - pgdata:/var/lib/postgresql/data
+      - /etc/scalebox/my-postgresql.conf:/etc/scalebox/my-postgresql.conf:ro
+      - /opt/docker-volumes/pgdata:/var/lib/postgresql/data
       - /etc/localtime:/etc/localtime:ro
     shm_size: 8g
     ports:
