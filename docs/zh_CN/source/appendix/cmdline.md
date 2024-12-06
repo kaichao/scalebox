@@ -173,6 +173,10 @@ scalebox task remove-header --task-id 123 my_header
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
 
+- 信号量命名规则：
+  - 字符集：大小写英文字母[A-Za-z]、数字；[0-9]、下划线 _ 、中划线 -
+  - 首字符不可为数字
+
 ### 1.5.1 semaphore create
 
 示例：
@@ -188,61 +192,100 @@ JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
 
 ### 1.5.2 semaphore get
 
+#### 获取单个信号量当前值
+```sh
+val=$(scalebox semaphore get ${sema_name})
+code=$?
+```
+- ```code```为操作成功与否的标志。
+  - 0：OK
+  - 1：db error
+  - 2： semaphore not-found
+- ```val```为新的信号量值（整数）
+
+####  获取信号量组的键值对
+信号量组支持以SQL通配符%做通用匹配。
+
+```sh
+val=$(scalebox semaphore get ${sema_expr} )
+code=$?
+```
+
+- sema_expr 为包含SQL统配符（%）的表达式
+- ```code```为操作成功与否的标志。0为成功
+- ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量名值对。
+  ``` ${sema1}:${val1},${sema2}:${val2},${sema3}:${val3} ```
 
 ### 1.5.3 semaphore increment
 
-- 单个/单组（前缀匹配）信号量增一的操作。
+####  单个信号量的增一操作。
 ```sh
 val=$(scalebox semaphore increment ${sema_name})
 code=$?
 ```
-  - ```code```为操作成功与否的标志。
-    - 0：OK
-    - 1：db error
-    - 2： semaphore not-found
-  - ```val```为新的信号量值（整数）
+- ```code```为操作成功与否的标志。
+  - 0：OK
+  - 1：db error
+  - 2： semaphore not-found
+- ```val```为新的信号量值（整数）
 
-- 针对组信号量的增一操作。
+#### 信号量组的增一操作。
 
-信号量分组支持以SQL通配符%、_做匹配。
+信号量组支持以SQL通配符%做匹配。
 
 ```sh
-val=$(scalebox semaphore increment ${sema_prefix}% )
+val=$(scalebox semaphore increment ${sema_expr} )
 code=$?
 ```
-  - ```code```为操作成功与否的标志。0为成功
-  - ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量值。
+
+- sema_expr 为包含SQL统配符（%）的表达式
+- ```code```为操作成功与否的标志。0为成功
+- ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量名值对。
+  ``` ${sema1}:${val1},${sema2}:${val2},${sema3}:${val3} ```
 
 
 ### 1.5.4 semaphore decrement
 
-- 单个/单组（前缀匹配）信号量减一的操作。
+#### 单个信号量的减一操作。
+
+```sh
+val=$(scalebox semaphore decrement ${sema_expr} )
+code=$?
+```
+
+用法详见：<a href="#semaphore-increment">semaphore increment</a>
+
+#### 信号量组的减一操作。
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
 ### 1.5.5 semaphore increment-n
 
-单个/单组（前缀匹配）信号量加n的操作。
+#### 单个信号量的加n操作。
 ```sh
-val=$(scalebox semaphore increment-n ${sema_name}) ${diff_value}
+val=$(scalebox semaphore increment-n ${sema_name}) ${delta_value}
 code=$?
 ```
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
+#### 信号量组的加n操作。
+
 ### 1.5.6 semaphore group-dist
 
-- 信号量格式：信号量名:host全名，并且对应主机的group_id不为空。
+- 信号量格式：``` progress-counter_${mod_name}_${host_name} ```，并且对应主机的group_id不为空。
 
 示例：
 ```sh
-APP_ID=3 scalebox semaphore group-dist progress-counter_pull-unpack:r04.main
+APP_ID=3 scalebox semaphore group-dist progress-counter_pull-unpack_r04.main
 ```
 
 ## 1.6 <span id="variable">variable子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
+
+- 变量名命名：同信号量命名
 
 ### 1.6.1 variable create
 

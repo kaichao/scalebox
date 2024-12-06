@@ -40,7 +40,7 @@
 
 - 多message-router实例设置
   - 将所有相关信号量模块放到一个messsage-router中。
-  - message-router设定为SLOT-BOUND
+  - task-dist-mode设定为SLOT-BOUND
   - task add过程中，在task-headers中设定to_slot
 
 可用不同程序语言实现。
@@ -70,7 +70,7 @@
 #### 按计算节点的vtask数量流控
 - 属性名：```host_running_vtasks```，计算节点上最多可运行的vtask数量，该计数器表示最多可进入运行的vtask数量。
 
-- yaml应用文件解析时，生成对应信号量：```host-running-vtasks_${mod_name}:${hostname}```，其初值为参数值。
+- yaml应用文件解析时，生成对应信号量：```host-running-vtasks_${mod_name}_${hostname}```，其初值为参数值。
   - mod_name为首模块名，首模块通常为HOST-BOUND，每节点上仅有1个slot
   - hostname为slot对应的hostname
 
@@ -83,7 +83,7 @@
 #### 按计算节点组的vtask数量流控
 - 属性名：```group_running_vtasks```，计算节点组上最多可运行vtask数量，该计数器表示最多可进入运行的vtask数量。
 
-- yaml应用文件解析时，生成对应信号量：```group-running-vtasks_${mod_name}:${groupname}```，其初值为参数值。
+- yaml应用文件解析时，生成对应信号量：```group-running-vtasks_${mod_name}_${groupname}```，其初值为参数值。
   - mod_name为首模块名，首模块通常为头节点上运行的模块，全系统中仅有1个对应的slot
   - groupname为t_host表中对应的gid
 

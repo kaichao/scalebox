@@ -23,7 +23,6 @@ RUN --mount=type=cache,target=/var/cache/apt  \
 COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
 
 ENV \
-    WITH_HEADERS=yes \
     PREFIX_URL= \
     # for transport is SSH/RSYNC-OVER-SSH
     JUMP_SERVERS= \

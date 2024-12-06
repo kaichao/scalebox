@@ -20,8 +20,6 @@ teardown: 清除环境
 
 ### 3.2.4 结束退出teardown.sh
 
-
-
 ## 3.3 模块单元测试
 
 用户程序：用任意语言写；
@@ -29,12 +27,15 @@ teardown: 清除环境
 集成程序：一般用bash写。将用户程序的结果写回。
 
 用户程序与集成程序间接口：
-- 运行结果文件：/work/task-exec.json
-- 用户自定义时间戳：/work/timestamps.txt
-- 用户数据文件：/work/user-data.txt
-- 输入文件列表：/work/input-files.txt
-- 输出文件列表：/work/output-files.txt
-- 输出消息文件：/work/output-messages.txt
+- 输入消息文件：${WORK_DIR}/input-messages.txt，单次处理多个消息，可用于消息路由中批量消息的高效处理。设定环境变量BULK_MESSGES=n，缺省值为1.
+- 运行结果文件：${WORK_DIR}/task-exec.json
+- 用户自定义时间戳：${WORK_DIR}/timestamps.txt
+- 运行附加属性文件：${WORK_DIR}/extra-attributes.txt，存放于t_task_exec表中extras的extra_attributes中。
+- 用户数据文件：${WORK_DIR}/custom-out.txt
+- 输入文件列表：${WORK_DIR}/input-files.txt
+- 输出文件列表：${WORK_DIR}/output-files.txt
+- 待删除文件列表：${WORK_DIR}/removed-files.txt
+- 输出消息文件：${WORK_DIR}/output-messages.txt。原始文件为：${WORK_DIR}/messages.txt
 
 - 多个初始化消息
 
