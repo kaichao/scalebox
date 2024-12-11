@@ -190,8 +190,6 @@ cluster定义的示例如下：
   - *uname*: 主机的缺省用户名
   - *base_data_dir*: 集群的数据目录
   - *local_ip_index*: 用于提取本机IP地址的索引号（hostname -I）
-  - *relay_endpoint*:
-  - *storage_endpoint*: 
   - *grpc_server*:	?有一个相同名称的外部字段。
   - *grpc_remote_server*:
   - *host_alloc_config*:	动态集群的配置，示例：{"g00": 1, "g01": 1, "other": 2}
@@ -236,8 +234,8 @@ cluster定义的示例如下：
 | dir_limit_gb             | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数             |
 | dir_free_gb              | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数   |
 | progress_counter_diff    | PROGRESS_COUNTER_DIFF  | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值。其值为整数。需在message-router初始化时，创建对应的信号量及初值，信号量名称为：progress_counter_{模块名}:{节点名}，初值为该job在每个节点上task总数。   |
-| host_running_vtasks      | HOST_RUNNING_VTASKS    | 标准流控参数，用于vtask的流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host-running-vtasks_${mod_name}_${hostname}```，其初值为参数值。   |
-| group_running_vtasks     | GROUP_RUNNING_VTASKS   | 标准流控参数，用于vtask的流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group-running-vtasks_${mod_name}_${groupname}```，其初值为参数值。 |
+| host_running_vtasks      | HOST_RUNNING_VTASKS    | 标准流控参数，其值为整数。用于按节点的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host-running-vtasks_${mod_name}_${hostname}```，其初值为参数值。   |
+| group_running_vtasks     | GROUP_RUNNING_VTASKS   | 标准流控参数，其值为 ${group_expr}:${int_value}。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group-running-vtasks_${mod_name}_${groupname}```，其初值为参数值。 |
 | output_text_size         | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_tranc_mode          | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
 | heart_beat_seconds       |                        | 以秒计的心跳间隔                                                     |
