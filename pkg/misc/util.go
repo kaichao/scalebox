@@ -5,7 +5,18 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"time"
 )
+
+// AddTimeStamp ...
+//
+//	add-timestamp in agent
+func AddTimeStamp(label string) {
+	fileName := os.Getenv("WORK_DIR") + "/timestamps.txt"
+	timeStamp := time.Now().Format("2006-01-02T15:04:05.000000Z07:00")
+	// fmt.Printf("timestamp:%s\n", timeStamp)
+	AppendToFile(fileName, timeStamp+","+label)
+}
 
 // SplitCommaWithEscapeSupport ..
 func SplitCommaWithEscapeSupport(s string) []string {

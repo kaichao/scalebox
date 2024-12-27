@@ -135,10 +135,28 @@ func ExecCommandReturnStdout(command string, timeout int) string {
 	code, stdout, stderr := ExecCommandReturnAll(command, timeout)
 	if code != 0 {
 		fmt.Fprintf(os.Stderr, "exec command:%s\nexit-code=%d\n", command, code)
+		fmt.Fprintf(os.Stderr, "stdout:%s\n", stdout)
+		stdout = ""
 	}
-	fmt.Printf("exec command:\n%s\n%s\n", command, stdout)
 	fmt.Fprintf(os.Stderr, "exec command:\n%s\n%s\n", command, stderr)
 
-	// remove tail \n
-	return strings.Replace(string(stdout), "\n", "", -1)
+	// remove leading/tail space
+	return strings.TrimSpace(stdout)
+}
+
+// ExecWithRetries ...
+func ExecWithRetries(cmd string, numRetries int, timeout int) int {
+	delay := 10 * time.Second
+	var code int
+	for i := 0; i < numRetries; i++ {
+		code = ExecCommandReturnExitCode(cmd, timeout)
+		if code == 0 {
+			return code
+		}
+		fmt.Printf("num-of-retries:%d,cmd=%s\n", i+1, cmd)
+		time.Sleep(delay)
+		delay *= 2
+		timeout *= 2
+	}
+	return code
 }

@@ -38,7 +38,7 @@ else
     rsync_args=""
 fi
 
-date --iso-8601=ns >> timestamps.txt
+date --iso-8601=ns | sed 's/,/./' >> timestamps.txt
 
 echo "[DEBUG]source_mode:$source_mode,target_mode:$target_mode" >> ${WORK_DIR}/custom-out.txt
 case $source_mode in
@@ -237,7 +237,7 @@ case $source_mode in
 *)          exit 80 ;;
 esac
 
-date --iso-8601=ns >> ${WORK_DIR}/timestamps.txt
+date --iso-8601=ns | sed 's/,/./' >> ${WORK_DIR}/timestamps.txt
 
 if [ -n "$SINK_JOB" ]; then
     # echo $1 > ${WORK_DIR}/messages.txt
