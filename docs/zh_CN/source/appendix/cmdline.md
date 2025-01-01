@@ -70,6 +70,10 @@ graph LR
   global --> global-get[<a href="#global-get">get</a>]
   global --> global-set[<a href="#global-set">set</a>]
 
+  scalebox --> fs[<a href="#fs">fs</a>]
+  fs --> fs-ls[<a href="#fs-ls">ls</a>]
+  fs --> fs-stat[<a href="#fs-stat">stat</a>]
+
   scalebox --> cluster
   cluster --> get-parameter
 
@@ -372,4 +376,34 @@ scalebox global get ${global_name}
 
 ```sh
 scalebox global set ${global_name} ${global_value}
+```
+
+## 1.9 <span id="fs">fs子命令</span>
+
+scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在同一个名字空间中。后期可提供mount支持、跨节点迁移等特性。
+
+### 1.8.1 fs ls
+
+- 主要参数：
+  - include-removed-file
+  - with-hostname
+  - with-file-size
+  - hostname=${host-name}
+
+```sh
+scalebox fs ls ${path_expr}
+```
+
+### 1.8.2 fs stat
+
+查看1个或多个文件的元数据。每个节点上的文件名跟全局文件名一致。
+
+元数据主要包括：
+- 虚拟文件名
+- 文件所属主机号
+- 创建时间
+- 删除时间
+- 
+```sh
+scalebox fs stat ${path_expr}
 ```
