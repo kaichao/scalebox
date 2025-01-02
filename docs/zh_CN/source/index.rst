@@ -48,6 +48,7 @@
    appendix/cmdline
    appendix/app_spec
    appendix/mod_spec
+   appendix/shell_program
    appendix/best_practice
 
 .. toctree::
