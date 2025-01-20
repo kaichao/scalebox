@@ -114,7 +114,6 @@ scalebox app set-finished --job-id ${job_id}
 
 ### 1.3.4 app add-remote
 
-
 ### 1.3.5 app get-message-router
   
 ## 1.3 <span id="job">job子命令</span>
@@ -178,11 +177,12 @@ scalebox task remove-header --task-id 123 my_header
 - 环境变量：JOB_ID，或APP_ID
 
 - 信号量命名规则：
-  - 字符集：大小写英文字母[A-Za-z]、数字；[0-9]、下划线 _ 、中划线 -
-  - 首字符不可为数字
+  - 字符集：大小写英文字母[A-Za-z]、数字[0-9]、冒号 :、下划线 _ 、中划线 -
+  - 首字符为字母、下划线
 
 ### 1.5.1 semaphore create
 
+#### 单个信号量的创建
 示例：
 ```sh
 scalebox semaphore create ${sema_name} ${int_value}
@@ -194,6 +194,11 @@ JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
 
 ```
 
+### 信号量组的批量创建
+示例：
+```sh
+scalebox semaphore create '{"semaphores":{"sema1":n1,"sema2":"value2"}}'
+```
 ### 1.5.2 semaphore get
 
 #### 获取单个信号量当前值
@@ -215,7 +220,7 @@ val=$(scalebox semaphore get ${sema_expr} )
 code=$?
 ```
 
-- sema_expr 为包含SQL统配符（%）的表达式
+- sema_expr 为包含SQL通配符（%）的表达式
 - ```code```为操作成功与否的标志。0为成功
 - ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量名值对。
   ``` ${sema1}:${val1},${sema2}:${val2},${sema3}:${val3} ```

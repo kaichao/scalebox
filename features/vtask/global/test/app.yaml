@@ -1,0 +1,17 @@
+name: global-vtask.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  global-vtask:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    arguments:
+      slot_options: slot_on_head
+      global_vtask_size: 2
+      inline_vtask: yes
+    sink_jobs:
+      - next
+
+  next:
+    base_image: hub.cstcloud.cn/scalebox/agent

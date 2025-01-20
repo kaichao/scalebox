@@ -215,7 +215,7 @@ cluster定义的示例如下：
 ## 2.8 附表
 
 ### 2.8.1 app-parameters参数表
-| 参数名称           |   含义                        |
+| 参数名称          |   含义                         |
 | ---------------  | ----------------------------- |
 | initial_status   | 'RUNNING'/'PAUSED'            |
 | messsage_router  |                               |
@@ -229,23 +229,25 @@ cluster定义的示例如下：
 | code_path                |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                         |
 | local_ip_index           | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。            |
 | task_timeout_seconds     | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124        |
-| sleep_interval_seconds   | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒                  |
-| max_sleep_count          | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                   |
-| dir_limit_gb             | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数             |
-| dir_free_gb              | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数   |
-| progress_counter_diff    | PROGRESS_COUNTER_DIFF  | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值。其值为整数。需在message-router初始化时，创建对应的信号量及初值，信号量名称为：progress_counter_{模块名}:{节点名}，初值为该job在每个节点上task总数。   |
-| host_running_vtasks      | HOST_RUNNING_VTASKS    | 标准流控参数，其值为整数。用于按节点的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host-running-vtasks_${mod_name}_${hostname}```，其初值为参数值。   |
-| group_running_vtasks     | GROUP_RUNNING_VTASKS   | 标准流控参数，其值为 ${group_expr}:${int_value}。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group-running-vtasks_${mod_name}_${groupname}```，其初值为参数值。 |
-| output_text_size         | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
-| text_tranc_mode          | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
-| heart_beat_seconds       |                        | 以秒计的心跳间隔                                                     |
-| timezone_mode            |                        | HOST'/'UTC'/'NONE'                                                |
-| max_slot_workdir_gb      |                        |                                                                   |
-| slot_options             |                        | 逗号分隔的slot选项                                                  |
-|  - always_running        | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）                           |
-|  - reserved_on_exit      |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)            |
-|  - tmpfs_workdir         |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）    |
-|  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local的映射                               |
+| sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒                  |
+| max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                   |
+| dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数             |
+| dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数   |
+| progress_counter_diff  | PROGRESS_COUNTER_DIFF  | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值。其值为整数。需在message-router初始化时，创建对应的信号量及初值，信号量名称为：progress_counter_{模块名}:{节点名}，初值为该job在每个节点上task总数。   |
+| global_vtasks_size     | GLOBAL_VTASKS_SIZE   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global-vtasks-size_${mod_name}```，其初值为参数值。 |
+| group_vtasks_size      | GROUP_VTASKS_SIZE   | 标准流控参数，其值为 ${group_expr}:${int_value}。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group-vtasks-size_${mod_name}_${groupname}```，其初值为参数值。 |
+| host_vtasks_size       | HOST_VTASKS_SIZE    | 标准流控参数，其值为整数。用于按节点的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host-vtasks-size_${mod_name}_${hostname}```，其初值为参数值。   |
+| inline_vtask           | INLINE_VTASK        | 'yes'/'no'，缺省值为'no'。设置为'yes'，通常用于测试                                |
+| output_text_size       | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
+| text_tranc_mode        | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
+| heart_beat_seconds     |                        | 以秒计的心跳间隔                                                     |
+| timezone_mode          |                        | HOST'/'UTC'/'NONE'                                                |
+| max_slot_workdir_gb    |                        |                                                                   |
+| slot_options           |                        | 逗号分隔的slot选项                                                  |
+|  - always_running      | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）                           |
+|  - reserved_on_exit    |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)            |
+|  - tmpfs_workdir       |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）    |
+|  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local_data_root的映射                     |
 |  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射                   |
 |  - enable_trace          | TRACE                  |  调试程序选项，输出详细信息                                           |
 |  - async_task_creation   | ASYNC_TASK_CREATION    |                                                                  |

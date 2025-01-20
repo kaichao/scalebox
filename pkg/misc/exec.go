@@ -125,8 +125,8 @@ func ExecCommandReturnAll(command string, timeout int) (int, string, string) {
 // ExecCommandReturnExitCode ...
 func ExecCommandReturnExitCode(command string, timeout int) int {
 	code, stdout, stderr := ExecCommandReturnAll(command, timeout)
-	fmt.Printf("exec command:\n%s\n%s\n", command, stdout)
-	fmt.Fprintf(os.Stderr, "exec command:\n%s\n%s\n", command, stderr)
+	fmt.Printf("exec command:%s\n stdout:\n%s\n", command, stdout)
+	fmt.Fprintf(os.Stderr, "exec command: %s\n stderr:\n%s\n", command, stderr)
 	return code
 }
 
@@ -135,7 +135,7 @@ func ExecCommandReturnStdout(command string, timeout int) string {
 	code, stdout, stderr := ExecCommandReturnAll(command, timeout)
 	if code != 0 {
 		fmt.Fprintf(os.Stderr, "exec command:%s\nexit-code=%d\n", command, code)
-		fmt.Fprintf(os.Stderr, "stdout:%s\n", stdout)
+		fmt.Fprintf(os.Stderr, "stdout:\n%s\n", stdout)
 		stdout = ""
 	}
 	fmt.Fprintf(os.Stderr, "exec command:\n%s\n%s\n", command, stderr)
