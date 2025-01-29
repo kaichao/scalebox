@@ -19,3 +19,9 @@ jobs:
       - KEEP_SOURCE_FILE=${KEEP_SOURCE_FILE}
     hosts:
       - h0:1
+    sink_jobs:
+      - next
+
+  next:
+    base_image: hub.cstcloud.cn/scalebox/agent
+

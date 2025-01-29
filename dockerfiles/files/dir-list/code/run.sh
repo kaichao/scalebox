@@ -15,7 +15,6 @@ echo prefix_url:$prefix_url
 
 /app/share/bin/list-files.sh "$prefix_url~$dir_name" | while read line; do 
     scalebox task add --header source_url="$prefix_url" "${line}"
-    # send-message "${line}"
     code=$?
     [[ $code -ne 0 ]] && echo "Error send-message, file:"$line >&2 && exit $code
 done

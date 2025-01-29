@@ -240,8 +240,6 @@ esac
 date --iso-8601=ns | sed 's/,/./' >> ${WORK_DIR}/timestamps.txt
 
 if [ -n "$SINK_JOB" ]; then
-    # echo $1 > ${WORK_DIR}/messages.txt
-    scalebox task add "$1"
-    code=$?
+    echo "$1" > ${WORK_DIR}/messages.txt
 fi
-exit $code
+exit 0
