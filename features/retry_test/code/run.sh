@@ -11,4 +11,4 @@ if [ "$m" = "0" ]; then
     done
 fi
 
-exit $m
+exit $exit_code

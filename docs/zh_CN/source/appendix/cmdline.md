@@ -195,10 +195,25 @@ JOB_ID=${job_id} scalebox semaphore create ${sema_name} ${int_value}
 ```
 
 ### 信号量组的批量创建
-示例：
+- 命令行方式：受到bash的命令行最大长度2MiB限制。
 ```sh
-scalebox semaphore create '{"semaphores":{"sema1":n1,"sema2":"value2"}}'
+scalebox semaphore create '{"semaphores":{"sema1":n1,"sema2":n2}}'
 ```
+
+- 信号量文件方式：信号量数量通常可以更多
+```sh
+scalebox semaphore create --sema-file my-sema-file.txt
+```
+
+信号量文件为多行文件格式，每行表示一个信号量。
+
+```
+"sema1":n1
+"sema2":n2
+"sema3":n3
+```
+
+
 ### 1.5.2 semaphore get
 
 #### 获取单个信号量当前值

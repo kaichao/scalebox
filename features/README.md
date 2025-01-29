@@ -9,6 +9,7 @@ parameters:
   retry_rules: "['1','2:3']"
 ```
 表示：若task的返回错误码为1，自动重做1次；若task的返回错误码为2，自动重做3次。
+
 ## 超时设置：[timeout-gen](./timeout-gen/)
 在模板定义文件的job定义中，设置
 ```
@@ -16,6 +17,7 @@ arguments:
   task_timeout_seconds:	10
 ```
 表示，task的最大运行时间为10秒，若超过10秒，则该task退出，返回timeout错误码。
+
 ## 流控管理：[check_test](./check_test/)
 
 流控管理通过设置容器的环境变量ACTION_CHECK（缺省值为:/app/bin/check.sh）来实现。若ACTION_CHECK返回值非0，则该容器将跳过server端消息获取，从而不能进行后续处理流程。
