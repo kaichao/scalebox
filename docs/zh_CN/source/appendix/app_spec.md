@@ -280,7 +280,7 @@ cluster定义的示例如下：
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
 | pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算     |
 | bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。 |
-| task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。 |
+| task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间量需要大于```task_timeout_seconds```的值。 |
 | task_id_in_headers   | 返回的headers中，包含task_id值。 |
 
 

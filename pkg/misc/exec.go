@@ -8,6 +8,8 @@ import (
 	"os"
 	"os/exec"
 	"strings"
+	"sync"
+	"syscall"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -81,45 +83,80 @@ func ExecShellCommandWithExitCode(command string, timeout int) (int, string, str
 //		timeout : timeout seconds for golang-timout, 0 for none
 //	return (exit-code, stdout, stderr)
 func ExecCommandReturnAll(command string, timeout int) (int, string, string) {
-	var cmd *exec.Cmd
+	ctx := context.Background()
+	var cancel context.CancelFunc
 	if timeout > 0 {
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 		defer cancel()
-		cmd = exec.CommandContext(ctx, "/bin/bash", "-c", command)
-	} else {
-		cmd = exec.Command("/bin/bash", "-c", command)
 	}
 
-	var stdoutBuf, stderrBuf bytes.Buffer
-	cmd.Stdout = io.MultiWriter(os.Stdout, &stdoutBuf)
-	cmd.Stderr = io.MultiWriter(os.Stderr, &stderrBuf)
+	cmd := exec.CommandContext(ctx, "/bin/bash", "-c", command)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setpgid: true} // 支持进程组终止
 
+	// 获取输出管道并检查错误
+	stdoutPipe, err := cmd.StdoutPipe()
+	if err != nil {
+		logrus.Errorf("capture stdout pipe failed: %v", err)
+		return 125, "", fmt.Sprintf("[EXEC INTERNAL ERROR]: %v", err)
+	}
+	stderrPipe, err := cmd.StderrPipe()
+	if err != nil {
+		logrus.Errorf("capture stderr pipe failed: %v", err)
+		return 125, "", fmt.Sprintf("[EXEC INTERNAL ERROR]: %v", err)
+	}
+
+	// 异步捕获输出并同步等待
+	var stdoutBuf, stderrBuf bytes.Buffer
+	var wg sync.WaitGroup
+	wg.Add(2)
+
+	go func() {
+		defer wg.Done()
+		io.Copy(io.MultiWriter(os.Stdout, &stdoutBuf), stdoutPipe)
+	}()
+	go func() {
+		defer wg.Done()
+		io.Copy(io.MultiWriter(os.Stderr, &stderrBuf), stderrPipe)
+	}()
+
+	// 超时后终止整个进程组
+	if timeout > 0 {
+		go func() {
+			<-ctx.Done()
+			if ctx.Err() == context.DeadlineExceeded && cmd.Process != nil {
+				syscall.Kill(-cmd.Process.Pid, syscall.SIGKILL) // 终止进程组
+			}
+		}()
+	}
+
+	// 启动命令
 	if err := cmd.Start(); err != nil {
-		errMsg := fmt.Sprintf("start command %s failed with error:%v\n", command, err)
+		errMsg := fmt.Sprintf("[START FAILED]: %v", err)
 		logrus.Errorln(errMsg)
 		return 125, "", errMsg
 	}
-	exitCode := 0
-	var errMsg string
-	if err := cmd.Wait(); err != nil {
-		if exitErr, ok := err.(*exec.ExitError); ok {
-			// timeout : exit_code = -1
-			errMsg = fmt.Sprintf("Exit Status: %d,exit err_message:%s\ncmd:%s.\n",
-				exitErr.ExitCode(), exitErr.Error(), command)
-			logrus.Warnln(errMsg)
+
+	// 等待命令结束
+	var exitCode int
+	waitErr := cmd.Wait()
+	// 确保所有输出复制完成
+	wg.Wait()
+	// 处理退出码
+	if waitErr != nil {
+		if ctx.Err() == context.DeadlineExceeded {
+			exitCode = 124 // 明确标记超时
+		} else if exitErr, ok := waitErr.(*exec.ExitError); ok {
 			exitCode = exitErr.ExitCode()
+			// 处理信号终止场景（如非超时的 SIGKILL）
 			if exitCode == -1 {
-				// timeout !
-				exitCode = 124
+				exitCode = 128 + int(exitErr.Sys().(syscall.WaitStatus).Signal())
 			}
 		} else {
-			errMsg = fmt.Sprintf("wait command '%s' failed with error:%v\n", command, err)
-			logrus.Errorln(errMsg)
-			exitCode = 125
+			exitCode = 125 // 通用错误码
 		}
 	}
 
-	return exitCode, string(stdoutBuf.Bytes()), string(stderrBuf.Bytes()) + errMsg
+	return exitCode, stdoutBuf.String(), stderrBuf.String()
 }
 
 // ExecCommandReturnExitCode ...
