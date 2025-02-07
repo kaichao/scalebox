@@ -1,18 +1,17 @@
 #!/bin/bash
 
-# set -e
+set -e
+
 source /usr/local/bin/functions.sh
 source /app/share/bin/functions.sh
 
-declare -F
-
 # Support singularity
 [[ ! $WORK_DIR ]] && { echo "[ERROR] WORK_DIR is null, Check the permissions of the directory /tmp/scalebox." >&2; exit 110; }
-echo "[DEBUG] WORK_DIR:${WORK_DIR}:" >&2
+echo "[DEBUG] WORK_DIR:${WORK_DIR}:" >> ${WORK_DIR}/custom-out.txt
 cd "${WORK_DIR}"
 
-source_url=$(get_parameter "$2" "source_url")
-target_url=$(get_parameter "$2" "target_url")
+source_url=$(get_header "$2" "source_url")
+target_url=$(get_header "$2" "target_url")
 
 if [ -z "$SOURCE_MODE" ]; then
     source_mode=$(get_mode "$source_url")
@@ -49,7 +48,8 @@ case $source_mode in
         echo "LOCAL-SSH" >> custom-out.txt
         ssh_cmd=$(get_ssh_cmd "$2" "target_url" "target_jump_servers")
         echo "[DEBUG] ssh_cmd:$ssh_cmd" >> custom-out.txt
-        local_file="/local$source_dir/$1"
+        local_file=$(get_host_path "$source_dir/$1")
+
         remote_file="$target_dir/$1"
 
         # source file not exists ?
@@ -80,7 +80,7 @@ case $source_mode in
         if [[ $source_url == /data/* ]]; then
             source_dir="${source_url}/"
         else
-            source_dir="/local${source_url}/"
+            source_dir=$(get_host_path "${source_url}/")
         fi
         echo "source_dir:$source_dir" >> ${WORK_DIR}/custom-out.txt
         cd $source_dir
@@ -109,7 +109,8 @@ case $source_mode in
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
             rsync_args=" --remove-source-files ${rsync_args} "
         fi
-        cmd="cd /local$source_dir && rsync -ut ${rsync_args} $1 $rsync_url"
+        local_dir=$(get_host_path "${source_dir}")
+        cmd="cd $local_dir && rsync -ut ${rsync_args} $1 $rsync_url"
         echo "cmd:$cmd"
 
         eval "$cmd"; code=$?
@@ -124,7 +125,7 @@ case $source_mode in
         echo "SSH to LOCAL" >> custom-out.txt
         ssh_cmd=$(get_ssh_cmd "$2" "source_url" "source_jump_servers")
         echo "[DEBUG] ssh_cmd:$ssh_cmd" >> ${WORK_DIR}/custom-out.txt
-        local_file="/local$target_dir/$1"
+        local_file=$(get_host_path "$target_dir/$1")
         remote_file="$source_dir/$1"
 
         # create directory in local side.
@@ -179,7 +180,8 @@ case $source_mode in
     "LOCAL")
         echo "RSYNC_OVER_SSH to LOCAL" >> ${WORK_DIR}/custom-out.txt
         source_ssh_option=$(get_ssh_option "$2" "source_url" "source_jump_servers")
-        local_file="/local$target_dir/$1"
+        local_file=$(get_host_path "$target_dir/$1")
+        
         remote_file="$source_dir/$1"
 
         if [[ $target_url == /data/* ]]; then

@@ -55,7 +55,7 @@ function get_ssh_option() {
     local url_name="$2"
     local jump_servers_name="$3"
 
-    local url=$(get_parameter "$json" "$url_name")
+    local url=$(get_header "$json" "$url_name")
     read -r mode data_root ssh_host ssh_port < <(parse_remote_path "$url")
 
     echo "url:$url" >&2
@@ -64,7 +64,7 @@ function get_ssh_option() {
     echo "ssh_port:$ssh_port" >&2
     echo "data_root:$data_root" >&2
     
-    jump_servers=$(get_parameter "$json" "$jump_servers_name") 
+    jump_servers=$(get_header "$json" "$jump_servers_name") 
     jump_servers_option=""
     if [ "$jump_servers" ]; then
         jump_servers_option="-J '${jump_servers}' "
@@ -123,7 +123,7 @@ function get_ssh_cmd(){
     local jump_servers_name="$3"
 
     ssh_option=$(get_ssh_option "$json" "$url_name" "$jump_servers_name")
-    url=$(get_parameter "$json" "$url_name")
+    url=$(get_header "$json" "$url_name")
     ssh_host=$(get_ssh_host $url)
     echo "ssh $ssh_option $ssh_host"
 }

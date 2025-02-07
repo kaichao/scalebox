@@ -13,7 +13,7 @@ RUN apt update \
 
 ## 4.1 常用scalebox内置函数
 
-### 4.1.1 get_host_dir
+### 4.1.1 get_host_path
 
 参数：容器内dir名
 返回：容器可访问的主机目录
@@ -26,9 +26,9 @@ RUN apt update \
     json字段名
 返回：json字段值（字符串）
 
-### 4.1.3 get_parameter
+### 4.1.3 get_header
 
-功能：从json中提取参数值，若不存在，则从环境变量中提取值（环境变量名为参数名对应的全大写字母）
+功能：从json中提取消息头的值，若不存在，则从环境变量中提取值（环境变量名为消息头对应的全大写字母）
 参数列表：
     json文本
     json字段名：以消息字母、下划线定义
@@ -50,10 +50,10 @@ RUN apt update \
 
 source functions.sh
 
-my_param=$(get_parameter "$2" "my_parameter")
+my_header=$(get_header "$2" "my_header")
 
 path_in_container="mypath"
-host_dir=$(get_host_dir ${path_in_container})
+host_dir=$(get_host_path ${path_in_container})
 
 ```
 

@@ -4,10 +4,10 @@
 source /usr/local/bin/functions.sh
 source /app/share/bin/functions.sh
 
-export REGEX_FILTER=$(get_parameter "$2" "regex_filter")
-export JUMP_SERVERS=$(get_parameter "$2" "jump_servers")
+export REGEX_FILTER=$(get_header "$2" "regex_filter")
+export JUMP_SERVERS=$(get_header "$2" "jump_servers")
 
-prefix_url=$(get_parameter "$2" "prefix_url")
+prefix_url=$(get_header "$2" "prefix_url")
 
 dir_name=$1
 
