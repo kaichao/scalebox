@@ -141,6 +141,7 @@ scalebox app set-finished --job-id ${job_id}
 - upsert: overwrite existed task
 - async-task-creation
 - disable-local-ip
+- batch-size：批量task添加中，指定批次大小。
 
 key-text可放在文件 ```${WORK_DIR}/task-body.txt```，该文件为多行文本，每行为一个消息体。
 
@@ -181,6 +182,8 @@ scalebox task remove-header --task-id 123 my_header
   - 首字符为字母、下划线
 
 ### 1.5.1 semaphore create
+
+- 参数：batch-size：用于批量信号量创建中，指定批次大小，缺省值为100。
 
 #### 单个信号量的创建
 示例：

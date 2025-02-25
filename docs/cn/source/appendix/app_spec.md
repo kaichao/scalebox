@@ -276,7 +276,7 @@ cluster定义的示例如下：
 | enable_default_retrries | 设置常见的retry_rules，包括timeout(124)、...等                              |
 | slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                              |
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
-| max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。             |
+| max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3  |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
 | pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算     |
 | bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。 |
