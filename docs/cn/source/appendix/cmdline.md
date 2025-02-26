@@ -127,23 +127,36 @@ scalebox app set-finished --job-id ${job_id}
 ### 1.4.1 task add
 
 #### 参数/环境变量
-- app-id/APP_ID
-- job-id/JOB_ID: job-id
-- sink-job/SINK_JOB: sink job-name
-- from-job: job-name
-- remote-server: grpc server for remote cluster.
-- task-file: multiple messages in file
-- ignore-dupkey: add "repeative":"yes" to headers
-- headers: headers in json
-- header/h: add one header
-- to-ip: add "to_ip" to headers
-- to-host: add "to_host" to headers
-- upsert: overwrite existed task
-- async-task-creation
-- disable-local-ip
-- batch-size：批量task添加中，指定批次大小。
+
+| 参数名         |  环境变量名 |    说明                                 |
+| ------------- | --------- | --------------------------------------- |
+| app-id        | APP_ID    |                                         |
+| job-id        | JOB_ID    |                                         |
+| sink-job      | SINK_JOB  | sink-job name                           |
+| from-job      |           | job-name                                |
+| remote-server |           | grpc server for remote cluster, 格式为{ip_addr}:{port} |
+| task-file     |           | multiple messages in file               |
+| ignore-dupkey |           | add "repeative":"yes" to headers        |
+| headers       |           | headers in json                         |
+| header/h      |           | add one header                          |
+| to-ip         |           | add "to_ip" to headers                  |
+| to-host       |           | add "to_host" to headers                |
+| upsert        |           | overwrite existed task                  |
+| async-task-creation |     |                                         |
+| disable-local-ip |        |                                         |
+| batch-size    |           | 批量task添加中，指定批次大小。缺省值100。     |
+
 
 key-text可放在文件 ```${WORK_DIR}/task-body.txt```，该文件为多行文本，每行为一个消息体。
+
+消息文件每行格式如下：
+| 消息体类型          |  消息示例                                        |
+| ----------------- | ----------------------------------------------- |
+| 文本消息           | body                                            |
+| json消息          | {"h0":"a","body":"my_body"}                     |
+| 文本消息+headers   | body,{"h0":"a","h1":"b"}                        |
+| json消息+headers  | {"h0":"a","body":"my_body"},{"h0":"a","h1":"b"} |
+
 
 ### 1.4.2 task get-header
 

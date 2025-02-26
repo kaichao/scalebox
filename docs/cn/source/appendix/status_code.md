@@ -6,23 +6,23 @@
 
 | Code        | Number      | Description |
 | ----------- | ----------- | ----------- |
-| ExFileNotExists  |   240   |   |
-| ExMessageSendException  |   245   |   |
+| ExFileNotExists |   240   |   |
+| ExMessageSendException |   245   |   |
 
 
 ## Status Code Table
 
 - code range(16-bit): [-32768..32767]
 
-| Code        | Number      | Description |
-| ----------- | ----------- | ----------- |
-| app_code  |   0~255   |   |
-| OK  |   0   |   |
-| READY  |   -1   |   |
-| QUEUED |   -2   | FROM 'READY' to 'RUNNING' |
-| RUNNING|   -3   |  |
-| INITIAL|   -9   | Initial Status (used by dynamic scheduling) |
-| ERROR|   -32~-63  |  |
+| Code      | Number  | Description |
+| --------- | ------- | ----------- |
+| app_code  | 0~255   |             |
+| OK        | 0       |             |
+| READY     | -1      |             |
+| QUEUED    | -2      | FROM 'READY' to 'RUNNING' |
+| RUNNING   | -3      |             |
+| INITIAL   | -9      | Initial Status (used by dynamic scheduling) |
+| ERROR     | -32~-63 |             |
 
 - task status_code : for task scheduling
 - task_exec status_code : task-exec history recording
@@ -31,19 +31,19 @@
 ## 模块状态码
 
 | Code        | Description |
-| ----------- | ----------- |
-| 1-99 | 应用自定义状态码 |
+| --------- | ----------- |
+| 1-99   | 应用自定义状态码 |
 
-110：Invalid Input Message Format
-111: Input Message out-of-range
-112：Failed Precondition
-113：Input Not Found
-114：Input Permission Denied
-116：Output Already Exists
-117: Output Not Found
-118: Output Not Valid
-124: Timeout
-121：App Running Exception（Unknown Core Dump）
+| 110 | Invalid Input Message Format |
+| 111 | Input Message out-of-range   |
+| 112 | Failed Precondition |
+| 113 | Input Not Found |
+| 114 | Input Permission Denied |
+| 116 | Output Already Exists |
+| 117 | Output Not Found |
+| 118 | Output Not Valid |
+| 121 | App Running Exception（Unknown Core Dump） |
+| 124 | Timeout |
 
 ## 系统状态码
 -1：READY
