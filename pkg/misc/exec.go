@@ -83,10 +83,11 @@ func ExecShellCommandWithExitCode(command string, timeout int) (int, string, str
 //		timeout : timeout seconds for golang-timout, 0 for none
 //	return (exit-code, stdout, stderr)
 func ExecCommandReturnAll(command string, timeout int) (int, string, string) {
-	ctx := context.Background()
+	baseCtx := context.Background()
+	ctx := baseCtx
 	var cancel context.CancelFunc
 	if timeout > 0 {
-		ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+		ctx, cancel = context.WithTimeout(baseCtx, time.Duration(timeout)*time.Second)
 		defer cancel()
 	}
 

@@ -243,18 +243,18 @@ code=$?
   - 2： semaphore not-found
 - ```val```为新的信号量值（整数）
 
-####  获取信号量组的键值对
-信号量组支持以SQL通配符%做通用匹配。
+####  获取信号量组的json键值对
+信号量组支持变量名以正则表达式做通用匹配。
 
 ```sh
 val=$(scalebox semaphore get ${sema_expr} )
 code=$?
 ```
 
-- sema_expr 为包含SQL通配符（%）的表达式
+- sema_expr 为正则表达式
 - ```code```为操作成功与否的标志。0为成功
-- ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量名值对。
-  ``` ${sema1}:${val1},${sema2}:${val2},${sema3}:${val3} ```
+- ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
+  ```{"sema1":n1,"sema2":n2,"sema3":n3}```
 
 ### 1.5.3 semaphore increment
 
@@ -271,18 +271,17 @@ code=$?
 
 #### 信号量组的增一操作。
 
-信号量组支持以SQL通配符%做匹配。
+信号量组支持变量名以正则表达式做通用匹配。
 
 ```sh
 val=$(scalebox semaphore increment ${sema_expr} )
 code=$?
 ```
 
-- sema_expr 为包含SQL统配符（%）的表达式
+- sema_expr 为正则表达式
 - ```code```为操作成功与否的标志。0为成功
-- ```val```为新的信号量值，如果为多个信号量，返回结果为逗号分隔的信号量名值对。
-  ``` ${sema1}:${val1},${sema2}:${val2},${sema3}:${val3} ```
-
+- ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
+  ```{"sema1":n1,"sema2":n2,"sema3":n3```
 
 ### 1.5.4 semaphore decrement
 
@@ -339,14 +338,32 @@ JOB_ID=${job_id} scalebox variable create  var_name ${str_value}
 
 ### 1.6.2 variable get
 
-示例：
+#### 获取单个变量当前值
+- 示例：
 ```sh
-export APP_ID=${app_id}
-var_val=$(scalebox variable get ${var_name})
+val=$(scalebox variable get ${var_name})
 code=$?
 [[ $code -ne 0 ]] && echo "[ERROR] variable-get ${var_name}, exit_code:$code" >&2
-
 ```
+- ```code```为操作成功与否的标志。
+  - 0：OK
+  - 1：db error
+  - 2： variable not-found
+- ```val```为新的变量值
+
+####  获取变量组的json键值对
+变量组支持变量名以正则表达式做通用匹配。
+
+```sh
+val=$(scalebox variable get ${var_expr} )
+code=$?
+```
+
+- var_expr 为正则表达式
+- ```code```为操作成功与否的标志。0为成功
+- ```val```为新的变量量值，返回结果为json map表示的信号量名值对。
+  ```{"var1":"val1","var2":"val2","var3":"val3"}```
+
 ### 1.6.3 variable set
 
 示例：
