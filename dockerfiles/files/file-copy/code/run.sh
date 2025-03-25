@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 set -e
 
@@ -60,7 +60,7 @@ case $source_mode in
         eval "$ssh_cmd mkdir -p $remote_dir"; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] mkdir in remote dir,dir_name:$remote_dir, error_code:$code" >&2 && exit $code
 
-        cmd="cat ${local_file} | pv | $ssh_cmd \"cat > $remote_file\""
+        cmd="cat ${local_file} | pv -q | $ssh_cmd \"cat > $remote_file\""
         echo "[DEBUG] cmd:$cmd" >> ${WORK_DIR}/custom-out.txt
         eval "$cmd"; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from local to remote, cmd=$cmd, error_code:$code" >&2 && exit $code
@@ -83,22 +83,15 @@ case $source_mode in
             source_dir=$(get_host_path "${source_url}/")
         fi
         echo "source_dir:$source_dir" >> ${WORK_DIR}/custom-out.txt
-        cd $source_dir
 
         target_ssh_url=$(to_ssh_url $target_url)
-        # target_ssh_url=$(dirname "$target_ssh_url/$1")
         cmd="rsync -Rut ${rsync_args} -e \"ssh ${target_ssh_option}\" $1 $target_ssh_url/ "
         echo "cmd=$cmd" >> ${WORK_DIR}/custom-out.txt
-        eval $cmd
-        # rsync -ut ${rsync_args} -e "ssh ${ssh_option}" $source_url/$1 ${dest_dir}
+        cd $source_dir && eval $cmd
         code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
-            echo "$source_dir/$1" > ${WORK_DIR}/removed-files.txt
-            # cmd="rm -f $1"
-            # echo "cmd_remove_source_file: $cmd" >> ${WORK_DIR}/custom-out.txt
-            # eval "$cmd"
-            # [[ $? -ne 0 ]] && echo "[WARN] error while remove remote source file :$source_file" >> ${WORK_DIR}/custom-out.txt
+            echo "$source_dir/$1" >> ${WORK_DIR}/removed-files.txt
         fi
     ;;
     "RSYNC")
@@ -133,7 +126,7 @@ case $source_mode in
         mkdir -p $local_dir; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] mkdir in local dir,dir_name:$local_dir, error_code:$code" >&2 && exit $code
 
-        cmd="$ssh_cmd \"cat < $remote_file\" - | pv > ${local_file}"
+        cmd="$ssh_cmd \"cat < $remote_file\" - | pv -q > ${local_file}"
         echo "[DEBUG] cmd:$cmd" >> ${WORK_DIR}/custom-out.txt
         eval "$cmd"; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to local, cmd=$cmd, error_code:$code" >&2 && exit $code
@@ -157,7 +150,7 @@ case $source_mode in
         eval "$target_ssh_cmd mkdir -p $target_dir"; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] mkdir in remote dir,dir_name:$remote_dir, error_code:$code" >&2 && exit $code
 
-        cmd="$source_ssh_cmd \"cat < $source_file\" - | pv -n | $target_ssh_cmd \"cat > $target_file\""
+        cmd="$source_ssh_cmd \"cat < $source_file\" - | pv -q -n | $target_ssh_cmd \"cat > $target_file\""
         bytes_transferred=$(eval "$cmd"); code=$?
         echo "bytes_transferred: $bytes_transferred" >> custom-out.txt
 
@@ -166,10 +159,7 @@ case $source_mode in
         if [ "$KEEP_SOURCE_FILE" = "no" ]; then
             eval "$source_ssh_cmd rm -f $source_file"
         fi
-        # echo $local_file >> ${WORK_DIR}/input-files.txt
-        # echo $local_file >> ${WORK_DIR}/output-files.txt
-
-    # ssh user1@node1 "cat /path/to/file" | ssh user2@node2 "cat > /path/to/destination"
+        # ssh user1@node1 "cat /path/to/file" | ssh user2@node2 "cat > /path/to/destination"
         ;;
     "RSYNC")    exit 54;;
     *)          exit 55;;

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 function parse_remote_path() {
     local s=$1
@@ -56,7 +56,14 @@ function get_ssh_option() {
     local jump_servers_name="$3"
 
     local url=$(get_header "$json" "$url_name")
-    read -r mode data_root ssh_host ssh_port < <(parse_remote_path "$url")
+    # read -r mode data_root ssh_host ssh_port < <(parse_remote_path "$url")
+    output=$(parse_remote_path "$url")
+    if [ -z "$output" ]; then
+        echo "Warning: parse_remote_path returned empty output for URL: $url" >&2
+        # mode="ssh" data_root="/dev/shm/scalebox" ssh_host="10.7.1.50" ssh_port="50022"
+    else
+        read -r mode data_root ssh_host ssh_port <<< "$output"
+    fi
 
     echo "url:$url" >&2
     echo "mode:$mode" >&2
