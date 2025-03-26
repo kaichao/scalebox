@@ -50,7 +50,7 @@ graph LR
 
   scalebox --> slot[<a href="#slot">slot</a>]
   slot --> slot-add[<a href="#slot-add">add</a>]
-  slot --> slot-update[<a href="#slot-update">slot-update</a>]
+  slot --> slot-update[<a href="#slot-update">update</a>]
 
   scalebox --> semaphore[<a href="#semaphore">semaphore</a>]
   semaphore --> sema-create[<a href="#semaphore-create">create</a>]
@@ -320,11 +320,11 @@ code=$?
 
 ### 1.7.6 semaphore group-dist
 
-- 信号量格式：``` progress-counter_${mod_name}_${host_name} ```，并且对应主机的group_id不为空。
+- 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
 
 示例：
 ```sh
-APP_ID=3 scalebox semaphore group-dist progress-counter_pull-unpack_r04.main
+APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 ```
 
 ## 1.8 <span id="variable">variable子命令</span>
@@ -377,7 +377,7 @@ code=$?
 
 支持各类event的add操作。
 
-### 基本命令： 
+- 基本命令： 
 
 - xxxx为："task"/"slot"/"misc"
 

@@ -233,7 +233,7 @@ cluster定义的示例如下：
 | max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                   |
 | dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数             |
 | dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数   |
-| progress_counter_diff  | PROGRESS_COUNTER_DIFF  | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值。其值为整数。需在message-router初始化时，创建对应的信号量及初值，信号量名称为：progress_counter_{模块名}:{节点名}，初值为该job在每个节点上task总数。   |
+| task_progress_diff  | TASK_PROGRESS_DIFF  | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值。其值为整数。需在message-router初始化时，创建对应的信号量及初值，信号量名称为：task_progress:{模块名}:{节点名}，初值为该job在每个节点上task总数。   |
 | global_vtasks_size     | GLOBAL_VTASKS_SIZE   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global-vtasks-size_${mod_name}```，其初值为参数值。 |
 | group_vtasks_size      | GROUP_VTASKS_SIZE   | 标准流控参数，其值为 ${group_expr}:${int_value}。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group-vtasks-size_${mod_name}_${groupname}```，其初值为参数值。 |
 | host_vtasks_size       | HOST_VTASKS_SIZE    | 标准流控参数，其值为整数。用于按节点的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host-vtasks-size_${mod_name}_${hostname}```，其初值为参数值。   |

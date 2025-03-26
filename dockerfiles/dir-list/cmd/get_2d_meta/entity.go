@@ -19,7 +19,7 @@ func init() {
 		workDir = "/work"
 	}
 	sqliteFile := workDir + "/my.db"
-	misc.ExecShellCommand("rm -f " + sqliteFile)
+	misc.ExecCommandReturnExitCode("rm -f "+sqliteFile, 10)
 }
 
 func initialize() {

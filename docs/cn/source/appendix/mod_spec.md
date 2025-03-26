@@ -107,7 +107,7 @@ headers中包含运行调度信息（to_host、to_slot）
 | TEXT_TRANC_MODE          | TEXT_TRANC_MODE |
 | LOCAL_IP_INDEX          | LOCAL_IP_INDEX |
 | LOCAL_IP          | LOCAL_IP |
-| HOST_NAME          | hostname in scalebox, used in progress-counter_* |
+| HOST_NAME          | hostname in scalebox, used in task-progress:* |
 | INTERVAL_SECONDS          | INTERVAL_SECONDS |
 | PGHOST          | PGHOST, query job-attr-set from db  |
 | HEART_BEAT_SECONDS          | HEART_BEAT_SECONDS |
