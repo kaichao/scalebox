@@ -36,8 +36,8 @@ func DefaultSSHKeyPath() (string, error) {
 	return keyPath, nil
 }
 
-// ExecCommandSSH executes a command over SSH and returns its exit code, stdout, stderr, and any error.
-func ExecCommandSSH(config SSHConfig, command string, timeout int) (int, string, string, error) {
+// ExecSSHCommand executes a command over SSH and returns its exit code, stdout, stderr, and any error.
+func ExecSSHCommand(config SSHConfig, command string, timeout int) (int, string, string, error) {
 	// 处理密钥路径
 	var keyPath string
 	if config.KeyPath != "" {

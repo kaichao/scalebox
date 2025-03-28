@@ -1,9 +1,9 @@
 version: '3.8'
 services:
   controld:
+    container_name: controld
     image: hub.cstcloud.cn/scalebox/controld
     restart: unless-stopped
-    container_name: controld
     # hostname: host1
     logging:
       driver: "json-file"
@@ -26,9 +26,9 @@ services:
       - /tmp/scalebox/controld-profile:/profile
 
   actuator:
+    container_name: actuator
     image: hub.cstcloud.cn/scalebox/actuator
     restart: unless-stopped
-    container_name: actuator
     logging:
       driver: "json-file"
       options:
@@ -59,9 +59,9 @@ services:
       - controld
 
   database:
+    container_name: database
     image: hub.cstcloud.cn/scalebox/database
     restart: unless-stopped
-    container_name: database
     # Set postgresql max connections at runtime
     # command: postgres -c 'max_connections=800'
     environment:
@@ -83,6 +83,12 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+  redis-server:
+    container_name: redis-server
+    image: redis:7
+    command: redis-server
+    ports:
+      - "6379:6379"
 
 volumes:
   pgdata:

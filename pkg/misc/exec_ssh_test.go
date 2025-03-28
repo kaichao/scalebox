@@ -12,7 +12,7 @@ func TestExecSSH(t *testing.T) {
 		Port: 22,
 		// KeyPath 留空，使用默认 ~/.ssh/id_rsa
 	}
-	exitCode, stdout, stderr, err := ExecCommandSSH(config, "sleepa 10", 5)
+	exitCode, stdout, stderr, err := ExecSSHCommand(config, "sleepa 10", 5)
 	if err != nil {
 		fmt.Printf("Error: %v, ExitCode: %d\n", err, exitCode)
 	} else {
