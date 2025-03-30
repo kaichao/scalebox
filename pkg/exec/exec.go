@@ -15,22 +15,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ExecShellCommand ...
-// Deprecated
-//
-//	return stdout
-// func ExecShellCommand(myCmd string) string {
-// 	cmd := exec.Command("bash", "-c", myCmd)
-// 	output, err := cmd.Output()
-// 	logrus.Infof("IN execCmd(), cmd=%s,stdout=%s\n", myCmd, string(output))
-// 	if err != nil {
-// 		logrus.Errorf("ERROR in execCmd(): cmd=%s,err=%v\n", myCmd, err)
-// 		return ""
-// 	}
-// 	// remove tail \n
-// 	return strings.Replace(string(output), "\n", "", -1)
-// }
-
 // ExecShellCommandWithExitCode ...
 // Deprecated
 // if timeout <= 0  then no timeout
@@ -119,13 +103,13 @@ func ExecCommandReturnAll(command string, timeout int) (int, string, string, err
 	wg.Add(2)
 	go func() {
 		defer wg.Done()
-		io.Copy(&stdoutBuf, stdoutPipe) // 移除 os.Stdout
-		// io.Copy(io.MultiWriter(os.Stdout, &stdoutBuf), stdoutPipe)
+		// io.Copy(&stdoutBuf, stdoutPipe) // 移除 os.Stdout
+		io.Copy(io.MultiWriter(os.Stdout, &stdoutBuf), stdoutPipe)
 	}()
 	go func() {
 		defer wg.Done()
-		io.Copy(&stderrBuf, stderrPipe) // 移除 os.Stderr
-		// io.Copy(io.MultiWriter(os.Stderr, &stderrBuf), stderrPipe)
+		// io.Copy(&stderrBuf, stderrPipe) // 移除 os.Stderr
+		io.Copy(io.MultiWriter(os.Stderr, &stderrBuf), stderrPipe)
 	}()
 
 	// 超时后终止进程组

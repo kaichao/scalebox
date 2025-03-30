@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # second column is num
-num=$(echo $1 | awk -F "," '{print $2}')
+num=$(echo $1 | awk -F "~" '{print $2}')
 
 # define integer variables
 declare -i count sum

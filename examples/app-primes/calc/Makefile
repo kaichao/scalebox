@@ -9,6 +9,6 @@ push:
 clean:
 	docker rmi $(IMAGE_NAME)
 
-dist:
+dist: build
 	# pdsh -w n[0-3] "docker load < /data/tmp/my.img" | dshbak -c
 	for i in {0..3}; do echo $$i;docker save $(IMAGE_NAME) | pv | ssh n$$i 'docker load';done
