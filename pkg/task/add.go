@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kaichao/scalebox/pkg/exec"
 	"github.com/kaichao/scalebox/pkg/misc"
 	"github.com/sirupsen/logrus"
 )
@@ -15,7 +16,7 @@ func Add(sinkJob string, message string, headers string) int {
 	}
 	cmd := fmt.Sprintf(`scalebox task add --sink-job=%s --headers='%s' %s`,
 		sinkJob, headers, message)
-	code, err := misc.ExecCommandReturnExitCode(cmd, 15)
+	code, err := exec.ExecCommandReturnExitCode(cmd, 15)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
 		return -1
@@ -38,7 +39,7 @@ func AddTasks(sinkJob string, messages []string, headers string, timeout int) in
 		headers = "{}"
 	}
 	cmd := fmt.Sprintf(`scalebox task add --headers='%s' --sink-job=%s --task-file=my-tasks.txt`, headers, sinkJob)
-	code, err := misc.ExecCommandReturnExitCode(cmd, timeout)
+	code, err := exec.ExecCommandReturnExitCode(cmd, timeout)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
 		return -2

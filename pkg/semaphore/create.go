@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kaichao/scalebox/pkg/exec"
 	"github.com/kaichao/scalebox/pkg/misc"
 )
 
@@ -13,7 +14,7 @@ func Create(semaLines string) error {
 	defer os.Remove("my-sema.txt")
 
 	cmd := "scalebox semaphore create --sema-file my-sema.txt"
-	code, err := misc.ExecCommandReturnExitCode(cmd, 600)
+	code, err := exec.ExecCommandReturnExitCode(cmd, 600)
 	if code > 0 {
 		return fmt.Errorf("[ERROR]semaphore-create,code=%d", code)
 	}

@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"os"
 
-	"github.com/kaichao/scalebox/pkg/misc"
+	"github.com/kaichao/scalebox/pkg/exec"
 	"github.com/sirupsen/logrus"
 )
 
@@ -19,7 +19,7 @@ func init() {
 		workDir = "/work"
 	}
 	sqliteFile := workDir + "/my.db"
-	misc.ExecCommandReturnExitCode("rm -f "+sqliteFile, 10)
+	exec.ExecCommandReturnExitCode("rm -f "+sqliteFile, 10)
 }
 
 func initialize() {

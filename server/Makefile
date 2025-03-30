@@ -1,4 +1,4 @@
-clusters ?= local inline-cluster
+clusters ?= local inline
 
 include defs.mk
 

@@ -12,7 +12,7 @@ specs:
     disk: 200.0
 
 clusters:
-  inline-cluster:
+  inline:
     parameters:
       base_dir: /gfs
       base_data_dir: /gfs/mydata
