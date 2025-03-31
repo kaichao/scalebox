@@ -27,7 +27,8 @@ jobs:
       - ${CALC_HOST}:${NUM_PARALLEL}
     parameters:
       task_dist_mode: ${TASK_DIST_MODE}
-      bulk_message_size: 10
+      task_progress_diff: 10
+      bulk_message_size: 5
       task_cache_expired_minutes: 60
     environments:
       - LENGTH=${GROUP_SIZE}

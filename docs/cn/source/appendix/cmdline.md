@@ -58,6 +58,7 @@ graph LR
   semaphore --> increment[<a href="#semaphore-increment">increment</a>]
   semaphore --> decrement[<a href="#semaphore-decrement">decrement</a>]
   semaphore --> increment-n[<a href="#semaphore-increment">increment-n</a>]
+  semaphore --> semaphore-global-dist[<a href="#semaphore-global-dist">global-dist</a>]
   semaphore --> semaphore-group-dist[<a href="#semaphore-group-dist">group-dist</a>]
 
   scalebox --> variable[<a href="#variable">variable</a>]
@@ -320,11 +321,23 @@ code=$?
 
 ### 1.7.6 semaphore group-dist
 
+- 作用范围：t_host表中group_id相同的host分为一组（为NULL的也是一组）
+
 - 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
 
 示例：
 ```sh
 APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
+```
+### 1.7.7 semaphore global-dist
+
+- 作用范围：t_host表中group_id不为NULL的所有host
+
+- 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
+
+示例：
+```sh
+APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
 ```
 
 ## 1.8 <span id="variable">variable子命令</span>

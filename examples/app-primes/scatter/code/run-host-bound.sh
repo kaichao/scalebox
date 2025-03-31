@@ -20,5 +20,5 @@ ls -l ${WORK_DIR}/*
 # 导入到数据库
 for ((n=0; n<num_hosts; n=n+1))
 do
-	scalebox task add --header to_host=n-0${n}.inline-cluster --task-file "${WORK_DIR}/task-body-${n}.txt"
+	scalebox task add --header to_host=n-0${n}.inline --task-file "${WORK_DIR}/task-body-${n}.txt"
 done

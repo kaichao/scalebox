@@ -278,10 +278,11 @@ cluster定义的示例如下：
 | bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。 |
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间量需要大于```task_timeout_seconds```的值。 |
 | task_id_in_headers   | 返回的headers中，包含task_id值。 |
-| task_progress_diff   | 标准流控参数，用于多个并行执行的host间的运行同步，指定与最慢host间的差值，其值为整数。需在对应task生成时，自动创建对应的信号量，信号量名称为：```task_progress:${mod_name}:${hostname}```，初值为0。 |
-| global_vtasks_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtasks_size:${mod_name}```，其初值为参数值。 (拟移到parameters) |
+| task_progress_global_diff   | 标准流控参数，用于当前cluster中所有group_id不为空的多个并行执行的host间的运行同步，指定与最慢host间的差值，其值为整数。需在对应task生成时，自动创建对应的信号量，信号量名称为：```task_progress:${mod_name}:${hostname}```，初值为0。 |
+| task_progress_group_diff   | 标准流控参数，用于同一分组中多个并行执行的host间的运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
+| global_vtasks_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtasks_size:${mod_name}```，其初值为参数值。ß |
 | group_vtasks_size    | 标准流控参数，其值为 ```${group_expr}:${int_value}```。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group_vtasks_size:${mod_name}:${groupname}```，其初值为参数值。 |
-| host_vtasks_size     | 标准流控参数，其值为整数。用于按节点的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host_vtasks_size:${mod_name}:${hostname}```，其初值为参数值。   |
+| host_vtasks_size     | 标准流控参数，其值为整数。用于按节点（HOST-BOUND）的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host_vtasks_size:${mod_name}:${hostname}```，其初值为参数值。   |
 
 
 ### 2.8.4 cluster-parameters参数表
