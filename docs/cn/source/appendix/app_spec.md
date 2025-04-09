@@ -202,11 +202,11 @@ cluster定义的示例如下：
 ## 2.7 应用定义文件中的模板参数
 
 除虚拟模板参数CLUSTER_DATA_DIR之外，模板变量必须先定义，再使用。以下是模板变量定义及优先排序（从低到高）
-- /etc/scalebox/environments
-- ${HOME}/.scalebox/environments
-- ${PWD}/scalebox.env
-- ${PWD}/${{env-defined}}.env
-- ${PWD}/${{env-defined}}_${{app-defined}}.env
+- ```/etc/scalebox/environments```
+- ```${HOME}/.scalebox/environments```
+- ```${PWD}/scalebox.env```
+- ```${PWD}/${{env-defined}}.env```
+- ```${PWD}/${{env-defined}}_${{app-defined}}.env```
 - 当前命令行中，已定义的环境变量
 
 虚拟模板变量CLUSTER_DATA_DIR表示job所在集群的base_data_dir，无需定义即可使用。
@@ -225,7 +225,7 @@ cluster定义的示例如下：
 
 | 参数名                    | 标准环境变量             | 含义                                                                        |
 | ------------------------ | ---------------------- | -------------------------------------------------------------------------- |
-| grpc_server              | GRPC_SERVER            | 服务端controld的服务端点（endpoint），${ip_addr}:${port}，port缺省值为50051      |
+| grpc_server              | GRPC_SERVER            | 服务端controld的服务端点（endpoint），```${ip_addr}:${port}```，port缺省值为50051      |
 | code_path                |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                         |
 | local_ip_index           | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。            |
 | task_timeout_seconds     | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124        |
@@ -233,7 +233,6 @@ cluster定义的示例如下：
 | max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                   |
 | dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数             |
 | dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数   |
-| inline_vtask           | INLINE_VTASK        | 'yes'/'no'，缺省值为'no'。设置为'yes'，通常用于测试                                |
 | output_text_size       | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_tranc_mode        | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
 | heart_beat_seconds     |                        | 以秒计的心跳间隔                                                     |

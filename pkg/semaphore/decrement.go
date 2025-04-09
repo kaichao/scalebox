@@ -6,14 +6,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/kaichao/scalebox/pkg/exec"
+	"github.com/kaichao/gopkg/exec"
 	"github.com/sirupsen/logrus"
 )
 
 // Decrement ...
 func Decrement(sema string) (int, error) {
 	cmd := "scalebox semaphore decrement " + sema
-	code, stdout, stderr, err := exec.ExecCommandReturnAll(cmd, 20)
+	code, stdout, stderr, err := exec.RunReturnAll(cmd, 20)
 	logrus.Errorf("stcerr:\n%s\n", stderr)
 	fmt.Printf("stdout:\n%s\n", stdout)
 	if err != nil {
