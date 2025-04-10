@@ -1,10 +1,9 @@
 module github.com/kaichao/scalebox
 
-go 1.24
-
-toolchain go1.24.1
+go 1.24.1
 
 require (
+	github.com/kaichao/gopkg/common v0.0.0-20250410001759-5a315fc312fa
 	github.com/kaichao/gopkg/exec v0.0.0-20250408223243-678aae88d2cc
 	github.com/sirupsen/logrus v1.9.3
 	golang.org/x/crypto v0.36.0

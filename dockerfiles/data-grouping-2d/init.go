@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	misc "github.com/kaichao/scalebox/pkg/misc"
-
+	"github.com/kaichao/gopkg/common"
 	"github.com/sirupsen/logrus"
 )
 
@@ -61,7 +60,7 @@ func init() {
 		os.Exit(1)
 	}
 
-	if lines, err := misc.GetTextFileLines(datasetFile); err == nil {
+	if lines, err := common.GetTextFileLines(datasetFile); err == nil {
 		for _, line := range lines {
 			dataset := parseDataSet(line)
 			fmt.Println("loaded dataset-id:", dataset.DatasetID, "dataset:", dataset)

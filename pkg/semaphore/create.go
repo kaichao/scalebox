@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kaichao/gopkg/common"
 	"github.com/kaichao/gopkg/exec"
-	"github.com/kaichao/scalebox/pkg/misc"
 )
 
 // Create ...
 func Create(semaLines string) error {
-	misc.AppendToFile("my-sema.txt", semaLines)
+	common.AppendToFile("my-sema.txt", semaLines)
 	defer os.Remove("my-sema.txt")
 
 	cmd := "scalebox semaphore create --sema-file my-sema.txt"

@@ -1,6 +1,6 @@
 module data-grouping
 
-go 1.20
+go 1.24.1
 
 require (
 	github.com/kaichao/scalebox v0.0.0-20240527031212-cc96ec423599
@@ -11,6 +11,7 @@ require (
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/kaichao/gopkg/common v0.0.0-20250410001759-5a315fc312fa
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
 	gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c // indirect

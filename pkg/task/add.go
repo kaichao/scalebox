@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/kaichao/gopkg/common"
 	"github.com/kaichao/gopkg/exec"
-	"github.com/kaichao/scalebox/pkg/misc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -33,7 +33,7 @@ func AddWithMapHeaders(sinkJob string, message string, headers map[string]string
 func AddTasks(sinkJob string, messages []string, headers string, timeout int) int {
 	taskFile := "my-tasks.txt"
 	for _, m := range messages {
-		misc.AppendToFile(taskFile, m)
+		common.AppendToFile(taskFile, m)
 	}
 	if headers == "" {
 		headers = "{}"
