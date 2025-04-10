@@ -197,7 +197,7 @@ scalebox task remove-header --task-id 123 my_header
 ## 1.7 <span id="semaphore">semaphore子命令</span>
 
 - 公共参数：job-id，或app-id
-- 环境变量：JOB_ID，或APP_ID
+- 环境变量：JOB_ID，或APP_ID、SEMAPHORE_AUTO_CREATE
 
 - 信号量命名规则：
   - 字符集：大小写英文字母[A-Za-z]、数字[0-9]、冒号 :、下划线 _ 、中划线 -
@@ -241,7 +241,6 @@ scalebox semaphore create --sema-file my-sema-file.txt
 "sema3":n3
 ```
 
-
 ### 1.7.2 semaphore get
 
 #### 获取单个信号量当前值
@@ -253,6 +252,17 @@ code=$?
   - 0：OK
   - 1：db error
   - 2： semaphore not-found
+- ```val```为新的信号量值（整数）
+
+若设置环境变量SEMAPHORE_AUTO_CREATE=yes，则自动创建初值为0的信号量
+
+```sh
+val=$(SEMAPHORE_AUTO_CREATE=yes scalebox semaphore get ${sema_name})
+code=$?
+```
+- ```code```为操作成功与否的标志。
+  - 0：OK
+  - 1：db error
 - ```val```为新的信号量值（整数）
 
 ####  获取信号量组的json键值对
@@ -270,18 +280,29 @@ code=$?
 
 ### 1.7.3 semaphore increment
 
-####  单个信号量的增一操作。
+####  单个信号量的增一操作
 ```sh
 val=$(scalebox semaphore increment ${sema_name})
 code=$?
 ```
+
 - ```code```为操作成功与否的标志。
   - 0：OK
   - 1：db error
   - 2： semaphore not-found
 - ```val```为新的信号量值（整数）
 
-#### 信号量组的增一操作。
+若设置环境变量SEMAPHORE_AUTO_CREATE=yes，则自动创建初值为0的信号量，并增1.
+
+```sh
+val=$(SEMAPHORE_AUTO_CREATE=yes scalebox semaphore increment ${sema_name})
+code=$?
+```
+- ```code```为操作成功与否的标志。
+  - 0：OK
+- ```val```为新的信号量值（整数）
+
+#### 信号量组的增一操作
 
 信号量组支持变量名以正则表达式做通用匹配。
 

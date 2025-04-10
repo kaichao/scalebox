@@ -1,22 +1,138 @@
 package semaphore
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
 
 	"github.com/kaichao/gopkg/common"
-	"github.com/kaichao/gopkg/exec"
+	"github.com/kaichao/scalebox/pkg/postgres"
+	"github.com/sirupsen/logrus"
 )
 
 // Create ...
-func Create(semaLines string) error {
-	common.AppendToFile("my-sema.txt", semaLines)
-	defer os.Remove("my-sema.txt")
+func Create(name string, value int, appID int) error {
+	// ignore existing
+	sqlText := `
+		INSERT INTO t_semaphore(name,value,value0,app)
+		VAlUES($1,$2,$2,$3)
+		ON CONFLICT (name, app) DO NOTHING; 
+	`
 
-	cmd := "scalebox semaphore create --sema-file my-sema.txt"
-	code, err := exec.RunReturnExitCode(cmd, 600)
-	if code > 0 {
-		return fmt.Errorf("[ERROR]semaphore-create,code=%d", code)
+	if _, err := postgres.GetDB().Exec(sqlText, name, value, appID); err != nil {
+		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,app-id=%d,err=%v",
+			name, value, appID, err)
+		logrus.Errorln(errInfo)
+		return err
 	}
-	return err
+	return nil
+}
+
+// CreateFileSemaphores ...
+func CreateFileSemaphores(fileName string, appID int, batchSize int) error {
+	lines, err := common.GetTextFileLines(fileName)
+	if err != nil {
+		logrus.Errorf("file-name:%s, err-info:%v\n", fileName, err)
+		return err
+	}
+	if len(lines) == 0 {
+		logrus.Warnf("Null file, filename:%s\n", fileName)
+	}
+	var semas []Sema
+	re := regexp.MustCompile(`"([^"]+)":(\d+)`)
+	for _, line := range lines {
+		if matches := re.FindStringSubmatch(line); len(matches) == 3 {
+			key := matches[1] // 提取到的 key
+			var value int
+			fmt.Sscanf(matches[2], "%d", &value) // 将 value 转为整数
+			semas = append(semas, Sema{name: key, value: value})
+		} else {
+			logrus.Errorf("Not matched semaphore :%s,\n", line)
+		}
+	}
+	return CreateSemaphores(semas, appID, batchSize)
+}
+
+// CreateJSONSemaphores ...
+func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
+	var jsonData struct {
+		RawData json.RawMessage `json:"semaphores"`
+	}
+	if err := json.Unmarshal([]byte(jsonText), &jsonData); err != nil {
+		logrus.Errorf("Invalid json format, err-info:%v, json-text:%s\n", err, jsonText)
+		return err
+	}
+
+	var ordered []Sema
+	decoder := json.NewDecoder(bytes.NewReader(jsonData.RawData))
+	decoder.Token()
+	for decoder.More() {
+		k, _ := decoder.Token()
+		var v int
+		if err := decoder.Decode(&v); err != nil {
+			logrus.Errorf("Error decoding semaphore value, err-info:%v, json-text:%s\n", err, jsonText)
+			return err
+		}
+		ordered = append(ordered, Sema{name: k.(string), value: v})
+	}
+	return CreateSemaphores(ordered, appID, batchSize)
+}
+
+// Sema ...
+type Sema struct {
+	name  string
+	value int
+}
+
+// CreateSemaphores ...
+func CreateSemaphores(ordered []Sema, appID int, batchSize int) error {
+	// start transaction
+	tx, err := postgres.GetDB().Begin()
+	if err != nil {
+		logrus.Errorf("err:%v\n", err)
+		return err
+	}
+	defer tx.Rollback()
+
+	// ignore existing
+	sqlText := `
+		INSERT INTO t_semaphore(name,value,value0,app) 
+		VALUES($1,$2,$2,$3)
+		ON CONFLICT (name, app) DO NOTHING; 
+	`
+
+	for i := 0; i < len(ordered); i += batchSize {
+		stmt, err := tx.Prepare(sqlText)
+		if err != nil {
+			logrus.Errorf("err:%v\n", err)
+		}
+		defer stmt.Close()
+
+		end := i + batchSize
+		if end > len(ordered) {
+			end = len(ordered)
+		}
+
+		for _, v := range ordered[i:end] {
+			if _, err := stmt.Exec(v.name, v.value, appID); err != nil {
+				logrus.Errorf("err:%v\n", err)
+				return err
+			}
+		}
+		if err = tx.Commit(); err != nil {
+			logrus.Errorf("Commit, err-info:%v\n", err)
+			return err
+		}
+		fmt.Fprintf(os.Stderr, "[%d..%d], %d row(s) inserted.\n", i, end-1, end-i)
+
+		// start next batch
+		if tx, err = postgres.GetDB().Begin(); err != nil {
+			logrus.Errorf("err:%v\n", err)
+			return err
+		}
+	}
+
+	return nil
 }
