@@ -11,8 +11,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Add ...
-func Add(name string, appID int, delta int) (string, error) {
+// AddValue ...
+func AddValue(name string, appID int, delta int) (string, error) {
 	sqlText := `
 		WITH updated_rows AS (
     		UPDATE t_semaphore
@@ -73,4 +73,27 @@ func Add(name string, appID int, delta int) (string, error) {
 		return "", errors.New(errInfo)
 	}
 	return ss[1], nil
+}
+
+// AddListValue ...
+func AddListValue(names []string, appID int, delta int) (string, error) {
+	sqlText := `
+		WITH updated_rows AS (
+    		UPDATE t_semaphore
+    		SET value = value + $3
+    		WHERE name = ANY($1) AND app = $2
+    		RETURNING name,value
+		)
+		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
+		FROM updated_rows
+	`
+	v := ""
+	if err := postgres.GetDB().QueryRow(sqlText, names, appID, delta).Scan(&v); err != nil {
+		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%s,%d), err-t=%T,err=%v",
+			names, appID, err, err)
+		logrus.Errorln(errInfo)
+		return "", err
+	}
+
+	return regexp.MustCompile(`\s+`).ReplaceAllString(v, ""), nil
 }

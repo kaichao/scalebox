@@ -314,7 +314,7 @@ code=$?
 - sema_expr 为正则表达式
 - ```code```为操作成功与否的标志。0为成功
 - ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
-  ```{"sema1":n1,"sema2":n2,"sema3":n3```
+  ```{"sema1":n1,"sema2":n2,"sema3":n3}```
 
 ### 1.7.4 semaphore decrement
 
@@ -342,6 +342,8 @@ code=$?
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
 #### 信号量组的加n操作。
+
+用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
 ### 1.7.6 semaphore group-dist
 
