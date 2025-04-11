@@ -21,6 +21,5 @@ APP_ID=${app_id} scalebox task add --sink-job global-vtask --task-file messages.
 ### 3. increment semaphore
 
 ```sh
-sema_name=global-vtask-size_global-vtask
-APP_ID=${app_id} scalebox semaphore increment ${sema_name}
+APP_ID=${app_id} scalebox semaphore increment global_vtask_size:global-vtask
 ```

@@ -8,8 +8,9 @@ jobs:
     base_image: hub.cstcloud.cn/scalebox/agent
     arguments:
       slot_options: slot_on_head
+      code_path: ${PWD}/../code
+    parameters:
       global_vtask_size: 2
-      inline_vtask: yes
     sink_jobs:
       - next
 
