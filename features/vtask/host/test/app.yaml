@@ -1,0 +1,21 @@
+name: host-vtask.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  host-vtask:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    arguments:
+      # code_path: ${PWD}/../code
+      code_path: /tmp/host/code
+    parameters:
+      task_dist_mode: HOST-BOUND
+      host_vtask_size: 2
+    hosts: 
+      - n-0[01]
+    sink_jobs:
+      - next
+
+  next:
+    base_image: hub.cstcloud.cn/scalebox/agent
