@@ -223,16 +223,23 @@ cluster定义的示例如下：
 
 ### 2.8.2 job-arguments参数表
 
-| 参数名                    | 标准环境变量             | 含义                                                                        |
-| ------------------------ | ---------------------- | -------------------------------------------------------------------------- |
-| grpc_server              | GRPC_SERVER            | 服务端controld的服务端点（endpoint），```${ip_addr}:${port}```，port缺省值为50051      |
-| code_path                |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                         |
-| local_ip_index           | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。            |
-| task_timeout_seconds     | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124        |
-| sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒                  |
-| max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                                   |
-| dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数             |
-| dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数   |
+| 参数名                  | 标准环境变量             | 含义                                                                    |
+| ---------------------- | ---------------------- | ---------------------------------------------------------------------- |
+| grpc_server            | GRPC_SERVER            | controld的服务端点（endpoint），```${ip_addr}:${port}```，port缺省值为50051 |
+| code_path              |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                    |
+| local_ip_index         | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。       |
+|                        | CLUSTER                | 所在的集群名                                                       |
+|                        | JOB_NAME               | 当前job名称                                                       |
+|                        | JOB_ID                 | job-id                                                           |
+|                        | FROM_JOB               | job-name                                                         |
+|                        | FROM_IP                | from-ip                                                          |
+|                        | SINK_JOB               | 缺省sink_job的名称                                                 |
+|                        | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                   |
+| task_timeout_seconds   | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124 |
+| sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒             |
+| max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
+| dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数        |
+| dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数 |
 | output_text_size       | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_tranc_mode        | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
 | heart_beat_seconds     |                        | 以秒计的心跳间隔                                                     |
@@ -241,18 +248,13 @@ cluster定义的示例如下：
 | slot_options           |                        | 逗号分隔的slot选项                                                  |
 |  - always_running      | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）                           |
 |  - reserved_on_exit    |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)            |
-|  - tmpfs_workdir       |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）    |
+|  - tmpfs_workdir       |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）|
 |  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local_data_root的映射                     |
 |  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射                   |
+|  - wrap_debug            | WRAP_DEBUG             | 调试选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项  |
 |  - enable_trace          | TRACE                  |  调试程序选项，输出详细信息                                           |
-|  - async_task_creation   | ASYNC_TASK_CREATION    |                                                                  |
+|  - async_task_creation   | ASYNC_TASK_CREATION    |   （拟删除）                                                       |
 |  - slot_on_head          |                        |                                                                  |
-|                          | CLUSTER                | 所在的集群名                                                       |
-|                          | JOB_NAME               | 当前job名称                                                       |
-|                          | JOB_ID                 | job_id                                                           |
-|                          | SLOT_ID                | slot_id                                                          |
-|                          | SINK_JOB               | 缺省sink_job的名称                                                 |
-|                          | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                   |
 
 ### 2.8.3 job-parameters参数表
 
