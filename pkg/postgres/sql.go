@@ -9,6 +9,8 @@ import (
 	"strings"
 	"time"
 
+	// Register pgx driver with database/sql
+	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kaichao/scalebox/pkg/common"
 )
 
