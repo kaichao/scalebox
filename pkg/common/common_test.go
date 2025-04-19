@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/kaichao/gopkg/common"
+	"github.com/kaichao/scalebox/pkg/common"
 )
 
 // Named function for nested call

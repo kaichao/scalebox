@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/kaichao/gopkg/common"
+	"github.com/kaichao/scalebox/pkg/common"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/sirupsen/logrus"
 )

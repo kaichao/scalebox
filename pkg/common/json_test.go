@@ -3,7 +3,7 @@ package common_test
 import (
 	"testing"
 
-	"github.com/kaichao/gopkg/common"
+	"github.com/kaichao/scalebox/pkg/common"
 )
 
 func TestSetJSONAttribute(t *testing.T) {

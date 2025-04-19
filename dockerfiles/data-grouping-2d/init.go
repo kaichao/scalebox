@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/kaichao/gopkg/common"
+	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/sirupsen/logrus"
 )
 

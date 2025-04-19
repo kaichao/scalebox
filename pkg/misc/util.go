@@ -5,7 +5,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kaichao/gopkg/common"
+	"github.com/kaichao/scalebox/pkg/common"
 )
 
 // AddTimeStamp ...

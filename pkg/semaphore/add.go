@@ -6,7 +6,7 @@ import (
 	"os"
 	"regexp"
 
-	"github.com/kaichao/gopkg/common"
+	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/kaichao/scalebox/pkg/postgres"
 	"github.com/sirupsen/logrus"
 )
