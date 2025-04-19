@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/kaichao/scalebox/pkg/misc"
+	"github.com/kaichao/scalebox/pkg/common"
 )
 
 // NewSQLNullString ...
@@ -48,7 +48,7 @@ func GetDB() *sql.DB {
 			pgHost = os.Getenv("LOCAL_ADDR")
 		}
 		if pgHost == "" {
-			localIP := misc.GetLocalIP()
+			localIP := common.GetLocalIP()
 			pgHost = localIP
 			// fmt.Printf("[INFO] %s Set localIP %s as default db server.\n",
 			// 	time.Now().Format("15:04:05.000"), localIP)

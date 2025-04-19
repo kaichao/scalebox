@@ -1,8 +1,7 @@
-package misc
+package common
 
 import (
 	"fmt"
-	"net"
 	"os"
 	"os/exec"
 	"regexp"
@@ -40,48 +39,4 @@ func GetLocalIP() string {
 		logrus.Warnf("error get_local_ip, localIP=%s\n", localIP)
 	}
 	return localIP
-}
-
-// GetLocalIPv4Addr ...
-// @Deprecated
-func getLocalIPv4Addr() string {
-	addrs, err := net.InterfaceAddrs()
-	if err != nil {
-		fmt.Println(err)
-	}
-	var ip string
-	for _, address := range addrs {
-		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
-			if ipnet.IP.To4() != nil {
-				ip = ipnet.IP.String()
-			}
-		}
-	}
-	return ip
-}
-
-// GetLocalIPv4AddrByInterface ...
-// @Deprecated
-func getLocalIPv4AddrByInterface(interfaceName string) string {
-	interfaces, err := net.Interfaces()
-	if err != nil {
-		panic(err)
-	}
-	var ip string
-	for _, interf := range interfaces {
-		if interf.Name == "en7" {
-			addrs, err := interf.Addrs()
-			if err != nil {
-				panic(err)
-			}
-			for _, add := range addrs {
-				if ipnet, ok := add.(*net.IPNet); ok {
-					if ipnet.IP.To4() != nil {
-						ip = ipnet.IP.String()
-					}
-				}
-			}
-		}
-	}
-	return ip
 }
