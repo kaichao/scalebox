@@ -1,8 +1,11 @@
 package task
 
 import (
+	"encoding/json"
 	"fmt"
 	"os"
+	"regexp"
+	"strconv"
 
 	"github.com/kaichao/gopkg/exec"
 	"github.com/kaichao/scalebox/pkg/common"
@@ -10,12 +13,12 @@ import (
 )
 
 // Add ...
-func Add(sinkJob string, message string, headers string) int {
+func Add(message string, headers string) int {
 	if headers == "" {
 		headers = "{}"
 	}
-	cmd := fmt.Sprintf(`scalebox task add --sink-job=%s --headers='%s' %s`,
-		sinkJob, headers, message)
+	cmd := fmt.Sprintf(`scalebox task add --headers='%s' %s`,
+		headers, message)
 	code, err := exec.RunReturnExitCode(cmd, 15)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
@@ -25,12 +28,18 @@ func Add(sinkJob string, message string, headers string) int {
 }
 
 // AddWithMapHeaders ...
-func AddWithMapHeaders(sinkJob string, message string, headers map[string]string) int {
-	return 0
+func AddWithMapHeaders(message string, headers map[string]string) int {
+	return Add(message, mapToCleanJSON(headers))
 }
 
-// AddTasks ...
-func AddTasks(sinkJob string, messages []string, headers string, timeout int) int {
+// AddTasks 增加一组task
+// 环境变量：
+// - SINK_JOB:
+// - JOB_ID:
+// - APP_ID:
+// - REMOTE_SERVER:
+// - TIMEOUT_SECONDS
+func AddTasks(messages []string, headers string) int {
 	taskFile := "my-tasks.txt"
 	for _, m := range messages {
 		common.AppendToFile(taskFile, m)
@@ -38,7 +47,11 @@ func AddTasks(sinkJob string, messages []string, headers string, timeout int) in
 	if headers == "" {
 		headers = "{}"
 	}
-	cmd := fmt.Sprintf(`scalebox task add --headers='%s' --sink-job=%s --task-file=my-tasks.txt`, headers, sinkJob)
+	timeout, _ := strconv.Atoi(os.Getenv("TIMEOUT_SECONDS"))
+	if timeout <= 0 {
+		timeout = 60
+	}
+	cmd := fmt.Sprintf(`scalebox task add --headers='%s' --task-file=my-tasks.txt`, headers)
 	code, err := exec.RunReturnExitCode(cmd, timeout)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
@@ -53,4 +66,30 @@ func AddTasks(sinkJob string, messages []string, headers string, timeout int) in
 		return 1
 	}
 	return 0
+}
+
+func AddTasksWithMapHeaders(messages []string, headers map[string]string) int {
+	return AddTasks(messages, mapToCleanJSON(headers))
+}
+
+func mapToCleanJSON(m map[string]string) string {
+	// 直接 Marshal，不去除 key/value 中的空格
+	jsonBytes, err := json.MarshalIndent(m, "", "  ")
+	if err != nil {
+		logrus.Errorf("map to json, err-info:%v\n", err)
+		return "{}"
+	}
+
+	jsonStr := string(jsonBytes)
+
+	// 去除所有双引号之外的空白字符
+	re := regexp.MustCompile(`"(?:\\.|[^"\\])*"|[\s]+`)
+	cleaned := re.ReplaceAllStringFunc(jsonStr, func(s string) string {
+		if len(s) > 0 && s[0] == '"' {
+			return s // 保留字符串字面量（引号包裹部分）
+		}
+		return "" // 去掉引号外的空白
+	})
+
+	return cleaned
 }
