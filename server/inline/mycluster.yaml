@@ -27,13 +27,17 @@ clusters:
         comment: CentOS 8
       n-00:
         ip_addr: 10.0.6.101
+        group_id: g0
         spec: inline-vm-00
       n-01:
         ip_addr: 10.0.6.102
         spec: inline-vm-00
+        group_id: g0
       n-02:
         ip_addr: 10.0.6.103
+        group_id: g1
         spec: inline-vm-00
       n-03:
         ip_addr: 10.0.6.104
+        group_id: g1
         spec: inline-vm-00

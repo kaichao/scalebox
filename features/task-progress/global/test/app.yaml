@@ -1,0 +1,21 @@
+name: task-progress-global.test
+cluster: ${CLUSTER}
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  task-progress-global:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    arguments:
+      # code_path: ${PWD}/../code
+      code_path: /tmp/code
+    parameters:
+      task_dist_mode: HOST-BOUND
+      task_progress_global_diff: 2
+    hosts: 
+      - n-0[0123]
+    sink_jobs:
+      - next
+
+  next:
+    base_image: hub.cstcloud.cn/scalebox/agent

@@ -261,8 +261,8 @@ cluster定义的示例如下：
 | 参数名                  | 含义                                                                        |
 | -------------------- | ---------------------------------------------------------------------------- |
 | priority             | 优先级(暂未使用)                                                                |
-| key_group_regex      | 从消息中提取分组的正则表达式                                                      |
-| key_group_index      | 分组排序的编号                                                                  |
+| key_group_regex      | 从消息中提取分组的正则表达式  （改名为group_regex?）                                |
+| key_group_index      | 分组排序的编号               (改名为group_index?)                                |
 | task_dist_mode       | task分发模式，'HOST-BOUND'/'SLOT-BOUND'/'GROUP-BOUND'                          |
 | task_queue_length    | task_queue的长度。若设置该值，则启用task_queue作为task分发方式                      |
 | tasks_per_queue      | in-mem模式中，task队列长度。缺省值为100(待删除)                                   |
@@ -270,17 +270,18 @@ cluster定义的示例如下：
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                                             |
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                                 |
 | retry_rules          | 基于退出码的重试规则<br>```"['exit_code_1:num_retries',...,'exit_code_n:num_retries']"```。num_retries缺省值为1，退出码通配符为'*' |
-| enable_default_retrries | 设置常见的retry_rules，包括timeout(124)、...等                              |
+| enable_default_retries | 设置常见的retry_rules，包括timeout(124)、...等                              |
 | slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                              |
-| visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3  |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
-| pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算     |
+| pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
 | bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。 |
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间量需要大于```task_timeout_seconds```的值。 |
-| task_id_in_headers   | 返回的headers中，包含task_id值。 |
-| task_progress_global_diff   | 标准流控参数，用于当前cluster中所有group_id不为空的多个并行执行的host间的运行同步，指定与最慢host间的差值，其值为整数。需在对应task生成时，自动创建对应的信号量，信号量名称为：```task_progress:${mod_name}:${hostname}```，初值为0。 |
-| task_progress_group_diff   | 标准流控参数，用于同一分组中多个并行执行的host间的运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
+| visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
+| task_id_in_headers   | 返回的headers中，包含task_id值。|
+| app_id_in_headers   | 返回的headers中，包含app_id值。 |
+| task_progress_global_diff | 标准流控参数，用于当前cluster中group_id非空的host间运行同步，参照值为运行成功的task数量，该参数指定与最慢host间差值，其值为整数。在对应task生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。 |
+| task_progress_group_diff | 标准流控参数，用于同一group_id下host间运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
 | global_vtasks_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtasks_size:${mod_name}```，其初值为参数值。ß |
 | group_vtasks_size    | 标准流控参数，其值为 ```${group_expr}:${int_value}```。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group_vtasks_size:${mod_name}:${groupname}```，其初值为参数值。 |
 | host_vtasks_size     | 标准流控参数，其值为整数。用于按节点（HOST-BOUND）的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host_vtasks_size:${mod_name}:${hostname}```，其初值为参数值。   |
