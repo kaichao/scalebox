@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 
 	"github.com/kaichao/gopkg/exec"
 	"github.com/kaichao/scalebox/pkg/common"
@@ -13,12 +14,17 @@ import (
 )
 
 // Add ...
-func Add(message string, headers string) int {
+func Add(message string, headers string, envVars map[string]string) int {
+	parts := make([]string, 0, len(envVars))
+	for k, v := range envVars {
+		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
+	}
+
 	if headers == "" {
 		headers = "{}"
 	}
-	cmd := fmt.Sprintf(`scalebox task add --headers='%s' %s`,
-		headers, message)
+	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
+		strings.Join(parts, " "), headers, message)
 	code, err := exec.RunReturnExitCode(cmd, 15)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
@@ -28,8 +34,8 @@ func Add(message string, headers string) int {
 }
 
 // AddWithMapHeaders ...
-func AddWithMapHeaders(message string, headers map[string]string) int {
-	return Add(message, mapToCleanJSON(headers))
+func AddWithMapHeaders(message string, headers map[string]string, envVars map[string]string) int {
+	return Add(message, mapToCleanJSON(headers), envVars)
 }
 
 // AddTasks 增加一组task
@@ -39,7 +45,12 @@ func AddWithMapHeaders(message string, headers map[string]string) int {
 // - APP_ID:
 // - REMOTE_SERVER:
 // - TIMEOUT_SECONDS
-func AddTasks(messages []string, headers string) int {
+func AddTasks(messages []string, headers string, envVars map[string]string) int {
+	parts := make([]string, 0, len(envVars))
+	for k, v := range envVars {
+		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
+	}
+
 	taskFile := "my-tasks.txt"
 	for _, m := range messages {
 		common.AppendToFile(taskFile, m)
@@ -51,7 +62,8 @@ func AddTasks(messages []string, headers string) int {
 	if timeout <= 0 {
 		timeout = 60
 	}
-	cmd := fmt.Sprintf(`scalebox task add --headers='%s' --task-file=my-tasks.txt`, headers)
+	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' --task-file=my-tasks.txt`,
+		strings.Join(parts, " "), headers)
 	code, err := exec.RunReturnExitCode(cmd, timeout)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
@@ -68,8 +80,9 @@ func AddTasks(messages []string, headers string) int {
 	return 0
 }
 
-func AddTasksWithMapHeaders(messages []string, headers map[string]string) int {
-	return AddTasks(messages, mapToCleanJSON(headers))
+// AddTasksWithMapHeaders ...
+func AddTasksWithMapHeaders(messages []string, headers map[string]string, envVars map[string]string) int {
+	return AddTasks(messages, mapToCleanJSON(headers), envVars)
 }
 
 func mapToCleanJSON(m map[string]string) string {

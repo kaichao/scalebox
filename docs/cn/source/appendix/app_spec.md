@@ -238,8 +238,8 @@ cluster定义的示例如下：
 | task_timeout_seconds   | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124 |
 | sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒             |
 | max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
-| dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir~n，n为GB数        |
-| dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir~n，n为GB数 |
+| dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir:n，n为GB数        |
+| dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir:n，n为GB数 |
 | output_text_size       | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_tranc_mode        | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
 | heart_beat_seconds     |                        | 以秒计的心跳间隔                                                     |
