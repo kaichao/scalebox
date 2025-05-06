@@ -2,7 +2,7 @@ FROM debian:12-slim
 
 LABEL maintainer="kaichao"
 
-# install the newest version, rsync 3.2.7, zstd 1.5.5, openssh 9.3p1
+# install the newest version, rsync 3.2.7, zstd 1.5.5, openssh 9.3p1, pv
 RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bookworm-testing.list \ 
     && apt-get update \
     && apt-get install -y rsync openssh-client zstd pv \

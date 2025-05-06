@@ -65,6 +65,10 @@ graph LR
   variable --> variable-set[<a href="#variable-set">set</a>]
   variable --> variable-get[<a href="#variable-get">get</a>]
 
+  scalebox --> priopipe[<a href="#priopipe">priopipe</a>]
+  priopipe --> priopipe-push[<a href="#priopipe-push">set</a>]
+  priopipe --> priopipe-pull[<a href="#priopipe-pull">get</a>]
+
   scalebox --> event[<a href="#event">event</a>]
   event --> event-task-add[<a href="#event-task-add">task-add</a>]
   event --> event-slot-add[<a href="#event-slot-add">slot-add</a>]
@@ -417,8 +421,42 @@ code=$?
 - ```val```为新的变量量值，返回结果为json map表示的信号量名值对。
   ```{"var1":"val1","var2":"val2","var3":"val3"}```
 
+## 1.9 <span id="priopipe">priopipe子命令</span>
 
-## 1.9 <span id="event">event子命令</span>
+- 公共参数：job-id，或app-id
+- 环境变量：JOB_ID，或APP_ID
+
+- 优先队列命名：同信号量命名
+
+### 1.9.1 priopipe push
+
+- priority为优先级，浮点数。数值小，优先级高。
+  
+```sh
+scalebox priopipe push --app-id ${app_id} ${pp_name} ${str_value} [${priority}]
+APP_ID=${app_id} scalebox priopipe push ${pp_name} ${str_value}
+
+scalebox priopipe push --job-id ${job_id} ${pp_name} ${str_value} [${priority}]
+JOB_ID=${job_id} scalebox priopipe push ${pp_name} ${str_value}
+```
+
+### 1.9.2 priopipe pull
+
+- 获取队列当前值
+- 示例：
+```sh
+val=$(scalebox priopipe pull ${pp_name})
+code=$?
+[[ $code -ne 0 ]] && echo "[ERROR] priopipe-pull ${pp_name}, exit_code:$code" >&2
+```
+- ```code```为操作成功与否的标志。
+  - 0：OK
+  - 1：db error
+  - 2： priopipe not-found
+- ```val```为新的变量值
+
+
+## 1.10 <span id="event">event子命令</span>
 
 支持各类event的add操作。
 
@@ -440,7 +478,7 @@ scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${t
 则txt、json从文件中读取。
 
 
-### 1.9.1 event task-add
+### 1.10.1 event task-add
 
 通过环境变量TASK_ID或参数 --task-id  指定task-id。
 ```sh
@@ -449,40 +487,40 @@ scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} $
 
 ```scalebox event task-add ``` 可简写为 ``` scalebox event add  ```
 
-### 1.9.2 event slot-add
+### 1.10.2 event slot-add
 
 通过环境变量SLOT_ID或参数 --slot-id  指定slot-id。
 ```sh
 scalebox event slot-add --slot-id ${slot_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
-### 1.9.3 event misc-add
+### 1.10.3 event misc-add
 
 ```sh
 scalebox event misc-add ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
-## 1.10 <span id="global">global子命令</span>
+## 1.11 <span id="global">global子命令</span>
 
 全局变量
 
-### 1.10.1 global get
+### 1.11.1 global get
 
 ```sh
 scalebox global get ${global_name}
 ```
 
-### 1.10.2 global set
+### 1.11.2 global set
 
 ```sh
 scalebox global set ${global_name} ${global_value}
 ```
 
-## 1.11 <span id="fs">fs子命令</span>
+## 1.12 <span id="fs">fs子命令</span>
 
 scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在同一个名字空间中。后期可提供mount支持、跨节点迁移等特性。
 
-### 1.11.1 fs ls
+### 1.12.1 fs ls
 
 - 主要参数：
   - include-removed-file
@@ -494,7 +532,7 @@ scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在
 scalebox fs ls ${path_expr}
 ```
 
-### 1.11.2 fs stat
+### 1.12.2 fs stat
 
 查看1个或多个文件的元数据。每个节点上的文件名跟全局文件名一致。
 
