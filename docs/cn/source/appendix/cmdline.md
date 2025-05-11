@@ -33,6 +33,7 @@
 graph LR
   scalebox --> app[<a href="#app">app</a>]
   app --> app-create[<a href="#app-create">create</a>]
+  app --> app-run[<a href="#app-run">run</a>]
   app --> get-message-router[<a href="#app-get-message-router">get-message-router</a>]
   app --> app-list[<a href="#app-list">list</a>]
   app --> app-add-remote[<a href="#app-add-remote">add-remote</a>]
@@ -65,9 +66,9 @@ graph LR
   variable --> variable-set[<a href="#variable-set">set</a>]
   variable --> variable-get[<a href="#variable-get">get</a>]
 
-  scalebox --> priopipe[<a href="#priopipe">priopipe</a>]
-  priopipe --> priopipe-push[<a href="#priopipe-push">set</a>]
-  priopipe --> priopipe-pull[<a href="#priopipe-pull">get</a>]
+  scalebox --> channel[<a href="#channel">channel</a>]
+  channel --> channel-push[<a href="#channel-push">set</a>]
+  channel --> channel-pull[<a href="#channel-pull">get</a>]
 
   scalebox --> event[<a href="#event">event</a>]
   event --> event-task-add[<a href="#event-task-add">task-add</a>]
@@ -84,10 +85,85 @@ graph LR
 
   scalebox --> cluster
   cluster --> get-parameter
-
+  cluster --> add-node
+  cluster --> dist-image
+  cluster --> check-status
+  cluster --> show-app-view
+  cluster --> show-host-view
+  
   scalebox --> version
 
   scalebox --> help
+
+```
+
+```{mermaid}
+
+mindmap
+  root((scalebox))
+    app[<a href="#app">app</a>]
+      app-create[<a href="#app-create">create</a>]
+      app-run[<a href="#app-run">run</a>]
+      get-message-router[<a href="#app-get-message-router">get-message-router</a>]
+      app-list[<a href="#app-list">list</a>]
+      app-add-remote[<a href="#app-add-remote">add-remote</a>]
+      app-set-finished[<a href="#app-set-finished">set-finished</a>]
+
+    job[<a href="#job">job</a>]
+      job-list[<a href="#job-list">list</a>]
+      job-info[info]
+
+    task[<a href="#task">task</a>]
+      task-add[<a href="#task-add">add</a>]
+      task-get-header[<a href="#task-get-header">get-header</a>]
+      task-set-header[<a href="#task-set-header">set-header</a>]
+      task-remove-header[<a href="#task-remove-header">remove-header</a>]
+
+    slot[<a href="#slot">slot</a>]
+      slot-add[<a href="#slot-add">add</a>]
+      slot-update[<a href="#slot-update">update</a>]
+
+    semaphore[<a href="#semaphore">semaphore</a>]
+      sema-create[<a href="#semaphore-create">create</a>]
+      semaphore-get[<a href="#semaphore-get">get</a>]
+      increment[<a href="#semaphore-increment">increment</a>]
+      decrement[<a href="#semaphore-decrement">decrement</a>]
+      increment-n[<a href="#semaphore-increment">increment-n</a>]
+      semaphore-global-dist[<a href="#semaphore-global-dist">global-dist</a>]
+      semaphore-group-dist[<a href="#semaphore-group-dist">group-dist</a>]
+
+    variable[<a href="#variable">variable</a>]
+      variable-set[<a href="#variable-set">set</a>]
+      variable-get[<a href="#variable-get">get</a>]
+
+    channel[<a href="#channel">channel</a>]
+      channel-push[<a href="#channel-push">set</a>]
+      channel-pull[<a href="#channel-pull">get</a>]
+
+    event[<a href="#event">event</a>]
+      event-task-add[<a href="#event-task-add">task-add</a>]
+      event-slot-add[<a href="#event-slot-add">slot-add</a>]
+      event-misc-add[<a href="#event-misc-add">misc-add</a>]
+
+    global[<a href="#global">global</a>]
+      global-get[<a href="#global-get">get</a>]
+      global-set[<a href="#global-set">set</a>]
+
+    fs[<a href="#fs">fs</a>]
+      fs-ls[<a href="#fs-ls">ls</a>]
+      fs-stat[<a href="#fs-stat">stat</a>]
+
+    cluster
+      get-parameter
+      add-node
+      dist-image
+      check-status
+      show-app-view
+      show-host-view
+  
+    version
+
+    help
 
 ```
 
@@ -102,7 +178,17 @@ graph LR
 scalebox app create
 ```
 
-### 1.3.2 app list
+### 1.3.2 app run
+
+命令行创建单模块应用。（未来代替app create ?）
+
+用法：
+```sh
+scalebox app run
+```
+
+
+### 1.3.3 app list
 
 列出所有应用的基本信息。
 
@@ -421,38 +507,38 @@ code=$?
 - ```val```为新的变量量值，返回结果为json map表示的信号量名值对。
   ```{"var1":"val1","var2":"val2","var3":"val3"}```
 
-## 1.9 <span id="priopipe">priopipe子命令</span>
+## 1.9 <span id="channel">channel子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
 
 - 优先队列命名：同信号量命名
 
-### 1.9.1 priopipe push
+### 1.9.1 channel push
 
 - priority为优先级，浮点数。数值小，优先级高。
   
 ```sh
-scalebox priopipe push --app-id ${app_id} ${pp_name} ${str_value} [${priority}]
-APP_ID=${app_id} scalebox priopipe push ${pp_name} ${str_value}
+scalebox channel push --app-id ${app_id} ${pp_name} ${str_value} [${priority}]
+APP_ID=${app_id} scalebox channel push ${pp_name} ${str_value}
 
-scalebox priopipe push --job-id ${job_id} ${pp_name} ${str_value} [${priority}]
-JOB_ID=${job_id} scalebox priopipe push ${pp_name} ${str_value}
+scalebox channel push --job-id ${job_id} ${pp_name} ${str_value} [${priority}]
+JOB_ID=${job_id} scalebox channel push ${pp_name} ${str_value}
 ```
 
-### 1.9.2 priopipe pull
+### 1.9.2 channel pull
 
 - 获取队列当前值
 - 示例：
 ```sh
-val=$(scalebox priopipe pull ${pp_name})
+val=$(scalebox channel pull ${pp_name})
 code=$?
-[[ $code -ne 0 ]] && echo "[ERROR] priopipe-pull ${pp_name}, exit_code:$code" >&2
+[[ $code -ne 0 ]] && echo "[ERROR] channel-pull ${pp_name}, exit_code:$code" >&2
 ```
 - ```code```为操作成功与否的标志。
   - 0：OK
   - 1：db error
-  - 2： priopipe not-found
+  - 2： channel not-found
 - ```val```为新的变量值
 
 
