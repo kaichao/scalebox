@@ -1,5 +1,5 @@
 name: hello-scalebox.examples
-cluster: local
+cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
 
