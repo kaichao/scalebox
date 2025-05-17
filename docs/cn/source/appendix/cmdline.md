@@ -31,20 +31,20 @@
 ```{mermaid}
 
 graph LR
-  scalebox --> cluster
-  cluster --> get-parameter
-  cluster --> check-status
-  cluster --> dist-image
-  cluster --> app-view
-  cluster --> host-view
+  scalebox --> cluster[<a href="#cluster">cluster</a>]
+  cluster --> cluster-get-parameter[<a href="#cluster-get-parameter">get-parameter</a>]
+  cluster --> cluster-check-status[<a href="#cluster-check-status">check-status</a>]
+  cluster --> cluster-dist-image[<a href="#cluster-dist-image">dist-image</a>]
+  cluster --> cluster-app-view[<a href="#cluster-app-view">app-view</a>]
+  cluster --> cluster-host-view[<a href="#cluster-host-view">host-view</a>]
 
-  scalebox --> host
-  host --> add-node
-  host --> check-status
-  host --> dist-image
-  host --> recover
-  host --> migrate
-  host --> replace
+  scalebox --> host[<a href="#host">host</a>]
+  host --> host-add-node[<a href="#host-add-node">add-node</a>]
+  host --> host-check-status[<a href="#host-check-status">check-status</a>]
+  host --> host-dist-image[<a href="#host-dist-image">dist-image</a>]
+  host --> host-recover[<a href="#host-recover">recover</a>]
+  host --> host-migrate[<a href="#host-migrate">migrate</a>]
+  host --> host-replace[<a href="#host-replace">replace</a>]
   
   scalebox --> slot[<a href="#slot">slot</a>]
   slot --> slot-add[<a href="#slot-add">add</a>]
@@ -74,21 +74,21 @@ graph LR
   semaphore --> semaphore-get[<a href="#semaphore-get">get</a>]
   semaphore --> increment[<a href="#semaphore-increment">increment</a>]
   semaphore --> decrement[<a href="#semaphore-decrement">decrement</a>]
-  semaphore --> increment-n[<a href="#semaphore-increment">increment-n</a>]
+  semaphore --> increment-n[<a href="#semaphore-increment-n">increment-n</a>]
   semaphore --> semaphore-global-dist[<a href="#semaphore-global-dist">global-dist</a>]
   semaphore --> semaphore-group-dist[<a href="#semaphore-group-dist">group-dist</a>]
 
   scalebox --> variable[<a href="#variable">variable</a>]
-  variable --> variable-set[<a href="#variable-set">set</a>]
   variable --> variable-get[<a href="#variable-get">get</a>]
+  variable --> variable-set[<a href="#variable-set">set</a>]
 
   scalebox --> global[<a href="#global">global</a>]
   global --> global-get[<a href="#global-get">get</a>]
   global --> global-set[<a href="#global-set">set</a>]
 
   scalebox --> channel[<a href="#channel">channel</a>]
-  channel --> channel-push[<a href="#channel-push">set</a>]
-  channel --> channel-pull[<a href="#channel-pull">get</a>]
+  channel --> channel-pull[<a href="#channel-pull">pull</a>]
+  channel --> channel-push[<a href="#channel-push">push</a>]
 
   scalebox --> event[<a href="#event">event</a>]
   event --> event-task-add[<a href="#event-task-add">task-add</a>]
@@ -287,7 +287,7 @@ scalebox task set-header --task-id 123 my_header value
 scalebox task remove-header --task-id 123 my_header
 ```
 
-## 1.7 <span id="semaphore">semaphore子命令</span>
+## 1.9 <span id="semaphore">semaphore子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID、SEMAPHORE_AUTO_CREATE
@@ -299,7 +299,7 @@ scalebox task remove-header --task-id 123 my_header
 - 信号量表达式：表示一组信号量的正则表达式
   - 字符集：信号量字符集，加上 '.*+?^$[]{}()|\'
 
-### 1.7.1 semaphore create
+### 1.9.1 semaphore create
 
 - 参数：batch-size：用于批量信号量创建中，指定批次大小，缺省值为100。
 
@@ -334,7 +334,7 @@ scalebox semaphore create --sema-file my-sema-file.txt
 "sema3":n3
 ```
 
-### 1.7.2 semaphore get
+### 1.9.2 semaphore get
 
 #### 获取单个信号量当前值
 ```sh
@@ -371,7 +371,7 @@ code=$?
 - ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
   ```{"sema1":n1,"sema2":n2,"sema3":n3}```
 
-### 1.7.3 semaphore increment
+### 1.9.3 semaphore increment
 
 ####  单个信号量的增一操作
 ```sh
@@ -409,7 +409,7 @@ code=$?
 - ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
   ```{"sema1":n1,"sema2":n2,"sema3":n3}```
 
-### 1.7.4 semaphore decrement
+### 1.9.4 semaphore decrement
 
 #### 单个信号量的减一操作。
 
@@ -424,7 +424,7 @@ code=$?
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
-### 1.7.5 semaphore increment-n
+### 1.9.5 semaphore increment-n
 
 #### 单个信号量的加n操作。
 ```sh
@@ -438,7 +438,7 @@ code=$?
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
-### 1.7.6 semaphore group-dist
+### 1.9.6 semaphore group-dist
 
 - 作用范围：t_host表中group_id相同的host分为一组（为NULL的也是一组）
 
@@ -448,7 +448,7 @@ code=$?
 ```sh
 APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 ```
-### 1.7.7 semaphore global-dist
+### 1.9.7 semaphore global-dist
 
 - 作用范围：t_host表中group_id不为NULL的所有host
 
@@ -459,24 +459,14 @@ APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
 ```
 
-## 1.8 <span id="variable">variable子命令</span>
+## 1.10 <span id="variable">variable子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
 
 - 变量名命名：同信号量命名
 
-### 1.8.1 variable set
-
-```sh
-scalebox variable set --app-id ${app_id} ${var_name} ${str_value}
-APP_ID=${app_id} scalebox variable set ${var_name} ${str_value}
-
-scalebox variable set --job-id ${job_id} ${var_name} ${str_value}
-JOB_ID=${job_id} scalebox variable set ${var_name} ${str_value}
-```
-
-### 1.8.2 variable get
+### 1.10.1 variable get
 
 #### 获取单个变量当前值
 - 示例：
@@ -504,26 +494,41 @@ code=$?
 - ```val```为新的变量量值，返回结果为json map表示的信号量名值对。
   ```{"var1":"val1","var2":"val2","var3":"val3"}```
 
-## 1.9 <span id="channel">channel子命令</span>
+### 1.10.2 variable set
+
+```sh
+scalebox variable set --app-id ${app_id} ${var_name} ${str_value}
+APP_ID=${app_id} scalebox variable set ${var_name} ${str_value}
+
+scalebox variable set --job-id ${job_id} ${var_name} ${str_value}
+JOB_ID=${job_id} scalebox variable set ${var_name} ${str_value}
+```
+
+## 1.11 <span id="global">global子命令</span>
+
+全局变量
+
+### 1.11.1 global get
+
+```sh
+scalebox global get ${global_name}
+```
+
+### 1.11.2 global set
+
+```sh
+scalebox global set ${global_name} ${global_value}
+```
+
+
+## 1.12 <span id="channel">channel子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
 
 - 优先队列命名：同信号量命名
 
-### 1.9.1 channel push
-
-- priority为优先级，浮点数。数值小，优先级高。
-  
-```sh
-scalebox channel push --app-id ${app_id} ${pp_name} ${str_value} [${priority}]
-APP_ID=${app_id} scalebox channel push ${pp_name} ${str_value}
-
-scalebox channel push --job-id ${job_id} ${pp_name} ${str_value} [${priority}]
-JOB_ID=${job_id} scalebox channel push ${pp_name} ${str_value}
-```
-
-### 1.9.2 channel pull
+### 1.12.1 channel pull
 
 - 获取队列当前值
 - 示例：
@@ -538,8 +543,19 @@ code=$?
   - 2： channel not-found
 - ```val```为新的变量值
 
+### 1.12.2 channel push
 
-## 1.10 <span id="event">event子命令</span>
+- priority为优先级，浮点数。数值小，优先级高。
+  
+```sh
+scalebox channel push --app-id ${app_id} ${pp_name} ${str_value} [${priority}]
+APP_ID=${app_id} scalebox channel push ${pp_name} ${str_value}
+
+scalebox channel push --job-id ${job_id} ${pp_name} ${str_value} [${priority}]
+JOB_ID=${job_id} scalebox channel push ${pp_name} ${str_value}
+```
+
+## 1.13 <span id="event">event子命令</span>
 
 支持各类event的add操作。
 
@@ -561,7 +577,7 @@ scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${t
 则txt、json从文件中读取。
 
 
-### 1.10.1 event task-add
+### 1.13.1 event task-add
 
 通过环境变量TASK_ID或参数 --task-id  指定task-id。
 ```sh
@@ -570,40 +586,25 @@ scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} $
 
 ```scalebox event task-add ``` 可简写为 ``` scalebox event add  ```
 
-### 1.10.2 event slot-add
+### 1.13.2 event slot-add
 
 通过环境变量SLOT_ID或参数 --slot-id  指定slot-id。
 ```sh
 scalebox event slot-add --slot-id ${slot_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
-### 1.10.3 event misc-add
+### 1.13.3 event misc-add
 
 ```sh
 scalebox event misc-add ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
-## 1.11 <span id="global">global子命令</span>
 
-全局变量
-
-### 1.11.1 global get
-
-```sh
-scalebox global get ${global_name}
-```
-
-### 1.11.2 global set
-
-```sh
-scalebox global set ${global_name} ${global_value}
-```
-
-## 1.12 <span id="fs">fs子命令</span>
+## 1.14 <span id="fs">fs子命令</span>
 
 scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在同一个名字空间中。后期可提供mount支持、跨节点迁移等特性。
 
-### 1.12.1 fs ls
+### 1.14.1 fs ls
 
 - 主要参数：
   - include-removed-file
@@ -615,7 +616,7 @@ scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在
 scalebox fs ls ${path_expr}
 ```
 
-### 1.12.2 fs stat
+### 1.14.2 fs stat
 
 查看1个或多个文件的元数据。每个节点上的文件名跟全局文件名一致。
 

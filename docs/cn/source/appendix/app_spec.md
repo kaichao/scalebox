@@ -240,6 +240,7 @@ cluster定义的示例如下：
 | max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
 | dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir:n，n为GB数        |
 | dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir:n，n为GB数 |
+| bulk_message_size      | BULK_MESSAGE_SIZE      | 单次处理多个消息 |
 | output_text_size       | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_tranc_mode        | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
 | heart_beat_seconds     |                        | 以秒计的心跳间隔                                                     |
@@ -275,7 +276,7 @@ cluster定义的示例如下：
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3  |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
 | pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
-| bulk_message_size    | 针对运行时间小于10秒的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot批处理消息的最大数量，缺省值为1。 |
+| batch_message_size   | 针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot单批次读取的最大消息数，缺省值为1。 |
 | task_cache_expired_minutes | 设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间量需要大于```task_timeout_seconds```的值。 |
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | task_id_in_headers   | 返回的headers中，包含task_id值。|
