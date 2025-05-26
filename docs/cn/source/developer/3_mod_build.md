@@ -54,7 +54,7 @@ teardown: 清除环境
 集成程序：一般用bash写。将用户程序的结果写回。
 
 用户程序与集成程序间接口：
-- 输入消息文件：${WORK_DIR}/input-messages.txt，单次处理多个消息，可用于消息路由中批量消息的高效处理。设定环境变量BULK_MESSGES=n，缺省值为1.
+- 输入消息文件：${WORK_DIR}/input-messages.txt，单次处理多个消息，可用于消息路由中批量消息的高效处理。设定环境变量BULK_MESSAGE_SIZE=n，缺省值为1.
 - 运行结果文件：${WORK_DIR}/task-exec.json
 - 用户自定义时间戳：${WORK_DIR}/timestamps.txt
 - 运行附加属性文件：${WORK_DIR}/extra-attributes.txt，存放于t_task_exec表中extras的extra_attributes中。

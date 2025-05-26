@@ -39,8 +39,8 @@ graph LR
   cluster --> cluster-host-view[<a href="#cluster-host-view">host-view</a>]
 
   scalebox --> host[<a href="#host">host</a>]
-  host --> host-add-node[<a href="#host-add-node">add-node</a>]
   host --> host-check-status[<a href="#host-check-status">check-status</a>]
+  host --> host-add-node[<a href="#host-add-node">add-node</a>]
   host --> host-dist-image[<a href="#host-dist-image">dist-image</a>]
   host --> host-recover[<a href="#host-recover">recover</a>]
   host --> host-migrate[<a href="#host-migrate">migrate</a>]
@@ -61,7 +61,7 @@ graph LR
 
   scalebox --> job[<a href="#job">job</a>]
   job --> job-list[<a href="#job-list">list</a>]
-  job --> job-info[info]
+  job --> job-info[<a href="#job-info">info</a>]
 
   scalebox --> task[<a href="#task">task</a>]
   task --> task-add[<a href="#task-add">add</a>]
@@ -99,7 +99,7 @@ graph LR
   fs --> fs-ls[<a href="#fs-ls">ls</a>]
   fs --> fs-stat[<a href="#fs-stat">stat</a>]
 
-  scalebox --> version
+  scalebox --> status
 
   scalebox --> help
 
@@ -166,7 +166,7 @@ graph LR
 
 ### 1.5.2 slot add-group
 
-### 1.5.2 slot update
+### 1.5.3 slot update
 
 
 
@@ -190,8 +190,23 @@ scalebox app create
 scalebox app run
 ```
 
+- 主要参数
+  - cluster_name
+  - 业务模块
+    - 镜像名
+    - 代码目录
+    - 初始消息
+    - 节点列表的正则表达式(缺省仅头节点)
+  - 消息路由
+    - 镜像名
+    - 代码目录
+    - 初始消息
+  - 
 
-### 1.6.3 app list
+### 1.6.3 app message-router
+  
+
+### 1.6.4 app list
 
 列出所有应用的基本信息。
 
@@ -200,7 +215,7 @@ scalebox app run
 scalebox app list
 ```
 
-### 1.6.4 app set-finished
+### 1.6.5 app set-finished
 
 设置应用已完成，修改其状态为'FINISHED'
 
@@ -209,10 +224,8 @@ scalebox app list
 scalebox app set-finished --job-id ${job_id}
 ```
 
-### 1.6.5 app add-remote
+### 1.6.6 app add-remote
 
-### 1.6.6 app message-router
-  
 ## 1.7 <span id="job">job子命令</span>
 
 ### 1.7.1 job list
@@ -438,17 +451,7 @@ code=$?
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
-### 1.9.6 semaphore group-dist
-
-- 作用范围：t_host表中group_id相同的host分为一组（为NULL的也是一组）
-
-- 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
-
-示例：
-```sh
-APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
-```
-### 1.9.7 semaphore global-dist
+### 1.9.6 semaphore global-dist
 
 - 作用范围：t_host表中group_id不为NULL的所有host
 
@@ -457,6 +460,17 @@ APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 示例：
 ```sh
 APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
+```
+
+### 1.9.7 semaphore group-dist
+
+- 作用范围：t_host表中group_id相同的host分为一组（为NULL的也是一组）
+
+- 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
+
+示例：
+```sh
+APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 ```
 
 ## 1.10 <span id="variable">variable子命令</span>
@@ -629,3 +643,10 @@ scalebox fs ls ${path_expr}
 ```sh
 scalebox fs stat ${path_expr}
 ```
+
+## 1.15 <span id="status">status</span>
+
+- 系统整体状态：local集群头节点（actuator到local头节点有效）
+- cluster列表：不同状态的host数量
+- app列表：不同状态
+
