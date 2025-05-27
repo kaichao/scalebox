@@ -123,11 +123,18 @@ graph LR
 
 ## 1.4 <span id="host">host子命令</span>
 
+用于管理系统中的计算节点，包括分组、向流水线应用增添新的节点，替换、释放已有计算节点等功能。
+
 ### 1.4.1 host check-status
+
+检查一个指定节点的运行状态，输出其ip_addr、uname、port、parameters、group_id、reg_time、status、last_active、comments等信息
 
 ### 1.4.2 host add-node
 
-- 支持同时部署对应slot
+将一个或一组节点分配给一个新的应用。
+- 检索目标应用所有设为host-bound的任务
+- 调用```slot add-group```，在该节点上创建对应数量的slot
+- 对所有```host_vtasks_size```属性的job，创建对应的信号量
 
 ### 1.4.3 host dist-image
 
@@ -149,7 +156,7 @@ graph LR
 按计划替换即将到期的计算节点。
 
 - 在```*_vtasks_size```相关属性的job上，通过减少对应信号量，使得该node上task逐步退出；
-- 第一步完成后，调用```host replace```替换节点；
+- 第一步完成后，调用```host replace```替换节点；(需要定时运行？或者系统检测task全部完成后运行？)
 - 增加```*_vtasks_size```对应信号量，恢复新节点上的slot/task的运行；
 
 ### 1.4.6 host replace
@@ -158,13 +165,23 @@ graph LR
 
 - 原节点中除hostname外的属性（ip_addr、uname、port、parameters、reg_time、status、last_active、comments）替换为新节点对应属性
 - 修改新节点的node-agent的host属性，指向原节点的hostname；
-- 删除host表的新节点纪录（？）
+- 删除host表的新节点纪录
+
+### 1.4.7 host asign
+
+将已有节点重新分组。
+- 从一组或多组源节点中，筛选出满足条件的节点
+- 对满足条件的节点，根据输入取出若干个，修改其group_id为新group_id，同时将节点重命名为${group_id}-${group_idx}${hostidx}的格式。
+- 当满足条件的节点数量不足时，分配整组节点，返回分配节点的具体数量
+- 在源group_id包含新group_id，或指定了参数--resort时，对目标分组的所有节点重新排序，从0开始重设group_idx。否则，group_idx默认从现有最大值开始递增。
 
 ## 1.5 <span id="slot">slot子命令</span>
 
 ### 1.5.1 slot add
 
 ### 1.5.2 slot add-group
+
+根据给定的配置参数，在指定节点上为每个job创建对应数量的节点。
 
 ### 1.5.3 slot update
 
