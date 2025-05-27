@@ -45,6 +45,7 @@ graph LR
   host --> host-recover[<a href="#host-recover">recover</a>]
   host --> host-migrate[<a href="#host-migrate">migrate</a>]
   host --> host-replace[<a href="#host-replace">replace</a>]
+  host --> host-asign[<a href="#host-asign">asign</a>]
   
   scalebox --> slot[<a href="#slot">slot</a>]
   slot --> slot-add[<a href="#slot-add">add</a>]
@@ -132,13 +133,14 @@ graph LR
 ### 1.4.2 host add-node
 
 将一个或一组节点分配给一个新的应用。
-- 检索目标应用所有设为host-bound的任务
-- 调用```slot add-group```，在该节点上创建对应数量的slot
+- 检索目标应用所有非slot-on-head的任务
+- 如有需要，调用 ```host dist-image```，将所需镜像分发到指定节点
 - 对所有```host_vtasks_size```属性的job，创建对应的信号量
+- 调用```slot add-group```，在节点上创建对应数量的slot
 
 ### 1.4.3 host dist-image
 
-将docker镜像分发到指定节点
+将docker镜像分发到指定节点或节点组
 
 ### 1.4.4 host recover
 
@@ -170,10 +172,12 @@ graph LR
 ### 1.4.7 host asign
 
 将已有节点重新分组。
+需要参数：src_group_id, dst_group_id, num_groups, group_size
 - 从一组或多组源节点中，筛选出满足条件的节点
-- 对满足条件的节点，根据输入取出若干个，修改其group_id为新group_id，同时将节点重命名为${group_id}-${group_idx}${hostidx}的格式。
-- 当满足条件的节点数量不足时，分配整组节点，返回分配节点的具体数量
-- 在源group_id包含新group_id，或指定了参数--resort时，对目标分组的所有节点重新排序，从0开始重设group_idx。否则，group_idx默认从现有最大值开始递增。
+- 对满足条件的节点，根据输入取出若干个，修改其group_id为dst_group_id，同时将节点重命名为${dst_group_id}-${group_idx}${hostidx}的格式。
+- 当满足条件的节点数量不足时，仅分配整组节点，输出分配节点的具体数量
+- 在src_group_id包含dst_group_id，或指定了参数时，使用新节点填充dst_group_id中group_idx 0~num_groups，使每组均有group_size个节点。否则，group_idx从现有最大值开始递增，共尝试分配num_groups*group_size个节点。
+- group_size为-1时，将所有节点加入dst_group_id,并从0开始重设group_idx。
 
 ## 1.5 <span id="slot">slot子命令</span>
 
