@@ -1,0 +1,20 @@
+name: side-car.test-app
+cluster: local
+parameters:
+  initial_status: RUNNING
+
+jobs:
+  side_car_test:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head,reserved_on_exit
+      # 3 minutes
+      max_sleep_count: 50
+    parameters:
+      start_message: 0
+    environments:
+      - ACTION_RUN=${ACTION_RUN}
+      - ACTION_SETUP=${ACTION_SETUP}
+      - ACTION_TEARDOWN=${ACTION_TEARDOWN}
+      - ACTION_CHECK=${ACTION_CHECK}

@@ -34,7 +34,7 @@ all: reset import
 
 reset: down
 	@ docker volume rm -f server_pgdata
-	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose up -d
 	@ sleep 25
 
 import:
@@ -44,10 +44,10 @@ import:
 	done
 
 up:
-	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose up -d
 
 down: clean-agents
-	@ LOCAL_ADDR=$(LOCAL_ADDR) docker-compose down
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose down
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 restart: down up

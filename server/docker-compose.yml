@@ -11,7 +11,8 @@ services:
         max-size: "100m"
         max-file: "5"
     depends_on:
-     - database
+      database:
+        condition: service_healthy
     ports:
       - 50051:50051
       - 50061:8080
@@ -20,10 +21,19 @@ services:
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
       - TASK_POOL_BATCH_WRITE=yes
+    user: root
+    cap_add:
+      - SYS_NICE
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/scalebox/log/controld:/tmp/scalebox/log/controld
       - /tmp/scalebox/controld-profile:/profile
+    healthcheck:
+      test: ["CMD", "grpc_health_probe", "-addr=localhost:50051"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
 
   actuator:
     container_name: actuator
@@ -46,9 +56,11 @@ services:
       - TRACE_EXECUTOR=yes
     ports:
       - 50062:8080
+    user: root
     cap_add:
     #   update default route, for CentOS8
       - NET_ADMIN
+      - SYS_NICE
     volumes:
       - /etc/localtime:/etc/localtime:ro
       - /tmp/scalebox/log/actuator:/tmp/scalebox/log/actuator
@@ -56,7 +68,8 @@ services:
     # for k8s
       - ${HOME}/.kube:/root/.kube
     depends_on:
-      - controld
+      controld:
+        condition: service_healthy
 
   database:
     container_name: database
