@@ -190,7 +190,6 @@ graph LR
 ### 1.5.3 slot update
 
 
-
 ## 1.6 <span id="app">app子命令</span>
 
 ### 1.6.1 app create
@@ -204,25 +203,65 @@ scalebox app create
 
 ### 1.6.2 app run
 
-命令行创建单模块应用。（未来代替app create ?）
+以命令行方式，启动scalebox应用。（未来代替app create ?）
 
-用法：
+#### 单启动消息
 ```sh
-scalebox app run
+export ENV0=v0
+export ENV1=v1
+
+scalebox app run --param-name=param-value start-item
 ```
 
-- 主要参数
-  - cluster_name
-  - 业务模块
-    - 镜像名
-    - 代码目录
-    - 初始消息
-    - 节点列表的正则表达式(缺省仅头节点)
-  - 消息路由
-    - 镜像名
-    - 代码目录
-    - 初始消息
-  - 
+参数表
+| 参数名         |    参数说明     |  缺省值                                                       |
+| ------------- | -------------- | ------------------------------------------------------------ |
+| cluster       | cluster名      | local                                                        |
+| image-name    | 主模块镜像名     | hub.cstcloud.cn/scalebox/agent:latest                        |
+| code-path     | 主模块代码目录   | 若当前目录下有./code/，则为./code;否则为空                        |
+| slot-regex    | 主模块的slot配置 | 缺省为：h0，在头节点上1个slot                                    |
+| mr-image-name | 路由模块镜像名   | 若mr_code_path已设置，则为hub.cstcloud.cn/scalebox/agent:latest |
+| mr-code-path  | 路由模块代码目录 | 若当前目录下有./mr-code/，则为./mr-code;否则为空                   |
+
+- 启动消息start-message
+  - 对于仅有主模块，启动消息发给主模块
+  - 若有消息路由模块，则启动消息发给消息路由
+
+- 启动项start-item
+若非json串，则为启动消息start-message；否则start-item中包括前述参数及start-message。json格式定义如下：
+```json
+{
+  "cluster": "my-cluster",
+  "image_name": "my-image",
+  "code_path": "/path/to/code",
+  "slot_regex": "node[0-9]+:2",
+  "mr_image_name": "my-mr-image",
+  "mr_code_path": "/path/to/mr-code",
+  "start_message": "starting job"
+}
+```
+实际应用中，去除json字符串中的无空格、换行等空字符
+
+#### 基于管道的多启动消息
+
+针对多启动消息，可通过管道将多消息按行传递给启动命令。每行的消息体不按前述json格式解析。
+```sh
+echo "start-item\nstart-message1" | scalebox app run --param-name=param-value
+```
+
+示例：
+```sh
+# 设定源端、目标端URL
+export SOURCE_URL=/data2/mydata/mwa/tar
+export TARGET_URL=cstu0036@60.245.128.14:65010/work2/cstu0036/tmp
+
+# 单文件传输
+scalebox app run --image-name=hub.cstcloud.cn/scalebox/file-copy:latest 1267459328/1267464090_1267464129_ch127.dat.tar.zst
+
+# 多文件传输
+cd /data2/mydata/mwa/tar
+find 1267459328 -type f | scalebox app run --image-name=hub.cstcloud.cn/scalebox/file-copy:latest --slot-regex=h0:2
+```
 
 ### 1.6.3 app message-router
   
@@ -462,7 +501,7 @@ code=$?
 
 #### 单个信号量的加n操作。
 ```sh
-val=$(scalebox semaphore increment-n ${sema_name}) ${delta_value}
+val=$(scalebox semaphore increment-n ${sema_name} ${delta_value})
 code=$?
 ```
 

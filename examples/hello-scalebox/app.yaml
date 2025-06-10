@@ -8,7 +8,7 @@ jobs:
     base_image: ${AGENT}
     arguments:
       code_path: ${PWD}/code
-      slot_options: always_running,reserved_on_exit
+      slot_options: reserved_on_exit
     parameters:
       slot_on_head: yes
       start_message: scalebox
