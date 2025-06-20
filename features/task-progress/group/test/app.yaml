@@ -12,7 +12,7 @@ jobs:
     parameters:
       task_dist_mode: HOST-BOUND
       task_progress_group_diff: 2
-    hosts: 
+    slots: 
       - n-0[01]
     sink_jobs:
       - next

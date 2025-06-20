@@ -10,6 +10,6 @@ jobs:
       start_message: 0
     arguments:
       task_timeout_seconds:	10
-    schedule_mode: HEAD
+      slot_options: slot_on_head
     environments:
       - SLEEP_SECONDS=20

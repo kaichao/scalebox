@@ -33,5 +33,5 @@ jobs:
       - TARGET_URL=${TARGET_URL}
       - TARGET_MODE=${TARGET_MODE}
       - KEEP_SOURCE_FILE=${KEEP_SOURCE_FILE}
-    hosts:
+    slots:
       - h0:1

@@ -220,6 +220,7 @@ cluster定义的示例如下：
 | initial_status   | 'RUNNING'/'PAUSED'            |
 | messsage_router  |                               |
 | is_cluster_admin |                               |
+| slot_config      | map形式的多jobslot配置，用于新增节点的slot自动创建。例：'{"job0":n0,"job1",n1}' |
 
 ### 2.8.2 job-arguments参数表
 
@@ -237,7 +238,7 @@ cluster定义的示例如下：
 |                        | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                   |
 | task_timeout_seconds   | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124 |
 | sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒             |
-| max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为200（20分钟）                              |
+| max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
 | dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir:n，n为GB数        |
 | dir_free_gb            | DIR_FREE_GB            | 标准流控参数，用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir:n，n为GB数 |
 | bulk_message_size      | BULK_MESSAGE_SIZE      | 单次处理多个消息 |
@@ -272,6 +273,7 @@ cluster定义的示例如下：
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                                 |
 | retry_rules          | 基于退出码的重试规则<br>```"['exit_code_1:num_retries',...,'exit_code_n:num_retries']"```。num_retries缺省值为1，退出码通配符为'*' |
 | enable_default_retries | 设置常见的retry_rules，包括timeout(124)、...等                              |
+| slot_recoverable     | 'yes'，支持将出错后已退出的slot从'ERROR'设置为'READY'，以支持slot级重试                |
 | slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                              |
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3  |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
@@ -281,6 +283,7 @@ cluster定义的示例如下：
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | task_id_in_headers   | 返回的headers中，包含task_id值。|
 | app_id_in_headers   | 返回的headers中，包含app_id值。 |
+| group_slot_nodes   | 用于分组级slot的节点列表（逗号分隔） |
 | task_progress_global_diff | 标准流控参数，用于当前cluster中group_id非空的host间运行同步，参照值为运行成功的task数量，该参数指定与最慢host间差值，其值为整数。在对应task生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。 |
 | task_progress_group_diff | 标准流控参数，用于同一group_id下host间运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
 | global_vtasks_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtasks_size:${mod_name}```，其初值为参数值。ß |
@@ -311,7 +314,8 @@ cluster定义的示例如下：
 
 ### 2.8.6 slot-parameters参数表
 
-| 参数名称         | 含义                           |
-| --------------- | ----------------------------- |
-| reg_time        | 注册时间                       |
-| last_access     | 最后访问时间                    |
+| 参数名称       | 含义                       |
+| ------------- | ------------------------- |
+| reg_time      | 注册时间                   |
+| last_access   | 最后访问时间                |
+| slot_group    | 该slot为分组级slot          |

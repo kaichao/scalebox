@@ -43,7 +43,7 @@ func GetDB() *sql.DB {
 			// in agent, set grpc server as default server
 			grpcServer := os.Getenv("GRPC_SERVER")
 			pgHost = strings.Split(grpcServer, ":")[0]
-			fmt.Printf("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
+			fmt.Fprintf(os.Stderr, "[INFO] %s Set GRPC_SERVER %s as default db server.\n",
 				time.Now().Format("15:04:05.000"), grpcServer)
 		}
 		if pgHost == "" {
@@ -52,8 +52,6 @@ func GetDB() *sql.DB {
 		if pgHost == "" {
 			localIP := common.GetLocalIP()
 			pgHost = localIP
-			// fmt.Printf("[INFO] %s Set localIP %s as default db server.\n",
-			// 	time.Now().Format("15:04:05.000"), localIP)
 		}
 		// ${PGHOST}:${PGPORT}
 		ss := strings.Split(pgHost, ":")

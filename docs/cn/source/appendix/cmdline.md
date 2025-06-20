@@ -205,6 +205,10 @@ scalebox app create
 
 以命令行方式，启动scalebox应用。（未来代替app create ?）
 
+- 环境变量文件：```./scalebox.env```
+- 主模块代码目录：```./code/```
+- 路由模块代码目录：```./mr-code/``` 
+
 #### 单启动消息
 ```sh
 export ENV0=v0
@@ -214,18 +218,19 @@ scalebox app run --param-name=param-value start-item
 ```
 
 参数表
-| 参数名         |    参数说明     |  缺省值                                                       |
-| ------------- | -------------- | ------------------------------------------------------------ |
-| cluster       | cluster名      | local                                                        |
-| image-name    | 主模块镜像名     | hub.cstcloud.cn/scalebox/agent:latest                        |
-| code-path     | 主模块代码目录   | 若当前目录下有./code/，则为./code;否则为空                        |
-| slot-regex    | 主模块的slot配置 | 缺省为：h0，在头节点上1个slot                                    |
-| mr-image-name | 路由模块镜像名   | 若mr_code_path已设置，则为hub.cstcloud.cn/scalebox/agent:latest |
-| mr-code-path  | 路由模块代码目录 | 若当前目录下有./mr-code/，则为./mr-code;否则为空                   |
+| 参数名         |    参数说明     |  对应环境变量    | 缺省值                                       |
+| ------------- | -------------- | -------------- | ------------------------------------------- |
+| cluster       | cluster名      | _CLUSTER       | local                                       |
+| image-name    | 主模块镜像名     | _IMAGE_NAME    | hub.cstcloud.cn/scalebox/agent:latest       |
+| code-path     | 主模块代码目录   | _CODE_PATH     | 若当前目录下有./code/，则为./code;否则为空       |
+| slot-regex    | 主模块的slot配置 | _SLOT_REGEX    | 缺省为：h0，在头节点上1个slot                  |
+| mr-image-name | 路由模块镜像名   | _MR_IMAGE_NAME | 若mr_code_path已设置，则设置为agent            |
+| mr-code-path  | 路由模块代码目录 | _MR_CODE_PATH  | 若当前目录下有./mr-code/，则为./mr-code;否则为空 |
+| app-file/f  | 应用定义文件     | _APP_FILE     | 缺省为空                                      |
 
 - 启动消息start-message
-  - 对于仅有主模块，启动消息发给主模块
-  - 若有消息路由模块，则启动消息发给消息路由
+  - 若有消息路由，则启动消息发给消息路由
+  - 若无消息路由，则启动消息发给首模块
 
 - 启动项start-item
 若非json串，则为启动消息start-message；否则start-item中包括前述参数及start-message。json格式定义如下：
@@ -253,7 +258,7 @@ echo "start-item\nstart-message1" | scalebox app run --param-name=param-value
 ```sh
 # 设定源端、目标端URL
 export SOURCE_URL=/data2/mydata/mwa/tar
-export TARGET_URL=cstu0036@60.245.128.14:65010/work2/cstu0036/tmp
+export TARGET_URL=cstu0036@10.100.1.104:65010/work2/cstu0036/mydata/mwa/tar
 
 # 单文件传输
 scalebox app run --image-name=hub.cstcloud.cn/scalebox/file-copy:latest 1267459328/1267464090_1267464129_ch127.dat.tar.zst
@@ -597,12 +602,21 @@ scalebox global set ${global_name} ${global_value}
 
 ## 1.12 <span id="channel">channel子命令</span>
 
+channel用于跨应用间的通信，是一个有优先级队列。
+
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
 
 - 优先队列命名：同信号量命名
 
-### 1.12.1 channel pull
+### 1.12.1 channel create
+
+- head-app : app-id
+- tail-app
+
+若不指定，则为当前app
+
+### 1.12.2 channel pull
 
 - 获取队列当前值
 - 示例：
@@ -617,7 +631,7 @@ code=$?
   - 2： channel not-found
 - ```val```为新的变量值
 
-### 1.12.2 channel push
+### 1.12.3 channel push
 
 - priority为优先级，浮点数。数值小，优先级高。
   

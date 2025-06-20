@@ -23,7 +23,7 @@ jobs:
   calc:
     label: calc primes
     base_image: app-primes/calc
-    hosts:
+    slots:
       - ${CALC_HOST}:${NUM_PARALLEL}
     parameters:
       task_dist_mode: ${TASK_DIST_MODE}
