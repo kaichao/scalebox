@@ -40,14 +40,14 @@ func CreateFileSemaphores(fileName string, appID int, batchSize int) error {
 	if len(lines) == 0 {
 		logrus.Warnf("Null file, filename:%s\n", fileName)
 	}
-	var semas []Sema
+	var semas []*Sema
 	re := regexp.MustCompile(`"([^"]+)":(\d+)`)
 	for _, line := range lines {
 		if matches := re.FindStringSubmatch(line); len(matches) == 3 {
 			key := matches[1] // 提取到的 key
 			var value int
 			fmt.Sscanf(matches[2], "%d", &value) // 将 value 转为整数
-			semas = append(semas, Sema{name: key, value: value})
+			semas = append(semas, &Sema{Name: key, Value: value})
 		} else {
 			logrus.Errorf("Not matched semaphore :%s,\n", line)
 		}
@@ -65,7 +65,7 @@ func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
 		return err
 	}
 
-	var ordered []Sema
+	var ordered []*Sema
 	decoder := json.NewDecoder(bytes.NewReader(jsonData.RawData))
 	decoder.Token()
 	for decoder.More() {
@@ -75,19 +75,19 @@ func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
 			logrus.Errorf("Error decoding semaphore value, err-info:%v, json-text:%s\n", err, jsonText)
 			return err
 		}
-		ordered = append(ordered, Sema{name: k.(string), value: v})
+		ordered = append(ordered, &Sema{Name: k.(string), Value: v})
 	}
 	return CreateSemaphores(ordered, appID, batchSize)
 }
 
 // Sema ...
 type Sema struct {
-	name  string
-	value int
+	Name  string
+	Value int
 }
 
 // CreateSemaphores ...
-func CreateSemaphores(ordered []Sema, appID int, batchSize int) error {
+func CreateSemaphores(ordered []*Sema, appID int, batchSize int) error {
 	// start transaction
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
@@ -116,7 +116,7 @@ func CreateSemaphores(ordered []Sema, appID int, batchSize int) error {
 		}
 
 		for _, v := range ordered[i:end] {
-			if _, err := stmt.Exec(v.name, v.value, appID); err != nil {
+			if _, err := stmt.Exec(v.Name, v.Value, appID); err != nil {
 				logrus.Errorf("err:%v\n", err)
 				return err
 			}

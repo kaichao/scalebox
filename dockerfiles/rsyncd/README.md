@@ -1,6 +1,6 @@
 # rsyncd
 
-rsync module name is '/local'
+rsync module name is '/local_data_root'
 ## rsync mode
 ```sh
 make run-rsync-mode

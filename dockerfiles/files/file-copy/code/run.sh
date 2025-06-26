@@ -85,7 +85,10 @@ case $source_mode in
         echo "source_dir:$source_dir" >> ${WORK_DIR}/custom-out.txt
 
         target_ssh_url=$(to_ssh_url $target_url)
-        cmd="rsync -Rut ${rsync_args} -e \"ssh ${target_ssh_option}\" $1 $target_ssh_url/ "
+        target_dir=$(dirname ${target_ssh_url#*:}/$1)
+        echo target_dir:$target_dir
+        cmd="rsync -Rut ${rsync_args} -e \"ssh ${target_ssh_option}\" --rsync-path=\"mkdir -p ${target_dir} && rsync\" $1 $target_ssh_url/"
+
         echo "cmd=$cmd" >> ${WORK_DIR}/custom-out.txt
         cd $source_dir && eval $cmd
         code=$?
@@ -177,7 +180,7 @@ case $source_mode in
         if [[ $target_url == /data/* ]]; then
             dest_dir=$(dirname ${target_url}/$1)
         else
-            dest_dir=$(dirname "/local"${target_url}/$1)
+            dest_dir=$(dirname "/local_data_root"${target_url}/$1)
         fi
         echo "dest_dir:$dest_dir" >> ${WORK_DIR}/custom-out.txt
         mkdir -p ${dest_dir}
@@ -208,7 +211,7 @@ case $source_mode in
 "RSYNC")
     case $target_mode in
     "LOCAL") 
-        dest_dir=$(dirname "/local"${target_dir}/$1)
+        dest_dir=$(dirname "/local_data_root"${target_dir}/$1)
         mkdir -p ${dest_dir}
         # full_file_name=${dest_dir}/$(basename $1)
         rsync_url=$(to_rsync_url "$source_url")

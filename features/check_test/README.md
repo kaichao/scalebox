@@ -32,6 +32,7 @@ DIR_LIMIT_GB=/data/ssd/tmp~22 DIR_FREE_GB=/data/ssd/tmp~1000 ACTION_CHECK=/app/b
 目录所在分区需至少要保留1000GB的空余空间
 
 ## user-defined flow control
+
 ```sh
 ACTION_CHECK=/app/bin/mycheck.sh scalebox app create
 ```

@@ -220,7 +220,7 @@ cluster定义的示例如下：
 | initial_status   | 'RUNNING'/'PAUSED'            |
 | messsage_router  |                               |
 | is_cluster_admin |                               |
-| slot_config      | map形式的多jobslot配置，用于新增节点的slot自动创建。例：'{"job0":n0,"job1",n1}' |
+| slot_group      | map形式的多节点的多job-slot配置，用于新增节点的slot自动创建。例：'{"job0":n0,"job1",n1}' |
 
 ### 2.8.2 job-arguments参数表
 
