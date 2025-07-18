@@ -283,12 +283,12 @@ cluster定义的示例如下：
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | task_id_in_headers   | 返回的headers中，包含task_id值。|
 | app_id_in_headers   | 返回的headers中，包含app_id值。 |
-| group_slot_nodes   | 用于分组级slot的节点列表（逗号分隔） |
-| task_progress_global_diff | 标准流控参数，用于当前cluster中group_id非空的host间运行同步，参照值为运行成功的task数量，该参数指定与最慢host间差值，其值为整数。在对应task生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。 |
+| group_slot_nodes   | 用于分组级slot的节点列表（逗号分隔）|
+| task_progress_global_diff | 标准流控参数，用于当前cluster中group_id非空的host间运行同步，参照值为运行成功的task数量，该参数指定与最慢host间差值，其值为整数。在对应task生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。|
 | task_progress_group_diff | 标准流控参数，用于同一group_id下host间运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
-| global_vtasks_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtasks_size:${mod_name}```，其初值为参数值。ß |
-| group_vtasks_size    | 标准流控参数，其值为 ```${group_expr}:${int_value}```。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group_vtasks_size:${mod_name}:${groupname}```，其初值为参数值。 |
-| host_vtasks_size     | 标准流控参数，其值为整数。用于按节点（HOST-BOUND）的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host_vtasks_size:${mod_name}:${hostname}```，其初值为参数值。   |
+| global_vtask_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtask_size:${mod_name}```，其初值为参数值。|
+| group_vtask_size    | 标准流控参数，其值为 ```${group_expr}:${int_value}```。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group_vtask_size:${mod_name}:${groupname}```，其初值为参数值。|
+| host_vtask_size     | 标准流控参数，其值为整数。用于按节点（HOST-BOUND）的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host_vtask_size:${mod_name}:${hostname}```，其初值为参数值。   |
 
 
 ### 2.8.4 cluster-parameters参数表

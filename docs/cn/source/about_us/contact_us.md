@@ -4,4 +4,4 @@
 
 ## 邮件联系方式
 
-help@scalebox.dev
+help@scalebox.net

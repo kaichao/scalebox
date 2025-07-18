@@ -1,6 +1,6 @@
 module github.com/kaichao/scalebox
 
-go 1.24.1
+go 1.24.5
 
 require (
 	github.com/jackc/pgx/v5 v5.7.4

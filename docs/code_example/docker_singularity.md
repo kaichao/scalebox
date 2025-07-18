@@ -1,0 +1,9 @@
+# docker镜像转sif
+
+| 方法                           | 命令示例                                                                 | 依赖条件              | 优点                                                         | 缺点                                                         | 推荐度 |
+|--------------------------------|--------------------------------------------------------------------------|------------------------|--------------------------------------------------------------|--------------------------------------------------------------|--------|
+| docker-daemon://               | `singularity build output.sif docker-daemon://debian:12-slim`           | 本机 Docker 引擎 + 兼容 API | 无需下载，直接用本地 Docker 镜像                             | Docker 和 Singularity API 版本需兼容，常出错                | ❌     |
+| docker://                      | `singularity build output.sif docker://debian:12-slim`                  | 网络可访问             | 简洁，自动拉取 Docker Hub 镜像，常用于公共镜像              | 每次构建都需要重新拉取，依赖网络                             | ✅     |
+| docker-archive://              | `docker save debian:12-slim -o debian.tar`<br>`singularity build output.sif docker-archive://debian.tar` | 无特殊依赖（不访问 API） | 最稳定，避免 API 兼容性问题，可离线使用                     | 需中间步骤导出 tar 文件                                       | ✅✅   |
+| OCI-archive://                 | `skopeo copy docker://debian:12-slim oci-archive:debian_oci.tar`<br>`singularity build output.sif oci-archive://debian_oci.tar` | `skopeo` 工具           | 支持更多镜像源和认证，适合自动化或私有仓库                  | 多依赖一个工具，稍复杂                                        | ✅     |
+| --sandbox 中转构建            | `singularity build --sandbox tmpdir docker://debian:12-slim`<br>`singularity build output.sif tmpdir` | 网络访问或本地镜像     | 可中途修改容器内容，调试方便                                 | 两步构建，临时目录需清理                                     | ✅     |

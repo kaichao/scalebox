@@ -76,8 +76,15 @@ graph LR
   semaphore --> increment[<a href="#semaphore-increment">increment</a>]
   semaphore --> decrement[<a href="#semaphore-decrement">decrement</a>]
   semaphore --> increment-n[<a href="#semaphore-increment-n">increment-n</a>]
-  semaphore --> semaphore-global-dist[<a href="#semaphore-global-dist">global-dist</a>]
-  semaphore --> semaphore-group-dist[<a href="#semaphore-group-dist">group-dist</a>]
+  semaphore --> semaphore-group[<a href="#semaphore-group">group</a>]
+
+  scalebox --> sema-group[<a href="#sema-group">sema-group</a>]
+  sema-group --> sema-group-min[<a href="#sema-group-min">min</a>]
+  sema-group --> sema-group-max[<a href="#sema-group-max">max</a>]
+  sema-group --> sema-group-increment[<a href="#sema-group-increment">increment</a>]
+  sema-group --> sema-group-decrement[<a href="#sema-group-decrement">decrement</a>]
+  sema-group --> sema-group-diffmin[<a href="#sema-group-diffmin">diffmin</a>]
+  sema-group --> sema-group-diffmax[<a href="#sema-group-diffmax">diffmax</a>]
 
   scalebox --> variable[<a href="#variable">variable</a>]
   variable --> variable-get[<a href="#variable-get">get</a>]
@@ -135,7 +142,7 @@ graph LR
 将一个或一组节点分配给一个新的应用。
 - 检索目标应用所有非slot-on-head的任务
 - 如有需要，调用 ```host dist-image```，将所需镜像分发到指定节点
-- 对所有```host_vtasks_size```属性的job，创建对应的信号量
+- 对所有```host_vtask_size```属性的job，创建对应的信号量
 - 调用```slot add-group```，在节点上创建对应数量的slot
 
 ### 1.4.3 host dist-image
@@ -157,9 +164,9 @@ graph LR
 
 按计划替换即将到期的计算节点。
 
-- 在```*_vtasks_size```相关属性的job上，通过减少对应信号量，使得该node上task逐步退出；
+- 在```*_vtask_size```相关属性的job上，通过减少对应信号量，使得该node上task逐步退出；
 - 第一步完成后，调用```host replace```替换节点；(需要定时运行？或者系统检测task全部完成后运行？)
-- 增加```*_vtasks_size```对应信号量，恢复新节点上的slot/task的运行；
+- 增加```*_vtask_size```对应信号量，恢复新节点上的slot/task的运行；
 
 ### 1.4.6 host replace
 
@@ -226,8 +233,10 @@ scalebox app run --param-name=param-value start-item
 | slot-regex    | 主模块的slot配置 | _SLOT_REGEX    | 缺省为：h0，在头节点上1个slot                  |
 | mr-image-name | 路由模块镜像名   | _MR_IMAGE_NAME | 若mr_code_path已设置，则设置为agent            |
 | mr-code-path  | 路由模块代码目录 | _MR_CODE_PATH  | 若当前目录下有./mr-code/，则为./mr-code;否则为空 |
-| app-file/f  | 应用定义文件     | _APP_FILE     | 缺省为空                                      |
+| app-file/f    | 应用定义文件     |                | 若当前目录下有app.yaml，则为app.yaml，否则缺省为空 |
+| env-file/e    | 环境变量文件     |                | 若当前目录下有app.yaml，则为app.yaml，否则缺省为空 |
 
+- 若有应用定义文件，则以此创建应用
 - 启动消息start-message
   - 若有消息路由，则启动消息发给消息路由
   - 若无消息路由，则启动消息发给首模块
@@ -516,7 +525,10 @@ code=$?
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
-### 1.9.6 semaphore global-dist
+
+### 1.9.7 semaphore global-dist
+
+(改为global-offset?)
 
 - 作用范围：t_host表中group_id不为NULL的所有host
 
@@ -527,7 +539,9 @@ code=$?
 APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
 ```
 
-### 1.9.7 semaphore group-dist
+### 1.9.8 semaphore group-dist
+
+(改为group-offset?)
 
 - 作用范围：t_host表中group_id相同的host分为一组（为NULL的也是一组）
 
@@ -538,14 +552,60 @@ APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
 APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 ```
 
-## 1.10 <span id="variable">variable子命令</span>
+## 1.10 <span id="sema-group">sema-group子命令</span>
+
+- 多个信号量组成信号量组，用信号量名前缀、正则表达式标识信号量组
+
+
+#### 1.10.1 sema-group max
+- 信号量组中最大值
+```sh
+val=$(scalebox sema-group max ${sema_expr})
+code=$?
+```
+
+#### 1.10.2 sema-group min
+- 信号量组中最小值
+```sh
+val=$(scalebox sema-group min ${sema_expr})
+code=$?
+```
+- sema_expr为信号量名的正则表达式或前缀
+- 返回值val为整数字符串
+
+#### 1.10.3 sema-group increment
+- 选取信号量组中最小值，并加一
+
+#### 1.10.4 sema-group decrement
+- 选取信号量组中最大值，并减一
+
+#### 1.10.5 sema-group diffmax
+- 信号量组最大值与信号量当前值的差值
+```sh
+val=$(scalebox sema-group diffmax ${sema_expr})
+code=$?
+```
+- sema_expr为含分组定义的信号量，示例为```(group-prefix):sema-suffix```
+- 返回值val为整数字符串
+
+#### 1.10.6 sema-group diffmin
+- 信号量当前值与信号量组最小值的差值
+```sh
+val=$(scalebox sema-group diffmin ${sema_expr})
+code=$?
+```
+- sema_expr为含分组定义的信号量，示例为```(group-part:)sema-suffix```
+- 返回值val为整数字符串
+
+
+## 1.11 <span id="variable">variable子命令</span>
 
 - 公共参数：job-id，或app-id
 - 环境变量：JOB_ID，或APP_ID
 
 - 变量名命名：同信号量命名
 
-### 1.10.1 variable get
+### 1.11.1 variable get
 
 #### 获取单个变量当前值
 - 示例：
@@ -573,7 +633,7 @@ code=$?
 - ```val```为新的变量量值，返回结果为json map表示的信号量名值对。
   ```{"var1":"val1","var2":"val2","var3":"val3"}```
 
-### 1.10.2 variable set
+### 1.11.2 variable set
 
 ```sh
 scalebox variable set --app-id ${app_id} ${var_name} ${str_value}
@@ -583,24 +643,24 @@ scalebox variable set --job-id ${job_id} ${var_name} ${str_value}
 JOB_ID=${job_id} scalebox variable set ${var_name} ${str_value}
 ```
 
-## 1.11 <span id="global">global子命令</span>
+## 1.12 <span id="global">global子命令</span>
 
 全局变量
 
-### 1.11.1 global get
+### 1.12.1 global get
 
 ```sh
 scalebox global get ${global_name}
 ```
 
-### 1.11.2 global set
+### 1.12.2 global set
 
 ```sh
 scalebox global set ${global_name} ${global_value}
 ```
 
 
-## 1.12 <span id="channel">channel子命令</span>
+## 1.13 <span id="channel">channel子命令</span>
 
 channel用于跨应用间的通信，是一个有优先级队列。
 
@@ -609,14 +669,14 @@ channel用于跨应用间的通信，是一个有优先级队列。
 
 - 优先队列命名：同信号量命名
 
-### 1.12.1 channel create
+### 1.13.1 channel create
 
 - head-app : app-id
 - tail-app
 
 若不指定，则为当前app
 
-### 1.12.2 channel pull
+### 1.13.2 channel pull
 
 - 获取队列当前值
 - 示例：
@@ -631,7 +691,7 @@ code=$?
   - 2： channel not-found
 - ```val```为新的变量值
 
-### 1.12.3 channel push
+### 1.13.3 channel push
 
 - priority为优先级，浮点数。数值小，优先级高。
   
@@ -641,50 +701,6 @@ APP_ID=${app_id} scalebox channel push ${pp_name} ${str_value}
 
 scalebox channel push --job-id ${job_id} ${pp_name} ${str_value} [${priority}]
 JOB_ID=${job_id} scalebox channel push ${pp_name} ${str_value}
-```
-
-## 1.13 <span id="event">event子命令</span>
-
-支持各类event的add操作。
-
-- 基本命令： 
-
-- xxxx为："task"/"slot"/"misc"
-
-```sh
-scalebox event xxxx-add "${tag_name}" "${level_name}" ["${code}" ["${txt}" ["${json}"]]]
-```
-- 若code为空，则取值0
-- 若txt为空，则取值""
-- 若json为空，则取值"{}"
-
-```sh
-scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${tag_name}" "${level_name}" ["${code}"]
-```
-
-则txt、json从文件中读取。
-
-
-### 1.13.1 event task-add
-
-通过环境变量TASK_ID或参数 --task-id  指定task-id。
-```sh
-scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
-```
-
-```scalebox event task-add ``` 可简写为 ``` scalebox event add  ```
-
-### 1.13.2 event slot-add
-
-通过环境变量SLOT_ID或参数 --slot-id  指定slot-id。
-```sh
-scalebox event slot-add --slot-id ${slot_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
-```
-
-### 1.13.3 event misc-add
-
-```sh
-scalebox event misc-add ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
 
@@ -724,3 +740,46 @@ scalebox fs stat ${path_expr}
 - cluster列表：不同状态的host数量
 - app列表：不同状态
 
+## 1.16 <span id="event">event子命令</span>
+
+支持各类event的add操作。
+
+- 基本命令： 
+
+- xxxx为："task"/"slot"/"misc"
+
+```sh
+scalebox event xxxx-add "${tag_name}" "${level_name}" ["${code}" ["${txt}" ["${json}"]]]
+```
+- 若code为空，则取值0
+- 若txt为空，则取值""
+- 若json为空，则取值"{}"
+
+```sh
+scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${tag_name}" "${level_name}" ["${code}"]
+```
+
+则txt、json从文件中读取。
+
+
+### 1.16.1 event task-add
+
+通过环境变量TASK_ID或参数 --task-id  指定task-id。
+```sh
+scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
+```
+
+```scalebox event task-add ``` 可简写为 ``` scalebox event add  ```
+
+### 1.16.2 event slot-add
+
+通过环境变量SLOT_ID或参数 --slot-id  指定slot-id。
+```sh
+scalebox event slot-add --slot-id ${slot_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
+```
+
+### 1.16.3 event misc-add
+
+```sh
+scalebox event misc-add ${tag_name} ${level_name} ${code} ${txt} ${json}
+```
