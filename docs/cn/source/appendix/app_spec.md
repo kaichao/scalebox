@@ -120,9 +120,7 @@ datasets:
       ...
     paths:
       ...
-    hosts:
-      ...
-    resource_claim:
+    slots:
       ...
     sink_jobs:
       ...
@@ -131,7 +129,6 @@ datasets:
     comment: This is new algorithm module.
 
 ```
-
 
 关于Job的字段说明如下：
 - *label*: 应用界面中显示的Job
@@ -150,10 +147,19 @@ datasets:
         ...
 - *paths*: 物理路径，通过volume映射
         ...
-- *hosts*: 模块的slot定义
+- *slots*: 模块的slot定义
         ...
-- *resource_claim*: 模块的资源需求，用于动态调度
-        ...
+```yaml
+  slots:
+    - ${nodes}[:n]
+    - ${nodes}:${n}:${group_prefix}
+```
+第二行，用于host-bound场景下全局/分组slot定义。
+- nodes为slot所在节点
+- n为slot数量
+- 分组前缀的正则表达式
+分组slot的parameters中，设定group_prefix为组前缀
+
 - *sink_jobs*: 标识Job间的物理关联，在跨集群应用中，用于标识跨集群的Job间的关联；
         ...
 - *sink_vjobs*（串数组）: 用于Job间的逻辑关系。
@@ -174,7 +180,6 @@ cluster定义的示例如下：
       num_of_executors: Inline cluster only
       channel_size: channel size fo executor, Inline cluster only
       grpc_server: 192.168.3.123:50051
-      host_alloc_config:
     total_resources:
       num_cores: cpu cores
       total_mem_gb:
@@ -192,8 +197,6 @@ cluster定义的示例如下：
   - *local_ip_index*: 用于提取本机IP地址的索引号（hostname -I）
   - *grpc_server*:	?有一个相同名称的外部字段。
   - *grpc_remote_server*:
-  - *host_alloc_config*:	动态集群的配置，示例：{"g00": 1, "g01": 1, "other": 2}
-
 
 ## 2.6 数据集（Dataset）定义
 
@@ -235,8 +238,9 @@ cluster定义的示例如下：
 |                        | FROM_JOB               | job-name                                                         |
 |                        | FROM_IP                | from-ip                                                          |
 |                        | SINK_JOB               | 缺省sink_job的名称                                                 |
-|                        | IS_SINGULARITY         | 容器引擎为singularity或apptainer                                   |
-| task_timeout_seconds   | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124 |
+|                        | IS_SINGULARITY         | 容器引擎为singularity或apptainer      |
+| task_timeout_seconds   | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124(拟修改为task_max_seconds) |
+| task_min_seconds       | TASK_MIN_SECONDS       | 每个task运行的最小秒数，若运行时间连续多次低于此值，则判定slot为GREEDY异常，并退出 |
 | sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒             |
 | max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
 | dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，用于指定目录以GB计的最大空间。格式为：/data-dir:n，n为GB数        |
@@ -272,10 +276,10 @@ cluster定义的示例如下：
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                                             |
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                                 |
 | retry_rules          | 基于退出码的重试规则<br>```"['exit_code_1:num_retries',...,'exit_code_n:num_retries']"```。num_retries缺省值为1，退出码通配符为'*' |
-| enable_default_retries | 设置常见的retry_rules，包括timeout(124)、...等                              |
-| slot_recoverable     | 'yes'，支持将出错后已退出的slot从'ERROR'设置为'READY'，以支持slot级重试                |
-| slot_timeout_seconds | 以秒计的slot超时设置。缺省值为30秒                                              |
-| max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3  |
+| slot_recoverable     | 'yes'，支持将出错后已退出的slot从'ERROR'设置为'READY'，以支持slot级重试 (以slot_max_retries替换？,TIMED-OUT/GREEDY分别处理)  |
+| slot_max_retries     | slot状态从'TIMED-OUT'设置为'READY'的重试次数          |
+| slot_timeout_minutes | 若slot未正常启动，则一直处于'STARTING'状态。设置以分钟计的timeout，到期后将状态转换为'TIMEOUT'。缺省值为15分钟。对于不允许重复启动的slot实例（用GPU等），可设置较大值。 |
+| max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3 (拟删除，用argument task_min_seconds替换) |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
 | pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
 | batch_message_size   | 针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot单批次读取的最大消息数，缺省值为1。 |
@@ -283,7 +287,6 @@ cluster定义的示例如下：
 | visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | task_id_in_headers   | 返回的headers中，包含task_id值。|
 | app_id_in_headers   | 返回的headers中，包含app_id值。 |
-| group_slot_nodes   | 用于分组级slot的节点列表（逗号分隔）|
 | task_progress_global_diff | 标准流控参数，用于当前cluster中group_id非空的host间运行同步，参照值为运行成功的task数量，该参数指定与最慢host间差值，其值为整数。在对应task生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。|
 | task_progress_group_diff | 标准流控参数，用于同一group_id下host间运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
 | global_vtask_size   | 标准流控参数。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```global_vtask_size:${mod_name}```，其初值为参数值。|
@@ -318,4 +321,4 @@ cluster定义的示例如下：
 | ------------- | ------------------------- |
 | reg_time      | 注册时间                   |
 | last_access   | 最后访问时间                |
-| slot_group    | 该slot为分组级slot          |
+| group_prefix  | slot的分组前缀             |

@@ -79,13 +79,16 @@ pull-all:
 
 get-cli:
 	@ mkdir -p ~/bin
-	@# docker pull hub.cstcloud.cn/scalebox/cli
-	@ os=`uname| tr '[:upper:]' '[:lower:]'` \
-	&& arch=`uname -m` \
-	&& if [ "$$arch" = "x86_64" ]; then arch="amd64"; fi \
-	&& cid=$$(docker create hub.cstcloud.cn/scalebox/cli) \
-	&& docker cp $$cid:/usr/local/bin/scalebox-$$os-$$arch ~/bin/scalebox \
-	&& docker rm -v $$cid
+	@OS="$$(uname | tr '[:upper:]' '[:lower:]')" ; \
+	ARCH="$$(uname -m)" ; \
+	if [ "$$OS" = "linux" ] && [ "$$ARCH" = "x86_64" ] ; then \
+		echo "obtain scalebox CLI for $$OS/amd64..." ; \
+		id=`docker create hub.cstcloud.cn/scalebox/agent:latest` ; \
+		docker cp $$id:/usr/local/sbin/scalebox $$HOME/bin/scalebox ; \
+		docker rm -v $$id ; \
+	else \
+		echo "skip get-cli: only linux/amd64 supported(current $$OS/$$ARCH)" ; \
+	fi
 
 auto-keygen-actuator:
 	@ make -C ../dockerfiles/actuator build
