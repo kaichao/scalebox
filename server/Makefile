@@ -72,7 +72,7 @@ list:
 # 	@ rm -f $(SHARED_DIR)/id_rsa.pub
 
 pull-all:
-	@ for i in database actuator controld agent cli; do \
+	@ for i in database actuator controld agent; do \
 		echo $$i; \
 		docker pull hub.cstcloud.cn/scalebox/$$i; \
 	done

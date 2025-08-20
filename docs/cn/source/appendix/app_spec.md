@@ -234,12 +234,12 @@ cluster定义的示例如下：
 | local_ip_index         | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。       |
 |                        | CLUSTER                | 所在的集群名                                                       |
 |                        | JOB_NAME               | 当前job名称                                                       |
-|                        | JOB_ID                 | job-id                                                           |
-|                        | FROM_JOB               | job-name                                                         |
-|                        | FROM_IP                | from-ip                                                          |
-|                        | SINK_JOB               | 缺省sink_job的名称                                                 |
+|                        | JOB_ID                 | job-id                                                         |
+|                        | FROM_JOB               | job-name                                                  |
+|                        | FROM_IP                | from-ip                                                       |
+|                        | SINK_JOB               | 缺省sink_job的名称                                             |
 |                        | IS_SINGULARITY         | 容器引擎为singularity或apptainer      |
-| task_timeout_seconds   | TASK_TIMEOUT_SECONDS   | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124(拟修改为task_max_seconds) |
+| task_max_seconds       | TASK_MAX_SECONDS       | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124 |
 | task_min_seconds       | TASK_MIN_SECONDS       | 每个task运行的最小秒数，若运行时间连续多次低于此值，则判定slot为GREEDY异常，并退出 |
 | sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒             |
 | max_sleep_count        | MAX_SLEEP_COUNT        | slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
@@ -279,6 +279,7 @@ cluster定义的示例如下：
 | slot_recoverable     | 'yes'，支持将出错后已退出的slot从'ERROR'设置为'READY'，以支持slot级重试 (以slot_max_retries替换？,TIMED-OUT/GREEDY分别处理)  |
 | slot_max_retries     | slot状态从'TIMED-OUT'设置为'READY'的重试次数          |
 | slot_timeout_minutes | 若slot未正常启动，则一直处于'STARTING'状态。设置以分钟计的timeout，到期后将状态转换为'TIMEOUT'。缺省值为15分钟。对于不允许重复启动的slot实例（用GPU等），可设置较大值。 |
+| task_global_timeout_scale | 若外部原因（slot异常退出等）导致task一直处于运行状态（状态码-3）。通过全局超时设置，恢复task状态码为123。该值为相对task_max_seconds的倍数，缺省值为3。 |
 | max_tasks_per_minute | 设置slot每分钟可运行的task数量，超过该值，说明该slot异常，则设置为出错。有效值 >= 3 (拟删除，用argument task_min_seconds替换) |
 | message_router_index | 多消息路由的应用环境中，指定当前job发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
 | pod_id               | 标识本job属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
@@ -314,6 +315,8 @@ cluster定义的示例如下：
 | slurm_node      | 在slurm调度系统中对应的节点编号    |
 | reg_time        | 在scalebox中注册时间            |
 | slot_job_id     | 在slurm调度系统重，node-agent的slurm job id |
+| default_runtime | 缺省容器引擎,'docker'/'singularity' |
+| use_home_tmp    |                                   |
 
 ### 2.8.6 slot-parameters参数表
 

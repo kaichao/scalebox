@@ -37,6 +37,11 @@ else
     rsync_args=""
 fi
 
+if [ "$source_mode" = "RSYNC_OVER_SSH" ] && [ "$target_mode" = "RSYNC_OVER_SSH" ]; then
+    source_mode="SSH"
+    target_mode="SSH"
+fi
+
 date --iso-8601=ns | sed 's/,/./' >> timestamps.txt
 
 echo "[DEBUG]source_mode:$source_mode,target_mode:$target_mode" >> ${WORK_DIR}/custom-out.txt
@@ -45,8 +50,8 @@ case $source_mode in
     case $target_mode in
     "LOCAL")    exit 31 ;;
     "SSH")
-        echo "LOCAL-SSH" >> custom-out.txt
-        ssh_cmd=$(get_ssh_cmd "$2" "target_url" "target_jump_servers")
+        echo "LOCAL-SSH"
+        ssh_cmd=$(get_ssh_cmd "$2" "target_url" "target_jump")
         echo "[DEBUG] ssh_cmd:$ssh_cmd" >> custom-out.txt
         local_file=$(get_host_path "$source_dir/$1")
 
@@ -74,8 +79,8 @@ case $source_mode in
         echo "[DEBUG] local_file:$local_file" >> ${WORK_DIR}/custom-out.txt
         ;;
     "RSYNC_OVER_SSH") 
-        echo "LOCAL to RSYNC_OVER_SSH" >> ${WORK_DIR}/custom-out.txt
-        target_ssh_option=$(get_ssh_option "$2" "target_url" "target_jump_servers")
+        echo "LOCAL to RSYNC_OVER_SSH"
+        target_ssh_option=$(get_ssh_option "$2" "target_url" "target_jump")
 
         if [[ $source_url == /data/* ]]; then
             source_dir="${source_url}/"
@@ -118,8 +123,8 @@ case $source_mode in
 "SSH")
     case $target_mode in
     "LOCAL")
-        echo "SSH to LOCAL" >> custom-out.txt
-        ssh_cmd=$(get_ssh_cmd "$2" "source_url" "source_jump_servers")
+        echo "SSH to LOCAL"
+        ssh_cmd=$(get_ssh_cmd "$2" "source_url" "source_jump")
         echo "[DEBUG] ssh_cmd:$ssh_cmd" >> ${WORK_DIR}/custom-out.txt
         local_file=$(get_host_path "$target_dir/$1")
         remote_file="$source_dir/$1"
@@ -141,9 +146,9 @@ case $source_mode in
         echo $local_file >> ${WORK_DIR}/output-files.txt
         ;;
     "SSH")
-        echo "SSH to SSH" >> ${WORK_DIR}/custom-out.txt
-        source_ssh_cmd=$(get_ssh_cmd "$2" "source_url" "source_jump_servers")
-        target_ssh_cmd=$(get_ssh_cmd "$2" "target_url" "target_jump_servers")
+        echo "SSH to SSH"
+        source_ssh_cmd=$(get_ssh_cmd "$2" "source_url" "source_jump")
+        target_ssh_cmd=$(get_ssh_cmd "$2" "target_url" "target_jump")
 
         source_file="$source_dir/$1"
         target_file="$target_dir/$1"
@@ -171,8 +176,8 @@ case $source_mode in
 "RSYNC_OVER_SSH")
     case $target_mode in
     "LOCAL")
-        echo "RSYNC_OVER_SSH to LOCAL" >> ${WORK_DIR}/custom-out.txt
-        source_ssh_option=$(get_ssh_option "$2" "source_url" "source_jump_servers")
+        echo "RSYNC_OVER_SSH to LOCAL"
+        source_ssh_option=$(get_ssh_option "$2" "source_url" "source_jump")
         local_file=$(get_host_path "$target_dir/$1")
         
         remote_file="$source_dir/$1"

@@ -227,6 +227,7 @@ scalebox app run --param-name=param-value start-item
 参数表
 | 参数名         |    参数说明     |  对应环境变量    | 缺省值                                       |
 | ------------- | -------------- | -------------- | ------------------------------------------- |
+| app-name       | app名称       | _APP_NAME       | 
 | cluster       | cluster名      | _CLUSTER       | local                                       |
 | image-name    | 主模块镜像名     | _IMAGE_NAME    | hub.cstcloud.cn/scalebox/agent:latest       |
 | code-path     | 主模块代码目录   | _CODE_PATH     | 若当前目录下有./code/，则为./code;否则为空       |

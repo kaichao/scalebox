@@ -1,10 +1,15 @@
-FROM debian:12-slim
+FROM debian:13-slim
 
 LABEL maintainer="kaichao"
 
-# install the newest version, rsync 3.2.7, zstd 1.5.5, openssh 9.3p1, pv
-RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bookworm-testing.list \ 
-    && apt-get update \
+# install the newest version, 
+#   rsync 3.4.1
+#   zstd 1.5.7
+#   OpenSSH_10.0p2 Debian-7, OpenSSL 3.5.1 1 Jul 2025
+#   pv 1.9.31
+# RUN echo "deb http://deb.debian.org/debian testing main" > /etc/apt/sources.list.d/bookworm-testing.list \ 
+RUN \
+    apt-get update \
     && apt-get install -y rsync openssh-client zstd pv \
     && apt-get clean autoclean \
     && apt-get autoremove -y \
@@ -28,12 +33,11 @@ ENV \
     # LOCAL / SSH / RSYNC_OVER_SSH /RSYNC
     SOURCE_MODE= \
     TARGET_MODE= \
-    SOURCE_JUMP_SERVERS= \
-    TARGET_JUMP_SERVERS= \
+    SOURCE_JUMP= \
+    TARGET_JUMP= \
     TARGET_FILE_MODE=0644 \
     ENABLE_TARGET_TOUCH=no \
     ZSTD_CLEVEL= \
-    WITH_ZSTD_COMPRESS= \
     KEEP_SOURCE_FILE=yes \
     # MD-5 / SHA-1 / SHA-256 / SHA-512 / RIPEMD-160
     CHECKSUM_ALGO= \
@@ -42,7 +46,7 @@ ENV \
     RSYNCD_MODULE=/root \
     WORK_DIR=
 
-COPY file-copy/code/run.sh functions.sh /app/share/bin/
+COPY code/*.sh /app/share/bin/
 
 COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
