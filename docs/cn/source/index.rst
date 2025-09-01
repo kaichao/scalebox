@@ -23,10 +23,10 @@
    :caption: 使用指南
    :hidden:
 
-   user/install
-   user/common_modules
-   user/app_examples
-   user/tools
+   user/1_install
+   user/2_common_modules
+   user/3_app_examples
+   user/4_tools
 
 .. toctree::
    :maxdepth: 2
@@ -35,7 +35,7 @@
 
    developer/1_programming_model
    developer/2_app_design
-   developer/3_mod_build
+   developer/3_mod_spec
    developer/4_app_build
    developer/5_common_features
    developer/6_advanced_features

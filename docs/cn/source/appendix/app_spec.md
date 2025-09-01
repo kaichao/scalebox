@@ -235,7 +235,7 @@ cluster定义的示例如下：
 |                        | CLUSTER                | 所在的集群名                                                       |
 |                        | JOB_NAME               | 当前job名称                                                       |
 |                        | JOB_ID                 | job-id                                                         |
-|                        | FROM_JOB               | job-name                                                  |
+|                        | FROM_JOB               | job-name                                                       |
 |                        | FROM_IP                | from-ip                                                       |
 |                        | SINK_JOB               | 缺省sink_job的名称                                             |
 |                        | IS_SINGULARITY         | 容器引擎为singularity或apptainer      |
