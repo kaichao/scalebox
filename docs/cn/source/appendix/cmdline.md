@@ -40,6 +40,7 @@ graph LR
 
   scalebox --> host[<a href="#host">host</a>]
   host --> host-check-status[<a href="#host-check-status">check-status</a>]
+  host --> host-get-ip-addr[<a href="#host-get-ip-addr">get-ip-addr</a>] 
   host --> host-add-node[<a href="#host-add-node">add-node</a>]
   host --> host-dist-image[<a href="#host-dist-image">dist-image</a>]
   host --> host-recover[<a href="#host-recover">recover</a>]
@@ -78,13 +79,13 @@ graph LR
   semaphore --> increment-n[<a href="#semaphore-increment-n">increment-n</a>]
   semaphore --> semaphore-group[<a href="#semaphore-group">group</a>]
 
-  scalebox --> sema-group[<a href="#sema-group">sema-group</a>]
-  sema-group --> sema-group-min[<a href="#sema-group-min">min</a>]
-  sema-group --> sema-group-max[<a href="#sema-group-max">max</a>]
-  sema-group --> sema-group-increment[<a href="#sema-group-increment">increment</a>]
-  sema-group --> sema-group-decrement[<a href="#sema-group-decrement">decrement</a>]
-  sema-group --> sema-group-diffmin[<a href="#sema-group-diffmin">diffmin</a>]
-  sema-group --> sema-group-diffmax[<a href="#sema-group-diffmax">diffmax</a>]
+  scalebox --> semagroup[<a href="#semagroup">semagroup</a>]
+  semagroup --> semagroup-min[<a href="#semagroup-min">min</a>]
+  semagroup --> semagroup-max[<a href="#semagroup-max">max</a>]
+  semagroup --> semagroup-increment[<a href="#semagroup-increment">increment</a>]
+  semagroup --> semagroup-decrement[<a href="#semagroup-decrement">decrement</a>]
+  semagroup --> semagroup-diffmin[<a href="#semagroup-diffmin">diffmin</a>]
+  semagroup --> semagroup-diffmax[<a href="#semagroup-diffmax">diffmax</a>]
 
   scalebox --> variable[<a href="#variable">variable</a>]
   variable --> variable-get[<a href="#variable-get">get</a>]
@@ -136,6 +137,10 @@ graph LR
 ### 1.4.1 host check-status
 
 检查一个指定节点的运行状态，输出其ip_addr、uname、port、parameters、group_id、reg_time、status、last_active、comments等信息
+
+### 1.4.2 host get-ip-addr
+
+由名字解析为ip-addr
 
 ### 1.4.2 host add-node
 
@@ -553,46 +558,46 @@ APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
 APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
 ```
 
-## 1.10 <span id="sema-group">sema-group子命令</span>
+## 1.10 <span id="semagroup">semagroup子命令</span>
 
 - 多个信号量组成信号量组，用信号量名前缀、正则表达式标识信号量组
 
 
-#### 1.10.1 sema-group max
+#### 1.10.1 semagroup max
 - 信号量组中最大值
 ```sh
-val=$(scalebox sema-group max ${sema_expr})
+val=$(scalebox semagroup max ${sema_expr})
 code=$?
 ```
 
-#### 1.10.2 sema-group min
+#### 1.10.2 semagroup min
 - 信号量组中最小值
 ```sh
-val=$(scalebox sema-group min ${sema_expr})
+val=$(scalebox semagroup min ${sema_expr})
 code=$?
 ```
 - sema_expr为信号量名的正则表达式或前缀
 - 返回值val为整数字符串
 
-#### 1.10.3 sema-group increment
+#### 1.10.3 semagroup increment
 - 选取信号量组中最小值，并加一
 
-#### 1.10.4 sema-group decrement
+#### 1.10.4 semagroup decrement
 - 选取信号量组中最大值，并减一
 
-#### 1.10.5 sema-group diffmax
+#### 1.10.5 semagroup diffmax
 - 信号量组最大值与信号量当前值的差值
 ```sh
-val=$(scalebox sema-group diffmax ${sema_expr})
+val=$(scalebox semagroup diffmax ${sema_expr})
 code=$?
 ```
 - sema_expr为含分组定义的信号量，示例为```(group-prefix):sema-suffix```
 - 返回值val为整数字符串
 
-#### 1.10.6 sema-group diffmin
+#### 1.10.6 semagroup diffmin
 - 信号量当前值与信号量组最小值的差值
 ```sh
-val=$(scalebox sema-group diffmin ${sema_expr})
+val=$(scalebox semagroup diffmin ${sema_expr})
 code=$?
 ```
 - sema_expr为含分组定义的信号量，示例为```(group-part:)sema-suffix```

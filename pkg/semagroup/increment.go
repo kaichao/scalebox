@@ -1,4 +1,4 @@
-package semagrp
+package semagroup
 
 import (
 	"fmt"
