@@ -73,27 +73,23 @@ func initPool() {
 	s := os.Getenv("PG_MAX_CONNS")
 	maxConns, err := strconv.Atoi(s)
 	if err != nil || maxConns <= 0 {
-		logrus.Warnf("无效的 PG_MAX_CONNS 值 '%s'，使用默认值：20", s)
 		maxConns = 20
 	}
 	s = os.Getenv("PG_MIN_CONNS")
 	minConns, err := strconv.Atoi(s)
 	if err != nil || minConns <= 0 {
-		logrus.Warnf("无效的 PG_MIN_CONNS 值 '%s'，使用默认值：10", s)
-		minConns = 10
+		minConns = 2
 	}
 
 	// 配置连接存活时间和空闲时间
 	s = os.Getenv("PG_MAX_CONN_LIFETIME_MIN")
 	maxConnLifetime, err := strconv.Atoi(s)
 	if err != nil || maxConnLifetime <= 0 {
-		logrus.Warnf("无效的 PG_MAX_CONN_LIFETIME_MIN 值 '%s'，使用默认值：30", s)
 		maxConnLifetime = 30
 	}
 	s = os.Getenv("PG_MAX_CONN_IDLE_TIME_MIN")
 	maxConnIdleTime, err := strconv.Atoi(s)
 	if err != nil || maxConnIdleTime <= 0 {
-		logrus.Warnf("无效的 PG_MAX_CONN_IDLE_TIME_MIN 值 '%s'，使用默认值：5", s)
 		maxConnIdleTime = 5
 	}
 

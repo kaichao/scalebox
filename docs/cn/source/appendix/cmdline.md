@@ -40,7 +40,7 @@ graph LR
 
   scalebox --> host[<a href="#host">host</a>]
   host --> host-check-status[<a href="#host-check-status">check-status</a>]
-  host --> host-get-ip-addr[<a href="#host-get-ip-addr">get-ip-addr</a>] 
+  host --> host-get-info[<a href="#host-get-info">get-info</a>] 
   host --> host-add-node[<a href="#host-add-node">add-node</a>]
   host --> host-dist-image[<a href="#host-dist-image">dist-image</a>]
   host --> host-recover[<a href="#host-recover">recover</a>]
@@ -138,9 +138,9 @@ graph LR
 
 检查一个指定节点的运行状态，输出其ip_addr、uname、port、parameters、group_id、reg_time、status、last_active、comments等信息
 
-### 1.4.2 host get-ip-addr
+### 1.4.2 host get-info
 
-由名字解析为ip-addr
+由hostname获取host信息
 
 ### 1.4.2 host add-node
 
