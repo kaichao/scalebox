@@ -15,6 +15,8 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 		return 0, err
 	}
 
+	fmt.Printf("group-expr:%s,current-expr:%s,app-id:%d.\n", groupExpr, expr, appID)
+
 	// 在事务中执行查询
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
@@ -27,7 +29,8 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	err = tx.QueryRow(`
 		SELECT value 
 		FROM t_semaphore 
-		WHERE name ~ $1 AND app = $2`,
+		WHERE name = $1 AND app = $2
+	`,
 		expr, appID).Scan(&currentValue)
 	if err != nil {
 		return 0, fmt.Errorf("failed to query current semaphore value: %w", err)
@@ -38,7 +41,8 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	err = tx.QueryRow(`
 		SELECT MAX(value)
 		FROM t_semaphore
-		WHERE name ~ $1 AND app = $2`,
+		WHERE name ~ $1 AND app = $2
+	`,
 		groupExpr, appID).Scan(&maxValue)
 	if err != nil {
 		return 0, fmt.Errorf("failed to query max semaphore value: %w", err)
