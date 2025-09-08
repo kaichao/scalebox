@@ -13,28 +13,21 @@ import (
 
 // AddValue ...
 func AddValue(name string, appID int, delta int) (string, error) {
-	sqlText := `
+	sqlFmt := `
 		WITH updated_rows AS (
     		UPDATE t_semaphore
     		SET value = value + $3
-    		WHERE (name ~ $1) AND app = $2
+    		WHERE (name %s $1) AND app = $2
     		RETURNING name,value
 		)
 		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
 		FROM updated_rows
 	`
+	op := "="
 	if !common.IsRegexString(name) {
-		sqlText = `
-			WITH updated_rows AS (
-    			UPDATE t_semaphore
-	    		SET value = value + $3
-    			WHERE name = $1 AND app = $2
-    			RETURNING name,value
-			)
-			SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-			FROM updated_rows
-		`
+		op = "~"
 	}
+	sqlText := fmt.Sprintf(sqlFmt, op)
 	v := ""
 	if err := postgres.GetDB().QueryRow(sqlText, name, appID, delta).Scan(&v); err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%s,%d), err-t=%T,err=%v",

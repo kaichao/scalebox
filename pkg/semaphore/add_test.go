@@ -1,6 +1,7 @@
 package semaphore_test
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -12,7 +13,7 @@ import (
 func TestAddListValue(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 79
+	appID := 24
 	semaphore.Create("a", 5, appID)
 	semaphore.Create("b", 10, appID)
 	semaphore.Create("c", 15, appID)
@@ -33,4 +34,16 @@ func TestAddListValue(t *testing.T) {
 	if result != want {
 		t.Errorf("AddListValue() = %q, want %q", result, want)
 	}
+}
+
+func TestAddValue(t *testing.T) {
+	os.Setenv("PGHOST", "10.0.6.100")
+	os.Setenv("SEMAPHORE_AUTO_CREATE", "yes")
+
+	appID := 25
+	v, err := semaphore.AddValue("node_progress:node-progress-gap:n-01.inline", appID, 3)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Printf("v=%s.", v)
 }

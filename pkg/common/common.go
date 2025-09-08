@@ -10,8 +10,9 @@ import (
 
 // IsRegexString 判断字符串是否包含正则表达式元字符
 func IsRegexString(s string) bool {
-	metachars := `.*+?^$[]{}()|\` // List of regex metacharacters
-	escaped := false              // Flag to track if the previous character was a backslash
+	// metachars := `.*+?^$[]{}()|\` // List of regex metacharacters
+	metachars := `*+?^$[]{}()|\` // List of regex metacharacters
+	escaped := false             // Flag to track if the previous character was a backslash
 
 	for _, r := range s {
 		if escaped {
