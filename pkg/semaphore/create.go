@@ -14,11 +14,14 @@ import (
 
 // Create ...
 func Create(name string, value int, appID int) error {
-	// ignore existing
+	// overwrite existing
 	sqlText := `
 		INSERT INTO t_semaphore(name,value,value0,app)
 		VAlUES($1,$2,$2,$3)
-		ON CONFLICT (name, app) DO NOTHING; 
+		ON CONFLICT (name, app)
+			DO UPDATE SET
+    		value  = EXCLUDED.value,
+    		value0 = EXCLUDED.value0
 	`
 
 	if _, err := postgres.GetDB().Exec(sqlText, name, value, appID); err != nil {

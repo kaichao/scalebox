@@ -7,7 +7,7 @@ import (
 )
 
 // DiffMax 计算信号量组最大值与当前信号量值的差值
-// semaEXpr:正则表达式，其形式为(group-prefix)expr，其中圆括号中group-prefix标识为信号量组的前缀
+// semaExpr:正则表达式，其形式为(group-prefix)expr，其中圆括号中group-prefix标识为信号量组的前缀
 func DiffMax(semaExpr string, appID int) (int, error) {
 	// 解析group表达式
 	groupExpr, expr, err := parseGroupExpr(semaExpr)
