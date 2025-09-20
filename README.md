@@ -19,11 +19,10 @@ Scalebox具有以下重要特性：
   - 模块间流水线并行
 
 - **多计算后端**
-  - 多种计算集群类型（自管理集群、HPC集群、k8s容器集群等）
+  - 多种计算集群类型（自管理集群、HPC集群等）
   - 多种容器引擎
     - docker：缺省容器引擎
     - [singularity](./tests/hello-scalebox-singularity/)
-    - k8s：TODO
 
 本仓库主要包含以下内容：
 

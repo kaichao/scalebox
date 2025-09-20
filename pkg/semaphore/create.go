@@ -1,13 +1,13 @@
 package semaphore
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
 	"regexp"
 
 	"github.com/kaichao/scalebox/pkg/common"
+
 	"github.com/kaichao/scalebox/pkg/postgres"
 	"github.com/sirupsen/logrus"
 )
@@ -60,26 +60,46 @@ func CreateFileSemaphores(fileName string, appID int, batchSize int) error {
 
 // CreateJSONSemaphores ...
 func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
-	var jsonData struct {
-		RawData json.RawMessage `json:"semaphores"`
-	}
-	if err := json.Unmarshal([]byte(jsonText), &jsonData); err != nil {
-		logrus.Errorf("Invalid json format, err-info:%v, json-text:%s\n", err, jsonText)
-		return err
+	// Define a struct type for the semaphores
+	type semaItem struct {
+		Name  string `json:"name"`
+		Value int    `json:"value"`
 	}
 
-	var ordered []*Sema
-	decoder := json.NewDecoder(bytes.NewReader(jsonData.RawData))
-	decoder.Token()
-	for decoder.More() {
-		k, _ := decoder.Token()
-		var v int
-		if err := decoder.Decode(&v); err != nil {
-			logrus.Errorf("Error decoding semaphore value, err-info:%v, json-text:%s\n", err, jsonText)
-			return err
+	var items []semaItem
+
+	// Try unmarshalling as top-level array of objects
+	if err := json.Unmarshal([]byte(jsonText), &items); err == nil {
+		// Successfully parsed as array
+	} else {
+		// If that fails, try as object with key-value pairs
+		var kvPairs map[string]int
+		if err := json.Unmarshal([]byte(jsonText), &kvPairs); err != nil {
+			// Try alternative pattern expecting top-level "semaphores" property
+			var jsonData struct {
+				Semaphores map[string]int `json:"semaphores"`
+			}
+			if err := json.Unmarshal([]byte(jsonText), &jsonData); err != nil {
+				logrus.Errorf("Invalid JSON format, err-info:%v, json-text:%s\n", err, jsonText)
+				return err
+			}
+			kvPairs = jsonData.Semaphores
 		}
-		ordered = append(ordered, &Sema{Name: k.(string), Value: v})
+
+		// Convert key-value map to array of semaItem
+		items = make([]semaItem, 0, len(kvPairs))
+		for name, value := range kvPairs {
+			items = append(items, semaItem{Name: name, Value: value})
+		}
 	}
+
+	// Create semaphore slice in input order
+	ordered := make([]*Sema, 0, len(items))
+	for _, item := range items {
+		ordered = append(ordered, &Sema{Name: item.Name, Value: item.Value})
+	}
+
+	logrus.Debugf("Unmarshalled %d semaphores from JSON text", len(ordered))
 	return CreateSemaphores(ordered, appID, batchSize)
 }
 

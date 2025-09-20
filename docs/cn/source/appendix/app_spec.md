@@ -218,12 +218,13 @@ cluster定义的示例如下：
 ## 2.8 附表
 
 ### 2.8.1 app-parameters参数表
-| 参数名称          |   含义                         |
-| ---------------  | ----------------------------- |
-| initial_status   | 'RUNNING'/'PAUSED'            |
-| messsage_router  |                               |
-| is_cluster_admin |                               |
-| slot_group      | map形式的多节点的多job-slot配置，用于新增节点的slot自动创建。例：'{"job0":n0,"job1",n1}' |
+| 参数名称            |   含义                         |
+| ------------------ | ----------------------------- |
+| initial_status     | 'RUNNING'/'PAUSED'            |
+| messsage_router    |                               |
+| default_idle_polls | 所属module的缺省的空闲轮询次数    |
+| is_cluster_admin   |                               |
+| slot_group         | map形式的多节点的多job-slot配置，用于新增节点的slot自动创建。例：'{"job0":n0,"job1",n1}' |
 
 ### 2.8.2 job-arguments参数表
 
@@ -243,8 +244,8 @@ cluster定义的示例如下：
 | task_min_seconds       | TASK_MIN_SECONDS       | 每个task运行的最小秒数，若运行时间连续多次低于此值，则判定slot为GREEDY异常，并退出 |
 | sleep_interval_seconds | SLEEP_INTERVAL_SECONDS | 拟改名为poll_interval_seconds。Slot 检查新任务的轮询间隔。slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒。             |
 | max_sleep_count        | MAX_SLEEP_COUNT        | 拟改名为max_idle_polls。Slot 在退出前可进行的最大空闲轮询次数。slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
-| dir_limit_gb           | DIR_LIMIT_GB           | 标准流控参数，目录本身的容量配额限制。用于指定目录以GB计的最大空间。格式为：/data-dir:n，n为GB数  。拟改名为dir_quota_gb，格式 ```'{"/dir-1":10,"/dir-2":100}'```      |
-| dir_free_gb            | DIR_FREE_GB            | 标准流控参数，目录所在磁盘需要保留的最小空间。用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir:n，n为GB数。拟改名为reserved_db，格式为```'{"/dir-3":10,"/dir-4":100}'``` |
+| dir_quota_gb           | DIR_QUOTA_GB           | 标准流控参数，目录本身的容量配额限制。用于指定目录以GB计的最大空间。格式为：/data-dir:n，n为GB数  。拟改名为dir_quota_gb，格式 ```'{"/dir-1":10,"/dir-2":100}'```      |
+| free_space_gb            | FREE_SPACE_GB            | 标准流控参数，目录所在磁盘需要保留的最小空间。用于指定目录所在分区以GB计的最小保留空间。格式为：/data-dir:n，n为GB数。拟改名为reserved_db，格式为```'{"/dir-3":10,"/dir-4":100}'``` |
 | task_batch_size       | TASK_BATCH_SIZE | 单次批量处理的任务数量。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot单批次读取的最大消息数，缺省值为1。 |
 | heartbeat_seconds      | HEARTBEAT_SECONDS      | 以秒计的心跳间隔，缺省值为60；若为非正整数，则禁用心跳操作 |
 | output_text_size       | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
@@ -291,7 +292,7 @@ cluster定义的示例如下：
 | task_progress_group_diff | 标准流控参数，用于同一group_id下host间运行同步，指定与最慢host间的差值，其值为整数。所用的信号量与 task_progress_global_diff相同。 |
 | node_progress_gap | 标准流控参数，针对指定job同一组内node间运行同步，最快node与最慢node间的运行的task最大差值，其值为整数。在对应slot生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。该参数格式示例为```{"prefix1":4,"node_prefix2":6}```。该参数拟替换 task_progress_global_diff/task_progress_group_diff。|
 | global_vtask_size   | 拟改名为vtask_capacity。 标准流控参数。全局可同时处于就绪状态的 vtask 数量上限。用于全局vtask流控，在app解析时，创建对应信号量及初值，信号量名称为：```vtask_size:${mod_name}```，其初值为参数值。|
-| group_vtask_size    | 拟改名为group_vtask_capacity。标准流控参数，其值为 ```${group_expr}:${int_value}```。用于分组的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```group_vtask_size:${mod_name}:${groupname}```，其初值为参数值。|
+| group_vtask_size    | 拟改名为slot_vtask_capacity。标准流控参数，其值为 ```${group_expr}:${int_value}```。用于模块为SLOT-BOUND的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```slot_vtask_size:${mod_name}:${slot_id}```，其初值为参数值。|
 | host_vtask_size     | 拟改名为host_vtask_capacity。标准流控参数，其值为整数。用于按节点（HOST-BOUND）的vtask流控，在app解析时，创建对应的信号量及初值，信号量名称为：```host_vtask_size:${mod_name}:${hostname}```，其初值为参数值。   |
 
 

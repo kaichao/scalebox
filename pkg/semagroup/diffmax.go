@@ -15,8 +15,6 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 		return 0, err
 	}
 
-	fmt.Printf("group-expr:%s,current-expr:%s,app-id:%d.\n", groupExpr, expr, appID)
-
 	// 在事务中执行查询
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {

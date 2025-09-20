@@ -50,6 +50,7 @@ services:
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
       - LOCAL_ADDR=${LOCAL_ADDR}
+      - SLOT_POLL_INTERVAL_SECONDS=5
       # for external cluster to start external slots
       - HEAD_SSH_USER=${USER}
       - HEAD_SSH_PORT=10022
