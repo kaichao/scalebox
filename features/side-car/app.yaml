@@ -10,7 +10,7 @@ jobs:
       code_path: ${PWD}/code
       slot_options: slot_on_head,reserved_on_exit
       # 3 minutes
-      max_sleep_count: 50
+      max_idle_polls: 50
     parameters:
       start_message: 0
     environments:

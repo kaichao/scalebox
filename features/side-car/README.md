@@ -3,7 +3,7 @@
 ## 测试1(缺省脚本)
 
 ```sh
-scalebox app create
+echo 0 | scalebox app run
 ```
 
 ## 测试2(定制脚本)

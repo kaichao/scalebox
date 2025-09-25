@@ -2,9 +2,10 @@ package global
 
 import (
 	"database/sql"
+	"errors"
+	"fmt"
 
 	"github.com/kaichao/scalebox/pkg/postgres"
-	"github.com/sirupsen/logrus"
 )
 
 // Set ...
@@ -17,9 +18,7 @@ func Set(name string, value string) error {
 	`
 	_, err := postgres.GetDB().Exec(sqlText, name, value)
 	if err != nil {
-		logrus.Errorf("Unable to global-set,name=%s, value=%s, err=%T, err=%v\n",
-			name, value, err, err)
-		return err
+		return fmt.Errorf("unable to global-set,name=%s, value=%s, err: %w", name, value, err)
 	}
 	return nil
 }
@@ -29,15 +28,11 @@ func Get(name string) (string, error) {
 	sqlText := `SELECT value FROM t_global WHERE name=$1`
 	var value string
 	err := postgres.GetDB().QueryRow(sqlText, name).Scan(&value)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			logrus.Errorf("global %s not-found\n", name)
-		} else {
-			logrus.Errorf("Unable to global-get,name=%s,  err=%T, err=%v\n",
-				name, err, err)
-		}
-		return "", err
+	if err == nil {
+		return value, nil
 	}
-
-	return value, nil
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", fmt.Errorf("global %s not found: %w", name, err)
+	}
+	return "", fmt.Errorf("unable to global-get,name=%s, err: %w", name, err)
 }

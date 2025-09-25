@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-
-# 等待，以便完成server端的数据库的写入
-sleep 1
-
-echo "$1" > messages.txt
