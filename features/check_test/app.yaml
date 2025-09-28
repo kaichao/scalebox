@@ -3,7 +3,7 @@ cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
 
-jobs:
+modules:
   check_test:
     base_image: hub.cstcloud.cn/scalebox/agent
     parameters:

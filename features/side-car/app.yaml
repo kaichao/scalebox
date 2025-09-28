@@ -3,7 +3,7 @@ cluster: local
 parameters:
   initial_status: RUNNING
 
-jobs:
+modules:
   side_car_test:
     base_image: hub.cstcloud.cn/scalebox/agent
     arguments:

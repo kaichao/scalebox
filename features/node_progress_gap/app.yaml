@@ -1,0 +1,12 @@
+name: node_progress_gap.test
+cluster: ${CLUSTER}
+
+modules:
+  node-progress-gap:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    parameters:
+      task_dist_mode: HOST-BOUND
+      node_progress_gap: '{"n-[01]":2,"n":3}'
+    slots: 
+      - n-[01][01]
+  

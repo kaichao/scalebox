@@ -5,7 +5,7 @@
 
 ```
 
-app -> job -> task
+app -> module -> task
 
 cluster -> host -> slot
 
@@ -18,9 +18,9 @@ cluster -> host -> slot
 ## 4.2 应用层
 
 - 应用/流水线应用（App）
-  - 模块（Job）
+  - 模块（Module）
   - 任务（Task）
-  - Pod：按主机统一调度的单元，多个job的组合，以简化计算过程中的本地计算。
+  - Pod：按主机统一调度的单元，多个Module的组合，以简化计算过程中的本地计算。
 
 ## 4.3 资源层
 - 集群（Cluster）

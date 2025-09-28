@@ -3,7 +3,7 @@ cluster: local
 parameters:
   initial_status: RUNNING
 
-jobs:
+modules:
   timeout-gen:
     base_image: timeout-gen
     parameters:
