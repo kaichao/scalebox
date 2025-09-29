@@ -9,33 +9,33 @@ import (
 
 func TestAddTask(t *testing.T) {
 	envVars := map[string]string{
-		"SINK_JOB":    "scatter",
-		"JOB_ID":      "48",
+		"SINK_MODULE": "scatter",
+		"MODULE_ID":   "48",
 		"APP_ID":      "",
 		"GRPC_SERVER": "10.0.6.100",
 	}
 	task.Add("001", "", envVars)
 
 	envVars = map[string]string{
-		"SINK_JOB":    "scatter",
-		"JOB_ID":      "",
+		"SINK_MODULE": "scatter",
+		"MODULE_ID":   "",
 		"APP_ID":      "28",
 		"GRPC_SERVER": "10.0.6.100",
 	}
 	task.Add("002", "", envVars)
 
 	envVars = map[string]string{
-		"SINK_JOB":    "",
-		"JOB_ID":      "46",
+		"SINK_MODULE": "",
+		"MODULE_ID":   "46",
 		"APP_ID":      "",
 		"GRPC_SERVER": "10.0.6.100",
 	}
 	task.Add("003", "", envVars)
 
-	os.Setenv("JOB_ID", "47")
+	os.Setenv("MODULE_ID", "47")
 	envVars = map[string]string{
-		"SINK_JOB": "",
-		// "JOB_ID":      "46",
+		"SINK_MODULE": "",
+		// "MODULE_ID":      "46",
 		"APP_ID":      "",
 		"GRPC_SERVER": "10.0.6.100",
 	}
@@ -43,8 +43,8 @@ func TestAddTask(t *testing.T) {
 }
 func TestAddTasks(t *testing.T) {
 	envVars := map[string]string{
-		"SINK_JOB":    "",
-		"JOB_ID":      "46",
+		"SINK_MODULE": "",
+		"MODULE_ID":   "46",
 		"APP_ID":      "",
 		"GRPC_SERVER": "10.0.6.100",
 	}

@@ -33,7 +33,7 @@
           "type": "string"
         }
       },
-      "sinkJob": {
+      "sinkModule": {
         "type": "string"
       },
       "messageText": {

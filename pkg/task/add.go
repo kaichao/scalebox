@@ -40,8 +40,8 @@ func AddWithMapHeaders(message string, headers map[string]string, envVars map[st
 
 // AddTasks 增加一组task
 // 环境变量：
-// - SINK_JOB:
-// - JOB_ID:
+// - SINK_MODULE:
+// - MODULE_ID:
 // - APP_ID:
 // - REMOTE_SERVER:
 // - TIMEOUT_SECONDS

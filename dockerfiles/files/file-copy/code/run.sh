@@ -239,7 +239,7 @@ esac
 
 date --iso-8601=ns | sed 's/,/./' >> ${WORK_DIR}/timestamps.txt
 
-if [ -n "$SINK_JOB" ]; then
+if [ -n "$SINK_MODULE" ]; then
     echo "$1" > ${WORK_DIR}/messages.txt
 fi
 exit 0

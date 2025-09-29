@@ -106,7 +106,7 @@ prepare: get-pubkey
 	@ mkdir -p ~/.ssh ~/.scalebox/log
 	@ chmod 700 ~/.ssh
 	@ echo "alias app='scalebox app'" >> ~/.bash_profile
-	@ echo "alias job='scalebox job'" >> ~/.bash_profile
+	@ echo "alias module='scalebox module'" >> ~/.bash_profile
 	@ echo "alias task='scalebox task'" >> ~/.bash_profile
 	@ echo "export PATH=/usr/local/bin:/usr/local/sbin:\$$PATH" >> ~/.bashrc
 	@ # setup passwordless ssh from actuator to node

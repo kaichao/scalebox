@@ -10,7 +10,7 @@ Scalebox的主要对象：
 - 集群Cluster：
 - 主机Host：
 - 应用App：
-- Job：
+- Module：
 - 任务Task：
 - Slot：
 
@@ -20,7 +20,7 @@ Scalebox的主要对象：
 头节点上安装了单个scalebox集群的管理服务，主要包括：
 - actuator：启动端，负责在计算节点上启动slot；针对内联集群，直接通过免密ssh启动；针对外部集群，通过调用集群调度系统来启动。
 - controld：面向actuator、计算节点，提供基于grpc的控制端应用服务；
-- database：基于postgresql的核心数据库，存放app、job、task、slot等相关数据，面向controld等提供数据存储、检索等服务；也可面向计算节点、命令行工具提供直接数据库访问。
+- database：基于postgresql的核心数据库，存放app、module、task、slot等相关数据，面向controld等提供数据存储、检索等服务；也可面向计算节点、命令行工具提供直接数据库访问。
 
 头节点以及头节点服务（controld/actuator/database），可为多个集群所共享。
 

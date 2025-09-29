@@ -39,7 +39,7 @@ func GetDB() *sql.DB {
 	if len(databaseURL) == 0 {
 		pgHost := os.Getenv("PGHOST")
 		pgPort := os.Getenv("PGPORT")
-		if pgHost == "" && os.Getenv("JOB_NAME") != "" {
+		if pgHost == "" && os.Getenv("MODULE_NAME") != "" {
 			// in agent, set grpc server as default server
 			grpcServer := os.Getenv("GRPC_SERVER")
 			pgHost = strings.Split(grpcServer, ":")[0]
