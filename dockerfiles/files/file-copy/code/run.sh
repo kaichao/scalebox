@@ -48,7 +48,9 @@ echo "[DEBUG]source_mode:$source_mode,target_mode:$target_mode" >> ${WORK_DIR}/c
 case $source_mode in
 "LOCAL")
     case $target_mode in
-    "LOCAL")    exit 31 ;;
+    "LOCAL")    
+        echo "[ERROR] both source_mode and target_mode are local" >> ${WORK_DIR}/custom-out.txt
+        exit 31 ;;
     "SSH")
         echo "LOCAL-SSH"
         ssh_cmd=$(get_ssh_cmd "$2" "target_url" "target_jump")

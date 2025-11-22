@@ -33,7 +33,7 @@ default:
 all: reset import
 
 reset: down
-	@ docker volume rm -f server_pgdata
+	@ docker volume rm -f runtime_pgdata
 	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose up -d
 	@ sleep 25
 

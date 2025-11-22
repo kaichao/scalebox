@@ -335,7 +335,7 @@ scalebox app set-finished --module-id ${module_id}
 | batch-size    |             | 批量task添加中，指定批次大小。缺省值100。     |
 
 
-key-text可放在文件 ```${WORK_DIR}/task-body.txt```，该文件为多行文本，每行为一个消息体。
+key-text可放在文件 ```${WORK_DIR}/sink-tasks.txt```，该文件为多行文本，每行为一个消息体。
 
 消息文件每行格式如下：
 | 消息体类型          |  消息示例                                        |

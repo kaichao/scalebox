@@ -54,15 +54,16 @@ teardown: 清除环境
 集成程序：一般用bash写。将用户程序的结果写回。
 
 用户程序与集成程序间接口：
-- 输入消息文件：${WORK_DIR}/input-messages.txt，单次处理多个消息，可用于消息路由中批量消息的高效处理。设定环境变量BULK_MESSAGE_SIZE=n，缺省值为1.
 - 运行结果文件：${WORK_DIR}/task-exec.json
+- 输出task文件：${WORK_DIR}/sink-tasks.txt。原始文件为：${WORK_DIR}/messages.txt
 - 用户自定义时间戳：${WORK_DIR}/timestamps.txt
 - 运行附加属性文件：${WORK_DIR}/extra-attributes.txt，存放于t_task_exec表中extras的extra_attributes中。
 - 用户数据文件：${WORK_DIR}/custom-out.txt
 - 输入文件列表：${WORK_DIR}/input-files.txt
 - 输出文件列表：${WORK_DIR}/output-files.txt
 - 待删除文件列表：${WORK_DIR}/removed-files.txt
-- 输出消息文件：${WORK_DIR}/output-messages.txt。原始文件为：${WORK_DIR}/messages.txt
+
+- 批量task文件：${WORK_DIR}/batch-tasks.txt，单次处理多个消息，可用于消息路由中批量消息的高效处理。设定环境变量TASK_BATCH_SIZE=n，缺省值为1.
 
 - 多个初始化消息
 
@@ -72,8 +73,8 @@ teardown: 清除环境
 
 |  文件名  |  文件说明    |
 | --------- |  ------- |
-| /work/task-exec.json |  主控制文件，以json形式，用户程序运行结果 |
-| /work/messages.txt | 消息列表文件，产生后续模块所需的消息；每行一个消息 |
+| /work/task-exec.json | 主控制文件，以json形式，用户程序运行结果 |
+| /work/sink-tasks.txt | 后续任务列表文件，每行一个任务 |
 | /work/timestamps.txt |  时间戳文件，用于调试程序、测试程序性能时使用 |
 | /work/input-files.txt |  输入文件列表，用于统计输入文件字节数 |
 | /work/output-files.txt |  输出文件列表，用于统计输出文件字节数 |

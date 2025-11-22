@@ -241,14 +241,14 @@ cluster定义的示例如下：
 |  - tmpfs_workdir      |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）|
 |  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local_data_root的映射  |
 |  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射 |
-|  - wrap_debug            | WRAP_DEBUG             | 调试选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项  |
-|  - enable_trace          | TRACE                  |  调试程序选项，输出详细信息          |
+|  - wrap_debug            | WRAP_DEBUG             | 调试选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项(待删除)  |
+|  - enable_trace          | ENABLE_TRACE                  | 调试程序选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项          |
 |  - async_task_creation   | ASYNC_TASK_CREATION    |   （拟删除）                      |
 |  - slot_on_head          |                        |                                  |
 
 ### 2.7.3 module-parameters参数表
 
-| 参数名                  | 含义                                                                        |
+| 参数名                  | 说明                                                                        |
 | -------------------- | ---------------------------------------------------------------------------- |
 | priority             | 优先级(暂未使用)                                            |
 | key_group_regex      | 从消息中提取分组的正则表达式  （改名为group_regex?）            |
@@ -270,6 +270,7 @@ cluster定义的示例如下：
 | app_id_in_headers   | 返回的headers中，包含app_id值。 |
 | node_progress_gap | 标准流控参数，针对指定module同一组内node间运行同步，最快node与最慢node间的运行的task最大差值，其值为整数。在对应slot生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。该参数格式示例为```{"prefix1":4,"node_prefix2":6}```。该参数拟替换 task_progress_global_diff/task_progress_group_diff。|
 | vtask_size   | 标准流控参数，定义可同时处于就绪/运行状态的vtask 数量上限，在app解析时，创建对应信号量及初值。<br/>用于全局vtask流控的信号量名为：```vtask_size:${mod_name}```；<br/>用于SLOT-BOUND的vtask流控信号量名为：```slot_vtask_size:${mod_name}:${slot_id}```；<br/>用于HOST-BOUND的vtask流控信号量名为：```host_vtask_size:${mod_name}:${hostname}```|
+| vtask_role   | 'head' / 'core' / 'tail'，vtask处理中当前的角色。head是vtask处理的起始模块；tail是结束模块；core是算法模块。|
 
 
 ### 2.7.4 cluster-parameters参数表
