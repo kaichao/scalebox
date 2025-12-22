@@ -13,28 +13,21 @@ import (
 
 // Get ...
 func Get(name string, appID int) (string, error) {
-	sqlText := `
+	sqlFmt := `
 		WITH selected_rows AS (
 			SELECT name,value
 			FROM t_semaphore
-			WHERE app=$2 AND (name ~ $1)
+			WHERE app=$2 AND (name %s $1)
 			ORDER BY 1
 		)
 		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
 		FROM selected_rows
 	`
-	if !common.IsRegexString(name) {
-		sqlText = `
-			WITH selected_rows AS (
-				SELECT name,value
-				FROM t_semaphore
-				WHERE app=$2 AND (name = $1)
-				ORDER BY 1
-			)
-			SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-			FROM selected_rows
-		`
+	op := "="
+	if common.IsRegexString(name) {
+		op = "~"
 	}
+	sqlText := fmt.Sprintf(sqlFmt, op)
 	v := ""
 	if err := postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v); err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d), err-t=%T,err=%v",

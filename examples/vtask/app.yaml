@@ -1,0 +1,42 @@
+name: vtask.examples
+cluster: ${CLUSTER}
+parameters:
+  message_router: message-router
+
+modules:
+  vtask-head:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    parameters:
+      task_dist_mode: ${TASK_DIST_MODE}
+      vtask_role: head
+      vtask_size: 2
+      vtask_size_auto: yes
+    slots: 
+      - ${HEAD_SLOTS}
+
+  vtask-core:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      code_path: ${PWD}/modules/vtask-core/code
+    parameters:
+      task_dist_mode: ${CORE_MODE}
+      vtask_role: core
+    slots: 
+      - ${CORE_SLOTS}
+
+  vtask-tail:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      slot_options: slot_on_head
+    parameters:
+      vtask_role: tail
+      vtask_size_auto: yes
+
+  message-router:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      code_path: ${PWD}/mr-code
+      slot_options: slot_on_head
+      # slot_options: slot_on_head,reserved_on_exit
+    environments:
+      - TASK_DIST_MODE=${TASK_DIST_MODE}

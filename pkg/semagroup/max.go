@@ -7,20 +7,23 @@ import (
 )
 
 // GetMax 获取信号量组最大值
-func GetMax(semaExpr string, appID int) (int, error) {
+func GetMax(semaExpr string, appID int) (string, error) {
 	// 处理信号量表达式
 	semaExpr = processSemaExpr(semaExpr)
 
 	// 从t_semaphore表中，做postgres的sql查询
+	var name string
 	var maxValue int
 	err := postgres.GetDB().QueryRow(`
-		SELECT MAX(value) 
+		SELECT name, value
 		FROM t_semaphore 
-		WHERE name ~ $1 AND app = $2`,
-		semaExpr, appID).Scan(&maxValue)
+		WHERE name ~ $1 AND app = $2
+		ORDER BY value DESC, name ASC
+		LIMIT 1`,
+		semaExpr, appID).Scan(&name, &maxValue)
 	if err != nil {
-		return 0, fmt.Errorf("failed to query max semaphore value: %w", err)
+		return "", fmt.Errorf("failed to query max semaphore value: %w", err)
 	}
 
-	return maxValue, nil
+	return fmt.Sprintf(`"%s":%d`, name, maxValue), nil
 }

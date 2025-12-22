@@ -35,7 +35,7 @@
 
    developer/1_programming_model
    developer/2_app_design
-   developer/3_mod_spec
+   developer/3_mod_build
    developer/4_app_build
    developer/5_common_features
    developer/6_advanced_features

@@ -48,5 +48,5 @@ func Increment(semaExpr string, appID int) (string, error) {
 		return "", fmt.Errorf("failed to commit transaction: %w", err)
 	}
 
-	return fmt.Sprintf("%s:%d", name, value+1), nil
+	return fmt.Sprintf(`"%s":%d`, name, value+1), nil
 }

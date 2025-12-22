@@ -13,11 +13,11 @@ import (
 func TestDiffMax(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 32
-	// semaphore.Create("node_progress:my-mod:n-00", 2, appID)
-	// semaphore.Create("node_progress:my-mod:n-01", 2, appID)
-	// semaphore.Create("node_progress:my-mod:n-10", 3, appID)
-	// semaphore.Create("node_progress:my-mod:n-11", 3, appID)
+	appID := 1
+	semaphore.Create("node_progress:my-mod:n-00", 2, appID)
+	semaphore.Create("node_progress:my-mod:n-01", 2, appID)
+	semaphore.Create("node_progress:my-mod:n-10", 3, appID)
+	semaphore.Create("node_progress:my-mod:n-11", 3, appID)
 
 	v, err := semagroup.DiffMax("(node_progress:node-progress-gap:n-0)0", appID)
 	if err != nil {
@@ -29,7 +29,7 @@ func TestDiffMax(t *testing.T) {
 func TestIncrement(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 17
+	appID := 1
 	semaphore.Create("node_progress:my-mod:n-00", 1, appID)
 	semaphore.Create("node_progress:my-mod:n-01", 2, appID)
 	semaphore.Create("node_progress:my-mod:n-10", 3, appID)

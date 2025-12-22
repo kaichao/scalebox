@@ -9,6 +9,7 @@ import (
 )
 
 // GroupDistance ...
+// Deprecated
 func GroupDistance(name string, appID int) (int, error) {
 	sqlText := `
         WITH current_host AS (
@@ -38,6 +39,7 @@ func GroupDistance(name string, appID int) (int, error) {
 }
 
 // GlobalDistance ...
+// Deprecated
 func GlobalDistance(name string, appID int) (int, error) {
 	sqlText := `
         WITH current_host AS (
