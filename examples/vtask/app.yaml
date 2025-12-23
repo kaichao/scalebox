@@ -10,7 +10,7 @@ modules:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
       vtask_size: 2
-      vtask_size_auto: yes
+      # vtask_auto_count: no
     slots: 
       - ${HEAD_SLOTS}
 

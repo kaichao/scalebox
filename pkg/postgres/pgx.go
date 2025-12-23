@@ -78,7 +78,7 @@ func initPool() {
 	s = os.Getenv("PG_MIN_CONNS")
 	minConns, err := strconv.Atoi(s)
 	if err != nil || minConns <= 0 {
-		minConns = 2
+		minConns = 5
 	}
 
 	// 配置连接存活时间和空闲时间
@@ -98,6 +98,7 @@ func initPool() {
 	config.MinConns = int32(minConns)
 	config.MaxConnLifetime = time.Duration(maxConnLifetime) * time.Minute
 	config.MaxConnIdleTime = time.Duration(maxConnIdleTime) * time.Minute
+	config.HealthCheckPeriod = 1 * time.Minute
 
 	// 创建连接池
 	ctx := context.Background()

@@ -1,20 +1,5 @@
 package exec
 
-import (
-	"bytes"
-	"context"
-	"fmt"
-	"io"
-	"os"
-	"os/exec"
-	"strings"
-	"sync"
-	"syscall"
-	"time"
-
-	"github.com/sirupsen/logrus"
-)
-
 // ExecShellCommandWithExitCode ...
 // Deprecated
 // if timeout <= 0  then no timeout
@@ -72,6 +57,7 @@ import (
 //   - 超时情况下，返回退出码 124 和 err = "command timed out"
 //   - 命令以非零退出码结束时，返回该退出码，err 为 nil
 //   - 其他未预期的错误通过 err 返回，退出码为 125
+/*
 func ExecCommandReturnAll(command string, timeout int) (int, string, string, error) {
 	baseCtx := context.Background()
 	ctx := baseCtx
@@ -202,3 +188,4 @@ func ExecWithRetries(cmd string, numRetries int, timeout int) int {
 	}
 	return code
 }
+*/

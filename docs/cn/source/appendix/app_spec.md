@@ -232,7 +232,7 @@ cluster定义的示例如下：
 | task_batch_size       | TASK_BATCH_SIZE | 单次批量处理的任务数量。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。设置slot单批次读取的最大消息数，缺省值为1。 |
 | heartbeat_seconds     | HEARTBEAT_SECONDS      | 以秒计的心跳间隔，缺省值为60；若为非正整数，则禁用心跳操作 |
 | output_text_size      | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
-| text_tranc_mode       | TEXT_TRANC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分           |
+| text_trunc_mode       | TEXT_TRUNC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分          |
 | timezone_mode         |                        | HOST'/'UTC'/'NONE'                                                |
 | max_slot_workdir_gb   |                        |        未使用                       |
 | slot_options          |                        | 逗号分隔的slot选项                                                  |
@@ -261,17 +261,17 @@ cluster定义的示例如下：
 | slot_recoverable     | 'yes'，支持将出错后已退出的slot从'ERROR'设置为'READY'，以支持slot级重试 (以slot_max_retries替换？,TIMED-OUT/GREEDY分别处理)  |
 | slot_max_retries     | slot状态从'TIMED-OUT'设置为'READY'的重试次数(?)          |
 | slot_timeout_minutes | 若slot未正常启动，则一直处于'STARTING'状态。设置以分钟计的timeout，到期后将状态转换为'TIMEOUT'。缺省值为15分钟。对于不允许重复启动的slot实例（用GPU等），可设置较大值。 |
-| task_global_timeout_scale | 若外部原因（slot异常退出等）导致task一直处于运行状态（状态码-3）。通过全局超时设置，恢复task状态码为123。该值为相对task_max_seconds的倍数，缺省值为2.0。全局退出设定返回码123。 |
+| task_global_timeout_scale | 若外部原因（slot异常退出等）导致task一直处于运行状态（状态码-3）。通过全局超时设置，恢复task状态码为123。该值为相对task_max_seconds的倍数，缺省值为2.0。全局退出设定返回码123。 拟改为task_timeout_scale_factor ？|
 | message_router_index | 多消息路由的应用环境中，指定当前module发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
 | pod_id               | 标识本module属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
-| task_cache_expired_minutes | 你改名为task_dedup_cache_ttl_minutes。任务去重缓存的生存时间，在高负载时需设置。设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间需大于```task_max_seconds```的值。 |
-| visiable             | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
+| task_dedup_cache_ttl_minutes | 任务去重缓存的生存时间，在高负载时需设置。设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间需大于```task_max_seconds```的值。 |
+| visible              | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | task_id_in_headers   | 返回的headers中，包含task_id值。|
-| app_id_in_headers   | 返回的headers中，包含app_id值。 |
-| node_progress_gap | 标准流控参数，针对指定module同一组内node间运行同步，最快node与最慢node间的运行的task最大差值，其值为整数。在对应slot生成时，自动创建对应信号量，其名称为```task_progress:${mod_name}:${hostname}```，初值为0。该参数格式示例为```{"prefix1":4,"node_prefix2":6}```。该参数拟替换 task_progress_global_diff/task_progress_group_diff。|
+| app_id_in_headers    | 返回的headers中，包含app_id值。 |
+| node_progress_gap    | 标准流控参数，针对指定module同一组内node间运行同步，最快node与最慢node间的运行的task最大差值，其值为整数。在对应slot生成时，自动创建对应信号量，其名称为```node_progress:${mod_name}:${hostname}```，初值为0。该参数格式示例为```{"prefix1":4,"node_prefix2":6}```。该参数拟替换为node_progress_max_gap？ |
 | vtask_role   | 'head' / 'core' / 'tail'，vtask处理中当前的角色，仅针对非路由模块有效。head是vtask处理的起始模块；tail是结束模块；core是算法模块。|
 | vtask_size   | 标准流控参数，定义可同时处于就绪/运行状态的vtask 数量上限，在app解析时，创建对应信号量及初值。<br/>用于全局vtask流控的信号量名为：```vtask_size:${mod_name}```；<br/>用于SLOT-BOUND的vtask流控信号量名为：```slot_vtask_size:${mod_name}:${slot_id}```；<br/>用于HOST-BOUND的vtask流控信号量名为：```host_vtask_size:${mod_name}:${hostname}```|
-| vtask_auto_count   | 'yes' / 'no'。针对vtask_role为'head'/'tail'的模块，是否自动调整信号量```vtask_size:...```的计数。|
+| vtask_auto_count   | 'yes' / 'no'。针对vtask_role为'head'的模块，是否自动调整信号量```vtask_size:...```的计数。若设为'no'，则无流控效果，需用户自行操作信号量。|
 
 
 ### 2.7.4 cluster-parameters参数表

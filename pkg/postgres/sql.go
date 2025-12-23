@@ -81,19 +81,19 @@ func GetDB() *sql.DB {
 	s := os.Getenv("PG_MAX_IDLE_CONNS")
 	maxIdles, _ := strconv.Atoi(s)
 	if maxIdles <= 0 {
-		maxIdles = 50
+		maxIdles = 2
 	}
 	s = os.Getenv("PG_MAX_OPEN_CONNS")
 	maxOpens, _ := strconv.Atoi(s)
 	if maxOpens <= 0 {
-		maxOpens = 20
+		maxOpens = 4
 	}
 	// set database connection
 	var err error
 	if db, err = sql.Open("pgx", databaseURL); err != nil {
 		log.Fatal("Unable to connect to database:", err)
 	}
-	db.SetConnMaxLifetime(500)
+	db.SetConnMaxLifetime(300 * time.Second)
 	db.SetMaxIdleConns(maxIdles)
 	db.SetMaxOpenConns(maxOpens)
 	// db.Stats()

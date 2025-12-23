@@ -1,11 +1,6 @@
 package exec
 
-import (
-	"os"
-
-	"github.com/sirupsen/logrus"
-)
-
+/*
 func init() {
 	level, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
 	if err != nil {
@@ -14,3 +9,4 @@ func init() {
 	logrus.SetLevel(level)
 	logrus.SetReportCaller(true)
 }
+*/

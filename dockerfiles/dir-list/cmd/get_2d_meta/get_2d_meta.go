@@ -89,7 +89,7 @@ func main() {
 	// }
 
 	// replace all blank char
-	format := regexp.MustCompile("\\s+").ReplaceAllString(fmtDataSet, "")
+	format := regexp.MustCompile(`\s+`).ReplaceAllString(fmtDataSet, "")
 	fmt.Printf(format, dataset, width, minY, height)
 	os.Exit(0)
 }

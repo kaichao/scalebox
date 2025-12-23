@@ -1,10 +1,6 @@
 package exec
 
-import (
-	"fmt"
-	"testing"
-)
-
+/*
 func TestExecSSH(t *testing.T) {
 	config := SSHConfig{
 		User: "scalebox",
@@ -19,3 +15,4 @@ func TestExecSSH(t *testing.T) {
 		fmt.Printf("ExitCode: %d, Stdout: %s, Stderr: %s\n", exitCode, stdout, stderr)
 	}
 }
+*/

@@ -1,19 +1,6 @@
 package exec
 
-import (
-	"bytes"
-	"context"
-	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"sync"
-	"time"
-
-	"github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh"
-)
-
+/*
 // SSHConfig defines SSH connection parameters.
 type SSHConfig struct {
 	User     string
@@ -218,3 +205,4 @@ func cleanupPidFile(clientConfig *ssh.ClientConfig, config SSHConfig, pidFile st
 		logrus.Errorf("cleanup pid file: failed to remove %s: %v", pidFile, err)
 	}
 }
+*/
