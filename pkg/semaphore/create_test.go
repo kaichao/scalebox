@@ -17,3 +17,16 @@ func TestCreateJSONSemaphores(t *testing.T) {
 
 	semaphore.CreateJSONSemaphores(jsonText, appID, 10)
 }
+
+func TestCreateSemaphores(t *testing.T) {
+	os.Setenv("PGHOST", "10.0.6.100")
+
+	appID := 3
+	lines := []string{
+		`"sema-1":10`,
+		`"sema-2":20`,
+		`"sema-3":30`,
+	}
+
+	semaphore.CreateSemaphores(lines, appID, 10)
+}

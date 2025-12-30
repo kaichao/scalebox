@@ -30,13 +30,11 @@ modules:
       slot_options: slot_on_head
     parameters:
       vtask_role: tail
-      vtask_size_auto: yes
 
   message-router:
     base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/mr-code
       slot_options: slot_on_head
-      # slot_options: slot_on_head,reserved_on_exit
     environments:
       - TASK_DIST_MODE=${TASK_DIST_MODE}

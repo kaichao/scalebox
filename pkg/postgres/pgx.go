@@ -21,7 +21,7 @@ func getPgxConnString() string {
 		// in agent, set grpc server as default server
 		grpcServer := os.Getenv("GRPC_SERVER")
 		pgHost = strings.Split(grpcServer, ":")[0]
-		fmt.Fprintf(os.Stderr, "[INFO] %s Set GRPC_SERVER %s as default db server.\n",
+		logrus.Infof("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
 			time.Now().Format("15:04:05.000"), grpcServer)
 	}
 	if pgHost == "" {

@@ -26,8 +26,8 @@ services:
       - SYS_NICE
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /tmp/scalebox/log/controld:/tmp/scalebox/log/controld
-      - /tmp/scalebox/controld-profile:/profile
+      - log:/controld:/tmp/scalebox/log/controld
+      - profile:/controld-profile:/profile
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=localhost:50051"]
       interval: 10s
@@ -64,10 +64,8 @@ services:
       - SYS_NICE
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - /tmp/scalebox/log/actuator:/tmp/scalebox/log/actuator
-      - /tmp/scalebox/actuator-profile:/profile
-    # for k8s
-      - ${HOME}/.kube:/root/.kube
+      - log:/actuator:/tmp/scalebox/log/actuator
+      - profile:/actuator-profile:/profile
     depends_on:
       controld:
         condition: service_healthy
@@ -106,3 +104,6 @@ services:
 
 volumes:
   pgdata:
+  profile:
+  log:
+

@@ -12,6 +12,7 @@ import (
 	// Register pgx driver with database/sql
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"github.com/kaichao/scalebox/pkg/common"
+	"github.com/sirupsen/logrus"
 )
 
 // NewSQLNullString ...
@@ -43,7 +44,7 @@ func GetDB() *sql.DB {
 			// in agent, set grpc server as default server
 			grpcServer := os.Getenv("GRPC_SERVER")
 			pgHost = strings.Split(grpcServer, ":")[0]
-			fmt.Fprintf(os.Stderr, "[INFO] %s Set GRPC_SERVER %s as default db server.\n",
+			logrus.Infof("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
 				time.Now().Format("15:04:05.000"), grpcServer)
 		}
 		if pgHost == "" {
@@ -81,7 +82,7 @@ func GetDB() *sql.DB {
 	s := os.Getenv("PG_MAX_IDLE_CONNS")
 	maxIdles, _ := strconv.Atoi(s)
 	if maxIdles <= 0 {
-		maxIdles = 2
+		maxIdles = 1
 	}
 	s = os.Getenv("PG_MAX_OPEN_CONNS")
 	maxOpens, _ := strconv.Atoi(s)
@@ -93,7 +94,8 @@ func GetDB() *sql.DB {
 	if db, err = sql.Open("pgx", databaseURL); err != nil {
 		log.Fatal("Unable to connect to database:", err)
 	}
-	db.SetConnMaxLifetime(300 * time.Second)
+	// 设置较短间隔，主要不用作连接池
+	db.SetConnMaxLifetime(1 * time.Second)
 	db.SetMaxIdleConns(maxIdles)
 	db.SetMaxOpenConns(maxOpens)
 	// db.Stats()
