@@ -4,13 +4,20 @@ parameters:
   message_router: message-router
 
 modules:
+  wait-queue:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      slot_options: slot_on_head
+    parameters:
+      vtask_size: 1
+
   vtask-head:
     base_image: hub.cstcloud.cn/scalebox/agent:latest
     parameters:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
       vtask_size: 2
-      # vtask_auto_count: no
+      vtask_auto_count: ${VTASK_AUTO_COUNT}
     slots: 
       - ${HEAD_SLOTS}
 

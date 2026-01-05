@@ -6,16 +6,19 @@
 - 节点本地计算的组织；
 
 包括：
-- vtask-head：vtask起始标识模块
+- wait-queue：仅用于组模式的定制流控
+- vtask-head：vtask起始标识模块。组模式下，多个slot需部署在单节点上。
 - vtask-core：vtask核心处理模块，可为多个；
 - vtask-tail：vtask结束标识模块。task的主体（body）与vtask-head一致。
 
-- task_dist_mode设置
-|            |    全局模式    |    节点模式     |    组模式       |
-| ---------- | ------------- | ------------- | -------------- |
-| vtask-head |               |  HOST-BOUND   |  SLOT-BOUND    |
-| vtask-core |               |  HOST-BOUND   |  HOST-BOUND    |
-| vtask-tail |               |               |                |
+task_dist_mode设置
+
+|            |   全局模式   |   节点模式   |   组模式    |
+| ---------- | ----------- | ---------- | ---------- |
+| wait-queue |             |            |            |
+| vtask-head |             | HOST-BOUND | SLOT-BOUND |
+| vtask-core |             | HOST-BOUND | HOST-BOUND |
+| vtask-tail |             |            |            |
 
 
 ## 1. default 
@@ -71,6 +74,7 @@ export TASK_DIST_MODE=SLOT-BOUND
 export HEAD_SLOTS=h0:2
 export CORE_MODE=HOST-BOUND
 export CORE_SLOTS=n[01]-[01]
+export VTASK_AUTO_COUNT=no
 app_id=$( cat slot-tasks.txt | scalebox app run | cut -d':' -f2 | tr -d '}' )
 
 ```

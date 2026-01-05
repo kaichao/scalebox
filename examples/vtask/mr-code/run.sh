@@ -16,6 +16,9 @@ fi
 echo "from_module:$from_module"
 
 case $from_module in
+    "wait-queue")
+        "${code_dir}/from-wait-queue.sh" "$1"
+        ;;
     "vtask-head")
         "${code_dir}/from-vtask-head.sh" "$1"
         ;;

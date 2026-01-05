@@ -1,7 +1,7 @@
 #!/bin/bash
 
-sleep 30s
+sleep 120s
 
 scalebox task add $1
 
-exit 0
+exit $?
