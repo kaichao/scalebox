@@ -24,7 +24,7 @@ func AddValue(name string, appID int, delta int) (string, error) {
 		FROM updated_rows
 	`
 	op := "="
-	if !common.IsRegexString(name) {
+	if common.IsRegexString(name) {
 		op = "~"
 	}
 	sqlText := fmt.Sprintf(sqlFmt, op)

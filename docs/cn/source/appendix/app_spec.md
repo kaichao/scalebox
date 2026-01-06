@@ -271,7 +271,7 @@ cluster定义的示例如下：
 | node_progress_gap    | 标准流控参数，针对指定module同一组内node间运行同步，最快node与最慢node间的运行的task最大差值，其值为整数。在对应slot生成时，自动创建对应信号量，其名称为```node_progress:${mod_name}:${hostname}```，初值为0。该参数格式示例为```{"prefix1":4,"node_prefix2":6}```。该参数拟替换为node_progress_max_gap？ |
 | vtask_role   | 'head' / 'core' / 'tail'，vtask处理中当前的角色，仅针对非路由模块有效。head是vtask处理的起始模块；tail是结束模块；core是算法模块。|
 | vtask_size   | 标准流控参数，定义可同时处于就绪/运行状态的vtask 数量上限，在app解析时，创建对应信号量及初值。<br/>用于全局vtask流控的信号量名为：```vtask_size:${mod_name}```；<br/>用于SLOT-BOUND的vtask流控信号量名为：```slot_vtask_size:${mod_name}:${slot_id}:${slot_seq}```；<br/>用于HOST-BOUND的vtask流控信号量名为：```host_vtask_size:${mod_name}:${hostname}```|
-| vtask_auto_count   | 'yes' / 'no'。仅针对vtask_role为'head'/''的模块有效。标识是否自动调整信号量```vtask_size:...```的计数。若设为'no'，需用户自行操作信号量。|
+| vtask_size_sema_copy | 'no' / 'yes'。为vtask_size信号量生成一个拷贝，用于编程控制。拷贝信号量名称为原始信号量前加冒号```:```，初值与原始信号量相同。|
 
 
 ### 2.7.4 cluster-parameters参数表
