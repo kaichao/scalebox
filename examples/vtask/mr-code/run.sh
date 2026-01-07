@@ -17,19 +17,19 @@ echo "from_module:$from_module"
 
 case $from_module in
     "wait-queue")
-        "${code_dir}/from-wait-queue.sh" "$1"
+        "${code_dir}/from-wait-queue.sh" "$1" "$2"
         ;;
     "vtask-head")
-        "${code_dir}/from-vtask-head.sh" "$1"
+        "${code_dir}/from-vtask-head.sh" "$1" "$2"
         ;;
     "vtask-core")
-        "${code_dir}/from-vtask-core.sh" "$1"
+        "${code_dir}/from-vtask-core.sh" "$1" "$2"
         ;;
     "vtask-tail")
-        "${code_dir}/from-vtask-tail.sh" "$1"
+        "${code_dir}/from-vtask-tail.sh" "$1" "$2"
         ;;
     *)
-        "${code_dir}/default.sh" "$1"
+        "${code_dir}/default.sh" "$1" "$2"
         ;;
 esac
 

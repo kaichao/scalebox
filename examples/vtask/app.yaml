@@ -9,6 +9,7 @@ modules:
     arguments:
       slot_options: slot_on_head
     parameters:
+      # 避免提早分配资源，使得vtask在wait-queue中
       vtask_size: 1
 
   vtask-head:
@@ -17,7 +18,7 @@ modules:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
       vtask_size: 2
-      vtask_auto_count: ${VTASK_AUTO_COUNT}
+      vtask_size_sema_copy: yes
     slots: 
       - ${HEAD_SLOTS}
 
@@ -28,7 +29,9 @@ modules:
     parameters:
       task_dist_mode: ${CORE_MODE}
       vtask_role: core
-    slots: 
+    environments:
+      - RUNNING_SECONDS=${RUNNING_SECONDS}
+    slots:
       - ${CORE_SLOTS}
 
   vtask-tail:
