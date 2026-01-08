@@ -3,11 +3,16 @@ package semagroup
 import (
 	"fmt"
 	"regexp"
+
+	"github.com/kaichao/scalebox/pkg/common"
 )
 
-// processSemaExpr 处理信号量表达式
-func processSemaExpr(semaExpr string) string {
-	// 不再自动添加通配符
+// encodedSemaExpr 处理信号量表达式
+func encodedSemaExpr(semaExpr string) string {
+	// 首字母不是regex元字符，自动添加^
+	if !common.IsRegexString(semaExpr[0:1]) {
+		return "^" + semaExpr
+	}
 	return semaExpr
 }
 

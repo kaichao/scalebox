@@ -10,7 +10,7 @@ import (
 // 信号量表达式定义与GetMax/GetMin相同
 func Decrement(semaExpr string, appID int) (string, error) {
 	// 处理信号量表达式
-	semaExpr = processSemaExpr(semaExpr)
+	semaExpr = encodedSemaExpr(semaExpr)
 
 	// 在事务中执行查询和更新
 	tx, err := postgres.GetDB().Begin()

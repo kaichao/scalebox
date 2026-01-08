@@ -9,7 +9,7 @@ import (
 // GetMin 获取信号量组最小值
 func GetMin(semaExpr string, appID int) (string, error) {
 	// 处理信号量表达式
-	semaExpr = processSemaExpr(semaExpr)
+	semaExpr = encodedSemaExpr(semaExpr)
 
 	// 从t_semaphore表中，做postgres的sql查询
 	var name string

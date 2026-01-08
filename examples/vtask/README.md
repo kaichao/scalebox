@@ -66,9 +66,8 @@ app_id=$( cat host-tasks.txt | scalebox app run | cut -d':' -f2 | tr -d '}' )
 ### 2.2 increment semaphore
 
 ```sh
-scalebox semaphore increment --app-id=${app_id} host_vtask_size:vtask-head:n-00
+scalebox semaphore increment --app-id=${app_id} host_vtask_size:wait-queue
 
-scalebox semaphore increment --app-id=${app_id} host_vtask_size:vtask-head:n-01
 ```
 
 ## 3. slot-bound
@@ -91,16 +90,6 @@ app_id=$( cat slot-tasks.txt | scalebox app run | cut -d':' -f2 | tr -d '}' )
 ### 3.2 add tasks
 
 ```sh
-export slot_id=15
-for i in {0..3}; do
-  echo "$i"
-  scalebox task add --app-id=$app_id --header to_slot=$slot_id 0${i}0
-  scalebox task add --app-id=$app_id --header to_slot=$((slot_id+1)) 0${i}1
-done
-
-```
-或
-```sh
 for i in {0..3}; do
   echo "$i"
   scalebox task add --app-id=$app_id --header to_slot_index=$i 0${i}0
@@ -112,7 +101,5 @@ done
 ### 3.3 increment semaphore
 
 ```sh
-scalebox semaphore increment --app-id=${app_id} vtask_size:vtask-head:$slot_id
-
-scalebox semaphore increment --app-id=${app_id} vtask_size:vtask-head:$((slot_id+1))
+scalebox semaphore increment --app-id=${app_id} host_vtask_size:wait-queue
 ```

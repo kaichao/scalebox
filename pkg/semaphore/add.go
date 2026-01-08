@@ -26,6 +26,10 @@ func AddValue(name string, appID int, delta int) (string, error) {
 	op := "="
 	if common.IsRegexString(name) {
 		op = "~"
+		if !common.IsRegexString(name[0:1]) {
+			// 首字母不是regex元字符，自动添加^
+			name = "^" + name
+		}
 	}
 	sqlText := fmt.Sprintf(sqlFmt, op)
 	v := ""

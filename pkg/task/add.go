@@ -14,7 +14,7 @@ import (
 )
 
 // Add ...
-func Add(message string, headers string, envVars map[string]string) int {
+func Add(body string, headers string, envVars map[string]string) int {
 	parts := make([]string, 0, len(envVars))
 	for k, v := range envVars {
 		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
@@ -24,7 +24,7 @@ func Add(message string, headers string, envVars map[string]string) int {
 		headers = "{}"
 	}
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
-		strings.Join(parts, " "), headers, message)
+		strings.Join(parts, " "), headers, body)
 	code, err := exec.RunReturnExitCode(cmd, 15)
 	if err != nil {
 		logrus.Errorf("tasks-add, err-info:%v", err)
@@ -34,8 +34,8 @@ func Add(message string, headers string, envVars map[string]string) int {
 }
 
 // AddWithMapHeaders ...
-func AddWithMapHeaders(message string, headers map[string]string, envVars map[string]string) int {
-	return Add(message, mapToCleanJSON(headers), envVars)
+func AddWithMapHeaders(body string, headers map[string]string, envVars map[string]string) int {
+	return Add(body, mapToCleanJSON(headers), envVars)
 }
 
 // AddTasks 增加一组task
@@ -45,14 +45,14 @@ func AddWithMapHeaders(message string, headers map[string]string, envVars map[st
 // - APP_ID:
 // - REMOTE_SERVER:
 // - TIMEOUT_SECONDS
-func AddTasks(messages []string, headers string, envVars map[string]string) int {
+func AddTasks(bodies []string, headers string, envVars map[string]string) int {
 	parts := make([]string, 0, len(envVars))
 	for k, v := range envVars {
 		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
 	}
 
 	taskFile := "my-tasks.txt"
-	for _, m := range messages {
+	for _, m := range bodies {
 		common.AppendToFile(taskFile, m)
 	}
 	if headers == "" {
@@ -81,8 +81,8 @@ func AddTasks(messages []string, headers string, envVars map[string]string) int 
 }
 
 // AddTasksWithMapHeaders ...
-func AddTasksWithMapHeaders(messages []string, headers map[string]string, envVars map[string]string) int {
-	return AddTasks(messages, mapToCleanJSON(headers), envVars)
+func AddTasksWithMapHeaders(bodies []string, headers map[string]string, envVars map[string]string) int {
+	return AddTasks(bodies, mapToCleanJSON(headers), envVars)
 }
 
 func mapToCleanJSON(m map[string]string) string {
