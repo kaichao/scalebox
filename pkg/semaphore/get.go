@@ -12,17 +12,26 @@ import (
 )
 
 // Get ...
-func Get(name string, appID int) (string, error) {
-	sqlFmt := `
-		WITH selected_rows AS (
-			SELECT name,value
-			FROM t_semaphore
-			WHERE app=$2 AND (name %s $1)
-			ORDER BY 1
-		)
-		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-		FROM selected_rows
-	`
+func Get(name string, vtaskID int, appID int) (string, error) {
+	// 构建SQL查询，考虑vtaskID参数
+	sqlFmt := ""
+	sqlFmt = `
+			WITH selected_rows AS (
+				SELECT name,value
+				FROM t_semaphore
+				WHERE app=$2 AND (name %s $1) AND %s
+				ORDER BY 1
+			)
+			SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
+			FROM selected_rows
+		`
+
+	vtaskExpr := "vtask IS NULL"
+	if vtaskID > 0 {
+		// vtaskID > 0 时，需要匹配vtask参数
+		vtaskExpr = "vtask = $3"
+	}
+
 	op := "="
 	if common.IsRegexString(name) {
 		op = "~"
@@ -31,11 +40,19 @@ func Get(name string, appID int) (string, error) {
 			name = "^" + name
 		}
 	}
-	sqlText := fmt.Sprintf(sqlFmt, op)
-	v := ""
-	if err := postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v); err != nil {
-		errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d), err-t=%T,err=%v",
-			name, appID, err, err)
+	sqlText := fmt.Sprintf(sqlFmt, op, vtaskExpr)
+
+	var v string
+	var err error
+	if vtaskID <= 0 {
+		err = postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
+	} else {
+		err = postgres.GetDB().QueryRow(sqlText, name, appID, vtaskID).Scan(&v)
+	}
+
+	if err != nil {
+		errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d,vtask:%d), err-t=%T,err=%v",
+			name, appID, vtaskID, err, err)
 		logrus.Errorln(errInfo)
 		return "", err
 	}
@@ -48,14 +65,14 @@ func Get(name string, appID int) (string, error) {
 		// not-defined semaphore
 		if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
 			// create semaphore first time
-			if err := Create(name, 0, appID); err != nil {
-				logrus.Errorf(" Semaphore (name:%s,app-id:%d), create error,err-info:%v\n",
-					name, appID, err)
+			if err := Create(name, 0, vtaskID, appID); err != nil {
+				logrus.Errorf(" Semaphore (name:%s,app-id:%d,vtask:%d), create error,err-info:%v\n",
+					name, appID, vtaskID, err)
 				return "", err
 			}
 			return "0", nil
 		}
-		errInfo := fmt.Sprintf("[ERROR]Semaphore(name:%s,app-id:%d) not-found", name, appID)
+		errInfo := fmt.Sprintf("[ERROR]Semaphore(name:%s,app-id:%d,vtask:%d) not-found", name, appID, vtaskID)
 		logrus.Errorln(errInfo)
 		return "", errors.New(errInfo)
 	}

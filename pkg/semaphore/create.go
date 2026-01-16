@@ -13,20 +13,24 @@ import (
 )
 
 // Create ...
-func Create(name string, value int, appID int) error {
+func Create(name string, value int, vtaskID int, appID int) error {
+	pVtask := &vtaskID
+	if vtaskID <= 0 {
+		pVtask = nil
+	}
 	// overwrite existing
 	sqlText := `
-		INSERT INTO t_semaphore(name,value,value0,app)
-		VAlUES($1,$2,$2,$3)
-		ON CONFLICT (name, app)
+		INSERT INTO t_semaphore(name,value,value0,vtask,app)
+		VAlUES($1,$2,$2,$3,$4)
+		ON CONFLICT (name, vtask, app)
 			DO UPDATE SET
     		value  = EXCLUDED.value,
     		value0 = EXCLUDED.value0
 	`
 
-	if _, err := postgres.GetDB().Exec(sqlText, name, value, appID); err != nil {
-		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,app-id=%d,err=%v",
-			name, value, appID, err)
+	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
+		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,err=%v",
+			name, value, vtaskID, appID, err)
 		logrus.Errorln(errInfo)
 		return err
 	}
@@ -34,7 +38,7 @@ func Create(name string, value int, appID int) error {
 }
 
 // CreateSemaphores ...
-func CreateSemaphores(lines []string, appID int, batchSize int) error {
+func CreateSemaphores(lines []string, vtaskID int, appID int, batchSize int) error {
 	var semas []*Sema
 	re := regexp.MustCompile(`"([^"]+)":(\d+)`)
 	for _, line := range lines {
@@ -47,11 +51,11 @@ func CreateSemaphores(lines []string, appID int, batchSize int) error {
 			logrus.Errorf("Not matched semaphore :%s,\n", line)
 		}
 	}
-	return createSemaphores(semas, appID, batchSize)
+	return createSemaphores(semas, vtaskID, appID, batchSize)
 }
 
 // CreateFileSemaphores ...
-func CreateFileSemaphores(fileName string, appID int, batchSize int) error {
+func CreateFileSemaphores(fileName string, vtaskID int, appID int, batchSize int) error {
 	lines, err := common.GetTextFileLines(fileName)
 	if err != nil {
 		logrus.Errorf("file-name:%s, err-info:%v\n", fileName, err)
@@ -72,11 +76,11 @@ func CreateFileSemaphores(fileName string, appID int, batchSize int) error {
 			logrus.Errorf("Not matched semaphore :%s,\n", line)
 		}
 	}
-	return createSemaphores(semas, appID, batchSize)
+	return createSemaphores(semas, vtaskID, appID, batchSize)
 }
 
 // CreateJSONSemaphores ...
-func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
+func CreateJSONSemaphores(jsonText string, vtaskID int, appID int, batchSize int) error {
 	// Define a struct type for the semaphores
 	type semaItem struct {
 		Name  string `json:"name"`
@@ -117,7 +121,7 @@ func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
 	}
 
 	logrus.Debugf("Unmarshalled %d semaphores from JSON text", len(ordered))
-	return createSemaphores(ordered, appID, batchSize)
+	return createSemaphores(ordered, vtaskID, appID, batchSize)
 }
 
 // Sema ...
@@ -126,7 +130,11 @@ type Sema struct {
 	Value int
 }
 
-func createSemaphores(ordered []*Sema, appID int, batchSize int) error {
+func createSemaphores(ordered []*Sema, vtaskID int, appID int, batchSize int) error {
+	pVtask := &vtaskID
+	if vtaskID <= 0 {
+		pVtask = nil
+	}
 	// start transaction
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
@@ -137,9 +145,9 @@ func createSemaphores(ordered []*Sema, appID int, batchSize int) error {
 
 	// ignore existing
 	sqlText := `
-		INSERT INTO t_semaphore(name,value,value0,app) 
-		VALUES($1,$2,$2,$3)
-		ON CONFLICT (name, app) DO NOTHING; 
+		INSERT INTO t_semaphore(name,value,value0,vtask,app) 
+		VALUES($1,$2,$2,$3,$4)
+		ON CONFLICT (name, vtask, app) DO NOTHING; 
 	`
 
 	for i := 0; i < len(ordered); i += batchSize {
@@ -155,7 +163,7 @@ func createSemaphores(ordered []*Sema, appID int, batchSize int) error {
 		}
 
 		for _, v := range ordered[i:end] {
-			if _, err := stmt.Exec(v.Name, v.Value, appID); err != nil {
+			if _, err := stmt.Exec(v.Name, v.Value, pVtask, appID); err != nil {
 				logrus.Errorf("err:%v\n", err)
 				return err
 			}
