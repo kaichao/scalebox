@@ -18,19 +18,40 @@ func Create(name string, value int, vtaskID int, appID int) error {
 	if vtaskID <= 0 {
 		pVtask = nil
 	}
-	// overwrite existing
-	sqlText := `
-		INSERT INTO t_semaphore(name,value,value0,vtask,app)
-		VAlUES($1,$2,$2,$3,$4)
-		ON CONFLICT (name, vtask, app)
-			DO UPDATE SET
-    		value  = EXCLUDED.value,
-    		value0 = EXCLUDED.value0
-	`
+
+	// 根据环境变量 SEMAPHORE_CONFLICT_ACTION 决定冲突处理逻辑
+	conflictAction := os.Getenv("SEMAPHORE_CONFLICT_ACTION")
+	var sqlText string
+
+	switch conflictAction {
+	case "OVERWRITE":
+		// 覆盖现有值
+		sqlText = `
+			INSERT INTO t_semaphore(name,value,value0,vtask,app)
+			VALUES($1,$2,$2,$3,$4)
+			ON CONFLICT (name, vtask, app)
+				DO UPDATE SET
+				value  = EXCLUDED.value,
+				value0 = EXCLUDED.value0
+		`
+	case "IGNORE":
+		// 忽略冲突，不报错
+		sqlText = `
+			INSERT INTO t_semaphore(name,value,value0,vtask,app)
+			VALUES($1,$2,$2,$3,$4)
+			ON CONFLICT (name, vtask, app) DO NOTHING
+		`
+	default:
+		// 默认行为：报错（不使用 ON CONFLICT 子句）
+		sqlText = `
+			INSERT INTO t_semaphore(name,value,value0,vtask,app)
+			VALUES($1,$2,$2,$3,$4)
+		`
+	}
 
 	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
-		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,err=%v",
-			name, value, vtaskID, appID, err)
+		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s,err=%v",
+			name, value, vtaskID, appID, conflictAction, err)
 		logrus.Errorln(errInfo)
 		return err
 	}
@@ -135,6 +156,37 @@ func createSemaphores(ordered []*Sema, vtaskID int, appID int, batchSize int) er
 	if vtaskID <= 0 {
 		pVtask = nil
 	}
+
+	// 根据环境变量 SEMAPHORE_CONFLICT_ACTION 决定冲突处理逻辑
+	conflictAction := os.Getenv("SEMAPHORE_CONFLICT_ACTION")
+	var sqlText string
+
+	switch conflictAction {
+	case "OVERWRITE":
+		// 覆盖现有值
+		sqlText = `
+			INSERT INTO t_semaphore(name,value,value0,vtask,app) 
+			VALUES($1,$2,$2,$3,$4)
+			ON CONFLICT (name, vtask, app)
+				DO UPDATE SET
+				value  = EXCLUDED.value,
+				value0 = EXCLUDED.value0
+		`
+	case "IGNORE":
+		// 忽略冲突，不报错
+		sqlText = `
+			INSERT INTO t_semaphore(name,value,value0,vtask,app) 
+			VALUES($1,$2,$2,$3,$4)
+			ON CONFLICT (name, vtask, app) DO NOTHING
+		`
+	default:
+		// 默认行为：报错（不使用 ON CONFLICT 子句）
+		sqlText = `
+			INSERT INTO t_semaphore(name,value,value0,vtask,app) 
+			VALUES($1,$2,$2,$3,$4)
+		`
+	}
+
 	// start transaction
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
@@ -142,13 +194,6 @@ func createSemaphores(ordered []*Sema, vtaskID int, appID int, batchSize int) er
 		return err
 	}
 	defer tx.Rollback()
-
-	// ignore existing
-	sqlText := `
-		INSERT INTO t_semaphore(name,value,value0,vtask,app) 
-		VALUES($1,$2,$2,$3,$4)
-		ON CONFLICT (name, vtask, app) DO NOTHING; 
-	`
 
 	for i := 0; i < len(ordered); i += batchSize {
 		stmt, err := tx.Prepare(sqlText)
@@ -164,8 +209,12 @@ func createSemaphores(ordered []*Sema, vtaskID int, appID int, batchSize int) er
 
 		for _, v := range ordered[i:end] {
 			if _, err := stmt.Exec(v.Name, v.Value, pVtask, appID); err != nil {
-				logrus.Errorf("err:%v\n", err)
-				return err
+				// 如果存在冲突且不是IGNORE模式，记录错误但不一定失败
+				if conflictAction != "IGNORE" {
+					logrus.Errorf("err:%v\n", err)
+					return err
+				}
+				// IGNORE模式下，冲突错误被忽略
 			}
 		}
 		if err = tx.Commit(); err != nil {

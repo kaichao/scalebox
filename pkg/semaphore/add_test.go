@@ -10,12 +10,10 @@ import (
 	"github.com/kaichao/scalebox/pkg/semaphore"
 )
 
+
 func TestAddValue(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 	os.Setenv("SEMAPHORE_AUTO_CREATE", "yes")
-
-	appID := 168
-	vtaskID := 4117
 
 	// 测试添加信号量
 	v, err := semaphore.AddValue("test_semaphore_1", vtaskID, appID, 3)
@@ -46,9 +44,6 @@ func TestAddValue(t *testing.T) {
 func TestAddMultiValues(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 	os.Setenv("SEMAPHORE_AUTO_CREATE", "yes")
-
-	appID := 168
-	vtaskID := 4117
 
 	// 测试多个信号量
 	pairs := map[string]int{

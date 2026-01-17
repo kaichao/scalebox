@@ -14,9 +14,6 @@ func TestGet(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 	os.Setenv("SEMAPHORE_AUTO_CREATE", "yes")
 
-	appID := 168
-	vtaskID := 4117
-
 	// 测试获取信号量（先创建再获取）
 	// 由于外键约束，创建可能失败，我们只测试函数调用
 	semaphoreName := "test_get_semaphore"
@@ -69,9 +66,7 @@ func TestGet(t *testing.T) {
 func TestGetIsolation(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 168
-	task1ID := 4117
-	task2ID := 4118
+	vtaskIDX := 44
 
 	// 测试信号量按vtaskID隔离的概念
 	// 注意：由于外键约束，这些测试可能不会实际执行数据库操作
@@ -80,8 +75,8 @@ func TestGetIsolation(t *testing.T) {
 	semaphoreName := "isolated_semaphore"
 
 	// 为不同任务创建同名信号量（理论上应该隔离）
-	_ = semaphore.Create(semaphoreName, 100, task1ID, appID)
-	_ = semaphore.Create(semaphoreName, 200, task2ID, appID)
+	_ = semaphore.Create(semaphoreName, 100, vtaskID, appID)
+	_ = semaphore.Create(semaphoreName, 200, vtaskIDX, appID)
 	_ = semaphore.Create(semaphoreName, 300, 0, appID) // 全局
 
 	fmt.Println("Tested semaphore isolation by vtaskID (function calls only due to foreign key constraints)")
