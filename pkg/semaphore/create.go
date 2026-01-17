@@ -19,8 +19,8 @@ func Create(name string, value int, vtaskID int, appID int) error {
 		pVtask = nil
 	}
 
-	// 根据环境变量 SEMAPHORE_CONFLICT_ACTION 决定冲突处理逻辑
-	conflictAction := os.Getenv("SEMAPHORE_CONFLICT_ACTION")
+	// 根据环境变量 CONFLICT_ACTION 决定冲突处理逻辑
+	conflictAction := os.Getenv("CONFLICT_ACTION")
 	var sqlText string
 
 	switch conflictAction {
@@ -157,8 +157,8 @@ func createSemaphores(ordered []*Sema, vtaskID int, appID int, batchSize int) er
 		pVtask = nil
 	}
 
-	// 根据环境变量 SEMAPHORE_CONFLICT_ACTION 决定冲突处理逻辑
-	conflictAction := os.Getenv("SEMAPHORE_CONFLICT_ACTION")
+	// 根据环境变量 CONFLICT_ACTION 决定冲突处理逻辑
+	conflictAction := os.Getenv("CONFLICT_ACTION")
 	var sqlText string
 
 	switch conflictAction {

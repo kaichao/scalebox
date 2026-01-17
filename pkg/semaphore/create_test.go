@@ -60,7 +60,7 @@ func TestCreate(t *testing.T) {
 	}
 
 	// 测试更新已存在的信号量
-	os.Setenv("SEMAPHORE_CONFLICT_ACTION", "IGNORE")
+	os.Setenv("CONFLICT_ACTION", "IGNORE")
 	err5 := semaphore.Create("test_create_single", 150, vtaskID, appID) // 更新值
 	if err5 != nil {
 		fmt.Printf("Update existing semaphore error: %v\n", err5)
@@ -68,7 +68,7 @@ func TestCreate(t *testing.T) {
 		fmt.Println("Update existing semaphore succeeded")
 	}
 	// 测试更新已存在的信号量
-	os.Setenv("SEMAPHORE_CONFLICT_ACTION", "OVERWRITE")
+	os.Setenv("CONFLICT_ACTION", "OVERWRITE")
 	err6 := semaphore.Create("test_create_single", 150, vtaskID, appID) // 更新值
 	if err6 != nil {
 		fmt.Printf("Update existing semaphore error: %v\n", err6)
@@ -131,8 +131,8 @@ func TestCreateWithExistsSema(t *testing.T) {
 
 	semaphoreName := "test_exists_sema"
 
-	// 测试1: SEMAPHORE_CONFLICT_ACTION=OVERWRITE
-	os.Setenv("SEMAPHORE_CONFLICT_ACTION", "OVERWRITE")
+	// 测试1: CONFLICT_ACTION=OVERWRITE
+	os.Setenv("CONFLICT_ACTION", "OVERWRITE")
 
 	// 第一次创建
 	err1 := semaphore.Create(semaphoreName, 100, vtaskID, appID)
@@ -150,8 +150,8 @@ func TestCreateWithExistsSema(t *testing.T) {
 		fmt.Println("Create with OVERWRITE (second time, should overwrite) succeeded")
 	}
 
-	// 测试2: SEMAPHORE_CONFLICT_ACTION=IGNORE
-	os.Setenv("SEMAPHORE_CONFLICT_ACTION", "IGNORE")
+	// 测试2: CONFLICT_ACTION=IGNORE
+	os.Setenv("CONFLICT_ACTION", "IGNORE")
 
 	// 第一次创建
 	err3 := semaphore.Create("test_exists_sema_ignore", 300, vtaskID, appID)
@@ -169,23 +169,23 @@ func TestCreateWithExistsSema(t *testing.T) {
 		fmt.Println("Create with IGNORE (second time, should ignore) succeeded")
 	}
 
-	// 测试3: SEMAPHORE_CONFLICT_ACTION未设置（默认行为，应该报错）
-	os.Unsetenv("SEMAPHORE_CONFLICT_ACTION")
+	// 测试3: CONFLICT_ACTION未设置（默认行为，应该报错）
+	os.Unsetenv("CONFLICT_ACTION")
 
 	// 第一次创建应该成功
 	err5 := semaphore.Create("test_exists_sema_default", 500, vtaskID, appID)
 	if err5 != nil {
-		fmt.Printf("Create without SEMAPHORE_CONFLICT_ACTION (first time) error: %v\n", err5)
+		fmt.Printf("Create without CONFLICT_ACTION (first time) error: %v\n", err5)
 	} else {
-		fmt.Println("Create without SEMAPHORE_CONFLICT_ACTION (first time) succeeded")
+		fmt.Println("Create without CONFLICT_ACTION (first time) succeeded")
 	}
 
 	// 第二次创建应该失败（由于唯一约束）
 	err6 := semaphore.Create("test_exists_sema_default", 600, vtaskID, appID)
 	if err6 != nil {
-		fmt.Printf("Create without SEMAPHORE_CONFLICT_ACTION (second time, should fail) error: %v\n", err6)
+		fmt.Printf("Create without CONFLICT_ACTION (second time, should fail) error: %v\n", err6)
 	} else {
-		fmt.Println("Create without SEMAPHORE_CONFLICT_ACTION (second time, should fail) succeeded (unexpected)")
+		fmt.Println("Create without CONFLICT_ACTION (second time, should fail) succeeded (unexpected)")
 	}
 }
 
@@ -200,8 +200,8 @@ func TestCreateSemaphoresWithExistsSema(t *testing.T) {
 		`"exists_sema_3":30`,
 	}
 
-	// 测试1: SEMAPHORE_CONFLICT_ACTION=OVERWRITE
-	os.Setenv("SEMAPHORE_CONFLICT_ACTION", "OVERWRITE")
+	// 测试1: CONFLICT_ACTION=OVERWRITE
+	os.Setenv("CONFLICT_ACTION", "OVERWRITE")
 
 	// 第一次批量创建
 	err1 := semaphore.CreateSemaphores(lines, vtaskID, appID, 10)
@@ -224,8 +224,8 @@ func TestCreateSemaphoresWithExistsSema(t *testing.T) {
 		fmt.Println("CreateSemaphores with OVERWRITE (second time, should overwrite) succeeded")
 	}
 
-	// 测试2: SEMAPHORE_CONFLICT_ACTION=IGNORE
-	os.Setenv("SEMAPHORE_CONFLICT_ACTION", "IGNORE")
+	// 测试2: CONFLICT_ACTION=IGNORE
+	os.Setenv("CONFLICT_ACTION", "IGNORE")
 
 	// 第一次批量创建
 	lines3 := []string{
@@ -247,8 +247,8 @@ func TestCreateSemaphoresWithExistsSema(t *testing.T) {
 		fmt.Println("CreateSemaphores with IGNORE (second time, should ignore) succeeded")
 	}
 
-	// 测试3: SEMAPHORE_CONFLICT_ACTION未设置（默认行为）
-	os.Unsetenv("SEMAPHORE_CONFLICT_ACTION")
+	// 测试3: CONFLICT_ACTION未设置（默认行为）
+	os.Unsetenv("CONFLICT_ACTION")
 
 	// 第一次批量创建应该成功
 	lines4 := []string{
@@ -257,16 +257,16 @@ func TestCreateSemaphoresWithExistsSema(t *testing.T) {
 	}
 	err5 := semaphore.CreateSemaphores(lines4, vtaskID, appID, 10)
 	if err5 != nil {
-		fmt.Printf("CreateSemaphores without SEMAPHORE_CONFLICT_ACTION (first time) error: %v\n", err5)
+		fmt.Printf("CreateSemaphores without CONFLICT_ACTION (first time) error: %v\n", err5)
 	} else {
-		fmt.Println("CreateSemaphores without SEMAPHORE_CONFLICT_ACTION (first time) succeeded")
+		fmt.Println("CreateSemaphores without CONFLICT_ACTION (first time) succeeded")
 	}
 
 	// 第二次批量创建可能失败（由于唯一约束）
 	err6 := semaphore.CreateSemaphores(lines4, vtaskID, appID, 10)
 	if err6 != nil {
-		fmt.Printf("CreateSemaphores without SEMAPHORE_CONFLICT_ACTION (second time, may fail) error: %v\n", err6)
+		fmt.Printf("CreateSemaphores without CONFLICT_ACTION (second time, may fail) error: %v\n", err6)
 	} else {
-		fmt.Println("CreateSemaphores without SEMAPHORE_CONFLICT_ACTION (second time, may fail) succeeded (unexpected)")
+		fmt.Println("CreateSemaphores without CONFLICT_ACTION (second time, may fail) succeeded (unexpected)")
 	}
 }

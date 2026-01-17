@@ -318,38 +318,42 @@ scalebox app set-finished --module-id ${module_id}
 
 #### 参数/环境变量
 
-| 参数名         |  环境变量名   |    说明                                 |
-| ------------- | ----------- | --------------------------------------- |
-| app-id        | APP_ID      |                                         |
-| module-id     | MODULE_ID   |                                         |
-| sink-module   | SINK_MODULE | sink-module name                           |
-| from-module   |             | module-name                                |
-| remote-server |             | grpc server for remote cluster, 格式为{ip_addr}:{port} |
-| task-file     |             | multiple messages in file               |
-| ignore-dupkey |             | add "repeative":"yes" to headers        |
-| headers       |             | headers in json                         |
-| header/h      |             | add one header                          |
-| to-ip         |             | add "to_ip" to headers (以-h to_ip=$ip_addr代替)   |
-| to-host       |             | add "to_host" to headers (以-h to_host=$host_name代替) |
-| disable-local-ip |          |                                         |
-| batch-size    |             | 批量task添加中，指定批次大小。缺省值100。     |
+| 参数名         |  环境变量名         |    说明                                 |
+| --------------- | --------------- | --------------------------------------- |
+| app-id          | APP_ID          |                                         |
+| module-id       | MODULE_ID       |                                         |
+| sink-module     | SINK_MODULE     | sink-module name                        |
+| conflict-action | CONFLICT_ACTION | 数据库插入时发生冲突的缺省动作，''/'IGNORE'/'OVERWRITE' |
+| from-module     |                 | module-name                             |
+| remote-server   |                 | grpc server for remote cluster, 格式为{ip_addr}:{port} |
+| task-file       |                 | multiple messages in file               |
+| ignore-dupkey   |                 | add "repeative":"yes" to headers        |
+| headers         |                 | headers in json                         |
+| header/h        |                 | add one header                          |
+| to-ip           |                 | add "to_ip" to headers (以-h to_ip=$ip_addr代替)   |
+| to-host         |                 | add "to_host" to headers (以-h to_host=$host_name代替) |
+| disable-local-ip |                |                                         |
+| batch-size      |                 | 批量task添加中，指定批次大小。缺省值100。     |
 
 
-key-text可放在文件 ```${WORK_DIR}/sink-tasks.txt```，该文件为多行文本，每行为一个消息体。
+task文件缺省为 ```${WORK_DIR}/sink-tasks.txt```，该文件为多行文本，每行为 消息体+消息头。
 
-消息文件每行格式如下：
-| 消息体类型          |  消息示例                                        |
-| ----------------- | ----------------------------------------------- |
-| 文本消息           | body                                            |
-| json消息          | {"h0":"a","body":"my_body"}                     |
-| 文本消息+headers   | body,{"h0":"a","h1":"b"}                        |
-| json消息+headers  | {"h0":"a","body":"my_body"},{"h0":"a","h1":"b"} |
+task文件每行格式如下：
+| 类型                   |  示例                                        |
+| --------------------- | ----------------------------------------------- |
+| 文本body               | body                                            |
+| json body             | {"hi0":"a","body":"my_body"}                     |
+| 文本body+headers       | body,{"h0":"a","h1":"b"}                        |
+| json-body+headers     | {"hi0":"a","body":"my_body"},{"h0":"a","h1":"b"} |
+| 模块名+文本body         | module-name,body                                            |
+| 模块名+文本body+headers | module-name,body,{"h0":"a","h1":"b"}                        |
 
-用于控制的消息头（header）：
+用于控制的task头（header）：
 | header              |  说明                                   |
 | ------------------- | -------------------------------------- |
 | initial_status_code | 缺省为-1,'READY'                        |
-| upsert              | overwrite existed task                 |
+| upsert              | overwrite existed task    （删除）       |
+| conflict-action     | ''/'IGNORE'/'OVERWRITE'                |
 | async-task-creation |                                        |
 | slot_broadcast      |                                        |
 | host_broadcast      |                                        |
