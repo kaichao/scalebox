@@ -2,6 +2,7 @@ package task
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"regexp"
@@ -14,7 +15,7 @@ import (
 )
 
 // Add ...
-func Add(body string, headers string, envVars map[string]string) int {
+func Add(body string, headers string, envVars map[string]string) (taskID int64, err error) {
 	parts := make([]string, 0, len(envVars))
 	for k, v := range envVars {
 		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
@@ -25,16 +26,23 @@ func Add(body string, headers string, envVars map[string]string) int {
 	}
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
 		strings.Join(parts, " "), headers, body)
-	code, err := exec.RunReturnExitCode(cmd, 15)
-	if err != nil {
-		logrus.Errorf("tasks-add, err-info:%v", err)
-		return -1
+	code, stdout, stderr, err := exec.RunReturnAll(cmd, 15)
+	if err != nil || code != 0 {
+		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stderr:%s,err:%v",
+			cmd, code, stderr, err)
+		return -1, errors.New(errMsg)
 	}
-	return code
+	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"task_id":%d}`, &taskID)
+	if err != nil || num != 1 {
+		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err:%v",
+			strings.TrimSpace(stdout), num, err)
+		return -2, errors.New(errMsg)
+	}
+	return taskID, nil
 }
 
 // AddWithMapHeaders ...
-func AddWithMapHeaders(body string, headers map[string]string, envVars map[string]string) int {
+func AddWithMapHeaders(body string, headers map[string]string, envVars map[string]string) (int64, error) {
 	return Add(body, mapToCleanJSON(headers), envVars)
 }
 
