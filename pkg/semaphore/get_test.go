@@ -66,7 +66,7 @@ func TestGet(t *testing.T) {
 func TestGetIsolation(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	vtaskIDX := 44
+	vtaskIDX := int64(44)
 
 	// 测试信号量按vtaskID隔离的概念
 	// 注意：由于外键约束，这些测试可能不会实际执行数据库操作

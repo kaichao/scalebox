@@ -11,7 +11,7 @@ import (
 )
 
 // Get ...
-func Get(name string, vtaskID int, appID int) (string, error) {
+func Get(name string, vtaskID int64, appID int) (string, error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlText := ""
 	var v string
@@ -73,7 +73,7 @@ func Get(name string, vtaskID int, appID int) (string, error) {
 }
 
 // Set ...
-func Set(name string, value string, vtaskID int, appID int) error {
+func Set(name string, value string, vtaskID int64, appID int) error {
 	sqlText := `
 		INSERT INTO t_variable(name,value,vtask,app)
 		VALUES($1,$2,$3,$4)

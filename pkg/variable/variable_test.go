@@ -10,11 +10,13 @@ import (
 	"github.com/kaichao/scalebox/pkg/variable"
 )
 
+var (
+	appID   = 168
+	vtaskID = int64(4117)
+)
+
 func TestSet(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
-
-	appID := 168
-	vtaskID := 4117
 
 	variable.Set("var-1", "val-1", vtaskID, appID)
 	variable.Set("var-2", "val-2", vtaskID, appID)
@@ -28,7 +30,6 @@ func TestSet(t *testing.T) {
 
 	val, _ = variable.Get("var.+", 0, appID)
 	fmt.Println("val0:", val)
-
 }
 
 // ExampleSet 展示了如何使用 Set 函数设置变量
@@ -158,9 +159,6 @@ func ExampleGet_vtaskZero() {
 func TestGet(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 168
-	vtaskID := 4117
-
 	// 清理可能存在的旧数据
 	// 注意：实际测试中可能需要更完善的清理机制
 
@@ -174,7 +172,7 @@ func TestGet(t *testing.T) {
 	variable.Set("var-2", "val-20", 0, appID)
 
 	// 3. 设置另一个vtaskID的变量，用于测试区分
-	anotherVtaskID := 4118
+	anotherVtaskID := int64(4118)
 	variable.Set("var-1", "val-100", anotherVtaskID, appID)
 
 	// 测试用例1：获取带有特定vtaskID的变量
@@ -203,7 +201,7 @@ func TestGet(t *testing.T) {
 
 	// 测试用例3：获取不存在的vtaskID的变量
 	t.Run("Get with non-existent vtaskID", func(t *testing.T) {
-		nonExistentVtaskID := 9999
+		nonExistentVtaskID := int64(9999)
 		_, err := variable.Get("var-1", nonExistentVtaskID, appID)
 		if err == nil {
 			t.Error("Expected error for non-existent vtaskID, but got none")

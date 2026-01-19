@@ -12,7 +12,7 @@ import (
 )
 
 // Get ...
-func Get(name string, vtaskID int, appID int) (string, error) {
+func Get(name string, vtaskID int64, appID int) (string, error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlFmt := ""
 	sqlFmt = `

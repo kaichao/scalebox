@@ -53,7 +53,7 @@ func AddWithMapHeaders(body string, headers map[string]string, envVars map[strin
 // - APP_ID:
 // - REMOTE_SERVER:
 // - TIMEOUT_SECONDS
-func AddTasks(bodies []string, headers string, envVars map[string]string) int {
+func AddTasks(bodies []string, headers string, envVars map[string]string) (int, error) {
 	parts := make([]string, 0, len(envVars))
 	for k, v := range envVars {
 		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
@@ -72,24 +72,31 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) int {
 	}
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' --task-file=my-tasks.txt`,
 		strings.Join(parts, " "), headers)
-	code, err := exec.RunReturnExitCode(cmd, timeout)
-	if err != nil {
-		logrus.Errorf("tasks-add, err-info:%v", err)
-		return -2
-	}
-	if code != 0 {
-		return code
+	code, stdout, stderr, err := exec.RunReturnAll(cmd, 15)
+	if err != nil || code != 0 {
+		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stdout:%s,stderr:%s,err:%v",
+			cmd, code, stdout, stderr, err)
+		return -1, errors.New(errMsg)
 	}
 
 	if err := os.Remove(taskFile); err != nil {
 		logrus.Errorf("remove file %s\n", taskFile)
-		return 1
+		return 0, err
 	}
-	return 0
+
+	var numTasks int
+	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"num_tasks":%d}`, &numTasks)
+	if err != nil || num != 1 {
+		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err:%v",
+			strings.TrimSpace(stdout), num, err)
+		return -2, errors.New(errMsg)
+	}
+
+	return numTasks, nil
 }
 
 // AddTasksWithMapHeaders ...
-func AddTasksWithMapHeaders(bodies []string, headers map[string]string, envVars map[string]string) int {
+func AddTasksWithMapHeaders(bodies []string, headers map[string]string, envVars map[string]string) (int, error) {
 	return AddTasks(bodies, mapToCleanJSON(headers), envVars)
 }
 

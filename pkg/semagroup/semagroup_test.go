@@ -10,11 +10,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+var (
+	appID   = 1
+	vtaskID = int64(0)
+)
+
 func TestDiffMax(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 1
-	vtaskID := 0
 	semaphore.Create("node_progress:my-mod:n-00", 2, vtaskID, appID)
 	semaphore.Create("node_progress:my-mod:n-01", 2, vtaskID, appID)
 	semaphore.Create("node_progress:my-mod:n-10", 3, vtaskID, appID)
@@ -30,8 +33,6 @@ func TestDiffMax(t *testing.T) {
 func TestIncrement(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 1
-	vtaskID := 0
 	semaphore.Create("node_progress:my-mod:n-00", 1, vtaskID, appID)
 	semaphore.Create("node_progress:my-mod:n-01", 2, vtaskID, appID)
 	semaphore.Create("node_progress:my-mod:n-10", 3, vtaskID, appID)

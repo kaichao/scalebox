@@ -9,7 +9,7 @@ import (
 )
 
 // GetTaskHeader ...
-func GetTaskHeader(taskID int, name string) (string, error) {
+func GetTaskHeader(taskID int64, name string) (string, error) {
 	sqlText := `SELECT headers->>$1 FROM t_task WHERE id=$2`
 	var value string
 	err := postgres.GetDB().QueryRow(sqlText, name, taskID).Scan(&value)
@@ -26,7 +26,7 @@ func GetTaskHeader(taskID int, name string) (string, error) {
 }
 
 // SetTaskHeader ...
-func SetTaskHeader(taskID int, name string, value string) error {
+func SetTaskHeader(taskID int64, name string, value string) error {
 	sqlText := `
 		UPDATE t_task
 		SET headers = jsonb_set(headers, $1, $2)
@@ -44,7 +44,7 @@ func SetTaskHeader(taskID int, name string, value string) error {
 }
 
 // RemoveTaskHeader ...
-func RemoveTaskHeader(taskID int, name string) error {
+func RemoveTaskHeader(taskID int64, name string) error {
 	sqlText := `
 		UPDATE t_task
 		SET headers = headers - $1

@@ -12,7 +12,7 @@ import (
 )
 
 // AddValue ...
-func AddValue(name string, vtaskID int, appID int, delta int) (string, error) {
+func AddValue(name string, vtaskID int64, appID int, delta int) (string, error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlFmt := `
 		WITH updated_rows AS (
@@ -86,36 +86,11 @@ func AddValue(name string, vtaskID int, appID int, delta int) (string, error) {
 	return ss[1], nil
 }
 
-/*
-// AddListValue ...
-func AddListValue(names []string, vtaskID int, appID int, delta int) (string, error) {
-	sqlText := `
-		WITH updated_rows AS (
-    		UPDATE t_semaphore
-    		SET value = value + $3
-    		WHERE name = ANY($1) AND app = $2
-    		RETURNING name,value
-		)
-		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-		FROM updated_rows
-	`
-	v := ""
-	if err := postgres.GetDB().QueryRow(sqlText, names, appID, delta).Scan(&v); err != nil {
-		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%s,%d), err-t=%T,err=%v",
-			names, appID, err, err)
-		logrus.Errorln(errInfo)
-		return "", err
-	}
-
-	return regexp.MustCompile(`\s+`).ReplaceAllString(v, ""), nil
-}
-*/
-
 // AddMultiValues ...
 // 用一条sql语句，或者用一个transaction，完成以下功能。如果更新出错，报错。
 // pairs中存放着name、delta的对应值，delta是value的增减值。
 // 返回结果为修改后的name及最终值。
-func AddMultiValues(pairs map[string]int, vtaskID int, appID int) (map[string]int, error) {
+func AddMultiValues(pairs map[string]int, vtaskID int64, appID int) (map[string]int, error) {
 	if len(pairs) == 0 {
 		return map[string]int{}, nil
 	}

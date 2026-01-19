@@ -13,7 +13,7 @@ import (
 )
 
 // Create ...
-func Create(name string, value int, vtaskID int, appID int) error {
+func Create(name string, value int, vtaskID int64, appID int) error {
 	pVtask := &vtaskID
 	if vtaskID <= 0 {
 		pVtask = nil
@@ -59,7 +59,7 @@ func Create(name string, value int, vtaskID int, appID int) error {
 }
 
 // CreateSemaphores ...
-func CreateSemaphores(lines []string, vtaskID int, appID int, batchSize int) error {
+func CreateSemaphores(lines []string, vtaskID int64, appID int, batchSize int) error {
 	var semas []*Sema
 	re := regexp.MustCompile(`"([^"]+)":(\d+)`)
 	for _, line := range lines {
@@ -76,7 +76,7 @@ func CreateSemaphores(lines []string, vtaskID int, appID int, batchSize int) err
 }
 
 // CreateFileSemaphores ...
-func CreateFileSemaphores(fileName string, vtaskID int, appID int, batchSize int) error {
+func CreateFileSemaphores(fileName string, vtaskID int64, appID int, batchSize int) error {
 	lines, err := common.GetTextFileLines(fileName)
 	if err != nil {
 		logrus.Errorf("file-name:%s, err-info:%v\n", fileName, err)
@@ -101,7 +101,7 @@ func CreateFileSemaphores(fileName string, vtaskID int, appID int, batchSize int
 }
 
 // CreateJSONSemaphores ...
-func CreateJSONSemaphores(jsonText string, vtaskID int, appID int, batchSize int) error {
+func CreateJSONSemaphores(jsonText string, vtaskID int64, appID int, batchSize int) error {
 	// Define a struct type for the semaphores
 	type semaItem struct {
 		Name  string `json:"name"`
@@ -151,7 +151,7 @@ type Sema struct {
 	Value int
 }
 
-func createSemaphores(ordered []*Sema, vtaskID int, appID int, batchSize int) error {
+func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) error {
 	pVtask := &vtaskID
 	if vtaskID <= 0 {
 		pVtask = nil

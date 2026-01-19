@@ -12,7 +12,7 @@ import (
 
 var (
 	appID   = 4
-	vtaskID = 43
+	vtaskID = int64(43)
 )
 
 func TestCreateJSONSemaphores(t *testing.T) {
@@ -192,8 +192,6 @@ func TestCreateWithExistsSema(t *testing.T) {
 func TestCreateSemaphoresWithExistsSema(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
-	appID := 168
-	vtaskID := 4117
 	lines := []string{
 		`"exists_sema_1":10`,
 		`"exists_sema_2":20`,
