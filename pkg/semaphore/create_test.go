@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	appID   = 4
-	vtaskID = int64(43)
+	appID   = 1
+	vtaskID = int64(4)
 )
 
 func TestCreateJSONSemaphores(t *testing.T) {

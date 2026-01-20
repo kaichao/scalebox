@@ -12,6 +12,7 @@ import (
 )
 
 // AddValue ...
+// 根据name或正则表达式前缀匹配，如需精确匹配，name末尾加上$
 func AddValue(name string, vtaskID int64, appID int, delta int) (string, error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlFmt := `

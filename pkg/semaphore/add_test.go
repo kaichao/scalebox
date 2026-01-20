@@ -10,7 +10,6 @@ import (
 	"github.com/kaichao/scalebox/pkg/semaphore"
 )
 
-
 func TestAddValue(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 	os.Setenv("SEMAPHORE_AUTO_CREATE", "yes")

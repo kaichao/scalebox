@@ -229,8 +229,8 @@ cluster定义的示例如下：
 | max_idle_polls        | MAX_IDLE_POLLS        | Slot 在退出前可进行的最大空闲轮询次数。slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
 | dir_quota_gb          | DIR_QUOTA_GB          | 标准流控参数，目录本身的容量配额限制。用于指定目录以GB计的最大空间。格式为： ```'{"/dir-1":10,"/dir-2":100}'```  |
 | free_space_gb         | FREE_SPACE_GB         | 标准流控参数，目录所在磁盘需要保留的最小空间。用于指定目录所在分区以GB计的最小保留空间。格式为```'{"/dir-3":10,"/dir-4":100}'``` |
-| task_batch_size       | TASK_BATCH_SIZE | 批量处理任务的数量。设置slot单批次读取的最大消息数，缺省值为1。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。 |
-| task_batch_run        | TASK_BATCH_RUN  | 'no'/'yes'。用单个run脚本，处理全批次任务。 |
+| task_batch_size       | TASK_BATCH_SIZE | 批量获取任务的数量。设置slot单批次读取的最大消息数，缺省值为1。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。 |
+| batch_atomic          | BATCH_ATOMIC           | 'no'/'yes'。用单个run脚本，处理全批次的任务。 |
 | heartbeat_seconds     | HEARTBEAT_SECONDS      | 以秒计的心跳间隔，缺省值为60；若为非正整数，则禁用心跳操作 |
 | output_text_size      | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_trunc_mode       | TEXT_TRUNC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分          |
