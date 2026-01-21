@@ -24,8 +24,11 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 	if headers == "" {
 		headers = "{}"
 	}
-	cmd := fmt.Sprintf(`%s scalebox task add --headers="%s" %s`,
-		strings.Join(parts, " "), headers, body)
+	// Escape single quotes in headers for shell command
+	// Replace ' with '\'' (end single quote, escaped single quote, start single quote)
+	escapedHeaders := strings.ReplaceAll(headers, "'", "'\\''")
+	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
+		strings.Join(parts, " "), escapedHeaders, body)
 	code, stdout, stderr, err := exec.RunReturnAll(cmd, 30)
 	logrus.Debugf("In task.Add(),headers:%s\ncmd:'%s'\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
 		headers, cmd, code, stdout, stderr, err)
@@ -63,19 +66,33 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 		parts = append(parts, fmt.Sprintf(`%s="%s"`, k, v))
 	}
 
-	taskFile := "my-tasks.txt"
-	for _, m := range bodies {
-		common.AppendToFile(taskFile, m)
+	// Create a unique temporary file for tasks
+	taskFile, err := os.CreateTemp("", "scalebox-tasks-*.txt")
+	if err != nil {
+		logrus.Errorf("create temp file error: %v\n", err)
+		return -1, err
 	}
+	taskFilePath := taskFile.Name()
+	defer os.Remove(taskFilePath) // Clean up file after function returns
+	taskFile.Close()
+
+	// Write tasks to file
+	for _, m := range bodies {
+		common.AppendToFile(taskFilePath, m)
+	}
+
 	if headers == "" {
 		headers = "{}"
 	}
+	// Escape single quotes in headers for shell command
+	// Replace ' with '\'' (end single quote, escaped single quote, start single quote)
+	escapedHeaders := strings.ReplaceAll(headers, "'", "'\\''")
 	timeout, _ := strconv.Atoi(os.Getenv("TIMEOUT_SECONDS"))
 	if timeout <= 0 {
 		timeout = 60
 	}
-	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' --task-file=my-tasks.txt`,
-		strings.Join(parts, " "), headers)
+	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' --task-file=%s`,
+		strings.Join(parts, " "), escapedHeaders, taskFilePath)
 	code, stdout, stderr, err := exec.RunReturnAll(cmd, 15)
 	logrus.Debugf("In task.AddTask(),cmd:'%s'\ntask-body:%v\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
 		cmd, bodies, code, stdout, stderr, err)
@@ -86,15 +103,10 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 		return -1, errors.New(errMsg)
 	}
 
-	if err := os.Remove(taskFile); err != nil {
-		logrus.Errorf("remove file %s\n", taskFile)
-		return 0, err
-	}
-
 	var numTasks int
 	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"num_tasks":%d}`, &numTasks)
 	if err != nil || num != 1 {
-		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err:%v",
+		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err=%v",
 			strings.TrimSpace(stdout), num, err)
 		return -2, errors.New(errMsg)
 	}
