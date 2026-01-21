@@ -24,11 +24,11 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 	if headers == "" {
 		headers = "{}"
 	}
-	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
+	cmd := fmt.Sprintf(`%s scalebox task add --headers="%s" %s`,
 		strings.Join(parts, " "), headers, body)
 	code, stdout, stderr, err := exec.RunReturnAll(cmd, 30)
-	logrus.Debugf("In task.Add(),cmd:'%s'\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
-		cmd, code, stdout, stderr, err)
+	logrus.Debugf("In task.Add(),headers:%s\ncmd:'%s'\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
+		headers, cmd, code, stdout, stderr, err)
 
 	if err != nil || code != 0 {
 		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stderr:%s,err:%v",
