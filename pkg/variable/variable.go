@@ -44,6 +44,8 @@ func Get(name string, vtaskID int64, appID int) (string, error) {
 		`
 		err = postgres.GetDB().QueryRow(sqlText, name, appID, vtaskID).Scan(&v)
 	}
+	logrus.Debugf("In variable.Get(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",
+		name, v, vtaskID, appID, err)
 
 	if err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in get-variable(%s,%d,vtask:%d), err-t=%T,err=%v",
@@ -86,6 +88,8 @@ func Set(name string, value string, vtaskID int64, appID int) error {
 		pVtaskID = nil
 	}
 	result, err := postgres.GetDB().Exec(sqlText, name, value, pVtaskID, appID)
+	logrus.Debugf("In variable.Set(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",
+		name, value, vtaskID, appID, err)
 	if err != nil {
 		logrus.Errorf("db-error in set-variable (name:%s,app-id:%d,vtask:%d), err-t=%T,err=%v\n",
 			name, appID, vtaskID, err, err)

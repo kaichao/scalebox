@@ -26,12 +26,16 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 	}
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
 		strings.Join(parts, " "), headers, body)
-	code, stdout, stderr, err := exec.RunReturnAll(cmd, 15)
+	code, stdout, stderr, err := exec.RunReturnAll(cmd, 30)
+	logrus.Debugf("In task.Add(),cmd:'%s'\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
+		cmd, code, stdout, stderr, err)
+
 	if err != nil || code != 0 {
 		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stderr:%s,err:%v",
 			cmd, code, stderr, err)
 		return -1, errors.New(errMsg)
 	}
+
 	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"task_id":%d}`, &taskID)
 	if err != nil || num != 1 {
 		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err:%v",
@@ -73,6 +77,9 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' --task-file=my-tasks.txt`,
 		strings.Join(parts, " "), headers)
 	code, stdout, stderr, err := exec.RunReturnAll(cmd, 15)
+	logrus.Debugf("In task.AddTask(),cmd:'%s'\ntask-body:%v\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
+		cmd, bodies, code, stdout, stderr, err)
+
 	if err != nil || code != 0 {
 		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stdout:%s,stderr:%s,err:%v",
 			cmd, code, stdout, stderr, err)

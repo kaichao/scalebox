@@ -13,7 +13,7 @@ import (
 
 // AddValue ...
 // 根据name或正则表达式前缀匹配，如需精确匹配，name末尾加上$
-func AddValue(name string, vtaskID int64, appID int, delta int) (string, error) {
+func AddValue(name string, vtaskID int64, appID int, delta int) (v string, err error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlFmt := `
 		WITH updated_rows AS (
@@ -26,11 +26,6 @@ func AddValue(name string, vtaskID int64, appID int, delta int) (string, error) 
 		FROM updated_rows
 	`
 
-	vtaskExpr := "vtask IS NULL"
-	if vtaskID > 0 {
-		// vtaskID > 0 时，需要匹配vtask参数
-		vtaskExpr = "vtask = $4"
-	}
 	op := "="
 	if common.IsRegexString(name) {
 		op = "~"
@@ -39,14 +34,18 @@ func AddValue(name string, vtaskID int64, appID int, delta int) (string, error) 
 			name = "^" + name
 		}
 	}
-	sqlText := fmt.Sprintf(sqlFmt, op, vtaskExpr)
-	var v string
-	var err error
-	if vtaskID <= 0 {
-		err = postgres.GetDB().QueryRow(sqlText, name, appID, delta).Scan(&v)
+	if vtaskID > 0 {
+		// vtaskID > 0 时，需匹配vtask参数
+		vtaskExpr := "vtask = $4"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, op, vtaskExpr),
+			name, appID, delta, vtaskID).Scan(&v)
 	} else {
-		err = postgres.GetDB().QueryRow(sqlText, name, appID, delta, vtaskID).Scan(&v)
+		vtaskExpr := "vtask IS NULL"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, op, vtaskExpr),
+			name, appID, delta).Scan(&v)
 	}
+	logrus.Debugf("In semaphore.AddValue(),name=%s,vtask-id:%d,app-id:%d,delta:%d,ret-value:%s,err:%v\n",
+		name, vtaskID, appID, v, err)
 
 	if err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%s,%d,vtask:%d), err-t=%T,err=%v",
@@ -139,6 +138,8 @@ func AddMultiValues(pairs map[string]int, vtaskID int64, appID int) (map[string]
 		// vtaskID > 0 时，需要匹配vtask参数
 		err = postgres.GetDB().QueryRow(sqlText, names, deltas, appID, vtaskID).Scan(&v, &updatedCount)
 	}
+	logrus.Debugf("In semaphore.AddMultiValues(),pairs=%v,vtask-id:%d,app-id:%d,,ret-value:%s,err:%v\n",
+		pairs, vtaskID, appID, v, err)
 
 	if err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%v,%d,vtask:%d), err-t=%T,err=%v",

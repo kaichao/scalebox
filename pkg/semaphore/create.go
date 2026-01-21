@@ -48,13 +48,17 @@ func Create(name string, value int, vtaskID int64, appID int) error {
 			VALUES($1,$2,$2,$3,$4)
 		`
 	}
+	logrus.Debugf("In semaphore.Create(),sqlText:%s\n", sqlText)
 
 	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
-		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s,err=%v",
+		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s,err=%v\n",
 			name, value, vtaskID, appID, conflictAction, err)
 		logrus.Errorln(errInfo)
 		return err
 	}
+	logrus.Debugf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s\n",
+		name, value, vtaskID, appID, conflictAction)
+
 	return nil
 }
 

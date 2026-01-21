@@ -43,6 +43,8 @@ func GetJSON(name string, vtaskID int64, appID int) (v string, err error) {
 		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID).Scan(&v)
 	}
+	logrus.Debugf("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,json-value:%s,err:%v\n",
+		name, vtaskID, appID, v, err)
 
 	if err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d,vtask:%d), err-t=%T,err=%v",
@@ -87,6 +89,8 @@ func GetValue(name string, vtaskID int64, appID int) (value int, err error) {
 		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID).Scan(&value)
 	}
+	logrus.Debugf("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,value:%d,err:%v\n",
+		name, vtaskID, appID, value, err)
 
 	if err == nil {
 		return value, nil
