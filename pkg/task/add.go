@@ -14,7 +14,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// Add ...
+// Add 增加单个task
+// 环境变量：
+// - SINK_MODULE:
+// - MODULE_ID:
+// - APP_ID:
+// - REMOTE_SERVER:
+// - TIMEOUT_SECONDS:
+// - DIRECT_WRITE_IN_AGENT:
 func Add(body string, headers string, envVars map[string]string) (taskID int64, err error) {
 	parts := make([]string, 0, len(envVars))
 	for k, v := range envVars {
@@ -39,6 +46,10 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 		return -1, errors.New(errMsg)
 	}
 
+	if inAgent() && envVars["DIRECT_WRITE_IN_AGENT"] != "yes" {
+		return 0, nil
+	}
+
 	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"task_id":%d}`, &taskID)
 	if err != nil || num != 1 {
 		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err:%v",
@@ -59,7 +70,8 @@ func AddWithMapHeaders(body string, headers map[string]string, envVars map[strin
 // - MODULE_ID:
 // - APP_ID:
 // - REMOTE_SERVER:
-// - TIMEOUT_SECONDS
+// - TIMEOUT_SECONDS:
+// - DIRECT_WRITE_IN_AGENT:
 func AddTasks(bodies []string, headers string, envVars map[string]string) (int, error) {
 	parts := make([]string, 0, len(envVars))
 	for k, v := range envVars {
@@ -103,6 +115,10 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 		return -1, errors.New(errMsg)
 	}
 
+	if inAgent() && envVars["DIRECT_WRITE_IN_AGENT"] != "yes" {
+		return -9, nil
+	}
+
 	var numTasks int
 	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"num_tasks":%d}`, &numTasks)
 	if err != nil || num != 1 {
@@ -139,4 +155,11 @@ func mapToCleanJSON(m map[string]string) string {
 	})
 
 	return cleaned
+}
+
+func inAgent() bool {
+	return os.Getenv("CLUSTER") != "" &&
+		os.Getenv("MODULE_ID") != "" &&
+		os.Getenv("MODULE_NAME") != "" &&
+		os.Getenv("GRPC_SERVER") != ""
 }
