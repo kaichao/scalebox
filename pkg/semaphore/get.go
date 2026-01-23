@@ -14,7 +14,7 @@ import (
 
 // GetJSON ...
 //
-//	按前缀获取semaphore列表name/value的json格式
+//	按regex获取semaphore列表name/value的json格式
 func GetJSON(name string, vtaskID int64, appID int) (v string, err error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlFmt := `
@@ -43,7 +43,7 @@ func GetJSON(name string, vtaskID int64, appID int) (v string, err error) {
 		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID).Scan(&v)
 	}
-	logrus.Debugf("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,json-value:%s,err:%v\n",
+	logrus.Tracef("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,json-value:%s,err:%v\n",
 		name, vtaskID, appID, v, err)
 
 	if err != nil {
@@ -55,19 +55,6 @@ func GetJSON(name string, vtaskID int64, appID int) (v string, err error) {
 	// 删除结果的空字符
 	v = regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
 	return v, nil
-	// if common.IsRegexString(name) {
-	// 	// regex name, return json-value
-	// 	return packed, nil
-	// }
-	// // non-regex, not null, return int-value
-	// re := regexp.MustCompile(`{".+":(-?[0-9]+)}`)
-	// ss := re.FindStringSubmatch(packed)
-	// if len(ss) == 0 {
-	// 	errInfo := fmt.Sprintf("[ERROR]Invalid JSON string, value=%s", packed)
-	// 	logrus.Errorln(errInfo)
-	// 	return "", errors.New(errInfo)
-	// }
-	// return ss[1], nil
 }
 
 // GetValue ...
@@ -89,7 +76,7 @@ func GetValue(name string, vtaskID int64, appID int) (value int, err error) {
 		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID).Scan(&value)
 	}
-	logrus.Debugf("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,value:%d,err:%v\n",
+	logrus.Tracef("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,value:%d,err:%v\n",
 		name, vtaskID, appID, value, err)
 
 	if err == nil {

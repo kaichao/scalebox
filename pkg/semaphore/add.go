@@ -1,6 +1,7 @@
 package semaphore
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
 	"os"
@@ -12,40 +13,83 @@ import (
 )
 
 // AddValue ...
-// 根据name或正则表达式前缀匹配，如需精确匹配，name末尾加上$
-func AddValue(name string, vtaskID int64, appID int, delta int) (v string, err error) {
+func AddValue(name string, vtaskID int64, appID int, delta int) (v int, err error) {
+	sqlFmt := `
+		UPDATE t_semaphore
+		SET value = value + $3
+		WHERE name = $1 AND app = $2 AND %s
+		RETURNING value
+	`
+	if vtaskID > 0 {
+		// vtaskID > 0 时，需匹配vtask参数
+		vtaskExpr := "vtask = $4"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
+			name, appID, delta, vtaskID).Scan(&v)
+	} else {
+		vtaskExpr := "vtask IS NULL"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
+			name, appID, delta).Scan(&v)
+	}
+	logrus.Tracef("In semaphore.AddValue(),name=%s,vtask-id:%d,app-id:%d,delta:%d,ret-value:%d,err:%v\n",
+		name, vtaskID, appID, delta, v, err)
+
+	if err == nil {
+		return v, nil
+	}
+
+	if errors.Is(err, sql.ErrNoRows) {
+		// not-defined semaphore
+		if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
+			// create semaphore first time
+			if createErr := Create(name, delta, vtaskID, appID); createErr != nil {
+				logrus.Errorf(" Semaphore (name:%s,app-id:%d,vtask:%d), create error,err-info:%v\n",
+					name, appID, vtaskID, createErr)
+				return -1, createErr
+			}
+			return 0, nil
+		}
+		errInfo := fmt.Sprintf("[ERROR]Semaphore(name:%s,app-id:%d,vtask:%d) not-found", name, appID, vtaskID)
+		logrus.Errorln(errInfo)
+		return 0, errors.New(errInfo)
+	}
+	// 其他数据库错误
+	errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d,vtask:%d), err-t=%T,err=%v",
+		name, appID, vtaskID, err, err)
+	logrus.Errorln(errInfo)
+	return v, err
+}
+
+// AddRegexValue ...
+// 根据name正则表达式前缀匹配，如需精确匹配，name末尾加上$
+func AddRegexValue(name string, vtaskID int64, appID int, delta int) (v string, err error) {
 	// 构建SQL查询，考虑vtaskID参数
 	sqlFmt := `
 		WITH updated_rows AS (
 			UPDATE t_semaphore
 			SET value = value + $3
-			WHERE (name %s $1) AND app = $2 AND %s
+			WHERE (name ~ $1) AND app = $2 AND %s
 			RETURNING name,value
 		)
 		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
 		FROM updated_rows
 	`
 
-	op := "="
-	if common.IsRegexString(name) {
-		op = "~"
-		if !common.IsRegexString(name[0:1]) {
-			// 首字母不是regex元字符，自动添加^
-			name = "^" + name
-		}
+	if !common.IsRegexString(name[0:1]) {
+		// 首字母不是regex元字符，自动添加^
+		name = "^" + name
 	}
 	if vtaskID > 0 {
 		// vtaskID > 0 时，需匹配vtask参数
 		vtaskExpr := "vtask = $4"
-		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, op, vtaskExpr),
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID, delta, vtaskID).Scan(&v)
 	} else {
 		vtaskExpr := "vtask IS NULL"
-		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, op, vtaskExpr),
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID, delta).Scan(&v)
 	}
-	logrus.Debugf("In semaphore.AddValue(),name=%s,vtask-id:%d,app-id:%d,delta:%d,ret-value:%s,err:%v\n",
-		name, vtaskID, appID, v, err)
+	logrus.Tracef("In semaphore.AddRegexValue(),name=%s,vtask-id:%d,app-id:%d,delta:%d,ret-value:%s,err:%v\n",
+		name, vtaskID, appID, delta, v, err)
 
 	if err != nil {
 		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%s,%d,vtask:%d), err-t=%T,err=%v",
@@ -55,42 +99,14 @@ func AddValue(name string, vtaskID int64, appID int, delta int) (v string, err e
 	}
 
 	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
-	if common.IsRegexString(name) {
-		// regex name, return json-value
-		return packed, nil
-	}
-
-	if packed == "{}" {
-		// not-defined semaphore
-		if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
-			// create semaphore first time
-			if err := Create(name, delta, vtaskID, appID); err != nil {
-				logrus.Errorf(" Semaphore (name:%s,app-id:%d,vtask:%d), create error,err-info:%v\n",
-					name, appID, vtaskID, err)
-				return "", err
-			}
-			return fmt.Sprintf("%d", delta), nil
-		}
-		errInfo := fmt.Sprintf("[ERROR]Semaphore(name:%s,app-id:%d,vtask:%d) not-found", name, appID, vtaskID)
-		logrus.Errorln(errInfo)
-		return "", errors.New(errInfo)
-	}
-	// non-regex, not null, return int-value
-	re := regexp.MustCompile(`{".+":(-?[0-9]+)}`)
-	ss := re.FindStringSubmatch(packed)
-	if len(ss) == 0 {
-		errInfo := fmt.Sprintf("[ERROR]Invalid JSON string, value=%s", packed)
-		logrus.Errorln(errInfo)
-		return "", errors.New(errInfo)
-	}
-	return ss[1], nil
+	return packed, nil
 }
 
-// AddMultiValues ...
+// AddMapValues ...
 // 用一条sql语句，或者用一个transaction，完成以下功能。如果更新出错，报错。
 // pairs中存放着name、delta的对应值，delta是value的增减值。
 // 返回结果为修改后的name及最终值。
-func AddMultiValues(pairs map[string]int, vtaskID int64, appID int) (map[string]int, error) {
+func AddMapValues(pairs map[string]int, vtaskID int64, appID int) (map[string]int, error) {
 	if len(pairs) == 0 {
 		return map[string]int{}, nil
 	}
@@ -138,7 +154,7 @@ func AddMultiValues(pairs map[string]int, vtaskID int64, appID int) (map[string]
 		// vtaskID > 0 时，需要匹配vtask参数
 		err = postgres.GetDB().QueryRow(sqlText, names, deltas, appID, vtaskID).Scan(&v, &updatedCount)
 	}
-	logrus.Debugf("In semaphore.AddMultiValues(),pairs=%v,vtask-id:%d,app-id:%d,,ret-value:%s,err:%v\n",
+	logrus.Tracef("In semaphore.AddMapValues(),pairs=%v,vtask-id:%d,app-id:%d,,ret-value:%s,err:%v\n",
 		pairs, vtaskID, appID, v, err)
 
 	if err != nil {

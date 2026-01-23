@@ -18,7 +18,7 @@ func Set(name string, value string) error {
 		DO UPDATE SET value = EXCLUDED.value;
 	`
 	_, err := postgres.GetDB().Exec(sqlText, name, value)
-	logrus.Debugf("In global.Set(),global-name:%s,global-value:%s,err:%v\n",
+	logrus.Tracef("In global.Set(),global-name:%s,global-value:%s,err:%v\n",
 		name, value, err)
 	if err != nil {
 		return fmt.Errorf("unable to global-set,name=%s, value=%s, err: %w", name, value, err)
@@ -31,7 +31,7 @@ func Get(name string) (string, error) {
 	sqlText := `SELECT value FROM t_global WHERE name=$1`
 	var value string
 	err := postgres.GetDB().QueryRow(sqlText, name).Scan(&value)
-	logrus.Debugf("In global.Get(),global-name:%s,global-value:%s,err:%v\n",
+	logrus.Tracef("In global.Get(),global-name:%s,global-value:%s,err:%v\n",
 		name, value, err)
 	if err == nil {
 		return value, nil

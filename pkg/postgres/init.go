@@ -4,19 +4,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/sirupsen/logrus"
 )
-
-func init() {
-	level, err := logrus.ParseLevel(os.Getenv("LOG_LEVEL"))
-	if err != nil {
-		level = logrus.InfoLevel
-	}
-	logrus.SetLevel(level)
-	logrus.SetReportCaller(true)
-}
 
 // getConnString ...
 func getConnString() string {
@@ -26,8 +18,8 @@ func getConnString() string {
 		// in agent, set grpc server as default server
 		grpcServer := os.Getenv("GRPC_SERVER")
 		pgHost = strings.Split(grpcServer, ":")[0]
-		// logrus.Infof("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
-		// 	time.Now().Format("15:04:05.000"), grpcServer)
+		logrus.Tracef("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
+			time.Now().Format("15:04:05.000"), grpcServer)
 	}
 	if pgHost == "" {
 		pgHost = os.Getenv("LOCAL_ADDR")
@@ -60,6 +52,6 @@ func getConnString() string {
 
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		pgUser, pgPass, pgHost, pgPort, pgDB)
-	logrus.Debugf("conn-string:%s\n", connString)
+	logrus.Tracef("conn-string:%s\n", connString)
 	return connString
 }

@@ -48,7 +48,7 @@ func Create(name string, value int, vtaskID int64, appID int) error {
 			VALUES($1,$2,$2,$3,$4)
 		`
 	}
-	logrus.Debugf("In semaphore.Create(),sqlText:%s\n", sqlText)
+	logrus.Tracef("In semaphore.Create(),sqlText:%s\n", sqlText)
 
 	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
 		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s,err=%v\n",
@@ -56,7 +56,7 @@ func Create(name string, value int, vtaskID int64, appID int) error {
 		logrus.Errorln(errInfo)
 		return err
 	}
-	logrus.Debugf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s\n",
+	logrus.Tracef("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s\n",
 		name, value, vtaskID, appID, conflictAction)
 
 	return nil
@@ -145,7 +145,7 @@ func CreateJSONSemaphores(jsonText string, vtaskID int64, appID int, batchSize i
 		ordered = append(ordered, &Sema{Name: item.Name, Value: item.Value})
 	}
 
-	logrus.Debugf("Unmarshalled %d semaphores from JSON text", len(ordered))
+	logrus.Tracef("Unmarshalled %d semaphores from JSON text", len(ordered))
 	return createSemaphores(ordered, vtaskID, appID, batchSize)
 }
 
@@ -225,7 +225,7 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 			logrus.Errorf("Commit, err-info:%v\n", err)
 			return err
 		}
-		fmt.Fprintf(os.Stderr, "[%d..%d], %d row(s) inserted.\n", i, end-1, end-i)
+		logrus.Infof("[%d..%d], %d row(s) inserted.\n", i, end-1, end-i)
 
 		// start next batch
 		if tx, err = postgres.GetDB().Begin(); err != nil {
