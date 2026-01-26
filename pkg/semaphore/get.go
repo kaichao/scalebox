@@ -96,5 +96,4 @@ func GetValue(name string, vtaskID int64, appID int) (value int, err error) {
 	}
 	return -1, errors.WrapE(err, "semaphore not found",
 		"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
-
 }
