@@ -1,8 +1,7 @@
 package semagroup
 
 import (
-	"fmt"
-
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
 )
 
@@ -18,7 +17,7 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	// 在事务中执行查询
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
-		return 0, fmt.Errorf("failed to begin transaction: %w", err)
+		return 0, errors.WrapE(err, "begin transaction failed")
 	}
 	defer tx.Rollback()
 
@@ -31,7 +30,8 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	`,
 		expr, appID).Scan(&currentValue)
 	if err != nil {
-		return 0, fmt.Errorf("failed to query current semaphore value: %w", err)
+		return 0, errors.WrapE(err, "query current semaphore failed",
+			"app-id", appID, "sema-expr", expr)
 	}
 
 	// 查询组最大值
@@ -43,12 +43,13 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	`,
 		groupExpr, appID).Scan(&maxValue)
 	if err != nil {
-		return 0, fmt.Errorf("failed to query max semaphore value: %w", err)
+		return 0, errors.WrapE(err, "query max semaphore failed",
+			"app-id", appID, "group-expr", groupExpr)
 	}
 
 	// 提交事务
 	if err := tx.Commit(); err != nil {
-		return 0, fmt.Errorf("failed to commit transaction: %w", err)
+		return 0, errors.WrapE(err, "commit transaction failed")
 	}
 
 	return maxValue - currentValue, nil

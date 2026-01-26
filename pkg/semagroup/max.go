@@ -3,6 +3,7 @@ package semagroup
 import (
 	"fmt"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
 )
 
@@ -22,7 +23,8 @@ func GetMax(semaExpr string, appID int) (string, error) {
 		LIMIT 1`,
 		semaExpr, appID).Scan(&name, &maxValue)
 	if err != nil {
-		return "", fmt.Errorf("failed to query max semaphore value: %w", err)
+		return "", errors.WrapE(err, "query max semaphore value failed",
+			"app-id", appID, "sema-expr", semaExpr)
 	}
 
 	return fmt.Sprintf(`"%s":%d`, name, maxValue), nil

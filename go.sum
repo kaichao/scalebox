@@ -11,6 +11,8 @@ github.com/jackc/puddle/v2 v2.2.2 h1:PR8nw+E/1w0GLuRFSmiioY6UooMp6KJv0/61nB7icHo
 github.com/jackc/puddle/v2 v2.2.2/go.mod h1:vriiEXHvEE654aYKXXjOvZM39qJ0q+azkZFrfEOc3H4=
 github.com/kaichao/gopkg v0.0.0-20260124121534-19337d20ae5c h1:bGgXh8g9kuZ2EpCVg+z/4WFB4jeqG2i6eROGDWHiuh4=
 github.com/kaichao/gopkg v0.0.0-20260124121534-19337d20ae5c/go.mod h1:uu7Oqk8wrhOsXHUMMfbcErzvDh/7kiEloy+Eu3jJOaI=
+github.com/kaichao/gopkg v0.0.0-20260125155601-255eda705ce6 h1:UdZsuqtvfffnTSHEOXpJ0sK6EFosige3xmGsjperMAQ=
+github.com/kaichao/gopkg v0.0.0-20260125155601-255eda705ce6/go.mod h1:uu7Oqk8wrhOsXHUMMfbcErzvDh/7kiEloy+Eu3jJOaI=
 github.com/kr/pretty v0.3.0 h1:WgNl7dwNpEZ6jJ9k1snq4pZsg7DOEN8hP9Xw0Tsjwk0=
 github.com/kr/pretty v0.3.0/go.mod h1:640gp4NfQd8pI5XOwp5fnNeVWj67G7CFk/SaSQn7NBk=
 github.com/kr/text v0.2.0 h1:5Nx0Ya0ZqY2ygV366QzturHI13Jq95ApcVaJBhpS+AY=

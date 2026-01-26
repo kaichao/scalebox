@@ -3,6 +3,7 @@ package semagroup
 import (
 	"fmt"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
 )
 
@@ -15,7 +16,7 @@ func Decrement(semaExpr string, appID int) (string, error) {
 	// 在事务中执行查询和更新
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
-		return "", fmt.Errorf("failed to begin transaction: %w", err)
+		return "", errors.WrapE(err, "begin transaction failed")
 	}
 	defer tx.Rollback()
 
@@ -30,7 +31,8 @@ func Decrement(semaExpr string, appID int) (string, error) {
 		LIMIT 1`,
 		semaExpr, appID).Scan(&name, &value)
 	if err != nil {
-		return "", fmt.Errorf("failed to query max semaphore: %w", err)
+		return "", errors.WrapE(err, "query max semaphore failed",
+			"app-id", appID, "sema-expr", semaExpr)
 	}
 
 	// 更新信号量值
@@ -40,12 +42,13 @@ func Decrement(semaExpr string, appID int) (string, error) {
 		WHERE name = $1 AND app = $2`,
 		name, appID)
 	if err != nil {
-		return "", fmt.Errorf("failed to decrement semaphore: %w", err)
+		return "", errors.WrapE(err, "decrement semagroup failed",
+			"app-id", appID, "name", name)
 	}
 
 	// 提交事务
 	if err := tx.Commit(); err != nil {
-		return "", fmt.Errorf("failed to commit transaction: %w", err)
+		return "", errors.WrapE(err, "commit transaction failed")
 	}
 
 	return fmt.Sprintf(`"%s":%d`, name, value-1), nil

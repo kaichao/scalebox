@@ -2,41 +2,39 @@ package common
 
 import (
 	"bufio"
-	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
+
+	"github.com/kaichao/gopkg/errors"
 )
 
 // AppendToFile ...
-func AppendToFile(fileName string, line string) {
+func AppendToFile(fileName string, line string) error {
 	file, err := os.OpenFile(fileName, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "open file %s error,err-info:%v\n", fileName, err)
-		fmt.Fprintln(os.Stderr, os.Args)
-		os.Exit(3)
+		return errors.WrapE(err, "open file failed", "filename", fileName)
 	}
 	defer file.Close()
 
 	writer := bufio.NewWriter(file)
 	writer.WriteString(line + "\n")
 	writer.Flush()
+	return nil
 }
 
 // GetTextFileLines ...
 func GetTextFileLines(textFile string) ([]string, error) {
 	if _, err := os.Stat(textFile); err != nil {
-		_, ok := err.(*os.PathError)
-		if ok && strings.Contains(err.Error(), "no such file or directory") {
+		if _, ok := err.(*os.PathError); ok {
 			// file not exists
-			return []string{}, nil
+			return []string{}, errors.WrapE(err, "file not found", "filename", textFile)
 		}
-		return []string{}, err
+		return []string{}, errors.WrapE(err, "file open failed", "filename", textFile)
 	}
 
-	fileContent, err := ioutil.ReadFile(textFile)
+	fileContent, err := os.ReadFile(textFile)
 	if err != nil {
-		return []string{}, fmt.Errorf("Read file error, filename:%s, err:%v", textFile, err)
+		return []string{}, errors.WrapE(err, "file read failed", "filename", textFile)
 	}
 	var lines []string
 	for _, line := range strings.Split(string(fileContent), "\n") {

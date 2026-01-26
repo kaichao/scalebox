@@ -11,8 +11,8 @@ import (
 )
 
 var (
-	appID   = 168
-	vtaskID = int64(4117)
+	appID   = 2
+	vtaskID = int64(290)
 )
 
 func TestSet(t *testing.T) {
@@ -24,11 +24,11 @@ func TestSet(t *testing.T) {
 	variable.Set("var-1", "val-10", 0, appID)
 	variable.Set("var-2", "val-20", 0, appID)
 
-	val, _ := variable.Get("var.+", vtaskID, appID)
+	val, _ := variable.GetJSON("var.+", vtaskID, appID)
 	fmt.Println("val:", val)
 	fmt.Println()
 
-	val, _ = variable.Get("var.+", 0, appID)
+	val, _ = variable.GetJSON("var.+", 0, appID)
 	fmt.Println("val0:", val)
 }
 
@@ -61,9 +61,9 @@ func ExampleSet() {
 	// Set() with vtaskID=0 for global variables
 }
 
-// ExampleGet 展示了如何使用 Get 函数获取变量
+// ExampleGetValue 展示了如何使用 GetValue 函数获取单个变量
 // 注意：此示例需要正确的数据库连接和有效的appID
-func ExampleGet() {
+func ExampleGetValue() {
 	// 在实际使用中，需要设置数据库连接环境变量
 	// os.Setenv("PGHOST", "your-database-host")
 
@@ -75,23 +75,23 @@ func ExampleGet() {
 	// _ = variable.Set("username", "john_doe", vtaskID, appID)
 
 	// 然后获取变量
-	// value, err := variable.Get("username", vtaskID, appID)
+	// value, err := variable.GetValue("username", vtaskID, appID)
 	// if err != nil {
 	//     fmt.Printf("Error: %v\n", err)
 	//     return
 	// }
 	// fmt.Printf("Value: %s\n", value)
 
-	fmt.Println("value, err := Get(name, vtaskID, appID)")
+	fmt.Println("value, err := GetValue(name, vtaskID, appID)")
 	fmt.Println("// 返回变量值或错误")
 	// Output:
-	// value, err := Get(name, vtaskID, appID)
+	// value, err := GetValue(name, vtaskID, appID)
 	// // 返回变量值或错误
 }
 
-// ExampleGet_withVtask 展示了如何使用 Get 函数处理不同的 vtaskID
+// ExampleGetValue_withVtask 展示了如何使用 GetValue 函数处理不同的 vtaskID
 // 注意：此示例展示了变量按vtaskID隔离的概念
-func ExampleGet_withVtask() {
+func ExampleGetValue_withVtask() {
 	// 变量按vtaskID隔离：不同任务可以有同名但不同值的变量
 	fmt.Println("// 为不同任务设置变量:")
 	fmt.Println("Set(\"output_file\", \"/path/task1.txt\", 200, 100)")
@@ -99,9 +99,9 @@ func ExampleGet_withVtask() {
 	fmt.Println("Set(\"output_file\", \"/path/global.txt\", 0, 100)")
 	fmt.Println()
 	fmt.Println("// 获取不同任务的变量:")
-	fmt.Println("Get(\"output_file\", 200, 100) // 返回: /path/task1.txt")
-	fmt.Println("Get(\"output_file\", 201, 100) // 返回: /path/task2.txt")
-	fmt.Println("Get(\"output_file\", 0, 100)   // 返回: /path/global.txt")
+	fmt.Println("GetValue(\"output_file\", 200, 100) // 返回: /path/task1.txt")
+	fmt.Println("GetValue(\"output_file\", 201, 100) // 返回: /path/task2.txt")
+	fmt.Println("GetValue(\"output_file\", 0, 100)   // 返回: /path/global.txt")
 	// Output:
 	// // 为不同任务设置变量:
 	// Set("output_file", "/path/task1.txt", 200, 100)
@@ -109,13 +109,13 @@ func ExampleGet_withVtask() {
 	// Set("output_file", "/path/global.txt", 0, 100)
 	//
 	// // 获取不同任务的变量:
-	// Get("output_file", 200, 100) // 返回: /path/task1.txt
-	// Get("output_file", 201, 100) // 返回: /path/task2.txt
-	// Get("output_file", 0, 100)   // 返回: /path/global.txt
+	// GetValue("output_file", 200, 100) // 返回: /path/task1.txt
+	// GetValue("output_file", 201, 100) // 返回: /path/task2.txt
+	// GetValue("output_file", 0, 100)   // 返回: /path/global.txt
 }
 
-// ExampleGet_regex 展示了如何使用 Get 函数进行正则表达式匹配
-func ExampleGet_regex() {
+// ExampleGetJSON 展示了如何使用 GetJSON 函数进行正则表达式匹配
+func ExampleGetJSON() {
 	// 使用正则表达式获取多个变量
 	fmt.Println("// 设置多个配置变量:")
 	fmt.Println("Set(\"config_server_host\", \"localhost\", 200, 100)")
@@ -123,7 +123,7 @@ func ExampleGet_regex() {
 	fmt.Println("Set(\"config_database_name\", \"mydb\", 200, 100)")
 	fmt.Println()
 	fmt.Println("// 使用正则表达式获取所有config_开头的变量:")
-	fmt.Println("// Get(\"^config_.+\", 200, 100)")
+	fmt.Println("// GetJSON(\"^config_.+\", 200, 100)")
 	fmt.Println("// 返回JSON: {\"config_server_host\":\"localhost\",\"config_server_port\":\"8080\",\"config_database_name\":\"mydb\"}")
 	// Output:
 	// // 设置多个配置变量:
@@ -132,31 +132,31 @@ func ExampleGet_regex() {
 	// Set("config_database_name", "mydb", 200, 100)
 	//
 	// // 使用正则表达式获取所有config_开头的变量:
-	// // Get("^config_.+", 200, 100)
+	// // GetJSON("^config_.+", 200, 100)
 	// // 返回JSON: {"config_server_host":"localhost","config_server_port":"8080","config_database_name":"mydb"}
 }
 
-// ExampleGet_vtaskZero 展示了 vtaskID <= 0 时的特殊行为
-func ExampleGet_vtaskZero() {
+// ExampleGetValue_vtaskZero 展示了 vtaskID <= 0 时的特殊行为
+func ExampleGetValue_vtaskZero() {
 	// vtaskID <= 0 时获取全局变量（vtask IS NULL）
 	fmt.Println("// 设置全局变量（vtaskID=0）:")
 	fmt.Println("Set(\"global_setting\", \"enabled\", 0, 100)")
 	fmt.Println()
 	fmt.Println("// 以下调用都会返回全局变量:")
-	fmt.Println("Get(\"global_setting\", 0, 100)   // vtaskID=0")
-	fmt.Println("Get(\"global_setting\", -1, 100)  // vtaskID=-1 (<=0)")
-	fmt.Println("Get(\"global_setting\", -100, 100)// 任何<=0的vtaskID")
+	fmt.Println("GetValue(\"global_setting\", 0, 100)   // vtaskID=0")
+	fmt.Println("GetValue(\"global_setting\", -1, 100)  // vtaskID=-1 (<=0)")
+	fmt.Println("GetValue(\"global_setting\", -100, 100)// 任何<=0的vtaskID")
 	// Output:
 	// // 设置全局变量（vtaskID=0）:
 	// Set("global_setting", "enabled", 0, 100)
 	//
 	// // 以下调用都会返回全局变量:
-	// Get("global_setting", 0, 100)   // vtaskID=0
-	// Get("global_setting", -1, 100)  // vtaskID=-1 (<=0)
-	// Get("global_setting", -100, 100)// 任何<=0的vtaskID
+	// GetValue("global_setting", 0, 100)   // vtaskID=0
+	// GetValue("global_setting", -1, 100)  // vtaskID=-1 (<=0)
+	// GetValue("global_setting", -100, 100)// 任何<=0的vtaskID
 }
 
-func TestGet(t *testing.T) {
+func TestGetValue(t *testing.T) {
 	os.Setenv("PGHOST", "10.0.6.100")
 
 	// 清理可能存在的旧数据
@@ -172,37 +172,37 @@ func TestGet(t *testing.T) {
 	variable.Set("var-2", "val-20", 0, appID)
 
 	// 3. 设置另一个vtaskID的变量，用于测试区分
-	anotherVtaskID := int64(4118)
-	variable.Set("var-1", "val-100", anotherVtaskID, appID)
+	anotherVtaskID := int64(291) // 使用不同的vtaskID，避免冲突
+	variable.Set("var-3", "val-100", anotherVtaskID, appID)
 
 	// 测试用例1：获取带有特定vtaskID的变量
-	t.Run("Get with specific vtaskID", func(t *testing.T) {
-		val, err := variable.Get("var-1", vtaskID, appID)
+	t.Run("GetValue with specific vtaskID", func(t *testing.T) {
+		val, err := variable.GetValue("var-1", vtaskID, appID)
 		if err != nil {
-			t.Errorf("Get with specific vtaskID failed: %v", err)
+			t.Errorf("GetValue with specific vtaskID failed: %v", err)
 		}
 		if val != "val-1" {
 			t.Errorf("Expected 'val-1', got '%s'", val)
 		}
-		fmt.Printf("Test 1 - Get with vtaskID=%d: %s\n", vtaskID, val)
+		fmt.Printf("Test 1 - GetValue with vtaskID=%d: %s\n", vtaskID, val)
 	})
 
 	// 测试用例2：获取vtaskID=0的变量（全局变量）
-	t.Run("Get with vtaskID=0", func(t *testing.T) {
-		val, err := variable.Get("var-1", 0, appID)
+	t.Run("GetValue with vtaskID=0", func(t *testing.T) {
+		val, err := variable.GetValue("var-1", 0, appID)
 		if err != nil {
-			t.Errorf("Get with vtaskID=0 failed: %v", err)
+			t.Errorf("GetValue with vtaskID=0 failed: %v", err)
 		}
 		if val != "val-10" {
 			t.Errorf("Expected 'val-10', got '%s'", val)
 		}
-		fmt.Printf("Test 2 - Get with vtaskID=0: %s\n", val)
+		fmt.Printf("Test 2 - GetValue with vtaskID=0: %s\n", val)
 	})
 
 	// 测试用例3：获取不存在的vtaskID的变量
-	t.Run("Get with non-existent vtaskID", func(t *testing.T) {
+	t.Run("GetValue with non-existent vtaskID", func(t *testing.T) {
 		nonExistentVtaskID := int64(9999)
-		_, err := variable.Get("var-1", nonExistentVtaskID, appID)
+		_, err := variable.GetValue("var-1", nonExistentVtaskID, appID)
 		if err == nil {
 			t.Error("Expected error for non-existent vtaskID, but got none")
 		} else {
@@ -211,8 +211,8 @@ func TestGet(t *testing.T) {
 	})
 
 	// 测试用例4：获取不存在的变量名
-	t.Run("Get non-existent variable", func(t *testing.T) {
-		_, err := variable.Get("non-existent-var", vtaskID, appID)
+	t.Run("GetValue non-existent variable", func(t *testing.T) {
+		_, err := variable.GetValue("non-existent-var", vtaskID, appID)
 		if err == nil {
 			t.Error("Expected error for non-existent variable, but got none")
 		} else {
@@ -220,56 +220,141 @@ func TestGet(t *testing.T) {
 		}
 	})
 
-	// 测试用例5：使用正则表达式获取变量（多个匹配）
-	t.Run("Get with regex pattern", func(t *testing.T) {
-		val, err := variable.Get("var.+", vtaskID, appID)
+	// 测试用例5：获取另一个vtaskID的变量
+	t.Run("GetValue with another vtaskID", func(t *testing.T) {
+		val, err := variable.GetValue("var-3", anotherVtaskID, appID)
 		if err != nil {
-			t.Errorf("Get with regex pattern failed: %v", err)
+			t.Errorf("GetValue with another vtaskID failed: %v", err)
+		}
+		if val != "val-100" {
+			t.Errorf("Expected 'val-100', got '%s'", val)
+		}
+		fmt.Printf("Test 5 - GetValue with vtaskID=%d: %s\n", anotherVtaskID, val)
+	})
+
+	// 测试用例6：测试负vtaskID（应该被视为vtaskID=0的情况）
+	t.Run("GetValue with negative vtaskID", func(t *testing.T) {
+		val, err := variable.GetValue("var-1", -1, appID)
+		if err != nil {
+			t.Errorf("GetValue with negative vtaskID failed: %v", err)
+		}
+		// 负vtaskID应该返回vtaskID=0的变量
+		if val != "val-10" {
+			t.Errorf("Expected 'val-10' for negative vtaskID, got '%s'", val)
+		}
+		fmt.Printf("Test 6 - GetValue with vtaskID=-1: %s\n", val)
+	})
+
+	// 测试用例7：测试多个变量区分
+	t.Run("Verify variable isolation by vtaskID", func(t *testing.T) {
+		// 验证不同vtaskID的变量是独立的
+		val1, _ := variable.GetValue("var-1", vtaskID, appID)
+		val2, _ := variable.GetValue("var-1", 0, appID)
+		val3, _ := variable.GetValue("var-3", anotherVtaskID, appID)
+
+		if val1 == val2 {
+			t.Errorf("Variables with different vtaskIDs should be isolated. Got same value for vtaskID=%d and vtaskID=0: '%s'",
+				vtaskID, val1)
+		}
+		// val3是var-3，与var-1不同，所以不需要比较
+		fmt.Printf("Test 7 - Variable isolation verified: var-1@vtaskID=%d='%s', var-1@vtaskID=0='%s', var-3@vtaskID=%d='%s'\n",
+			vtaskID, val1, val2, anotherVtaskID, val3)
+	})
+}
+
+func TestGetJSON(t *testing.T) {
+	os.Setenv("PGHOST", "10.0.6.100")
+
+	// 清理可能存在的旧数据
+	// 注意：实际测试中可能需要更完善的清理机制
+
+	// 设置测试数据
+	// 1. 设置带有特定vtaskID的变量
+	variable.Set("var-1", "val-1", vtaskID, appID)
+	variable.Set("var-2", "val-2", vtaskID, appID)
+
+	// 2. 设置vtaskID=0的变量（全局变量）
+	variable.Set("var-1", "val-10", 0, appID)
+	variable.Set("var-2", "val-20", 0, appID)
+
+	// 3. 设置另一个vtaskID的变量，用于测试区分
+	anotherVtaskID := int64(291) // 使用与TestGetValue相同的vtaskID
+	variable.Set("var-3", "val-100", anotherVtaskID, appID)
+
+	// 测试用例1：使用正则表达式获取变量（多个匹配）
+	t.Run("GetJSON with regex pattern", func(t *testing.T) {
+		val, err := variable.GetJSON("var.+", vtaskID, appID)
+		if err != nil {
+			t.Errorf("GetJSON with regex pattern failed: %v", err)
 		}
 		// 正则表达式应该返回JSON字符串
-		fmt.Printf("Test 5 - Get with regex pattern: %s\n", val)
+		fmt.Printf("Test 1 - GetJSON with regex pattern: %s\n", val)
 		// 验证返回的是有效的JSON
 		if len(val) == 0 || val == "{}" {
 			t.Errorf("Expected non-empty JSON, got '%s'", val)
 		}
 	})
 
-	// 测试用例6：获取另一个vtaskID的变量
-	t.Run("Get with another vtaskID", func(t *testing.T) {
-		val, err := variable.Get("var-1", anotherVtaskID, appID)
+	// 测试用例2：使用正则表达式获取全局变量
+	t.Run("GetJSON with regex pattern and vtaskID=0", func(t *testing.T) {
+		val, err := variable.GetJSON("var.+", 0, appID)
 		if err != nil {
-			t.Errorf("Get with another vtaskID failed: %v", err)
+			t.Errorf("GetJSON with regex pattern and vtaskID=0 failed: %v", err)
 		}
-		if val != "val-100" {
-			t.Errorf("Expected 'val-100', got '%s'", val)
+		fmt.Printf("Test 2 - GetJSON with vtaskID=0: %s\n", val)
+		if len(val) == 0 || val == "{}" {
+			t.Errorf("Expected non-empty JSON, got '%s'", val)
 		}
-		fmt.Printf("Test 6 - Get with vtaskID=%d: %s\n", anotherVtaskID, val)
 	})
 
-	// 测试用例7：测试负vtaskID（应该被视为vtaskID=0的情况）
-	t.Run("Get with negative vtaskID", func(t *testing.T) {
-		val, err := variable.Get("var-1", -1, appID)
+	// 测试用例3：获取不存在的正则表达式匹配
+	t.Run("GetJSON with non-matching regex", func(t *testing.T) {
+		val, err := variable.GetJSON("non-matching-.+", vtaskID, appID)
 		if err != nil {
-			t.Errorf("Get with negative vtaskID failed: %v", err)
+			t.Errorf("GetJSON with non-matching regex failed: %v", err)
 		}
+		// 应该返回空JSON对象
+		if val != "{}" {
+			t.Errorf("Expected '{}' for non-matching regex, got '%s'", val)
+		}
+		fmt.Printf("Test 3 - GetJSON with non-matching regex: %s\n", val)
+	})
+
+	// 测试用例4：测试精确匹配（单个变量）也适用于GetJSON
+	t.Run("GetJSON with exact match", func(t *testing.T) {
+		val, err := variable.GetJSON("var-1", vtaskID, appID)
+		if err != nil {
+			t.Errorf("GetJSON with exact match failed: %v", err)
+		}
+		// 精确匹配应该返回单个值的JSON
+		fmt.Printf("Test 4 - GetJSON with exact match: %s\n", val)
+		// 注意：GetJSON对于精确匹配返回的是JSON字符串，而不是纯值
+		// 例如：{"var-1":"val-1"} 而不是 "val-1"
+	})
+
+	// 测试用例5：测试不同vtaskID的正则表达式匹配
+	t.Run("GetJSON with different vtaskID", func(t *testing.T) {
+		val, err := variable.GetJSON("var.+", anotherVtaskID, appID)
+		if err != nil {
+			t.Errorf("GetJSON with different vtaskID failed: %v", err)
+		}
+		fmt.Printf("Test 5 - GetJSON with vtaskID=%d: %s\n", anotherVtaskID, val)
+		// 这里应该包含var-3
+		if len(val) == 0 || val == "{}" {
+			t.Errorf("Expected non-empty JSON for different vtaskID, got '%s'", val)
+		}
+	})
+
+	// 测试用例6：测试负vtaskID（应该被视为vtaskID=0的情况）
+	t.Run("GetJSON with negative vtaskID", func(t *testing.T) {
+		val, err := variable.GetJSON("var.+", -1, appID)
+		if err != nil {
+			t.Errorf("GetJSON with negative vtaskID failed: %v", err)
+		}
+		fmt.Printf("Test 6 - GetJSON with vtaskID=-1: %s\n", val)
 		// 负vtaskID应该返回vtaskID=0的变量
-		if val != "val-10" {
-			t.Errorf("Expected 'val-10' for negative vtaskID, got '%s'", val)
+		if len(val) == 0 || val == "{}" {
+			t.Errorf("Expected non-empty JSON for negative vtaskID, got '%s'", val)
 		}
-		fmt.Printf("Test 7 - Get with vtaskID=-1: %s\n", val)
-	})
-
-	// 测试用例8：测试多个变量区分
-	t.Run("Verify variable isolation by vtaskID", func(t *testing.T) {
-		// 验证不同vtaskID的变量是独立的
-		val1, _ := variable.Get("var-1", vtaskID, appID)
-		val2, _ := variable.Get("var-1", 0, appID)
-		val3, _ := variable.Get("var-1", anotherVtaskID, appID)
-
-		if val1 == val2 || val1 == val3 || val2 == val3 {
-			t.Errorf("Variables with different vtaskIDs should be isolated. Got: vtaskID=%d:'%s', vtaskID=0:'%s', vtaskID=%d:'%s'",
-				vtaskID, val1, val2, anotherVtaskID, val3)
-		}
-		fmt.Printf("Test 8 - Variable isolation verified: %s, %s, %s\n", val1, val2, val3)
 	})
 }

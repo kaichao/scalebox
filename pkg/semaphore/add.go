@@ -2,11 +2,11 @@ package semaphore
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/kaichao/scalebox/pkg/postgres"
 	"github.com/sirupsen/logrus"
@@ -37,26 +37,21 @@ func AddValue(name string, vtaskID int64, appID int, delta int) (v int, err erro
 		return v, nil
 	}
 
-	if errors.Is(err, sql.ErrNoRows) {
-		// not-defined semaphore
-		if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
-			// create semaphore first time
-			if createErr := Create(name, delta, vtaskID, appID); createErr != nil {
-				logrus.Errorf(" Semaphore (name:%s,app-id:%d,vtask:%d), create error,err-info:%v\n",
-					name, appID, vtaskID, createErr)
-				return -1, createErr
-			}
-			return 0, nil
-		}
-		errInfo := fmt.Sprintf("[ERROR]Semaphore(name:%s,app-id:%d,vtask:%d) not-found", name, appID, vtaskID)
-		logrus.Errorln(errInfo)
-		return 0, errors.New(errInfo)
+	if err != sql.ErrNoRows {
+		return v, errors.WrapE(err, "update semaphore failed",
+			"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 	}
-	// 其他数据库错误
-	errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d,vtask:%d), err-t=%T,err=%v",
-		name, appID, vtaskID, err, err)
-	logrus.Errorln(errInfo)
-	return v, err
+	// not-defined semaphore
+	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
+		// create semaphore first time
+		if err := Create(name, delta, vtaskID, appID); err != nil {
+			return -1, errors.WrapE(err, "create semaphore failed",
+				"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
+		}
+		return 0, nil
+	}
+	return -1, errors.WrapE(err, "semaphore not found",
+		"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 }
 
 // AddRegexValue ...
@@ -92,10 +87,8 @@ func AddRegexValue(name string, vtaskID int64, appID int, delta int) (v string, 
 		name, vtaskID, appID, delta, v, err)
 
 	if err != nil {
-		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%s,%d,vtask:%d), err-t=%T,err=%v",
-			name, appID, vtaskID, err, err)
-		logrus.Errorln(errInfo)
-		return "", err
+		return "", errors.WrapE(err, "semaphore-op failed",
+			"app-id", appID, "vtask-id", vtaskID, "sema-expr", name, "delta", delta)
 	}
 
 	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
@@ -158,9 +151,8 @@ func AddMapValues(pairs map[string]int, vtaskID int64, appID int) (map[string]in
 		pairs, vtaskID, appID, v, err)
 
 	if err != nil {
-		errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op (%v,%d,vtask:%d), err-t=%T,err=%v",
-			pairs, appID, vtaskID, err, err)
-		logrus.Errorln(errInfo)
+		err = errors.WrapE(err, "semaphore-op failed",
+			"app-id", appID, "vtask-id", vtaskID, "sema-pairs", pairs)
 		return map[string]int{}, err
 	}
 
@@ -172,8 +164,8 @@ func AddMapValues(pairs map[string]int, vtaskID int64, appID int) (map[string]in
 			for name, delta := range pairs {
 				// 尝试创建信号量（如果已经存在，Create函数会更新）
 				if err := Create(name, delta, vtaskID, appID); err != nil {
-					logrus.Errorf(" Semaphore (name:%s,app-id:%d,vtask:%d), create error,err-info:%v\n",
-						name, appID, vtaskID, err)
+					return map[string]int{}, errors.WrapE(err, "semaphore create",
+						"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 					// 继续尝试创建其他信号量
 				}
 			}
@@ -186,23 +178,20 @@ func AddMapValues(pairs map[string]int, vtaskID int64, appID int) (map[string]in
 			}
 
 			if err != nil {
-				errInfo := fmt.Sprintf("[ERROR]db-error in semaphore-op after auto-create (%v,%d,vtask:%d), err-t=%T,err=%v",
-					pairs, appID, vtaskID, err, err)
-				logrus.Errorln(errInfo)
+				err = errors.WrapE(err, "semaphore-op failed",
+					"app-id", appID, "vtask-id", vtaskID, "sema-names", names, "deltas", deltas, "pairs", pairs)
 				return map[string]int{}, err
 			}
 
 			if updatedCount != len(names) {
-				errInfo := fmt.Sprintf("[ERROR]Some semaphores still not found after auto-create for pairs:%v,app-id:%d,vtask:%d, updated:%d, expected:%d",
-					pairs, appID, vtaskID, updatedCount, len(names))
-				logrus.Errorln(errInfo)
-				return map[string]int{}, errors.New(errInfo)
+				err := errors.E("semaphores still not found after auto-create",
+					"app-id", appID, "vtask-id", vtaskID, "pairs", pairs, "updated", updatedCount, "expected", len(names))
+				return map[string]int{}, err
 			}
 		} else {
-			errInfo := fmt.Sprintf("[ERROR]Some semaphores not found for pairs:%v,app-id:%d,vtask:%d, updated:%d, expected:%d",
-				pairs, appID, vtaskID, updatedCount, len(names))
-			logrus.Errorln(errInfo)
-			return map[string]int{}, errors.New(errInfo)
+			err := errors.E("semaphores not found",
+				"app-id", appID, "vtask-id", vtaskID, "pairs", pairs, "updated", updatedCount, "expected", len(names))
+			return map[string]int{}, err
 		}
 	}
 
@@ -210,10 +199,9 @@ func AddMapValues(pairs map[string]int, vtaskID int64, appID int) (map[string]in
 	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
 	if packed == "{}" {
 		// 这种情况不应该发生，因为updatedCount > 0
-		errInfo := fmt.Sprintf("[ERROR]Unexpected empty result after update for pairs:%v,app-id:%d,vtask:%d",
-			pairs, appID, vtaskID)
-		logrus.Errorln(errInfo)
-		return map[string]int{}, errors.New(errInfo)
+		err := errors.E("Unexpected empty result after update semaphores",
+			"app-id", appID, "vtask-id", vtaskID, "pairs", pairs, "updated")
+		return map[string]int{}, err
 	}
 
 	// 解析JSON到map

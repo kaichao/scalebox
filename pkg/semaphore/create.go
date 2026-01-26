@@ -6,6 +6,7 @@ import (
 	"os"
 	"regexp"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/common"
 
 	"github.com/kaichao/scalebox/pkg/postgres"
@@ -51,10 +52,8 @@ func Create(name string, value int, vtaskID int64, appID int) error {
 	logrus.Tracef("In semaphore.Create(),sqlText:%s\n", sqlText)
 
 	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
-		errInfo := fmt.Sprintf("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s,err=%v\n",
-			name, value, vtaskID, appID, conflictAction, err)
-		logrus.Errorln(errInfo)
-		return err
+		return errors.WrapE(err, "semaphore-create failed",
+			"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "value", value, "conflict-action", conflictAction)
 	}
 	logrus.Tracef("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s\n",
 		name, value, vtaskID, appID, conflictAction)
@@ -73,7 +72,7 @@ func CreateSemaphores(lines []string, vtaskID int64, appID int, batchSize int) e
 			fmt.Sscanf(matches[2], "%d", &value) // 将 value 转为整数
 			semas = append(semas, &Sema{Name: key, Value: value})
 		} else {
-			logrus.Errorf("Not matched semaphore :%s,\n", line)
+			logrus.Warnf("Not matched semaphore :%s,\n", line)
 		}
 	}
 	return createSemaphores(semas, vtaskID, appID, batchSize)
@@ -83,11 +82,10 @@ func CreateSemaphores(lines []string, vtaskID int64, appID int, batchSize int) e
 func CreateFileSemaphores(fileName string, vtaskID int64, appID int, batchSize int) error {
 	lines, err := common.GetTextFileLines(fileName)
 	if err != nil {
-		logrus.Errorf("file-name:%s, err-info:%v\n", fileName, err)
-		return err
+		return errors.WrapE(err, "get-file-lines", "filename", fileName)
 	}
 	if len(lines) == 0 {
-		logrus.Warnf("Null file, filename:%s\n", fileName)
+		return errors.E("null sema-file", "file-name", fileName)
 	}
 	var semas []*Sema
 	re := regexp.MustCompile(`"([^"]+)":(\d+)`)
@@ -98,10 +96,13 @@ func CreateFileSemaphores(fileName string, vtaskID int64, appID int, batchSize i
 			fmt.Sscanf(matches[2], "%d", &value) // 将 value 转为整数
 			semas = append(semas, &Sema{Name: key, Value: value})
 		} else {
-			logrus.Errorf("Not matched semaphore :%s,\n", line)
+			logrus.Warnf("Not matched semaphore :%s,\n", line)
 		}
 	}
-	return createSemaphores(semas, vtaskID, appID, batchSize)
+	if err := createSemaphores(semas, vtaskID, appID, batchSize); err != nil {
+		return errors.WrapE(err, "createSemaphores failed", "app-id", appID, "vtask-id", vtaskID)
+	}
+	return nil
 }
 
 // CreateJSONSemaphores ...
@@ -146,7 +147,12 @@ func CreateJSONSemaphores(jsonText string, vtaskID int64, appID int, batchSize i
 	}
 
 	logrus.Tracef("Unmarshalled %d semaphores from JSON text", len(ordered))
-	return createSemaphores(ordered, vtaskID, appID, batchSize)
+	err := createSemaphores(ordered, vtaskID, appID, batchSize)
+	if err != nil {
+		return errors.WrapE(err, "createSemaphores",
+			"app-id", appID, "vtask-id", vtaskID, "semas", ordered)
+	}
+	return nil
 }
 
 // Sema ...
@@ -194,15 +200,15 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 	// start transaction
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
-		logrus.Errorf("err:%v\n", err)
-		return err
+		return errors.WrapE(err, "begin transaction failed")
 	}
 	defer tx.Rollback()
 
 	for i := 0; i < len(ordered); i += batchSize {
 		stmt, err := tx.Prepare(sqlText)
 		if err != nil {
-			logrus.Errorf("err:%v\n", err)
+			logrus.Warnf("err:%v\n", err)
+			continue
 		}
 		defer stmt.Close()
 
@@ -215,22 +221,20 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 			if _, err := stmt.Exec(v.Name, v.Value, pVtask, appID); err != nil {
 				// 如果存在冲突且不是IGNORE模式，记录错误但不一定失败
 				if conflictAction != "IGNORE" {
-					logrus.Errorf("err:%v\n", err)
-					return err
+					return errors.WrapE(err, "create prepared-semaphore failed",
+						"app-id", appID, "vtask-id", vtaskID, "sema-name", v.Name, "sema-value", v.Value)
 				}
 				// IGNORE模式下，冲突错误被忽略
 			}
 		}
 		if err = tx.Commit(); err != nil {
-			logrus.Errorf("Commit, err-info:%v\n", err)
-			return err
+			return errors.WrapE(err, "commit transaction failed")
 		}
 		logrus.Infof("[%d..%d], %d row(s) inserted.\n", i, end-1, end-i)
 
 		// start next batch
 		if tx, err = postgres.GetDB().Begin(); err != nil {
-			logrus.Errorf("err:%v\n", err)
-			return err
+			return errors.WrapE(err, "begin transaction failed")
 		}
 	}
 

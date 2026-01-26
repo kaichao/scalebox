@@ -3,6 +3,7 @@ package semagroup
 import (
 	"fmt"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
 )
 
@@ -22,7 +23,8 @@ func GetMin(semaExpr string, appID int) (string, error) {
 		LIMIT 1`,
 		semaExpr, appID).Scan(&minValue)
 	if err != nil {
-		return "", fmt.Errorf("failed to query min semaphore value: %w", err)
+		return "", errors.WrapE(err, "query min semaphore value failed",
+			"app-id", appID, "sema-expr", semaExpr)
 	}
 	return fmt.Sprintf(`"%s":%d`, name, minValue), nil
 }

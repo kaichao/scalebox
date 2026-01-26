@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/sirupsen/logrus"
@@ -18,8 +17,7 @@ func getConnString() string {
 		// in agent, set grpc server as default server
 		grpcServer := os.Getenv("GRPC_SERVER")
 		pgHost = strings.Split(grpcServer, ":")[0]
-		logrus.Tracef("[INFO] %s Set GRPC_SERVER %s as default db server.\n",
-			time.Now().Format("15:04:05.000"), grpcServer)
+		logrus.Tracef("Set GRPC_SERVER %s as default db server.\n", grpcServer)
 	}
 	if pgHost == "" {
 		pgHost = os.Getenv("LOCAL_ADDR")

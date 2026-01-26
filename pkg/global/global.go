@@ -2,9 +2,8 @@ package global
 
 import (
 	"database/sql"
-	"errors"
-	"fmt"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
 	"github.com/sirupsen/logrus"
 )
@@ -21,7 +20,7 @@ func Set(name string, value string) error {
 	logrus.Tracef("In global.Set(),global-name:%s,global-value:%s,err:%v\n",
 		name, value, err)
 	if err != nil {
-		return fmt.Errorf("unable to global-set,name=%s, value=%s, err: %w", name, value, err)
+		return errors.WrapE(err, "global-set failed", "name", name, "value", value)
 	}
 	return nil
 }
@@ -36,8 +35,8 @@ func Get(name string) (string, error) {
 	if err == nil {
 		return value, nil
 	}
-	if errors.Is(err, sql.ErrNoRows) {
-		return "", fmt.Errorf("global %s not found: %w", name, err)
+	if err == sql.ErrNoRows {
+		return "", errors.WrapE(err, "global not found", "name", name)
 	}
-	return "", fmt.Errorf("unable to global-get,name=%s, err: %w", name, err)
+	return "", errors.WrapE(err, "global failed", "name", name)
 }

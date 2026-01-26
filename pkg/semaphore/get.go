@@ -2,11 +2,11 @@ package semaphore
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/kaichao/scalebox/pkg/postgres"
 	"github.com/sirupsen/logrus"
@@ -43,15 +43,13 @@ func GetJSON(name string, vtaskID int64, appID int) (v string, err error) {
 		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
 			name, appID).Scan(&v)
 	}
+	if err != nil {
+		return "{}", errors.WrapE(err, "get-semaphore failed",
+			"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
+	}
 	logrus.Tracef("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,json-value:%s,err:%v\n",
 		name, vtaskID, appID, v, err)
 
-	if err != nil {
-		errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d,vtask:%d), err-t=%T,err=%v",
-			name, appID, vtaskID, err, err)
-		logrus.Errorln(errInfo)
-		return "{}", err
-	}
 	// 删除结果的空字符
 	v = regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
 	return v, nil
@@ -83,26 +81,20 @@ func GetValue(name string, vtaskID int64, appID int) (value int, err error) {
 		return value, nil
 	}
 
-	// 检查是否为"未找到"错误
-	// 使用 errors.Is 检查 sql.ErrNoRows，通过 postgres 包间接引用
-	if errors.Is(err, sql.ErrNoRows) {
-		// not-defined semaphore
-		if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
-			// create semaphore first time
-			if createErr := Create(name, 0, vtaskID, appID); createErr != nil {
-				logrus.Errorf(" Semaphore (name:%s,app-id:%d,vtask:%d), create error,err-info:%v\n",
-					name, appID, vtaskID, createErr)
-				return -1, createErr
-			}
-			return 0, nil
-		}
-		errInfo := fmt.Sprintf("[ERROR]Semaphore(name:%s,app-id:%d,vtask:%d) not-found", name, appID, vtaskID)
-		logrus.Errorln(errInfo)
-		return 0, errors.New(errInfo)
+	if err != sql.ErrNoRows {
+		return -1, errors.WrapE(err, "get semaphore failed",
+			"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 	}
-	// 其他数据库错误
-	errInfo := fmt.Sprintf("[ERROR]db-error in get-semaphore (%s,%d,vtask:%d), err-t=%T,err=%v",
-		name, appID, vtaskID, err, err)
-	logrus.Errorln(errInfo)
-	return -1, err
+	// not-defined semaphore
+	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
+		// create semaphore first time
+		if err := Create(name, 0, vtaskID, appID); err != nil {
+			return -1, errors.WrapE(err, "create semaphore failed",
+				"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
+		}
+		return 0, nil
+	}
+	return -1, errors.WrapE(err, "semaphore not found",
+		"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
+
 }

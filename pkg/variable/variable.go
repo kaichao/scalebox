@@ -1,77 +1,80 @@
 package variable
 
 import (
-	"errors"
+	// "errors"
 	"fmt"
 	"regexp"
 
-	"github.com/kaichao/scalebox/pkg/common"
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
 	"github.com/sirupsen/logrus"
 )
 
-// Get ...
-func Get(name string, vtaskID int64, appID int) (string, error) {
-	// 构建SQL查询，考虑vtaskID参数
-	sqlText := ""
+// GetValue ...
+func GetValue(name string, vtaskID int64, appID int) (string, error) {
+	sqlFmt := `
+		SELECT value
+		FROM t_variable
+		WHERE app=$2 AND (name = $1) AND %s 
+	`
 	var v string
 	var err error
 
 	if vtaskID <= 0 {
 		// vtaskID <= 0 时，查询vtask IS NULL的记录
-		sqlText = `
-			WITH selected_rows AS (
-				SELECT name,value
-				FROM t_variable
-				WHERE app=$2 AND (name ~ $1) AND vtask IS NULL
-				ORDER BY 1
-			)
-			SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-			FROM selected_rows
-		`
-		err = postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
+		vtaskExpr := "vtask IS NULL"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
+			name, appID).Scan(&v)
 	} else {
 		// vtaskID > 0 时，需要匹配vtask参数
-		sqlText = `
-			WITH selected_rows AS (
-				SELECT name,value
-				FROM t_variable
-				WHERE app=$2 AND (name ~ $1) AND vtask=$3
-				ORDER BY 1
-			)
-			SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-			FROM selected_rows
-		`
-		err = postgres.GetDB().QueryRow(sqlText, name, appID, vtaskID).Scan(&v)
+		vtaskExpr := "vtask=$3"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
+			name, appID, vtaskID).Scan(&v)
+	}
+	if err != nil {
+		return "", errors.WrapE(err, "get variable failed",
+			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
+	}
+	return v, nil
+}
+
+// GetJSON ...
+func GetJSON(name string, vtaskID int64, appID int) (string, error) {
+	// 构建SQL查询，考虑vtaskID参数
+	var v string
+	var err error
+
+	sqlFmt := `
+		WITH selected_rows AS (
+			SELECT name,value
+			FROM t_variable
+			WHERE app=$2 AND (name ~ $1) AND %s 
+			ORDER BY 1
+		)
+		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
+		FROM selected_rows
+	`
+
+	if vtaskID <= 0 {
+		// vtaskID <= 0 时，查询vtask IS NULL的记录
+		vtaskExpr := "vtask IS NULL"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
+			name, appID).Scan(&v)
+	} else {
+		// vtaskID > 0 时，需要匹配vtask参数
+		vtaskExpr := "vtask=$3"
+		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
+			name, appID, vtaskID).Scan(&v)
 	}
 	logrus.Tracef("In variable.Get(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",
 		name, v, vtaskID, appID, err)
 
 	if err != nil {
-		errInfo := fmt.Sprintf("[ERROR]db-error in get-variable(%s,%d,vtask:%d), err-t=%T,err=%v",
-			name, appID, vtaskID, err, err)
-		logrus.Errorln(errInfo)
-		return "", err
+		return "", errors.WrapE(err, "get variable failed",
+			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
 	}
 	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
-	if common.IsRegexString(name) {
-		return packed, nil
-	}
-	if packed == "{}" {
-		// no variable found
-		errInfo := fmt.Sprintf("[ERROR]Variable(name:%s,app-id:%d,vtask:%d) not-found", name, appID, vtaskID)
-		logrus.Errorln(errInfo)
-		return "", errors.New(errInfo)
-	}
-	// 提取变量值的字符串
-	re := regexp.MustCompile(`{".+":"(.+)"}`)
-	ss := re.FindStringSubmatch(packed)
-	if len(ss) == 0 {
-		errInfo := fmt.Sprintf("[ERROR]Invalid JSON string, value=%s", packed)
-		logrus.Errorln(errInfo)
-		return "", errors.New(errInfo)
-	}
-	return ss[1], nil
+	return packed, nil
 }
 
 // Set ...
@@ -88,16 +91,16 @@ func Set(name string, value string, vtaskID int64, appID int) error {
 		pVtaskID = nil
 	}
 	result, err := postgres.GetDB().Exec(sqlText, name, value, pVtaskID, appID)
+	if err != nil {
+		return errors.WrapE(err, "set-variable failed",
+			"app-id", appID, "vtask-id", vtaskID, "var-name", name, "var-value", value)
+	}
 	logrus.Tracef("In variable.Set(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",
 		name, value, vtaskID, appID, err)
-	if err != nil {
-		logrus.Errorf("db-error in set-variable (name:%s,app-id:%d,vtask:%d), err-t=%T,err=%v\n",
-			name, appID, vtaskID, err, err)
-		return err
-	}
+
 	if n, _ := result.RowsAffected(); n == 0 {
-		logrus.Errorf(" Variable %s not-defined\n", name)
-		return err
+		return errors.E("variable not defined",
+			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
 	}
 
 	return nil

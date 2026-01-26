@@ -4,8 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/scalebox/pkg/postgres"
-	"github.com/sirupsen/logrus"
 )
 
 // GetTaskHeader ...
@@ -13,16 +13,16 @@ func GetTaskHeader(taskID int64, name string) (string, error) {
 	sqlText := `SELECT headers->>$1 FROM t_task WHERE id=$2`
 	var value string
 	err := postgres.GetDB().QueryRow(sqlText, name, taskID).Scan(&value)
-	if err != nil {
-		if err == sql.ErrNoRows {
-			logrus.Errorf("header %s not-found in task-id:%d\n", name, taskID)
-		} else {
-			logrus.Errorf("Unable to get-task-header, task-id:%d, header=%s, err=%T, err=%v\n",
-				taskID, name, err, err)
-		}
-		return "", err
+	if err == nil {
+		return value, nil
 	}
-	return value, nil
+	if err == sql.ErrNoRows {
+		err = errors.WrapE(err, "header not found", "task-id", taskID, "header", name)
+	} else {
+		err = errors.WrapE(err, "get-task-header failed", "task-id", taskID, "header", name)
+	}
+	return "", err
+
 }
 
 // SetTaskHeader ...
@@ -36,9 +36,8 @@ func SetTaskHeader(taskID int64, name string, value string) error {
 	newValue := fmt.Sprintf(`"%s"`, value)
 	_, err := postgres.GetDB().Exec(sqlText, jsonPath, newValue, taskID)
 	if err != nil {
-		logrus.Errorf("Unable to set-task-header, task-id=%d, name=%s, value=%s, err=%T, err=%v\n",
-			taskID, name, value, err, err)
-		return err
+		return errors.WrapE(err, "set-task-header",
+			"task-id", taskID, "header", name, "value", value)
 	}
 	return nil
 }
@@ -52,9 +51,8 @@ func RemoveTaskHeader(taskID int64, name string) error {
 	`
 	_, err := postgres.GetDB().Exec(sqlText, name, taskID)
 	if err != nil {
-		logrus.Errorf("Unable to remove-task-header, task-id=%d, name=%s,  err=%T, err=%v\n",
-			taskID, name, err, err)
-		return err
+		return errors.WrapE(err, "remove-task-header",
+			"task-id", taskID, "header", name)
 	}
 	return nil
 }

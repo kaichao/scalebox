@@ -18,7 +18,7 @@ func TestSetJSONAttribute(t *testing.T) {
 	}
 
 	for _, tc := range tests {
-		result := common.SetJSONAttribute(tc.input, tc.name, tc.value)
+		result, _ := common.SetJSONAttribute(tc.input, tc.name, tc.value)
 		if result != tc.expected {
 			t.Errorf(`common.SetJSONAttribute("%s","%s","%s"), expected "%s", got "%v"`,
 				tc.input, tc.name, tc.value, tc.expected, result)
