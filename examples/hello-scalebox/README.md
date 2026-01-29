@@ -6,9 +6,9 @@
 
 介绍scalebox应用的基本概念，实现第一个应用。
 
-- 应用：
-- 模块：
-- 消息：
+- 应用(App)：
+- 模块(Module)：
+- 任务(Task)：
 
 ## 二、功能设计及实现
 
@@ -35,20 +35,22 @@
 ```sh
 echo "Docker-based_Scalebox" | scalebox app run 
 ```
-将消息通过管道传递给scalebox应用创建程序，启动该应用，并将消息传递给该应用的初始模块。
+将任务列表通过管道传递给scalebox命令，创建应用程序，启动该应用，并将任务列表发送给该应用的初始模块。
 
 #### 2.4.2 非缺省参数运行
 
 - 构建singularity镜像文件
 ```sh
+	sif_file=/shared/singularity/scalebox/agent.sif
 	docker save hub.cstcloud.cn/scalebox/agent:latest -o agent.tar
-	singularity build -F ~/singularity/scalebox/agent.sif docker-archive://agent.tar
+	mkdir -p $(dirname $sif_file)
+	singularity build -F $sif_file docker-archive://agent.tar
 	rm -f agent.tar
 ```
 
 - 运行应用
 ```sh
-echo "Singularity-based_Scalebox" | scalebox app run --image-name=~/singularity/scalebox/agent.sif
+echo "Singularity-based_Scalebox" | scalebox app run --image-name=$sif_file
 ```
 
 ### 2.5 查看应用状态

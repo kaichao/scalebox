@@ -11,6 +11,9 @@ import (
 
 // getConnString ...
 func getConnString() string {
+	if pgURL := os.Getenv("PGURL"); pgURL != "" {
+		return pgURL
+	}
 	pgHost := os.Getenv("PGHOST")
 	pgPort := os.Getenv("PGPORT")
 	if pgHost == "" {
