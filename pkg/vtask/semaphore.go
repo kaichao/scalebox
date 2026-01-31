@@ -101,8 +101,8 @@ func GetSemaphore(name string, vtaskID int64, appID int) (value int, err error) 
 		"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 }
 
-// AddSemaphoreValue ...
-func AddSemaphoreValue(name string, vtaskID int64, appID int, delta int) (v int, err error) {
+// AddSemaphore ...
+func AddSemaphore(name string, delta int, vtaskID int64, appID int) (v int, err error) {
 	sqlFmt := `
 		UPDATE t_semaphore
 		SET value = value + $3

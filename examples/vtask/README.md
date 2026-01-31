@@ -34,6 +34,8 @@ task_dist_mode设置
 ### 1.1 Create app
 
 ```sh
+cd /shared/scalebox/examples/vtask
+
 export CLUSTER=local
 export TASK_DIST_MODE=
 export HEAD_SLOTS=h0
