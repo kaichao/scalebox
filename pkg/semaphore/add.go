@@ -38,14 +38,14 @@ func AddValue(name string, vtaskID int64, appID int, delta int) (v int, err erro
 	}
 
 	if err != sql.ErrNoRows {
-		return v, errors.WrapE(err, "update semaphore failed",
+		return v, errors.WrapE(err, "update semaphore",
 			"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 	}
 	// not-defined semaphore
 	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
 		// create semaphore first time
 		if err := Create(name, delta, vtaskID, appID); err != nil {
-			return -1, errors.WrapE(err, "create semaphore failed",
+			return -1, errors.WrapE(err, "create semaphore",
 				"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 		}
 		return 0, nil

@@ -20,7 +20,7 @@ func Set(name string, value string) error {
 	logrus.Tracef("In global.Set(),global-name:%s,global-value:%s,err:%v\n",
 		name, value, err)
 	if err != nil {
-		return errors.WrapE(err, "global-set failed", "name", name, "value", value)
+		return errors.WrapE(err, "global-set", "name", name, "value", value)
 	}
 	return nil
 }
@@ -38,5 +38,5 @@ func Get(name string) (string, error) {
 	if err == sql.ErrNoRows {
 		return "", errors.WrapE(err, "global not found", "name", name)
 	}
-	return "", errors.WrapE(err, "global failed", "name", name)
+	return "", errors.WrapE(err, "global get", "name", name)
 }

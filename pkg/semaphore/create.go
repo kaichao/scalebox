@@ -200,7 +200,7 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 	// start transaction
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
-		return errors.WrapE(err, "begin transaction failed")
+		return errors.WrapE(err, "begin transaction")
 	}
 	defer tx.Rollback()
 
@@ -221,20 +221,20 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 			if _, err := stmt.Exec(v.Name, v.Value, pVtask, appID); err != nil {
 				// 如果存在冲突且不是IGNORE模式，记录错误但不一定失败
 				if conflictAction != "IGNORE" {
-					return errors.WrapE(err, "create prepared-semaphore failed",
+					return errors.WrapE(err, "create prepared-semaphore",
 						"app-id", appID, "vtask-id", vtaskID, "sema-name", v.Name, "sema-value", v.Value)
 				}
 				// IGNORE模式下，冲突错误被忽略
 			}
 		}
 		if err = tx.Commit(); err != nil {
-			return errors.WrapE(err, "commit transaction failed")
+			return errors.WrapE(err, "commit transaction")
 		}
 		logrus.Infof("[%d..%d], %d row(s) inserted.\n", i, end-1, end-i)
 
 		// start next batch
 		if tx, err = postgres.GetDB().Begin(); err != nil {
-			return errors.WrapE(err, "begin transaction failed")
+			return errors.WrapE(err, "begin transaction")
 		}
 	}
 

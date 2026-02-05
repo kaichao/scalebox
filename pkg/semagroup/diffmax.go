@@ -17,7 +17,7 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	// 在事务中执行查询
 	tx, err := postgres.GetDB().Begin()
 	if err != nil {
-		return 0, errors.WrapE(err, "begin transaction failed")
+		return 0, errors.WrapE(err, "begin transaction")
 	}
 	defer tx.Rollback()
 
@@ -30,7 +30,7 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	`,
 		expr, appID).Scan(&currentValue)
 	if err != nil {
-		return 0, errors.WrapE(err, "query current semaphore failed",
+		return 0, errors.WrapE(err, "query current semaphore",
 			"app-id", appID, "sema-expr", expr)
 	}
 
@@ -43,13 +43,13 @@ func DiffMax(semaExpr string, appID int) (int, error) {
 	`,
 		groupExpr, appID).Scan(&maxValue)
 	if err != nil {
-		return 0, errors.WrapE(err, "query max semaphore failed",
+		return 0, errors.WrapE(err, "query max semaphore",
 			"app-id", appID, "group-expr", groupExpr)
 	}
 
 	// 提交事务
 	if err := tx.Commit(); err != nil {
-		return 0, errors.WrapE(err, "commit transaction failed")
+		return 0, errors.WrapE(err, "commit transaction")
 	}
 
 	return maxValue - currentValue, nil

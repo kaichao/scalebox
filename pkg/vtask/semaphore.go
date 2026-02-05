@@ -49,7 +49,7 @@ func CreateSemaphore(name string, value int, vtaskID int64, appID int) error {
 	logrus.Tracef("In semaphore.Create(),sqlText:%s\n", sqlText)
 
 	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
-		return errors.WrapE(err, "semaphore-create failed",
+		return errors.WrapE(err, "semaphore-create",
 			"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "value", value, "conflict-action", conflictAction)
 	}
 	logrus.Tracef("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s\n",
@@ -85,14 +85,14 @@ func GetSemaphore(name string, vtaskID int64, appID int) (value int, err error) 
 	}
 
 	if err != sql.ErrNoRows {
-		return -1, errors.WrapE(err, "get semaphore failed",
+		return -1, errors.WrapE(err, "get semaphore",
 			"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 	}
 	// not-defined semaphore
 	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
 		// create semaphore first time
 		if err := CreateSemaphore(name, 0, vtaskID, appID); err != nil {
-			return -1, errors.WrapE(err, "create semaphore failed",
+			return -1, errors.WrapE(err, "create semaphore",
 				"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 		}
 		return 0, nil
@@ -127,14 +127,14 @@ func AddSemaphore(name string, delta int, vtaskID int64, appID int) (v int, err 
 	}
 
 	if err != sql.ErrNoRows {
-		return v, errors.WrapE(err, "update semaphore failed",
+		return v, errors.WrapE(err, "update semaphore",
 			"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 	}
 	// not-defined semaphore
 	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
 		// create semaphore first time
 		if err := CreateSemaphore(name, delta, vtaskID, appID); err != nil {
-			return -1, errors.WrapE(err, "create semaphore failed",
+			return -1, errors.WrapE(err, "create semaphore",
 				"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "delta", delta)
 		}
 		return 0, nil

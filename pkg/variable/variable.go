@@ -32,7 +32,7 @@ func GetValue(name string, vtaskID int64, appID int) (string, error) {
 			name, appID, vtaskID).Scan(&v)
 	}
 	if err != nil {
-		return "", errors.WrapE(err, "get variable failed",
+		return "", errors.WrapE(err, "get variable",
 			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
 	}
 	return v, nil
@@ -70,7 +70,7 @@ func GetJSON(name string, vtaskID int64, appID int) (string, error) {
 		name, v, vtaskID, appID, err)
 
 	if err != nil {
-		return "", errors.WrapE(err, "get variable failed",
+		return "", errors.WrapE(err, "get variables",
 			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
 	}
 	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
@@ -92,7 +92,7 @@ func Set(name string, value string, vtaskID int64, appID int) error {
 	}
 	result, err := postgres.GetDB().Exec(sqlText, name, value, pVtaskID, appID)
 	if err != nil {
-		return errors.WrapE(err, "set-variable failed",
+		return errors.WrapE(err, "set-variable",
 			"app-id", appID, "vtask-id", vtaskID, "var-name", name, "var-value", value)
 	}
 	logrus.Tracef("In variable.Set(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",

@@ -19,7 +19,7 @@ func GetTaskHeader(taskID int64, name string) (string, error) {
 	if err == sql.ErrNoRows {
 		err = errors.WrapE(err, "header not found", "task-id", taskID, "header", name)
 	} else {
-		err = errors.WrapE(err, "get-task-header failed", "task-id", taskID, "header", name)
+		err = errors.WrapE(err, "get-task-header", "task-id", taskID, "header", name)
 	}
 	return "", err
 

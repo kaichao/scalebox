@@ -39,7 +39,7 @@ func TestIncrement(t *testing.T) {
 	semaphore.Create("node_progress:my-mod:n-11", 4, vtaskID, appID)
 
 	for i := 0; i < 10; i++ {
-		v, err := semagroup.Increment("node_progress:my-mod:n-0", appID)
+		v, _, err := semagroup.Increment("node_progress:my-mod:n-0", appID)
 		if err != nil {
 			logrus.Errorf("err:%v\n", err)
 		}

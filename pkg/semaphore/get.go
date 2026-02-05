@@ -44,7 +44,7 @@ func GetJSON(name string, vtaskID int64, appID int) (v string, err error) {
 			name, appID).Scan(&v)
 	}
 	if err != nil {
-		return "{}", errors.WrapE(err, "get-semaphore failed",
+		return "{}", errors.WrapE(err, "get-semaphore",
 			"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 	}
 	logrus.Tracef("In semaphore.GetValue(),name=%s,vtask-id:%d,app-id:%d,json-value:%s,err:%v\n",
@@ -82,14 +82,14 @@ func GetValue(name string, vtaskID int64, appID int) (value int, err error) {
 	}
 
 	if err != sql.ErrNoRows {
-		return -1, errors.WrapE(err, "get semaphore failed",
+		return -1, errors.WrapE(err, "get semaphore",
 			"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 	}
 	// not-defined semaphore
 	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
 		// create semaphore first time
 		if err := Create(name, 0, vtaskID, appID); err != nil {
-			return -1, errors.WrapE(err, "create semaphore failed",
+			return -1, errors.WrapE(err, "create semaphore",
 				"app-id", appID, "vtask-id", vtaskID, "sema-name", name)
 		}
 		return 0, nil
