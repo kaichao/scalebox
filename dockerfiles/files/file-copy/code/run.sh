@@ -13,6 +13,8 @@ cd "${WORK_DIR}"
 source_url=$(get_header "$2" "source_url")
 target_url=$(get_header "$2" "target_url")
 
+keep_source_file=$(get_header "$2" "keep_source_file")
+
 if [ -z "$SOURCE_MODE" ]; then
     source_mode=$(get_mode "$source_url")
 else
@@ -72,7 +74,7 @@ case $source_mode in
         eval "$cmd"; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from local to remote, cmd=$cmd, error_code:$code" >&2 && exit $code
 
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             echo "$local_file" >> ${WORK_DIR}/removed-files.txt
         fi
         echo "$local_file" >> ${WORK_DIR}/input-files.txt
@@ -100,7 +102,7 @@ case $source_mode in
         cd $source_dir && eval $cmd
         code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             echo "$source_dir/$1" >> ${WORK_DIR}/removed-files.txt
         fi
     ;;
@@ -109,7 +111,7 @@ case $source_mode in
 
         rsync_url=$(to_rsync_url "$target_url")
 
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             rsync_args=" --remove-source-files ${rsync_args} "
         fi
         local_dir=$(get_host_path "${source_dir}")
@@ -141,7 +143,7 @@ case $source_mode in
         eval "$cmd"; code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to local, cmd=$cmd, error_code:$code" >&2 && exit $code
 
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             eval "$ssh_cmd rm -f $remote_file"
         fi
         echo $local_file >> ${WORK_DIR}/input-files.txt
@@ -166,7 +168,7 @@ case $source_mode in
 
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >&2 && exit $code
 
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             eval "$source_ssh_cmd rm -f $source_file"
         fi
         # ssh user1@node1 "cat /path/to/file" | ssh user2@node2 "cat > /path/to/destination"
@@ -203,7 +205,7 @@ case $source_mode in
         # rsync -ut ${rsync_args} -e "ssh ${ssh_option}" $source_url/$1 ${dest_dir}
         code=$?
         [[ $code -ne 0 ]] && echo "[ERROR] cp file from rsync-over-ssh to local, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/custom-out.txt && exit $code
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             cmd="ssh ${source_ssh_option} $(get_ssh_host $source_url) rm -f $remote_file"
             echo cmd_remove_source_file: $cmd >> ${WORK_DIR}/custom-out.txt
             eval $cmd
@@ -223,7 +225,7 @@ case $source_mode in
         # full_file_name=${dest_dir}/$(basename $1)
         rsync_url=$(to_rsync_url "$source_url")
         export RSYNC_PASSWORD=cas12345
-        if [ "$KEEP_SOURCE_FILE" = "no" ]; then
+        if [ "$keep_source_file" = "no" ]; then
             rsync_args=" --remove-source-files ${rsync_args} "
         fi
         cmd="rsync -ut ${rsync_args} $rsync_url/$1 ${dest_dir}"

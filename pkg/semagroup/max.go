@@ -15,7 +15,7 @@ func GetMax(semaExpr string, appID int) (name string, value int, err error) {
 		SELECT name, value
 		FROM t_semaphore 
 		WHERE name ~ $1 AND app = $2
-		ORDER BY value DESC, name ASC
+		ORDER BY value DESC, name
 		LIMIT 1`,
 		semaExpr, appID).Scan(&name, &value)
 	if err != nil {

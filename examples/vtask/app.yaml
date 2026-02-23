@@ -1,7 +1,7 @@
 name: vtask.examples
 cluster: ${CLUSTER}
 parameters:
-  message_router: message-router
+  main_router: main-router
 
 modules:
   wait-queue:
@@ -44,7 +44,7 @@ modules:
     parameters:
       vtask_role: tail
 
-  message-router:
+  main-router:
     base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/mr-code

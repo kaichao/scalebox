@@ -30,15 +30,18 @@
 
 .. toctree::
    :maxdepth: 2
-   :caption: 开发指南
+   :caption: 编程指南
    :hidden:
 
-   developer/1_programming_model
-   developer/2_app_design
-   developer/3_mod_build
-   developer/4_app_build
-   developer/5_common_features
-   developer/6_advanced_features
+   developer/1_programming_scalebox
+   developer/2_scalebox_app_model
+   developer/3_scalebox_module
+   developer/4_scalebox_status
+   developer/5_scalebox_vtask
+   developer/6_capacity_adminssion
+   developer/7_fault_tolerance
+   developer/8_cluster_management
+   developer/9_programming_features
 
 .. toctree::
    :maxdepth: 2

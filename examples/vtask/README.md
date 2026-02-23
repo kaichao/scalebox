@@ -41,7 +41,7 @@ export TASK_DIST_MODE=
 export HEAD_SLOTS=h0
 export CORE_MODE=
 export CORE_SLOTS=h0
-app_id=$( cat default-tasks.txt | scalebox app run | cut -d':' -f2 | tr -d '}' )
+app_id=$( cat default-tasks.txt | scalebox run | cut -d':' -f2 | tr -d '}' )
 ```
 
 ### 1.2 increment semaphore
@@ -62,7 +62,7 @@ export TASK_DIST_MODE=HOST-BOUND
 export HEAD_SLOTS=n0-[01]
 export CORE_MODE=HOST-BOUND
 export CORE_SLOTS=n0-[01]
-app_id=$( cat host-tasks.txt | scalebox app run | cut -d':' -f2 | tr -d '}' )
+app_id=$( cat host-tasks.txt | scalebox run | cut -d':' -f2 | tr -d '}' )
 ```
 
 ### 2.2 increment semaphore
@@ -86,7 +86,7 @@ export TASK_DIST_MODE=SLOT-BOUND
 export HEAD_SLOTS=h0:2
 export CORE_MODE=HOST-BOUND
 export CORE_SLOTS=n[01]-[01]
-app_id=$( cat slot-tasks.txt | scalebox app run | cut -d':' -f2 | tr -d '}' )
+app_id=$( cat slot-tasks.txt | scalebox run | cut -d':' -f2 | tr -d '}' )
 
 ```
 ### 3.2 add tasks
