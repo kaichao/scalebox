@@ -1,30 +1,27 @@
 name: app-primes-g${NUM_GROUPS}-p${NUM_PARALLEL}
 label: Prototype for Distributed Primes Calculation
 cluster: ${CLUSTER}
-parameters:
-  initial_status: RUNNING
 
-jobs:
+modules:
   scatter:
     label: domain decomposition
     base_image: app-primes/scatter
-    schedule_mode: HEAD
+    arguments:
+      slot_options: slot_on_head
     parameters:
-      start_message: ANY
+      start_task: ANY
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
       - GROUP_SIZE=${GROUP_SIZE}
       - REMOTE_SERVER=${SERVER_2}
       - APP_ID=${APP_ID_2}
-    sink_jobs:
+    sink_modules:
       - calc
 
   gather:
     label: Summary of results
     base_image: app-primes/gather
-    schedule_mode: HEAD
+    arguments:
+      slot_options: slot_on_head
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
-    arguments:
-      # should be 'yes', to support session
-      slot_options: always_running

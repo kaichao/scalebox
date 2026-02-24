@@ -6,5 +6,7 @@ Frequently Asked Questions
 - 检查本地节点的sshd的端口号是否为缺省的22，若不是，则在server/local/mycluster.yaml文件中设置该端口号，具体在parameters中加上`port=<port_number>`
 - 用```hostname -i```检查本地ip地址是否正确设置？若不正确，则用```hostname -I```列出所有本地IP地址，再在defs.mk中设置变量```LOCAL_ADDR```或```LOCAL_IP_INDEX```
 
-## 2. 
-
+## 2. 程序执行中如何排错（Debug）？
+- scalebox命令启动前，设定环境变量为LOG_LEVEL=debug或trace
+- agent脚本中，增加环境变量，设定值为debug或trace
+- actuator/controld的启动文件中， 设定环境变量为LOG_LEVEL=debug或trace

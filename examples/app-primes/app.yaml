@@ -1,0 +1,26 @@
+name: app-primes-g${NUM_GROUPS}
+label: Prototype for Distributed Primes Calculation
+cluster: ${CLUSTER}
+parameters:
+  main_router: mr-module
+
+modules:
+  my-module:
+    label: calc primes
+    base_image: app-primes/calc:python
+    slots:
+      - ${CALC_NODE}:${NUM_PARALLEL}
+    arguments:
+      # task_batch_size: 5
+    parameters:
+      task_dist_mode: ${TASK_DIST_MODE}
+
+  mr-module:
+    label: Main router
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      code_path: ${PWD}/mr-code
+      slot_options: slot_on_head
+      # task_batch_size: ${TASK_BATCH_SIZE}
+    environments:
+      - NUM_GROUPS=${NUM_GROUPS}

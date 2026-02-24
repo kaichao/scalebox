@@ -35,9 +35,9 @@
 
    developer/1_programming_scalebox
    developer/2_scalebox_app_model
-   developer/3_scalebox_module
+   developer/3_module_design_impl
    developer/4_scalebox_vtask
-   developer/5_scalebox_status
+   developer/5_main_router_status
    developer/6_adminssion_control
    developer/7_fault_tolerance
    developer/8_node_local_compute

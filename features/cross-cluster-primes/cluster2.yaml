@@ -1,10 +1,8 @@
 name: app-primes-g${NUM_GROUPS}-p${NUM_PARALLEL}
 label: Prototype for Distributed Primes Calculation
 cluster: ${CLUSTER}
-parameters:
-  initial_status: RUNNING
 
-jobs:
+modules:
   calc:
     label: calc primes
     base_image: app-primes/calc
@@ -14,5 +12,5 @@ jobs:
       - LENGTH=${GROUP_SIZE}
       - REMOTE_SERVER=${SERVER_1}
       - APP_ID=${APP_ID_1}
-    sink_jobs:
+    sink_modules:
       - gather

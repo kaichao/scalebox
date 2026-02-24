@@ -18,15 +18,15 @@
 ## 模块运行
 
 ```sh
-DIR_NAME=/etc/postfix~scalebox@10.255.128.1/tmp REGEX_FILTER=^.*cf\$ scalebox app create
+DIR_NAME=/etc/postfix~scalebox@10.255.128.1/tmp REGEX_FILTER=^.*cf\$ scalebox run
 
-DIR_NAME=scalebox@10.255.128.1/etc/postfix~/tmp/postfix scalebox app create
+DIR_NAME=scalebox@10.255.128.1/etc/postfix~/tmp/postfix scalebox run
 
-DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/2008_12~/tmp/2008_12 scalebox app create
+DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/2008_12~/tmp/2008_12 scalebox run
 
 ```
 
 
 ```sh
-SOURCE_URL=scalebox@10.255.128.1/etc/postfix TARGET_URL=/tmp/postfix DIR_NAME=.  scalebox app create
+SOURCE_URL=scalebox@10.255.128.1/etc/postfix TARGET_URL=/tmp/postfix DIR_NAME=.  scalebox run
 ```

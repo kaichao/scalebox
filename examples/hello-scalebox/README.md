@@ -33,7 +33,7 @@
 
 #### 2.4.1 所有运行参数全部采用缺省值
 ```sh
-echo "Docker-based_Scalebox" | scalebox app run 
+echo "Docker-based_Scalebox" | scalebox run 
 ```
 将任务列表通过管道传递给scalebox命令，创建应用程序，启动该应用，并将任务列表发送给该应用的初始模块。
 

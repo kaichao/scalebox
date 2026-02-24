@@ -1,13 +1,11 @@
 name: timeout-gen.test-app
 cluster: local
-parameters:
-  initial_status: RUNNING
 
 modules:
   timeout-gen:
     base_image: timeout-gen
     parameters:
-      start_message: 0
+      start_task: 0
     arguments:
       task_timeout_seconds:	10
       slot_options: slot_on_head
