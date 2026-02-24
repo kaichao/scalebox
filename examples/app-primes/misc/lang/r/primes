@@ -1,0 +1,11 @@
+#!/bin/bash
+
+# $1 : start
+# $2 : length
+set -o pipefail
+num=$(Rscript $(dirname $(which $0))/Primes.R $1 $2|tail -1|awk {'print $2'})
+ret_code=$?
+set +o pipefail
+echo $num
+
+exit $ret_code

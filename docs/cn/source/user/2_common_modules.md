@@ -12,15 +12,9 @@
 
 ### 2.1.3 dir-copy模块
 
-### 2.1.4 rsync-copy模块
+### 2.1.4 file-copy模块
 
 ### 2.1.5 ftp-copy模块
-
-### 2.1.6 cluster-dir-list模块
-
-### 2.1.7 cluster-dir-copy模块
-
-### 2.1.8 cluster-file-copy模块
 
 ## 2.2 非文件传输模块
 

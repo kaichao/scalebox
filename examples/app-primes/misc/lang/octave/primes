@@ -1,0 +1,8 @@
+#!/octave/bin/octave -qf
+
+arg_list = argv ();
+
+start = str2num(arg_list{1});
+length = str2num(arg_list{2});
+
+printf ("%d\n", get_num_primes(start,length));

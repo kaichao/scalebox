@@ -1,0 +1,24 @@
+FROM ghcr.io/graalvm/graalvm-ee:ol7-java11-22
+
+RUN gu install native-image
+
+COPY Primes.java /
+
+RUN javac Primes.java
+RUN jar cfe primes.jar Primes *.class
+RUN native-image -jar primes.jar
+
+FROM openjdk:11-slim
+
+LABEL maintainer="kaichao"
+
+COPY --from=hub.cstcloud.cn/scalebox/base:dev /usr/local/sbin /usr/local/sbin
+
+COPY --from=0 prime /
+
+ENV NUM_PARALLEL= \
+    GROUP_SIZE=10000
+
+COPY run-graalvm.sh /app/bin/run.sh
+
+ENTRYPOINT ["goagent"]

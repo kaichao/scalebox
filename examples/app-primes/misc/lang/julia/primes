@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# $1 : start
+# $2 : length
+julia $(dirname $(which $0))/primes.jl  $1 $2

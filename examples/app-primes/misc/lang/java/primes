@@ -1,0 +1,6 @@
+#!/bin/bash
+# $1 : start
+# $2 : length
+export NUM_PARALLEL=1
+
+java -jar $(dirname $(which $0))/primes.jar $1 $2

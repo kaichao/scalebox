@@ -36,12 +36,13 @@
    developer/1_programming_scalebox
    developer/2_scalebox_app_model
    developer/3_scalebox_module
-   developer/4_scalebox_status
-   developer/5_scalebox_vtask
-   developer/6_capacity_adminssion
+   developer/4_scalebox_vtask
+   developer/5_scalebox_status
+   developer/6_adminssion_control
    developer/7_fault_tolerance
-   developer/8_cluster_management
+   developer/8_node_local_compute
    developer/9_programming_features
+   developer/A_cluster_management
 
 .. toctree::
    :maxdepth: 2

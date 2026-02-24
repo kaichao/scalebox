@@ -1,0 +1,27 @@
+#!/bin/bash
+
+function is_prime(){
+    declare -i num=$1
+    for((i=2; i<=num; i++)); do
+        # echo num:$num, i:$i
+        if [ `expr $num % $i` == 0 ]; then
+            break;
+        fi
+    done
+    # 0:true, 1:false
+    [ $i -eq $num ]
+}
+
+declare -i start=$1
+declare -i len=$2
+declare -i ret=0
+declare -i num
+    
+for((k=0; k<$len; k++)); do
+    ((num=$start+$k))
+    if is_prime $num; then
+        ((ret++))
+    fi
+done
+
+echo $ret

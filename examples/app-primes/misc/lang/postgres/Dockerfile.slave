@@ -1,0 +1,5 @@
+FROM postgres:14
+
+ENV POSTGRES_PASSWORD=changeme
+
+COPY primes.sql /docker-entrypoint-initdb.d/

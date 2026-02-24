@@ -1,0 +1,5 @@
+FROM kaichao/docker-cli
+
+ENV SLAVE_IMAGE=app-primes/postgres-operator
+
+COPY primes setup.sh teardown.sh /src/

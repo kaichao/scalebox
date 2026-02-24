@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# decimal number
+declare -i start="$((10#$1))"
+declare -i len=$2
+declare -i end=$((start+len-1))
+
+POSTGRES_USER="postgres"
+sql="SELECT get_primes($start,$end)"
+
+set -o pipefail
+num=$(docker exec $(head -n +1 /tmp/container_id) psql -t -U ${POSTGRES_USER}  -c "$sql"|head -1)
+code=$?
+set +o pipefail
+
+echo $num
+
+exit $code

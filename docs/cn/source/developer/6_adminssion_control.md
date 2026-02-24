@@ -1,6 +1,6 @@
 # 6. 准入控制(Admission Control)
 
-本地计算本地资源受限，需引入准入控制。
+本地计算本地资源受限，需引入准入控制，避免本地节点超载。
 
 ## slot addmission
 可以启动多少个slot？
@@ -11,12 +11,10 @@
   - 计数型准入控制（Counter-based Admission Control）
 - 自定义准入控制：Custom Admission Control
 
-
-
 对于复杂应用程序的本地计算，高级流控可大大简化流控逻辑，避免运行异常。
 
 ### 6.6.1 分组的node间并行同步流控
-- 标准流控属性```task_progress_diff```
+- 标准流控属性```node_progress_gap```
   - 按节点的进度计数器，基于同步信号量实现
   - task_progress_diff：当前节点进度与最慢进度的差值作为控制变量
 
@@ -27,7 +25,6 @@
 
 #### vtask定义
 
-vtask标识一种跨越多个模块的虚拟task，是基于计数的流控机制，分为全局计数（global_vtask）、分组计数（group_vtask）、节点计数（host_vtask）等三类。
 
 启用vtask的模块，在task启动时将计数器自动减一，若计数器为0，则计数流控生效，新task不能运行。从实现上看，vtask机制设置了等待队列长度。
 

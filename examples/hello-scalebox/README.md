@@ -50,7 +50,7 @@ echo "Docker-based_Scalebox" | scalebox app run
 
 - 运行应用
 ```sh
-echo "Singularity-based_Scalebox" | scalebox app run --image-name=$sif_file
+echo "Singularity-based_Scalebox" | scalebox run --image-name=$sif_file
 ```
 
 ### 2.5 查看应用状态

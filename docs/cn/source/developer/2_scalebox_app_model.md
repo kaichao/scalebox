@@ -12,7 +12,7 @@
 - 状态管理
   - 状态保存（semaphore/variable/global/......）
   - 状态转移
-    - 消息头属性(下划线)的保持：message-router到message-router
+    - 消息头属性(下划线)的保持：main-router到main-router
     - vtask属性的保持：横跨vtask的各个模块
 
 ## 2.1 应用程序定义

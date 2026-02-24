@@ -31,6 +31,8 @@
 ```{mermaid}
 
 graph LR
+  scalebox --> run[<a href="#run">run</a>]
+
   scalebox --> cluster[<a href="#cluster">cluster</a>]
   cluster --> cluster-get-parameter[<a href="#cluster-get-parameter">get-parameter</a>]
   cluster --> cluster-check-status[<a href="#cluster-check-status">check-status</a>]
@@ -56,7 +58,7 @@ graph LR
   scalebox --> app[<a href="#app">app</a>]
   app --> app-create[<a href="#app-create">create</a>]
   app --> app-run[<a href="#app-run">run</a>]
-  app --> message-router[<a href="#app-message-router">message-router</a>]
+  app --> main-router[<a href="#app-main-router">main-router</a>]
   app --> app-list[<a href="#app-list">list</a>]
   app --> app-add-remote[<a href="#app-add-remote">add-remote</a>]
   app --> app-set-finished[<a href="#app-set-finished">set-finished</a>]
@@ -243,12 +245,12 @@ scalebox app run --param-name=param-value start-item
 | env-file/e    | 环境变量文件     |                | 若当前目录下有app.yaml，则为app.yaml，否则缺省为空 |
 
 - 若有应用定义文件，则以此创建应用
-- 启动消息start-message
+- 启动消息start-task
   - 若有消息路由，则启动消息发给消息路由
   - 若无消息路由，则启动消息发给首模块
 
 - 启动项start-item
-若非json串，则为启动消息start-message；否则start-item中包括前述参数及start-message。json格式定义如下：
+若非json串，则为启动消息start-task；否则start-item中包括前述参数及start-task。json格式定义如下：
 ```json
 {
   "cluster": "my-cluster",
@@ -257,7 +259,7 @@ scalebox app run --param-name=param-value start-item
   "slot_regex": "node[0-9]+:2",
   "mr_image_name": "my-mr-image",
   "mr_code_path": "/path/to/mr-code",
-  "start_message": "starting module"
+  "start_task": "starting task"
 }
 ```
 实际应用中，去除json字符串中的无空格、换行等空字符
@@ -266,7 +268,7 @@ scalebox app run --param-name=param-value start-item
 
 针对多启动消息，可通过管道将多消息按行传递给启动命令。每行的消息体不按前述json格式解析。
 ```sh
-echo "start-item\nstart-message1" | scalebox app run --param-name=param-value
+echo "start-item\nstart-task1" | scalebox app run --param-name=param-value
 ```
 
 示例：
@@ -283,7 +285,7 @@ cd /data2/mydata/mwa/tar
 find 1267459328 -type f | scalebox app run --image-name=hub.cstcloud.cn/scalebox/file-copy:latest --slot-regex=h0:2
 ```
 
-### 1.6.3 app message-router
+### 1.6.3 app main-router
   
 
 ### 1.6.4 app list
@@ -326,7 +328,7 @@ scalebox app set-finished --module-id ${module_id}
 | conflict-action | CONFLICT_ACTION | 数据库插入时发生冲突的缺省动作，''/'IGNORE'/'OVERWRITE' |
 | from-module     |                 | module-name                             |
 | remote-server   |                 | grpc server for remote cluster, 格式为{ip_addr}:{port} |
-| task-file       |                 | multiple messages in file               |
+| task-file       |                 | multiple tasks in file               |
 | ignore-dupkey   |                 | add "repeative":"yes" to headers        |
 | headers         |                 | headers in json                         |
 | header/h        |                 | add one header                          |

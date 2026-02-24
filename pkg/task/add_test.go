@@ -27,11 +27,11 @@ func TestAdd(t *testing.T) {
 		envVars map[string]string
 	}{
 		{
-			name:    "Test with message-router sink",
+			name:    "Test with main-router sink",
 			body:    "001",
 			headers: "",
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -64,7 +64,7 @@ func TestAdd(t *testing.T) {
 			body:    "004",
 			headers: `{"priority": "high", "retry": "3"}`,
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -117,7 +117,7 @@ func TestAddWithMapHeaders(t *testing.T) {
 				"retry":    "3",
 			},
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -128,7 +128,7 @@ func TestAddWithMapHeaders(t *testing.T) {
 			body:    "006",
 			headers: map[string]string{},
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -142,7 +142,7 @@ func TestAddWithMapHeaders(t *testing.T) {
 				"key":             "value with \"quotes\"",
 			},
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -156,7 +156,7 @@ func TestAddWithMapHeaders(t *testing.T) {
 				"test": "it's a test",
 			},
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -208,7 +208,7 @@ func TestAddTasks(t *testing.T) {
 			bodies:  []string{"100", "101", "102"},
 			headers: "",
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -230,7 +230,7 @@ func TestAddTasks(t *testing.T) {
 			bodies:  []string{"300"},
 			headers: "",
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",
@@ -289,7 +289,7 @@ func TestAddTasksWithMapHeaders(t *testing.T) {
 				"priority": "medium",
 			},
 			envVars: map[string]string{
-				"SINK_MODULE": "message-router",
+				"SINK_MODULE": "main-router",
 				"MODULE_ID":   "1",
 				"APP_ID":      "",
 				"GRPC_SERVER": "10.0.6.100",

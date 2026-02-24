@@ -2,7 +2,7 @@ name: dir-copy.app
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
-  default_message_router: message-router
+  main_router: main-router
 
 jobs:
   dir-list:

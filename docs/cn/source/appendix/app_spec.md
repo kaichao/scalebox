@@ -56,7 +56,7 @@ version: 1.0.0
 cluster: ${CLUSTER}
 parameters:
   initial_status: RUNNING
-  message_router: message-router
+  main_router: main-router
   is_cluster_admin: yes
   default_sleep_count: 20
   comment: This is a sample app.
@@ -90,7 +90,7 @@ clusters:
 - *comment*: 注释信息
 - *parameters*: 应用的参数列表
   - *initial_status*：应用的初始状态，取值为：'RUNNING'/'INITIAL'。若设为‘RUNNING’，则App创建后，直接进入运行状态；
-  - *message_router*：指定应用中模块的缺省路由。若模块的后续模块（sink-module）为空，则为该模块指定message-router指定为后续模块；
+  - *main_router*：指定应用中模块的缺省路由。若模块的后续模块（sink-module）为空，则为该模块指定main-router指定为后续模块；
   - *default_sleep_count*: 所有module的缺省max_sleep_count参数，缺省值为100（6秒为1个单位，计10分钟）
 
 关于module、cluster的详细定义，见后续章节。
@@ -255,7 +255,7 @@ cluster定义的示例如下：
 | key_group_regex      | 从消息中提取分组的正则表达式  （改名为group_regex?）            |
 | key_group_index      | 分组排序的编号               (改名为group_index?)            |
 | task_dist_mode       | task分发模式，'HOST-BOUND'/'SLOT-BOUND'/'DEFAULT'   |
-| start_message        | 给定初始消息，若为'FILE:{filename}'，则将文件中每一行作为一个初始消息  |
+| start_task        | 给定初始消息，若为'FILE:{filename}'，则将文件中每一行作为一个初始消息  |
 | initial_task_status  | task的初始状态，'READY'/'INITIAL'                               |
 | initial_slot_status  | slot的初始状态，'READY'/'OFF'                                   |
 | retry_rules          | 基于退出码的重试规则<br>```"['exit_code_1:num_retries',...,'exit_code_n:num_retries']"```。num_retries缺省值为1，退出码通配符为'*'。拟修改格式为```{"exit_code_1":num_retries',...,"exit_code_n":num_retries}``` |
@@ -263,7 +263,7 @@ cluster定义的示例如下：
 | slot_max_retries     | slot状态从'TIMED-OUT'设置为'READY'的重试次数(?)          |
 | slot_timeout_minutes | 若slot未正常启动，则一直处于'STARTING'状态。设置以分钟计的timeout，到期后将状态转换为'TIMEOUT'。缺省值为15分钟。对于不允许重复启动的slot实例（用GPU等），可设置较大值。 |
 | task_global_timeout_scale | 若外部原因（slot异常退出等）导致task一直处于运行状态（状态码-3）。通过全局超时设置，恢复task状态码为123。该值为相对task_max_seconds的倍数，缺省值为2.0。全局退出设定返回码123。 拟改为task_timeout_scale_factor ？|
-| message_router_index | 多消息路由的应用环境中，指定当前module发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定message-router  |
+| main_router_index | 多消息路由的应用环境中，指定当前module发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定main-router实例  |
 | pod_id               | 标识本module属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
 | task_dedup_cache_ttl_minutes | 任务去重缓存的生存时间，在高负载时需设置。设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间需大于```task_max_seconds```的值。 |
 | visible              | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
