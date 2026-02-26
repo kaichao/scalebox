@@ -3,8 +3,6 @@ IMAGE_NAME:=app-primes/builder:octave
 build:
 	docker build --network=host -t $(IMAGE_NAME) .
 
-run:
-	docker run -it --rm -v ${PWD}:/src --entrypoint bash $(IMAGE_NAME)
-
 clean:
-	docker rmi $(IMAGE_NAME)
+	docker rmi -f app-primes/builder:octave app-primes/calc:octave
+	docker rmi -f mtmiller/octave:7.0.0

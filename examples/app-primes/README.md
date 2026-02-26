@@ -33,7 +33,7 @@
 
 ### 2.2 计算模块设计
 
-计算模块可以用不同程序语言实现。calc目录中为python版本。其他语言版本参见```misc/dockerfiles/```，包括以下语言实现：
+计算模块可以用不同程序语言实现。calc目录中为python版本。其他语言版本参见```misc/lang/```，包括以下语言实现：
 
 - C
 - FORTRAN
@@ -46,7 +46,8 @@
 - pl/pgsql(postgres) : 基于数据库存储过程实现
 - R
 - Rust
-- 
+- scala
+- julia
 
 
 - 计算task格式
@@ -59,26 +60,81 @@
 
 ## 三、运行测试
 
-### 3.1 命令行方式运行
+### 3.1 构建镜像
+
+
+### 3.2 命令行方式运行
 
 - 计算1000以内的质数数量
 ```sh
+export TAG=bash
+cd app-primes/
 app_id=$( echo 1000 | scalebox run | cut -d':' -f2 | tr -d '}' )
 ```
 
-### 3.2 分布式部署
+### 3.3 查看计算结果
+```sh
+APP_ID=${app_id} scalebox semaphore get app-primes:sum_value
+```
+
+## 四、高级特性
+
+### 4.1 分布式部署
 ```sh
 export TASK_BATCH_SIZE=5
 echo 1000 | scalebox run -e inline.env
 ```
 
-### 3.3 支持多消息同时处理
+### 4.2 支持多消息同时处理
 ```sh
 export TASK_BATCH_SIZE=5
 echo 1000 | scalebox run
 ```
 
-### 3.4 查看计算结果
+### 4.3 多集群部署
+
+
+## 五、多语言版本测试
+
+### 5.1 镜像构建
+
+- bash
+- c
+- fortran
+- golang
+- java
+- julia
+- nodejs
+- octave
+- php
+- python
+- r
+- rust
+- scala
+
+```sh
+cd app-primes/misc/lang
+TAG=bash make build
+```
+
+### 5.2 多语言版本运行
+
+```sh
+
+cd app-primes/
+export TAG=bash
+app_id=$( echo 1000 | scalebox run | cut -d':' -f2 | tr -d '}' )
+
+```
+
+### 5.3 postgres版本运行
+
+```sh
+cd app-primes/
+app_id=$( echo 1000 | scalebox run --app-file=postgres.yaml | cut -d':' -f2 | tr -d '}' )
+```
+
+### 5.4 查看计算结果
 ```sh
 APP_ID=${app_id} scalebox semaphore get app-primes:sum_value
 ```

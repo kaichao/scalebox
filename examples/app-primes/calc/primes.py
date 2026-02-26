@@ -19,5 +19,4 @@ def getNumPrimes(start, length):
 
 start=int(sys.argv[1])
 length=int(sys.argv[2])
-
 print(getNumPrimes(start,length))

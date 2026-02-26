@@ -1,7 +1,5 @@
 FROM gcc:15-trixie
 
-# FROM gcc:11-bullseye
-
 COPY . /src/
 
 WORKDIR /src/

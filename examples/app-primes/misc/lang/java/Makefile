@@ -16,3 +16,7 @@ build-graalvm:
 
 run-graalvm:
 	docker run -it --rm --entrypoint bash app-primes/graalvm
+
+clean:
+	docker rmi -f app-primes/builder:java app-primes/calc:java
+	docker rmi -f openjdk:11.0.16-slim

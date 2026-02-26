@@ -1,6 +1,6 @@
-Optimal Version of the Calculation of Prime Numbers
+# Optimal Version of the Calculation of Prime Numbers
 
-usage
+- usage
 ```
 ./qprimes nnnnnn
 

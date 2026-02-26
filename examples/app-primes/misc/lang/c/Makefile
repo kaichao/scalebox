@@ -16,4 +16,5 @@ local-build:
 	# docker run -it --rm -v `cd ..;pwd`:/src -w /src/openmp gcc:11-bullseye gcc -std=c99 -Iinclude -fopenmp -O3 primes.c -o primes
 
 clean:
-	rm -f primes primes-grouped
+	docker rmi -f app-primes/builder:c app-primes/calc:c
+	docker rmi -f gcc:15-trixie

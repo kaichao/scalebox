@@ -4,7 +4,7 @@ function is_prime(){
     declare -i num=$1
     for((i=2; i<=num; i++)); do
         # echo num:$num, i:$i
-        if [ `expr $num % $i` == 0 ]; then
+        if [ $(expr $num % $i) == 0 ]; then
             break;
         fi
     done

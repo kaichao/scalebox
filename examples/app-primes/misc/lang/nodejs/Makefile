@@ -3,6 +3,6 @@ IMAGE_NAME:=app-primes/builder:nodejs
 build:
 	docker build --network=host -t $(IMAGE_NAME) .
 
-run:
-	docker run -it --rm -v ${PWD}:/src --entrypoint bash $(IMAGE_NAME)
-	# docker run -it --rm --entrypoint bash $(IMAGE_NAME)
+clean:
+	docker rmi -f app-primes/builder:nodejs app-primes/calc:nodejs
+	docker rmi -f node:25-bookworm-slim

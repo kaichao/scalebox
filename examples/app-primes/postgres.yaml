@@ -1,4 +1,4 @@
-name: app-primes-g${NUM_GROUPS}-${TAG}
+name: app-primes-g${NUM_GROUPS}-postgres
 label: Prototype for Distributed Primes Calculation
 cluster: ${CLUSTER}
 parameters:
@@ -7,11 +7,11 @@ parameters:
 modules:
   my-module:
     label: calc primes
-    base_image: app-primes/calc:${TAG}
-    parameters:
-      task_dist_mode: ${TASK_DIST_MODE}
+    base_image: app-primes/calc:postgres
     slots:
       - ${CALC_NODE}:${NUM_PARALLEL}
+    paths:
+      - /var/run/docker.sock:/var/run/docker.sock
 
   mr-module:
     label: Main router
@@ -19,6 +19,5 @@ modules:
     arguments:
       code_path: ${PWD}/mr-code
       slot_options: slot_on_head
-      # task_batch_size: ${TASK_BATCH_SIZE}
     environments:
       - NUM_GROUPS=${NUM_GROUPS}

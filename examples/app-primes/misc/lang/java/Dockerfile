@@ -1,4 +1,4 @@
-FROM openjdk:11-bullseye
+FROM openjdk:11.0.16-slim
 
 COPY primes Primes.java /src/
 

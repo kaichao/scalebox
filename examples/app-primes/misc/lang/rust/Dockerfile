@@ -1,6 +1,4 @@
-FROM rust:1.91
-
-# FROM rust:1.62
+FROM rust:1.93
 
 COPY primes.rust /src/
 

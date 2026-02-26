@@ -7,7 +7,7 @@ modules:
     parameters:
       start_task: 0
     arguments:
-      task_timeout_seconds:	10
+      task_max_seconds:	10
       slot_options: slot_on_head
     environments:
       - SLEEP_SECONDS=20
