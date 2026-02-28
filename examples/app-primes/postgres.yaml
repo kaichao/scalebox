@@ -8,10 +8,10 @@ modules:
   my-module:
     label: calc primes
     base_image: app-primes/calc:postgres
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
     slots:
       - ${CALC_NODE}:${NUM_PARALLEL}
-    paths:
-      - /var/run/docker.sock:/var/run/docker.sock
 
   mr-module:
     label: Main router

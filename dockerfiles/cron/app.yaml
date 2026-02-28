@@ -1,17 +1,15 @@
 name: cron.scalebox
 cluster: local
-parameters:
-  initial_status: RUNNING
 
-jobs:
+modules:
   filelist:
     base_image: hub.cstcloud.cn/scalebox/cron
     schedule_mode: HEAD
     parameters:
       start_message: ANY
-    paths:
+    volumes:
       - ${PWD}/cron.txt:/cron.txt:ro
-    sink_jobs:
+    sink_modules:
       - mod0
       - mod1
 

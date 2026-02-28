@@ -65,4 +65,4 @@ host_dir=$(get_host_path ${path_in_container})
 - /local_data_root：计算节点本地根目录
 - /cluster_data_root：集群数据根目录（在集群定义中，用```base_data_dir```定义）
 
-要访问其它目录，需要在模块定义的```paths```中定义映射关系。
+要访问其它目录，需要在模块定义的```volumes```中定义映射关系。
