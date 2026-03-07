@@ -1,0 +1,25 @@
+name: pod.feature
+cluster: ${CLUSTER}
+parameters:
+  main_router: router
+modules:
+  mod-1:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    parameters:
+      task_dist_mode: HOST-BOUND
+      pod_id: my_pod
+    slots: 
+      - n0-[01]
+  mod-2:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    parameters:
+      task_dist_mode: HOST-BOUND
+      pod_id: my_pod
+    slots: 
+      - n0-[01]
+  router:
+    base_image: hub.cstcloud.cn/scalebox/agent
+    arguments:
+      code_path: ${PWD}/router-code
+      slot_options: slot_on_head
+  

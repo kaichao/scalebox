@@ -263,7 +263,7 @@ cluster定义的示例如下：
 | slot_max_retries     | slot状态从'TIMED-OUT'设置为'READY'的重试次数(?)          |
 | slot_timeout_minutes | 若slot未正常启动，则一直处于'STARTING'状态。设置以分钟计的timeout，到期后将状态转换为'TIMEOUT'。缺省值为15分钟。对于不允许重复启动的slot实例（用GPU等），可设置较大值。 |
 | task_global_timeout_scale | 若外部原因（slot异常退出等）导致task一直处于运行状态（状态码-3）。通过全局超时设置，恢复task状态码为123。该值为相对task_max_seconds的倍数，缺省值为2.0。全局退出设定返回码123。 拟改为task_timeout_scale_factor ？|
-| main_router_index | 多消息路由的应用环境中，指定当前module发给第n个消息路由。缺省值为0，通常设置值>0，以指定特定main-router实例  |
+| router_index | 多主路由实例的应用中，指定当前module发给第n个主路由。缺省值为0，通常设置值>0，以指定特定main-router实例  |
 | pod_id               | 标识本module属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
 | task_dedup_cache_ttl_minutes | 任务去重缓存的生存时间，在高负载时需设置。设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间需大于```task_max_seconds```的值。 |
 | visible              | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |

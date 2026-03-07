@@ -1,7 +1,5 @@
-name: check_test.test-app
+name: check_test.feature
 cluster: ${CLUSTER}
-parameters:
-  initial_status: RUNNING
 
 modules:
   check_test:

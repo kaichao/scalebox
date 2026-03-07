@@ -57,3 +57,11 @@
 - 基于vtask
 - 在任务中增加用于管理的任务头，实现基于vtask的管理（删除？）
 - 清理vtask中设计的task、semaphore、variable等
+
+
+容错分级
+- task级：基于退出码的重试机制。vtask内的task重试，需要调整vtask状态。尽可能在task级恢复。
+- slot级：
+- vtask级：节点本地计算模式下，保证最终的幂等性。vtask层保持强一致性。
+  - vtask内的task，重试，需要调整vtask状态
+  - 部分出错（节点退出），只能在vtask级恢复。
