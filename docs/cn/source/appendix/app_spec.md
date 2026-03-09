@@ -214,37 +214,35 @@ cluster定义的示例如下：
 | 参数名                  | 标准环境变量             | 含义                                                                    |
 | ---------------------- | ---------------------- | ---------------------------------------------------------------------- |
 | grpc_server           | GRPC_SERVER            | controld的服务端点（endpoint），```${ip_addr}:${port}```，port缺省值为50051 |
-| code_path             |                        | 模块的代码目录，通过容器的数据卷Volume映射到容器内/app/bin                    |
-| local_ip_index        | LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。       |
-|                       | CLUSTER                | 所在的集群名                                                       |
-|                       | MODULE_NAME               | 当前module名称                                                       |
-|                       | MODULE_ID                 | module-id                                                         |
-|                       | FROM_MODULE               | module-name                                                       |
-|                       | FROM_IP                | from-ip                                                       |
-|                       | SINK_MODULE               | 缺省sink_module的名称                                             |
+| code_path             |                        | 模块代码的目录，通过容器的数据卷Volume映射到容器内/app/bin                    |
+| local_ip_index        | PLAT_LOCAL_IP_INDEX         | hostname -I'返回IP地址列表，该参数指定列表中的第n个IP地址作为本机IP地址。 (agent中暂未使用？)      |
+|                       | CLUSTER                | 所在的集群名 (与CLUSTER_NAME、_CLUSTER的区别？)                                                      |
+|                       | PLAT_MODULE_NAME       | 当前module名称                             |
+|                       | MODULE_ID              | module-id                                 |
+|                       | FROM_MODULE               | module-name                                  |
+|                       | FROM_IP                | from-ip                                         |
+|                       | SINK_MODULE               | 缺省sink_module的名称                          |
 |                       | IS_SINGULARITY         | 容器引擎为singularity或apptainer      |
-| task_max_seconds      | TASK_MAX_SECONDS       | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124 |
-| task_min_seconds      | TASK_MIN_SECONDS       | 每个task运行的最小秒数，若运行时间连续多次低于此值，则判定slot为GREEDY异常，并退出 |
-| poll_interval_seconds | POLL_INTERVAL_SECONDS | Slot 检查新任务的轮询间隔。slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒。 |
-| max_idle_polls        | MAX_IDLE_POLLS        | Slot 在退出前可进行的最大空闲轮询次数。slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
-| dir_quota_gb          | DIR_QUOTA_GB          | 标准流控参数，目录本身的容量配额限制。用于指定目录以GB计的最大空间。格式为： ```'{"/dir-1":10,"/dir-2":100}'```  |
-| free_space_gb         | FREE_SPACE_GB         | 标准流控参数，目录所在磁盘需要保留的最小空间。用于指定目录所在分区以GB计的最小保留空间。格式为```'{"/dir-3":10,"/dir-4":100}'``` |
-| task_batch_size       | TASK_BATCH_SIZE | 批量获取任务的数量。设置slot单批次读取的最大消息数，缺省值为1。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。 |
-| batch_atomic          | BATCH_ATOMIC           | 'no'/'yes'。用单个run脚本，处理全批次的任务。 |
-| heartbeat_seconds     | HEARTBEAT_SECONDS      | 以秒计的心跳间隔，缺省值为60；若为非正整数，则禁用心跳操作 |
-| output_text_size      | OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
-| text_trunc_mode       | TEXT_TRUNC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分          |
+| task_max_seconds      | PLAT_TASK_MAX_SECONDS       | 每个task运行中超时设置的秒数，若运行时间超过该时限，task运行中断，返回超时码124；全局超时返回123。 |
+| task_min_seconds      | PLAT_TASK_MIN_SECONDS       | 每个task运行的最小秒数，若运行时间连续多次低于此值，则判定slot为GREEDY异常，并退出 |
+| poll_interval_seconds | PLAT_POLL_INTERVAL_SECONDS | Slot 检查新任务的轮询间隔。slot睡眠并定期检查task可用，该参数指定以秒计的时间间隔，缺省值为6秒。 |
+| max_idle_polls        | PLAT_MAX_IDLE_POLLS        | Slot 在退出前可进行的最大空闲轮询次数。slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
+| dir_quota_gb          | PLAT_DIR_QUOTA_GB          | 标准流控参数，目录本身的容量配额限制。用于指定目录以GB计的最大空间。格式为： ```'{"/dir-1":10,"/dir-2":100}'```  |
+| free_space_gb         | PLAT_FREE_SPACE_GB         | 标准流控参数，目录所在磁盘需要保留的最小空间。用于指定目录所在分区以GB计的最小保留空间。格式为```'{"/dir-3":10,"/dir-4":100}'``` |
+| task_batch_size       | PLAT_TASK_BATCH_SIZE | 批量获取任务的数量。设置slot单批次读取的最大消息数，缺省值为1。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。 |
+| batch_atomic          | PLAT_BATCH_ATOMIC           | 'no'/'yes'。用单个run脚本，处理全批次的任务。 |
+| heartbeat_seconds     | PLAT_HEARTBEAT_SECONDS      | 以秒计的心跳间隔，缺省值为60；若为非正整数，则禁用心跳操作 |
+| output_text_size      | PLAT_OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
+| text_trunc_mode       | PLAT_TEXT_TRUNC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分  |
 | timezone_mode         |                        | HOST'/'UTC'/'NONE'                                                |
-| max_slot_workdir_gb   |                        |        未使用                       |
 | slot_options          |                        | 逗号分隔的slot选项                                                  |
-|  - always_running     | ALWAYS_RUNNING         | 设定slot一直运行，不主动退出（一般仅用于调试）    |
+|  - always_running     | PLAT_ALWAYS_RUNNING    | 设定slot一直运行，不主动退出（一般仅用于调试）    |
 |  - reserved_on_exit   |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)    |
-|  - tmpfs_workdir      |                        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）|
+|  - tmpfs_workdir      |   TMPFS_WORKDIR        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）|
 |  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local_data_root的映射  |
 |  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射 |
 |  - wrap_debug            | WRAP_DEBUG             | 调试选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项(待删除)  |
 |  - enable_trace          | ENABLE_TRACE           | 调试程序选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项          |
-|  - async_task_creation   | ASYNC_TASK_CREATION    |   （拟删除）                      |
 |  - slot_on_head          |                        |                                  |
 
 ### 2.7.3 module-parameters参数表

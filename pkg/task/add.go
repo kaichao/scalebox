@@ -2,13 +2,13 @@ package task
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 	"regexp"
 	"strconv"
 	"strings"
 
+	"github.com/kaichao/gopkg/errors"
 	"github.com/kaichao/gopkg/exec"
 	"github.com/kaichao/scalebox/pkg/common"
 	"github.com/sirupsen/logrus"
@@ -41,9 +41,8 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 		headers, cmd, code, stdout, stderr, err)
 
 	if err != nil || code != 0 {
-		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stderr:%s,err:%v",
-			cmd, code, stderr, err)
-		return -1, errors.New(errMsg)
+		return -1, errors.WrapE(err, "exec-cmd",
+			"cmd", cmd, "code", code, "stdout", stdout, "stderr", stderr)
 	}
 
 	if inAgent() && envVars["DIRECT_WRITE_IN_AGENT"] != "yes" {
@@ -52,9 +51,8 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 
 	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"task_id":%d}`, &taskID)
 	if err != nil || num != 1 {
-		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err:%v",
-			strings.TrimSpace(stdout), num, err)
-		return -2, errors.New(errMsg)
+		return -2, errors.WrapE(err, "parse-task-id by fmt.Sscanf()",
+			"stdout", stdout, "num-parsed", num)
 	}
 	return taskID, nil
 }
@@ -110,9 +108,8 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 		cmd, bodies, code, stdout, stderr, err)
 
 	if err != nil || code != 0 {
-		errMsg := fmt.Sprintf("exec.RunReturnAll(),cmd=%s,ret-code:%d,stdout:%s,stderr:%s,err:%v",
-			cmd, code, stdout, stderr, err)
-		return -1, errors.New(errMsg)
+		return -1, errors.WrapE(err, "exec-cmd",
+			"cmd", cmd, "code", code, "stdout", stdout, "stderr", stderr)
 	}
 
 	if inAgent() && envVars["DIRECT_WRITE_IN_AGENT"] != "yes" {
@@ -122,9 +119,8 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 	var numTasks int
 	num, err := fmt.Sscanf(strings.TrimSpace(stdout), `{"num_tasks":%d}`, &numTasks)
 	if err != nil || num != 1 {
-		errMsg := fmt.Sprintf("fmt.Sscanf(),stdout=%s,num-parsed:%d,err=%v",
-			strings.TrimSpace(stdout), num, err)
-		return -2, errors.New(errMsg)
+		return -2, errors.WrapE(err, "parse-num-tasks by fmt.Sscanf()",
+			"stdout", stdout, "num-parsed", num)
 	}
 
 	return numTasks, nil
@@ -158,8 +154,5 @@ func mapToCleanJSON(m map[string]string) string {
 }
 
 func inAgent() bool {
-	return os.Getenv("CLUSTER") != "" &&
-		os.Getenv("MODULE_ID") != "" &&
-		os.Getenv("MODULE_NAME") != "" &&
-		os.Getenv("GRPC_SERVER") != ""
+	return (os.Getenv("PLAT_MODULE_NAME") != "")
 }
