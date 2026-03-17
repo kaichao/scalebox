@@ -12,9 +12,12 @@ import (
 // getConnString ...
 func getConnString() string {
 	if pgURL := os.Getenv("PGURL"); pgURL != "" {
+		logrus.Debugf("Using PGURL: %s", pgURL)
 		return pgURL
 	}
 	pgHost := os.Getenv("PGHOST")
+	logrus.Debugf("PGHOST env var: %s", pgHost)
+
 	pgPort := os.Getenv("PGPORT")
 	if pgHost == "" {
 		// in agent, set grpc server as default server
@@ -53,6 +56,6 @@ func getConnString() string {
 
 	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
 		pgUser, pgPass, pgHost, pgPort, pgDB)
-	logrus.Tracef("conn-string:%s\n", connString)
+	logrus.Debugf("Final connection string: %s", connString)
 	return connString
 }

@@ -57,11 +57,12 @@ func initPool() {
 	ctx := context.Background()
 	pool, err = pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		logrus.Fatalf("无法创建连接池: %v", err)
+		logrus.Errorf("无法创建连接池: %v", err)
+		logrus.Errorf("Unable to create connection pool:%v\n", err)
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		logrus.Fatalf("无法连接到数据库: %v", err)
+		logrus.Errorf("Unable to connect to database:%v\n", err)
 	}
 }
 

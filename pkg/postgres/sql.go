@@ -2,13 +2,13 @@ package postgres
 
 import (
 	"database/sql"
-	"log"
 	"os"
 	"strconv"
 	"time"
 
 	// Register pgx driver with database/sql
 	_ "github.com/jackc/pgx/v5/stdlib"
+	"github.com/sirupsen/logrus"
 )
 
 // NewSQLNullString ...
@@ -46,7 +46,7 @@ func GetDB() *sql.DB {
 	// set database connection
 	var err error
 	if db, err = sql.Open("pgx", connString); err != nil {
-		log.Fatal("Unable to connect to database:", err)
+		logrus.Errorf("Unable to connect to database:%v\n", err)
 	}
 	// 设置较短间隔，主要不用作连接池
 	db.SetConnMaxLifetime(1 * time.Second)

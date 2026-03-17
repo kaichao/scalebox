@@ -40,7 +40,7 @@ reset: down
 import:
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
 	@ for c in $(clusters); do \
-		LOCAL_ADDR=$(LOCAL_ADDR) scalebox app create $$c/mycluster.yaml; \
+		LOCAL_ADDR=$(LOCAL_ADDR) scalebox cluster create $$c/mycluster.yaml; \
 	done
 
 up:
@@ -105,9 +105,6 @@ update-pubkey: auto-keygen-actuator get-pubkey
 prepare: get-pubkey
 	@ mkdir -p ~/.ssh ~/.scalebox/log
 	@ chmod 700 ~/.ssh
-	@ echo "alias app='scalebox app'" >> ~/.bash_profile
-	@ echo "alias module='scalebox module'" >> ~/.bash_profile
-	@ echo "alias task='scalebox task'" >> ~/.bash_profile
 	@ echo "export PATH=/usr/local/bin:/usr/local/sbin:\$$PATH" >> ~/.bashrc
 	@ # setup passwordless ssh from actuator to node
 	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
