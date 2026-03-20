@@ -1,0 +1,14 @@
+name: remote-primes
+cluster: cluster0
+parameters:
+  main_router: main
+  initial_status: INITIAL
+
+modules:
+  main:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      code_path: ${PWD}/main-code
+      slot_options: slot_on_head
+    environments:
+      - NUM_GROUPS=${NUM_GROUPS}

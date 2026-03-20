@@ -1,0 +1,11 @@
+version: '1.0.0'
+
+cluster1:
+  parameters:
+    base_data_dir: /shared/scalebox/mydata
+    # uname: root
+    # port: 22
+    grpc_server:
+  hosts:
+    h0:
+      ip_addr: 10.0.6.101

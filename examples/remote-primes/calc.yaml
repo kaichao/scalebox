@@ -1,0 +1,19 @@
+name: primes-calc
+cluster: ${CLUSTER}
+parameters:
+  main_router: router
+  initial_status: INITIAL
+
+modules:
+  calc:
+    base_image: app-primes/calc:python
+    slots:
+      - h0
+
+  router:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      code_path: ${PWD}/router-code
+      slot_options: slot_on_head
+    environments:
+      - NUM_GROUPS=${NUM_GROUPS}

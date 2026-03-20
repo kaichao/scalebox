@@ -13,14 +13,12 @@ func ReadLinesFromStdin() ([]string, error) {
 	// Check if stdin is coming from a pipe or file
 	fi, err := os.Stdin.Stat()
 	if err != nil {
-		// logrus.Errorf("Failed to get stdin info:%v\n", err)
-		return []string{}, errors.WrapE(err, "Failed to get stdin info")
+		return []string{}, errors.WrapE(err, "failed to get stdin info")
 	}
 	// If stdin is a character device (terminal), no redirection or pipe was used
 	if fi.Mode()&os.ModeCharDevice != 0 {
-		// logrus.Warnln("No standard input detected; please provide data via pipe or redirection.")
 		return []string{},
-			errors.E("No standard input detected; please provide data via pipe or redirection.")
+			errors.E("no standard input detected")
 	}
 
 	var lines []string
@@ -30,8 +28,7 @@ func ReadLinesFromStdin() ([]string, error) {
 		lines = append(lines, scanner.Text())
 	}
 	if err := scanner.Err(); err != nil {
-		// logrus.Warnf("Error reading standard input:%v\n", err)
-		return []string{}, errors.WrapE(err, "Error reading standard input")
+		return []string{}, errors.WrapE(err, "failed to read standard input")
 	}
 	return lines, nil
 }

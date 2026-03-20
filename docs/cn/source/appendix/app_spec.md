@@ -229,8 +229,6 @@ cluster定义的示例如下：
 | max_idle_polls        | PLAT_MAX_IDLE_POLLS        | Slot 在退出前可进行的最大空闲轮询次数。slot退出前的最多睡眠次数。缺省值为100（10分钟）                              |
 | dir_quota_gb          | PLAT_DIR_QUOTA_GB          | 标准流控参数，目录本身的容量配额限制。用于指定目录以GB计的最大空间。格式为： ```'{"/dir-1":10,"/dir-2":100}'```  |
 | free_space_gb         | PLAT_FREE_SPACE_GB         | 标准流控参数，目录所在磁盘需要保留的最小空间。用于指定目录所在分区以GB计的最小保留空间。格式为```'{"/dir-3":10,"/dir-4":100}'``` |
-| task_batch_size       | PLAT_TASK_BATCH_SIZE | 批量获取任务的数量。设置slot单批次读取的最大消息数，缺省值为1。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。 |
-| batch_atomic          | PLAT_BATCH_ATOMIC           | 'no'/'yes'。用单个run脚本，处理全批次的任务。 |
 | heartbeat_seconds     | PLAT_HEARTBEAT_SECONDS      | 以秒计的心跳间隔，缺省值为60；若为非正整数，则禁用心跳操作 |
 | output_text_size      | PLAT_OUTPUT_TEXT_SIZE       | task运行记录t_task_exec中，大文本字段（stdout/stderr/custom_out）的最大字节数。缺省值为65535，最大值可以为10MB(for varchar) 或1GB(for text) |
 | text_trunc_mode       | PLAT_TEXT_TRUNC_MODE        | HEAD'/'TAIL', default value is 'HEAD'，头截断，保留末尾部分  |
@@ -239,6 +237,7 @@ cluster定义的示例如下：
 |  - always_running     | PLAT_ALWAYS_RUNNING    | 设定slot一直运行，不主动退出（一般仅用于调试）    |
 |  - reserved_on_exit   |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)    |
 |  - tmpfs_workdir      |   TMPFS_WORKDIR        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）|
+|  - batch_atomic       | PLAT_BATCH_ATOMIC      | 'no'/'yes'。用单个run脚本，处理全批次的任务。 |
 |  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local_data_root的映射  |
 |  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射 |
 |  - wrap_debug            | WRAP_DEBUG             | 调试选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项(待删除)  |
@@ -264,6 +263,7 @@ cluster定义的示例如下：
 | router_index | 多主路由实例的应用中，指定当前module发给第n个主路由。缺省值为0，通常设置值>0，以指定特定main-router实例  |
 | pod_id               | 标识本module属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
 | task_dedup_cache_ttl_minutes | 任务去重缓存的生存时间，在高负载时需设置。设定重复task-id检测的cache过期时间（分钟数），缺省值为30分钟，清除时间为n+1分钟。避免出现同一task的多次分发。通常情况下，其时间需大于```task_max_seconds```的值。 |
+| task_batch_size       | 批量获取任务的数量。设置slot单批次读取的最大消息数，缺省值为1。针对运行时长在5秒以内的任务，可设置批量读取消息，避免读取频繁而导致server端过载、数据不一致。 |
 | visible              | 在流水线逻辑图中是否可见。缺省值为'yes'                                          |
 | task_id_in_headers   | 返回的headers中，包含task_id值。|
 | app_id_in_headers    | 返回的headers中，包含app_id值。 |
