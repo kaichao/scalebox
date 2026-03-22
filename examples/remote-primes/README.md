@@ -20,15 +20,15 @@ scalebox cluster create cluster2.yaml
 ```
 
 在scalebox runtime实例上，创建当前应用（app）。
-### 3.2 先创建本地应用
+### 3.2 先创建本地主应用
 ```sh
 app_id_0=$(scalebox run --app-file main.yaml | cut -d':' -f2 | tr -d '}')
 ```
 
-### 3.3 依次创建远端应用
+### 3.3 依次创建远端子应用
 ```sh
-app_id_1=$(CLUSTER=cluster1 scalebox run --app-file calc.yaml --remote-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
-app_id_2=$(CLUSTER=cluster2 scalebox run --app-file calc.yaml --remote-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
+app_id_1=$(CLUSTER=cluster1 scalebox run --app-file calc.yaml --main-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
+app_id_2=$(CLUSTER=cluster2 scalebox run --app-file calc.yaml --main-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
 
 ```
 
@@ -36,8 +36,8 @@ app_id_2=$(CLUSTER=cluster2 scalebox run --app-file calc.yaml --remote-app-id=$a
 
 ```sh
 scalebox app set-status --app-id=$app_id_0 RUNNING
-CLUSTER=cluster1 scalebox app set-status --app-id=$app_id_1 RUNNING
-CLUSTER=cluster2 scalebox app set-status --app-id=$app_id_2 RUNNING
+scalebox app set-status --remote-cluster=cluster1 --app-id=$app_id_1 RUNNING
+scalebox app set-status --remote-cluster=cluster2 --app-id=$app_id_2 RUNNING
 ```
 
 ### 3.5 给主应用发送起始任务
@@ -63,11 +63,12 @@ GRPC_SERVER=10.0.6.100 scalebox task add
   - 直接module-id
   - module-ref：module-id + sink-module
   - app-ref：app-id + sink-module
+  - ```app_id  + [main_router]```
 - remote module-id的标识
   - 当前：```remote_server + [app-id] + sink-module```
   - 调整为：
     - cluster_name + app-id + sink-module
     - remote_server + app-id
-    - ```cluster_name + [app-id]```
+    - ```remote_cluster + [app-id]```
   
-grpc_remote_server
+remote_grpc_server

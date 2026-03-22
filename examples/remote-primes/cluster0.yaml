@@ -6,8 +6,9 @@ cluster0:
     # uname: root
     # port: 22
     grpc_server:
-    grpc_remote_server: 10.0.6.100
+    remote_grpc_server: 10.0.6.100
+    remote_pghost: 10.0.6.100
   hosts:
     h0:
       ip_addr: 10.0.6.100
-      
+      role: HEAD

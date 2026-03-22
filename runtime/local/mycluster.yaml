@@ -6,8 +6,7 @@ local:
     uname: ${USER}
     port: 22
     local_ip_index: 1
-    comments: local cluster
   hosts:
     h0:
-      label: head node
       ip_addr: ${LOCAL_ADDR}
+      role: HEAD

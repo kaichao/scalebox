@@ -4,10 +4,8 @@ inline:
   parameters:
     base_data_dir: /shared/mydata
     uname: root
-  comments: inline-cluster
   hosts:
     h0:
-      label: head node
       ip_addr: 10.0.6.100
       role: HEAD
     n0-0:

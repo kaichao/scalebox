@@ -183,7 +183,9 @@ cluster定义的示例如下：
   - *base_data_dir*: 集群的数据目录
   - *local_ip_index*: 用于提取本机IP地址的索引号（hostname -I）
   - *grpc_server*:	?有一个相同名称的外部字段。
-  - *grpc_remote_server*:
+  - *remote_grpc_server*:
+  - *pghost*:
+  - *remote_pghost*:
 
 ## 2.6 应用定义文件中的模板参数
 
