@@ -35,9 +35,10 @@ app_id_2=$(CLUSTER=cluster2 scalebox run --app-file calc.yaml --main-app-id=$app
 ### 3.4 设置各应用为运行状态
 
 ```sh
-scalebox app set-status --app-id=$app_id_0 RUNNING
 scalebox app set-status --remote-cluster=cluster1 --app-id=$app_id_1 RUNNING
 scalebox app set-status --remote-cluster=cluster2 --app-id=$app_id_2 RUNNING
+
+scalebox app set-status --app-id=$app_id_0 RUNNING
 ```
 
 ### 3.5 给主应用发送起始任务
@@ -45,17 +46,16 @@ scalebox app set-status --remote-cluster=cluster2 --app-id=$app_id_2 RUNNING
 echo '1000' | scalebox task add --app-id=$app_id_0
 ```
 
+### 3.6 检查结果
+```sh
+scalebox semaphore get --app-id=$app_id_0 app-primes:sum_value	
+```
+
 
 ## 四、问题与讨论
 
 ### 问题：如何设计参数，使得可创建远端应用（app）
 
-### 创建远端任务（task）
-
-- 指定环境变量GRPC_SERVER
-```sh
-GRPC_SERVER=10.0.6.100 scalebox task add 
-```
 
 - 指定环境变量CLUSTER（本地查表转换）
 
@@ -63,12 +63,7 @@ GRPC_SERVER=10.0.6.100 scalebox task add
   - 直接module-id
   - module-ref：module-id + sink-module
   - app-ref：app-id + sink-module
-  - ```app_id  + [main_router]```
+  - app-first：app_id 
 - remote module-id的标识
-  - 当前：```remote_server + [app-id] + sink-module```
-  - 调整为：
-    - cluster_name + app-id + sink-module
-    - remote_server + app-id
-    - ```remote_cluster + [app-id]```
+  - ```remote_server + [local app-id] ```
   
-remote_grpc_server

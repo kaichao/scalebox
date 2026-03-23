@@ -24,7 +24,7 @@ while read -r line; do
     fi
 
     sum=$((sum + n))
-done < ${WORK_DIR}/input-messages.txt
+done < ${WORK_DIR}/input-tasks.txt
 
 ds=$(date --iso-8601=ns | sed 's/,/./')
 echo "$ds,after-sum" >> ${WORK_DIR}/timestamps.txt

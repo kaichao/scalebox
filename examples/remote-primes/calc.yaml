@@ -15,5 +15,7 @@ modules:
     arguments:
       code_path: ${PWD}/router-code
       slot_options: slot_on_head
+    parameters:
+      app_id_in_headers: yes
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
