@@ -3,8 +3,6 @@ version: '1.0.0'
 cluster2:
   parameters:
     base_data_dir: /shared/scalebox/mydata
-    # uname: root
-    # port: 22
     grpc_server:
     remote_grpc_server: 10.0.6.102
     remote_pghost: 10.0.6.102

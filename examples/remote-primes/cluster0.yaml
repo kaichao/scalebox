@@ -6,6 +6,7 @@ cluster0:
     # uname: root
     # port: 22
     grpc_server:
+    pghost :
     remote_grpc_server: 10.0.6.100
     remote_pghost: 10.0.6.100
   hosts:
