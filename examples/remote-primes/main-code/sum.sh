@@ -7,7 +7,7 @@ fi
 
 set -e
 export SEMAPHORE_AUTO_CREATE=yes
-val=$(scalebox semaphore increment-n app-primes:sum_value $1)
+val=$(scalebox semaphore increment-n app-primes:sum_value "$1")
 code=$?
 
 echo "part_sum=${val}"

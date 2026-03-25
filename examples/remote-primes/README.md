@@ -86,13 +86,16 @@ scalebox semaphore get --app-id=$app_id_0 app-primes:sum_value
 
 ## 四、问题与讨论
 
-### 当前的模块标识方式
+### task-add中模块标识方式
 
-- module-id的标识
-  - 直接module-id
-  - module-ref：module-id + sink-module
-  - app-ref：app-id + sink-module
-  - app-first：app_id (main_router OR first module)
-- remote module-id的标识
-  - ```remote_server + local_app-id ```
-  
+| type       | module_id | app_id  | sink_module | remote_cluster |  说明                       |
+| ---------- | --------- | ------- | ----------- | -------------- | -------------------------- |
+| direct     | yes       | no      | no          |  no            | 仅用于容器外测试              |
+| app-ref    | yes       | yes     | yes         |  no            | 用于主路由模块                |
+| app-first  | yes       | yes     | no          |  no            | 用于算法模块（指向主路由或首模块）|
+| remote-app | yes       | yes     | no          |  yes           | 跨集群主路由模块              |
+
+- module_id：通过参数module-id或环境变量MODULE_ID获取；
+- app_id：通过参数app-id或环境变量APP_ID获取；
+- sink_module：通过参数sink-module或环境变量SINK_MODULE获取；
+- remote_cluster：通过参数remote-cluster或环境变量REMOTE_CLUSTER获取；
