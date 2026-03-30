@@ -1,0 +1,14 @@
+name: timeout.features
+cluster: local
+
+modules:
+  timeout:
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    arguments:
+      code_path: ${PWD}/code
+      task_max_seconds:	${TIMEOUT_SECONDS}
+      slot_options: slot_on_head
+    parameters:
+      start_task: 0
+    environments:
+      - SLEEP_SECONDS=${SLEEP_SECONDS}

@@ -239,12 +239,10 @@ cluster定义的示例如下：
 |  - always_running     | PLAT_ALWAYS_RUNNING    | 设定slot一直运行，不主动退出（一般仅用于调试）    |
 |  - reserved_on_exit   |                        | slot退出后，保留容器，以便排错。(docker-only，命令行去掉--rm)    |
 |  - tmpfs_workdir      |   TMPFS_WORKDIR        | 用tmpfs文件系统存放工作目录/work（针对docker，解析后的命令行加上--tmpfs /work；针对singularity，解析后增加环境变量TMPFS_WORKDIR=yes）|
-|  - batch_atomic       | PLAT_BATCH_ATOMIC      | 'no'/'yes'。用单个run脚本，处理全批次的任务。 |
-|  - disable_local_mapping |                        | 不生成将本地物理目录到容器内/local_data_root的映射  |
-|  - disable_data_mapping  |                        | 不生成将集群数据目录到容器内/cluster_data_root的映射 |
-|  - wrap_debug            | WRAP_DEBUG             | 调试选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项(待删除)  |
-|  - enable_trace          | ENABLE_TRACE           | 调试程序选项，输出消息处理前后agent端的前后处理详细信息，用于流水线调试，生产环境可关闭此选项          |
-|  - slot_on_head          |                        |                                  |
+|  - disable_local_mapping |                        | 不生成本地根目录到容器内/local_data_root的映射  |
+|  - disable_data_mapping  |                        | 不生成集群数据目录到容器内/cluster_data_root的映射 |
+项          |
+|  - slot_on_head          |                        | 在头节点上生成单个slot实例                         |
 
 ### 2.7.3 module-parameters参数表
 
@@ -275,13 +273,16 @@ cluster定义的示例如下：
 
 
 ### 2.7.4 cluster-parameters参数表
-| 参数名称         |   含义                         |
-| --------------- | ----------------------------- |
-| base_data_dir   |  可通过两种方式引用：虚拟环境变量CLUSTER_DATA_ROOT，容器内/data目录   |
-| code_dir        |                               |
-| uname           | ssh登录用户名                   |
-| port            | ssh登录用户名                   |
-| pg_host         | postgres的连接信息，${pg_ip}[:${pg_port}] |
+| 参数名称            |   含义                                                  |
+| ------------------ | ------------------------------------------------------ |
+| base_data_dir      |  容器内/cluster_data_root目录（改为data_root?）           |
+| code_dir           |  未使用                                                 |
+| uname              | ssh登录用户名                                            |
+| port               | ssh登录用户名                                            |
+| pghost             | postgres连接信息，${pg_ip}[:${port}]，缺省端口号5432       |
+| grpc_server        | controld连接信息，${controld_ip}[:${port}]，缺省端口号50051 |
+| remote_pghost      | 供跨集群应用远端路由连接的postgres的连接信息                  |
+| remote_grpc_server | 供跨集群应用远端路由连接的controld连接信息                    |
 
 ### 2.7.5 host-parameters参数表
 

@@ -6,9 +6,27 @@
 - 展示scalebox具有协调分布在跨广域网的多个计算资源，完成同一计算的能力。
 - 结合scalebox的节点本地计算模式、高效打包数据加载、基于路由模块可编程特性，为高I/O的计算提供完善解决方案。
 
+质数计算应用[app-primes](../app-primes/)是scalebox的一个应用示例。
+
 ## 二、跨集群应用设计
 
 主应用、远端子应用都需基于路由模块实现。
+
+跨集群质数计算则将计算模块转移到一个专门的集群上完成。
+```mermaid
+flowchart TB
+  subgraph cluster0
+    main
+  end
+  subgraph cluster1
+    calc
+    router
+  end
+  subgraph cluster2
+    calc
+    router
+  end
+```
 
 ### 2.1 主应用
 
@@ -88,14 +106,20 @@ scalebox semaphore get --app-id=$app_id_0 app-primes:sum_value
 
 ### task-add中模块标识方式
 
-| type       | module_id | app_id  | sink_module | remote_cluster |  说明                       |
-| ---------- | --------- | ------- | ----------- | -------------- | -------------------------- |
-| direct     | yes       | no      | no          |  no            | 仅用于容器外测试              |
-| app-ref    | yes       | yes     | yes         |  no            | 用于主路由模块                |
-| app-first  | yes       | yes     | no          |  no            | 用于算法模块（指向主路由或首模块）|
-| remote-app | yes       | yes     | no          |  yes           | 跨集群主路由模块              |
+| type       | module_id | app_id  | sink_module | remote_cluster |  说明                          |
+| ---------- | --------- | ------- | ----------- | -------------- | ----------------------------- |
+| direct     | yes       | no      | no          |  no            | 仅用于容器外测试                 |
+| app-first  | yes       | yes     | no          |  no            | 用于算法模块（指向主路由或首模块）  |
+| app-ref    | yes       | yes     | yes         |  no            | 用于主路由模块，向算法模块分发任务  |
+| remote-app | yes       | yes     | no          |  yes           | 跨集群应用，不同主路由模块间分发任务|
 
-- module_id：通过参数module-id或环境变量MODULE_ID获取；
-- app_id：通过参数app-id或环境变量APP_ID获取；
-- sink_module：通过参数sink-module或环境变量SINK_MODULE获取；
-- remote_cluster：通过参数remote-cluster或环境变量REMOTE_CLUSTER获取；
+
+| 参数            | 命令行参数      | 环境变量         |
+| -------------- | -------------- | -------------- |
+| module_id      | module-id      | MODULE_ID      |
+| app_id         | app-id         | APP_ID         |
+| sink_module    | sink-module    | SINK_MODULE    |
+| remote_cluster | remote-cluster | REMOTE_CLUSTER |
+
+- 命令行参数优先
+- 模块的缺省定义中，已包含环境变量APP_ID、MODULE_ID，简化task-add命令的参数使用

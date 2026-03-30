@@ -1,4 +1,4 @@
-name: side-car.test-app
+name: side-car.features
 cluster: local
 
 modules:
@@ -6,11 +6,9 @@ modules:
     base_image: hub.cstcloud.cn/scalebox/agent
     arguments:
       code_path: ${PWD}/code
-      slot_options: slot_on_head
+      slot_options: slot_on_head,reserved_on_exit
       # 3 minutes
       max_idle_polls: 50
-    parameters:
-      start_task: 0
     environments:
       - ACTION_RUN=${ACTION_RUN}
       - ACTION_SETUP=${ACTION_SETUP}

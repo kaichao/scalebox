@@ -1,4 +1,4 @@
-name: check_test.feature
+name: check_test.features
 cluster: ${CLUSTER}
 
 modules:

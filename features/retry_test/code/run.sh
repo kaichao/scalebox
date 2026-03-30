@@ -7,7 +7,7 @@ m=$1
 exit_code=$(($1%4))
 if [ "$m" = "0" ]; then
     for ((i = 1; i < 4; i++));do
-        send-message $i
+        scalebox task add $i
     done
 fi
 

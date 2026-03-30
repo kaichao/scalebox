@@ -1,9 +1,10 @@
-name: task_batch_size.test
+name: task_batch_size.features
 cluster: ${CLUSTER}
 
 modules:
   task-batch-size:
-    base_image: hub.cstcloud.cn/scalebox/agent
+    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
-      task_batch_size: '${TASK_BATCH_SIZE}'
       slot_options: slot_on_head
+    parameters:
+      task_batch_size: '${TASK_BATCH_SIZE}'

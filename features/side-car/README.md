@@ -1,5 +1,11 @@
 # side-car
 
+边车模式的用户定制脚本：
+- 初始化脚本：ACTION_SETUP
+- 退出脚本：ACTION_TEARDOWN
+- 任务运行脚本：ACTION_RUN
+- 准入检测脚本：ACTION_CHECK
+
 ## 测试1(缺省脚本)
 
 ```sh

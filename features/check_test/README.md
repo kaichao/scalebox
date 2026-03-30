@@ -6,10 +6,10 @@ Standard flow control parameters, used to limit the maximum number of Gigabytes 
 
 ```sh
 # FALSE
-DIR_QUOTA_GB=/data/ssd/tmp~18 scalebox app create
+DIR_QUOTA_GB='{"/data/ssd/tmp":18}' scalebox run
 
 # TRUE
-DIR_QUOTA_GB=/data/ssd/tmp~22 scalebox app create
+DIR_QUOTA_GB='{"/data/ssd/tmp":22}' scalebox run
 ```
 
 目录最大占用空间19GB
@@ -20,15 +20,15 @@ Standard flow control parameters, used to limit the minimum number of Gigabytes 
 
 ```sh
 # TRUE
-SPACE_FREE_GB=/data/ssd/tmp~1000 scalebox run
+SPACE_FREE_GB='{"/data/ssd/tmp":1000}' scalebox run
 
 # FALSE
-SPACE_FREE_GB=/data/ssd/tmp~1500 scalebox run
+SPACE_FREE_GB='{"/data/ssd/tmp":1500}' scalebox run
 ```
 
-
-DIR_QUOTA_GB=/data/ssd/tmp~22 SPACE_FREE_GB=/data/ssd/tmp~1000 ACTION_CHECK=/app/bin/mycheck.sh scalebox app create
-
+```sh
+DIR_QUOTA_GB='{"/data/ssd/tmp":22}' SPACE_FREE_GB='{"/data/ssd/tmp":1000}' ACTION_CHECK=/app/bin/mycheck.sh scalebox app create
+```
 目录所在分区需至少要保留1000GB的空余空间
 
 ## user-defined flow control
