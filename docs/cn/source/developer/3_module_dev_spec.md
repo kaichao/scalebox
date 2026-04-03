@@ -1,4 +1,14 @@
-# 3. 模块设计与实现
+# 3. 模块开发规范
+
+## 3.1 应用模板设计原则
+
+## 3.2 模块划分与职责分离
+
+## 3.3 状态管理与无状态设计
+
+## 3.4 错误处理与容错机制
+
+
 
 模块分为算法模块、辅助模块、集成模块等。
 
@@ -34,12 +44,32 @@
 
 ### 配置参数与task头
 
+## 3.2 模块内目录
+
+### 数据目录映射
+- 临时目录 ```/dev/shm```、```/tmp```，自动映射到算法容器中
+- 集群数据目录映射到算法容器中的```/cluster_data_root```，同时设置环境```CLUSTER_DATA_ROOT```指向实际的集群数据目录。
+- 计算节点的```/```映射到容器中的```/local```
+
+如需额外目录映射，通过```volumes```再做定制映射。
+
+### 代码目录
+
+按以下顺序：
+- 环境变量：ACTION_RUN、ACTION_CHECK、ACTION_SETUP、ACTION_TEARDOWN
+- /app/bin/{run.sh,check.sh,setup.sh,teardown.sh}
+- /app/share/bin/{run.sh,check.sh,setup.sh,teardown.sh}
+
+argument:code_path，映射为容器中的/app/bin。
 
 
-## 3.2 模块镜像定义
+
+
 
 
 ## 3.3 模块脚本
+
+支持用多种语言实现，推荐使用shell。
 
 sidecar模式：
 - run: 任务的单次运行
@@ -55,7 +85,9 @@ sidecar模式：
 
 ### 3.3.4 结束退出teardown.sh
 
-## 3.4 模块单元测试
+## 3.3 模块镜像定义
+
+## 3.5 模块单元测试
 
 用户程序：用任意语言写；
 
@@ -75,7 +107,7 @@ sidecar模式：
 
 - 多个初始化消息
 
-## 3.5 迭代优化
+## 3.6 迭代优化
 
 用户程序（run.sh）运行结束后，agent对用户程序的运行进行统计，并纪录到核心数据库中。两者之间主要通过用户程序的标准输出（stdout）、标准错误（stderr）以及以下文件来交换信息：
 
@@ -93,14 +125,14 @@ sidecar模式：
 - 增加时间戳
 
 
-## 3.6 标准模块的可编程特性
+## 3.7 标准模块的可编程特性
 
 - 标准模块：其功能脚本可放在/app/share/bin下，子模块的功能脚本在/app/bin下。模块识别规范是优先使用/app/bin，再搜索/app/share/bin目录下；
 - main-router任务体格式定制：按标准模块的任务体格式定制，便于使用标准模块功能；
 
 这样可充分利用标准模块的功能。
 
-## 3.7 关键模块的task运行排序
+## 3.8 关键模块的task运行排序
 
 task运行排序是scalebox应用运行的重要基础。
 
@@ -108,45 +140,17 @@ task运行排序是scalebox应用运行的重要基础。
 
 通过设置以下参数，实现排序。
 
-### 3.7.1  排序标签
+### 3.8.1  排序标签
   消息头中sort_tag，是用于消息排序的专用标签，具有最高高优先级，通常由main-router设置
 
-### 3.7.2 消息分组号
+### 3.8.2 消息分组号
 - group_regex：正则表达式，从消息体中提取相关分组字符串。
 - group_index：正则表达式对应的分组编号。
 
-### 3.7.3 任务处理顺序
+### 3.8.3 任务处理顺序
 
 若未设置前述排序方式，则缺省按消息生成的顺序进行处理
 
 - 幂等性：节点本地计算存在节点失败的可能性，导致本地存储失效，无法保证task级的幂等性，在跨模块的vtask层级上实现幂等性。
 
-
-### 模块编程的标准环境变量表
-
-| 环境变量名        | 说明                                                            |
-| --------------- | --------------------------------------------------------------- |
-| ACTION_CHECK    |  自定义check脚本路径                                              |
-| ACTION_RUN      |  自定义run脚本路径                                                |
-| ACTION_SETUP    |  自定义setup脚本路径                                              |
-| ACTION_TEARDOWN |  自定义teardown脚本路径                                           |
-| APP_ID          |                                                                 |
-| MODULE_ID       |                                                                 |
-| SLOT_ID         |                                                                 |
-| TASK_ID         |                                                                 |
-| WORK_DIR        | 本地工作目录                                                      |
-| LOG_LEVEL       | 'info'/'debug'/'trace'，trace原则上仅用于单模块调试、排错。           |
-| LOCAL_IP        | 本机IP地址                                                        |
-| FROM_IP         | headers中已包含？                                                 |
-| FROM_MODULE     | headers中已包含？                                                 |
-| SINK_MODULE     | 路由应用的非路由模块指向路由模块；无路由应用指向下一个模块。               |
-| REMOTE_SERVER   | 跨集群应用的远端grpc_server地址                                     |
-| GRPC_SERVER     | server端的grpc地址，格式：```server_name[:port]```，缺省port为50051。|
-| LOCAL_SHMDIR    | 本地tmpfs下工作目录（/dev/shm）                                    |
-| LOCAL_TMPDIR    | 本地/tmp下工作目录                                                 |
-| TMPDIR_GROUP    | TMPDIR中分组号（数字）                                             |
-| TMPFS_WORKDIR   | 本地工作目录设置使用tmpfs，以提高大文件加载性能                        |
-| SLOT_ROLE       | ''/'group'，组计算模式中的组slot，可跨节点获取组内所有task             |
-
-PLAT_ 开头的所有环境变量，用户程序无需访问。
 

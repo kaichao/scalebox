@@ -1,4 +1,12 @@
-# 4. shell编程
+# 4. shell编程接口
+
+## 4.1 模块脚本编写规范
+
+## 4.2 标准输入输出接口
+
+## 4.3 文件交换接口规范
+
+## 4.4 时间戳与性能统计
 
 
 模块内脚本通常以shell实现。要使用内置函数，容器内需安装jq以支持json解析。
@@ -11,14 +19,14 @@ RUN apt update \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 ```
 
-## 4.1 常用scalebox内置函数
+## 4.5 常用scalebox内置函数
 
-### 4.1.1 get_host_path
+### 4.5.1 get_host_path
 
 参数：容器内dir名
 返回：容器可访问的主机目录
 
-### 4.1.2 get_json_value
+### 4.5.2 get_json_value
 
 功能：从json中提取参数值
 参数列表：
@@ -26,7 +34,7 @@ RUN apt update \
     json字段名
 返回：json字段值（字符串）
 
-### 4.1.3 get_header
+### 4.5.3 get_header
 
 功能：从json中提取消息头的值，若不存在，则从环境变量中提取值（环境变量名为消息头对应的全大写字母）
 参数列表：
@@ -34,7 +42,7 @@ RUN apt update \
     json字段名：以消息字母、下划线定义
 返回：参数值（字符串）
 
-### 4.1.4 parse_json
+### 4.5.4 parse_json
 
 功能：将json字符串映射为hash table
 参数列表：
@@ -43,7 +51,7 @@ RUN apt update \
 返回：无
 
 
-## 4.2 内置函数的用法示例
+## 4.6 内置函数的用法示例
 
 ```bash
 #!/usr/bin/env bash
@@ -57,7 +65,7 @@ host_dir=$(get_host_path ${path_in_container})
 
 ```
 
-## 4.3 容器内可访问的数据目录
+## 4.7 容器内可访问的数据目录
 
 容器内缺省可访问外部目录包括：
 - /tmp：本地临时文件目录

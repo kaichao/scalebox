@@ -1,4 +1,10 @@
-# 4. Scalebox架构
+# 4. 系统架构概述
+
+- 分层架构：应用层、模块层、运行时层
+
+- 核心组件：controld、actuator、database、node-agent
+
+- 与传统框架对比（MPI、Hadoop/Spark、Kubernetes）
 
 
 ## 4.1 系统架构

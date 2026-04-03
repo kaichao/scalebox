@@ -1,8 +1,8 @@
-# Status Code
+# 6. 状态码与错误处理
 
+## 6.1 系统状态码详解
 
-
-# Task/Task_exec Exit/Return Code
+### Task/Task_exec Exit/Return Code
 
 | Code        | Number      | Description |
 | ----------- | ----------- | ----------- |
@@ -10,7 +10,7 @@
 | ExMessageSendException |   245   |   |
 
 
-## Status Code Table
+### Status Code Table
 
 - code range(16-bit): [-32768..32767]
 
@@ -28,7 +28,7 @@
 - task_exec status_code : task-exec history recording
 - ssh / docker status_code (in actuator)
 
-## 模块状态码
+### 模块状态码
 
 | Code        | Description |
 | --------- | ----------- |
@@ -45,13 +45,8 @@
 | 121 | App Running Exception（Unknown Core Dump） |
 | 124 | Timeout |
 
-## 系统状态码
--1：READY
--2：QUEUED，READY/RUNNING的中间状态
--3：RUNNING
--9：Initial status
 
-## 系统错误码
+### 系统错误码
 -100：UNKNOWN
 -101：EXCEPTION
 -102：Control-Service Access TIMEOUT
@@ -61,7 +56,7 @@
 -111：run program not runnable
 
 
-## Task status_code (32-bit)
+### Task status_code (32-bit)
 - range: [-128..-1]
 
 
@@ -71,7 +66,7 @@
 
 
 
-## Task_exec Status Code Structure
+### Task_exec Status Code Structure
 ```
  10987654321098765432109876543210
 -+------++------++------++-------
@@ -103,6 +98,15 @@
 
 ### Sub-Task Status Code (for prepare / run / cleanup)
 - Range: [0..255)
+
+## 6.2 错误排查指南
+
+## 6.3 调试技巧与工具
+
+## 6.4 日志分析手册
+
+
+
 
 ## REF
 

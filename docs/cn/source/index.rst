@@ -15,51 +15,52 @@
    started/2_background
    started/3_principles
    started/4_architecture
-   faq
-   release_notes
+   started/5_quick_start
+   started/6_faq
 
 .. toctree::
    :maxdepth: 2
    :caption: 使用指南
    :hidden:
 
-   user/1_install
-   user/2_common_modules
-   user/3_app_examples
-   user/4_tools
+   user/1_install_deploy
+   user/2_core_modules
+   user/3_app_development
+   user/4_example_apps
+   user/5_operations_monitoring
 
 .. toctree::
    :maxdepth: 2
    :caption: 编程指南
    :hidden:
 
-   developer/1_programming_scalebox
-   developer/2_scalebox_app_model
-   developer/3_module_design_impl
+   developer/1_programming_model
+   developer/2_app_design_impl
+   developer/3_module_dev_spec
    developer/4_main_router_status
-   developer/5_scalebox_vtask
-   developer/6_adminssion_control
-   developer/7_fault_tolerance
-   developer/8_node_local_compute
-   developer/9_programming_features
-   developer/A_cluster_management
+   developer/5_node_local_compute
+   developer/6_performance_optimization
+   developer/7_advanced_features
+   developer/8_cluster_management
 
 .. toctree::
    :maxdepth: 2
    :caption: 附录
    :hidden:
 
-   appendix/cmdline
-   appendix/app_spec
-   appendix/mod_spec
-   appendix/shell_program
-   appendix/best_practice
+   appendix/1_tech_specifications
+   appendix/2_parameter_reference
+   appendix/3_commandline_tools
+   appendix/4_shell_programming
+   appendix/5_best_practices
+   appendix/6_status_codes
 
 .. toctree::
    :maxdepth: 2
-   :caption: 关于我们
+   :caption: 其他
    :hidden:
 
+   release_notes
    about_us/contributors
    about_us/contact_us
 

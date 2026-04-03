@@ -1,4 +1,14 @@
-# 2. 编程模型及应用设计
+# 2. 程序设计与实现
+
+## 2.1 应用模板设计原则
+
+## 2.2 模块划分与职责分离
+
+## 2.3 状态管理与无状态设计
+
+## 2.4 错误处理与容错机制
+
+
 
 编程模型：
 - 主路由模块为核心，各个算法模块独立计算。
@@ -30,7 +40,7 @@ scalebox应用程序通过应用模板文件app.yaml、应用参数文件scalebo
 ## 2.1.3 应用解析
 
 ```sh
-scalebox app create --env-file scalebox.env app.yaml
+scalebox run --env-file scalebox.env app.yaml
 ```
 
 - 解析过程中的模板参数变量的定义优先顺序：
