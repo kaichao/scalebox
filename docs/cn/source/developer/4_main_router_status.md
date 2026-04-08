@@ -15,7 +15,7 @@ Scalebox应用是由主路由模块驱动的分布式应用程序，其状态管
 ## 4.1 主路由模块
 
 - 多main-router实例设置
-  - 将所有相关信号量模块放到一个messsage-router中。
+  - 将所有相关信号量模块放到一个main-router中。
   - task-dist-mode设定为SLOT-BOUND
   - task add过程中，在task-headers中设定to_slot
 

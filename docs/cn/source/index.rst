@@ -35,8 +35,8 @@
    :hidden:
 
    developer/1_programming_model
-   developer/2_app_design_impl
-   developer/3_module_dev_spec
+   developer/2_app_design_spec
+   developer/3_module_dev_impl
    developer/4_main_router_status
    developer/5_node_local_compute
    developer/6_performance_optimization
