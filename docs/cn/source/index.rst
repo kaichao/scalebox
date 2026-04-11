@@ -35,8 +35,8 @@
    :hidden:
 
    developer/1_programming_model
-   developer/2_app_design_spec
-   developer/3_module_dev_impl
+   developer/2_app_design_impl
+   developer/3_module_design_impl
    developer/4_main_router_status
    developer/5_node_local_compute
    developer/6_performance_optimization
@@ -54,6 +54,7 @@
    appendix/4_shell_programming
    appendix/5_best_practices
    appendix/6_status_codes
+   appendix/7_software_install
 
 .. toctree::
    :maxdepth: 2

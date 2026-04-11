@@ -74,10 +74,10 @@
 
 准入控制(Admission Control)
 
-本地计算本地资源受限，需引入准入控制，避免本地节点超载。
-对于复杂应用程序的本地计算，高级流控可大大简化流控逻辑，避免运行异常。
+本地计算本地资源受限，需引入准入控制，避免本地节点的关键资源（内存容量、磁盘空间大小）超载。
+对于复杂应用程序的本地计算，高级准入控制可大大简化业务逻辑，避免运行异常。
 
-算法模块的流量控制，就是控制流式数据处理的进度，以免数据处理所需不可共享的核心计算资源（内存缓存、GPU显存、本地磁盘空间）超过本地资源的物理限额，导致计算过程中出现异常，包括异常退出、程序死锁等。
+算法模块的准入控制，就是控制流式数据处理的进度，以免数据处理所需不可共享的核心计算资源（内存缓存、GPU显存、本地磁盘空间）超过本地资源的物理限额，导致计算异常中断，包括运行异常退出、程序死锁等。
 
 流量控制的实现机制是在消息处理前，通过模块的标准流控规则、自定义流控规则检查是否符合外部条件，若不符合，则在代码中显式调用sleep()，等待一段时间后再做检查。经过多次检查未果，则退出模块运行。
 
@@ -112,43 +112,46 @@
 
 ### 7.2.3 vtask计数准入控制
 
-启用vtask的模块，在task启动时将计数器自动减一，若计数器为0，则计数流控生效，新task不能运行。从实现上看，vtask机制设置了等待队列长度。
+- 标准流控属性```vtask_size```
+  - 理解为可运行task的最大数量
+  - 若基于vtask框架，在vtask-head模块中，计数器减一，在vtask-tail模块中，计数器加一
+  - 若在独立模块中，计数器减一。需在主路由中，手工完成计数器加一操作。
 
-后续模块的消息处理完成后，在消息路由中自动恢复vtask计数器。也可对计数器手工操作，实现启停。
+启用vtask的模块，在task启动时将计数器自动减一，若计数器值<=0，则计数流控生效，新task不能运行。从实现上看，vtask机制设置了等待队列长度。
+
+后续模块的任务处理完成后，在主路由中自动恢复vtask计数器。也可对计数器手工操作，实现启停。
 
 - 处理过程
-  - 在模块入口处，检查信号量计数器，若小于等于0，表示无运行槽位，流控不通过；
-  - 该给后续消息路由发送消息中，加上消息头```global_vtask / group_vtask / host_vtask```
-  - 消息路由对该计数值自动减一，占用一个运行槽位。该操作自动完成，不需要编程控制；
+  - 在模块入口处，检查信号量计数器值，若<=0，表示无运行槽位，准入控制不通过；
+  - 主路由对该计数值自动减一，占用一个运行槽位。该操作自动完成，不需要编程控制；
   - vtask处理完成，则在对应消息路由中，通过信号量操作，对计数值加一，释放一个空槽位。
 
-#### global_vtask
-- 属性名：```global_vtask_size```，后续模块的等待队列长度。
 
-- yaml应用文件解析时，生成对应信号量：```global-vtask-size_${mod_name}```，其初值为参数值。
-  - mod_name为首模块名，模块通常运行在头节点上，仅有1个全局slot。
+#### SLOT-BOUND模块
+- 生成对应信号量：```slot_vtask_size:${mod_name}:${slot_id}```，其初值为参数值。
+  - mod_name为首模块名
+  - slot_id为SLOT的ID
+- 计算槽上最多可运行的vtask数量，通常表示计算节点组上运行队列的长度。
 
-#### 按计算节点组的vtask数量流控
-- 属性名：```group_vtask_size```，计算节点组上最多可运行vtask数量，表示最多可进入运行的vtask数量。
+#### HOST-BOUND模块
+- 生成对应信号量：```host_vtask_size:${mod_name}:${hostname}```，其初值为参数值。
+  - mod_name为首模块名
+  - hostname为t_host表中的hostname
+- 计算节点上最多可运行的vtask数量，表示节点上运行队列的长度。
 
-- yaml应用文件解析时，生成对应信号量：```group-vtasks-size_${mod_name}_${groupname}```，其初值为参数值。
-  - mod_name为首模块名，首模块通常为头节点上运行的模块，全系统中仅有1个对应的slot
-  - groupname为t_host表中对应的gid
+#### 缺省类型模块
+- 生成对应信号量：```vtask_size:${mod_name}```，其初值为参数值。
+  - mod_name为首模块名
+- 全局范围内最多可运行的vtask数量，表示节点上运行队列的长度。
 
-#### 按计算节点的vtask数量流控
-- 属性名：```host_vtask_size```，计算节点上最多可运行的vtask数量，表示节点上运行队列的长度。
-
-- yaml应用文件解析时，生成对应信号量：```host-vtask-size_${mod_name}_${hostname}```，其初值为参数值。
-  - mod_name为首模块名，首模块通常为HOST-BOUND，每节点上仅有1个slot
-  - hostname为slot对应的hostname
 
 
 ### 7.2.4 节点组并行同步准入控制
 - 标准流控属性```node_progress_gap```
   - 按节点的进度计数器，基于同步信号量实现
-  - task_progress_diff：当前节点进度与最慢进度的差值作为控制变量
+  - node_progress_diff：当前节点进度与最慢进度的差值作为控制变量
 
-- 消息路由中，按task处理进度，修改对应信号量；
+- 主路由中，按task处理进度，修改对应信号量；
 - 业务模块基于信号量计数值，实现同步流控；
 
 
@@ -159,11 +162,28 @@
   - ACTION_CHECK/check.sh：自定义流控逻辑
 
 
-## 7.3 任务排序与分组
+## 7.3 关键模块的任务运行排序
 
+task运行排序是scalebox应用运行的重要基础。
 
+对于多节点协同处理的模块来说，排序可将同一时段上所有数据在不同计算资源上并行运行，以在后续模块中做协同（分组等）。
 
-## 7.2 超时设置（timeout）
+通过设置以下参数，实现排序。
+
+### 7.3.1  排序标签
+  消息头中sort_tag，是用于消息排序的专用标签，具有最高高优先级，通常由main-router设置
+
+### 7.3.2 任务分组号
+- group_regex：正则表达式，从任务体中提取相关分组字符串。
+- group_index：正则表达式对应的分组编号。
+
+### 7.3.3 任务处理顺序
+
+若未设置前述排序方式，则缺省按任务生成的顺序进行处理
+
+- 幂等性：节点本地计算存在节点失败的可能性，导致本地存储失效，无法保证task级的幂等性，在跨模块的vtask层级上实现幂等性。
+
+## 7.4 超时设置（timeout）
 
 由于代码的bug、数据错误等原因，可能导致算法模块进入死循环，一直占用slot运行，无法正常退出。
 
@@ -176,21 +196,6 @@ timeout ${TASK_TIMEOUT_SECONDS}s run.py $*
 ```
 
 
-## 7.3 多GPU配置
-
-单个计算节点可配置多个GPU加速卡。通常为每个GPU配置独立的slot，模块算法就不需要针对多GPU卡做并行优化，这样配置通常也更具高运行效率。
-在这种场景下，不同GPU需要用不同的slot启动命令。
-scalebox启动命令支持参数化配置。
-
-参数化命令配置如下：
-
-```
-docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video -e ROCR_VISIBLE_DEVICES={~n~} {{ENVS}} {{VOLUMES}} {{IMAGE}}
-
-docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card{~n%2~} --device=/dev/dri/renderD{~n%2+128~} --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
-```
-
-其中， ```{~ ~}```中间的为运行时表达式，其中n为节点上slot编号（从0开始）。在启动slot前，动态解析为对应值。
 
 
 ## 7.4 task-perspective
@@ -219,7 +224,72 @@ fmt.Println(formattedTime)
 
 ## 7.6 跨集群应用
 
+## 7.7 slot启动命令表达式
 
+slot启动时，按照外部环境，再动态求解表达式，得到最终的启动命令。解决以下问题：
+- 单节点多GPU卡，需通过不同命令启动slot
+- 在准入控制规则中，需精准定义存储容量上限。以slot序号为变量，避免资源用多。
+- 表达式在 ```((``` 和 ```))```中间，变量名用```@```开头。
+
+### 7.7.1 变量类型
+
+#### slot序号变量
+每个模块，针对每个节点，有一个从0计数的序号，可用于slot启动命令表达式，实现对不同slot序号用不同的启动命令。
+
+用 ```@seq```标识
+
+#### global变量
+按全局变量值，解析最终slot命令，这样可指定镜像名版本号
+
+用 ```@v:var_name```标识
+
+### 7.7.2 slot序号变量示例
+
+单个计算节点可配置多个GPU加速卡。通常为每个GPU配置独立的slot，模块算法就不需要针对多GPU卡做并行优化，这样配置通常也更具高运行效率。
+在这种场景下，不同GPU需要用不同的slot启动命令。
+scalebox启动命令支持参数化配置。
+
+
+#### ***应用定义***
+```yaml
+  beam-make:
+    command: ${ROCM_COMMAND}
+    arguments:
+      free_space_gb: '{"${LOCAL_SHMDIR}":${BEAM_MAKE_FREE_GB}}'
+```
+#### ***参数定义***
+```env
+LOCAL_SHMDIR=/dev/shm/scalebox/mydata
+BEAM_MAKE_FREE_GB='((@seq*5+11))'
+
+```
+#### singularity多GPU配置命令
+```env
+ROCM_COMMAND='singularity exec --rocm --env ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}} goagent'
+```
+
+#### docker多GPU配置命令1
+```env
+ROCM_COMMAND='docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video -e ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}}'
+```
+
+#### docker多GPU配置命令2
+```env
+docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((n%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
+```
+
+### 7.7.3 global变量示例
+
+```yaml
+  my-module:
+    base_image: my-image:(($v:pipeline_version))
+```
+
+在global中定义全局变量 ```pipeline_version```为```20260411```，则在启动时，实际镜像名为```my-image:20260411``` 
+
+```sh
+scalebox global set pipeline_version 20260411
+```
 
 ## 7.9 slot自动扩缩容
 

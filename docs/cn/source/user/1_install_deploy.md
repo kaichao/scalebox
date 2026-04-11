@@ -9,7 +9,7 @@
 - 跨集群配置
 
 
-ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE）组成。HEAD节点运行着controld、actuator、database等服务；NODE节点执行具体计算的任务。
+ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE）组成。HEAD节点上通常也运行着runtime的controld、actuator、database等服务；NODE节点执行具体计算的任务。
 
 ## 1.1 环境要求
 
@@ -24,7 +24,7 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
 
 ### 1.1.1 硬环境要求
 
-- 芯片架构及操作系统
+#### 芯片架构及操作系统
 
 |  芯片架构  | 操作系统  |  说明              |
 | -------- | -------- | ----------------- |
@@ -36,24 +36,20 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
 
 生产环境中，所有节点安装64位Linux（CentOS7/8/9、Debian 12/13、Ubuntu 20/22/24）等。
 
-- CPU架构
-  - x86_64
-  - arm64（已测试）
-  - riscv（待测试）
-- 内存需求
-  - 头节点：≥8GB
-  - 计算节点：按需，推荐 ≥8GB
+#### 内存需求
+- 头节点：≥8GB
+- 计算节点：按需，推荐 ≥8GB
 
-- 存储空间
-  - 头节点：≥100GB
-  - 计算节点：按需，推荐 ≥100GB
+#### 存储空间
+- 头节点：≥100GB
+- 计算节点：按需，推荐 ≥100GB
 
 ### 1.1.2 软件依赖
 
 #### 容器引擎/容器运行时
 
   - 计算节点
-|  容器引擎/容器运行时     | 版本号            |  说明     |
+|  容器引擎/容器运行时     | 版本号             |  说明     |
 | --------------------- | ----------------- |  ------- |
 | docker-ce             | 20.10<sup>+</sup> |          |
 | singularity           | 3.8<sup>+</sup>   |          |
@@ -65,7 +61,7 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
   - 头节点：docker-ce 20.10<sup>+</sup>
 
 #### 数据库
-- 头节点：postgresql 17<sup>+</sup>，以容器化部署
+- 头节点：postgresql 18<sup>+</sup>，以容器化部署
 
 #### 集群存储（可选）
 - 所有节点上安装glusterfs，构建统一的集群存储
@@ -77,15 +73,12 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
 
 ## 1.2 安装步骤
 ### 1.2.1 基础安装
-#### 头节点安装docker
+
+#### 头节点的docker安装配置
+- docker安装的具体操作参见附录7
+
+- docker配置
 ```sh
-yum remove -y docker-selinux docker-engine-selinux podman buildah
-docker docker-common docker-selinux docker-engine
-
-yum install -y yum-utils
-yum-config-manager --add-repo https://download.docker.com/linux/centos/docker-ce.repo
-
-yum install -y docker-ce docker-ce-cli containerd.io
 
 # add user scalebox
 useradd scalebox
@@ -93,8 +86,6 @@ usermod -aG docker scalebox
 # set a unified password for the scalebox user of all nodes in the cluster
 passwd scalebox
 
-systemctl enable --now docker
-systemctl start docker
 ```
 
 #### 软件包获取
@@ -105,11 +96,9 @@ git clone github.com/kaichao/scalebox
 #### 容器镜像获取
 在头节点上下载容器镜像
 ```sh
-
 docker pull hub.cstcloud.cn/scalebox/controld:latest
 docker pull hub.cstcloud.cn/scalebox/actuator:latest
 docker pull hub.cstcloud.cn/scalebox/database:latest
-
 ```
 
 ### 1.2.2 集群部署
@@ -125,38 +114,18 @@ docker pull hub.cstcloud.cn/scalebox/database:latest
 | n3  | NODE | 10.0.6.104 |
 
 每个节点配置：
-| 类型     | 值      |
-| ------- | ------- |
-| CPU     |     4核 |
-| 内存    |    16GB |
-| 本地硬盘 |   200GB |
-| 操作系统 | CentOS8 |
+| 类型     | 值       |
+| ------- | -------- |
+| CPU     |      4核 |
+| 内存     |    16GB |
+| 本地硬盘  |   200GB |
+| 操作系统  | CentOS8 |
 
 #### 所有节点配置
-
-- 针对所有节点，更换国内源
-```sh
-rm -rf /etc/yum.repos.d/*
-wget -O /etc/yum.repos.d/CentOS-Base.repo http://mirrors.sau.edu.cn/repo/Centos-8.repo
-yum makecache
-```
 
 - 设置时间同步NTP
 
 - 安装集群存储软件glusterfs（可选）
-```sh
-# CentOS8/CentOS7
-yum install -y centos-release-gluster6
-
-yum -y install glusterfs-server 
-systemctl enable --now glusterd.service
-systemctl start glusterd.service
-
-rpm -qi glusterfs-server 
-gluster --version
-
-mkdir /opt/vol-0 /gfs
-```
 
 #### 主节点配置
 - 设置免密登录到HEAD节点
@@ -188,9 +157,7 @@ ssh-copy-id n3
 ```
 
 - 设置主机名及hostname
-  
 ```sh
-
 scp /etc/hosts n0:/etc
 scp /etc/hosts n1:/etc
 scp /etc/hosts n2:/etc
@@ -200,31 +167,13 @@ ssh n0 hostname n0
 ssh n1 hostname n1
 ssh n2 hostname n2
 ssh n3 hostname n3
-
 ```
 
 #### 网络连通性测试
 
 #### 配置glusterfs
 
-- HEAD节点h0上配置
-```sh
-gluster peer probe n0
-gluster peer probe n1
-gluster peer probe n2
-gluster peer probe n3
-
-# gluster volume create vol 10.0.6.{100,101,102,103,104}:/opt/vol-0
-
-gluster volume create vol-0 disperse 4 redundancy 1 n{0,1,2,3}:/opt/vol-0
-gluster volume start vol-0
-gluster volume info
-```
-
-- 每个节点上mount glusterfs
-```sh
-mount -t glusterfs h0:vol-0 /gfs
-```
+- 具体操作参见附录7
 
 ## 1.3 配置说明
 
