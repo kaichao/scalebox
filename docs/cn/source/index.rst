@@ -12,22 +12,20 @@
    :hidden:
 
    started/1_introduction
-   started/2_background
-   started/3_principles
-   started/4_architecture
-   started/5_quick_start
-   started/6_faq
+   started/2_quick_start
+   started/3_next_steps
 
 .. toctree::
    :maxdepth: 2
    :caption: 使用指南
    :hidden:
 
-   user/1_install_deploy
-   user/2_core_modules
-   user/3_app_development
+   user/1_installation
+   user/2_core_concepts
+   user/3_running_apps
    user/4_example_apps
-   user/5_operations_monitoring
+   user/5_operations
+   user/6_standard_modules
 
 .. toctree::
    :maxdepth: 2
@@ -35,8 +33,8 @@
    :hidden:
 
    developer/1_programming_model
-   developer/2_app_design_impl
-   developer/3_module_design_impl
+   developer/2_module_development
+   developer/3_app_design
    developer/4_main_router_status
    developer/5_node_local_compute
    developer/6_performance_optimization

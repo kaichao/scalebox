@@ -2,7 +2,25 @@
 
 Scalebox应用是运行在Scalebox平台上的应用程序。典型的Scalebox应用程序包括高通量数据处理、大规模数据传输等。
 
-## 1.1 应用定义规范（app.yaml完整schema）
+## 1.1 Scalebox运行时组件
+
+### 1.1.1 核心运行时组件
+
+Scalebox的运行时环境包括以下核心组件：
+
+- **controld**：基于gRPC的控制服务，管理actuator和计算节点
+- **actuator**：启动器服务，通过SSH或外部调度器在计算节点上启动slot
+- **database**：PostgreSQL数据库，存储app、module、task、slot等元数据
+- **agent**：运行在计算节点上的代理，负责任务执行和状态管理
+- **cluster-admin**：与HPC调度系统交互的资源申请、管理的软件模块，也是一个系统级应用
+
+### 1.1.2 组件间通信
+
+- **控制平面通信**：使用gRPC协议，端口50051
+- **数据平面通信**：通过消息队列和数据库
+- **节点间通信**：通过SSH或专用网络协议
+
+## 1.2 应用定义规范（app.yaml完整schema）
 
 应用定义文件是用于定义Scalebox应用程序（App）及其模块（Module）的yaml文本文件，还支持集群（Cluster）。
 
@@ -176,36 +194,6 @@ App、Module等资源类型可以通过版本表示，版本定义遵循语义�
 ·	修订号：当你做了向下兼容的问题修正。
 
 先行版本号及版本编译元数据可以加到“主版本号.次版本号.修订号”的后面，作为延伸。
-
-
-
-
-
-
-2.1 术语定义
-
-Scalebox的主要术语类型分为：应用定义（app/module/task）、系统运行（cluster/host/slot）两类。如下图所示：
-
-```mermaid
-graph TD
-  subgraph 系统运行
-    cluster --- host
-    host --- slot
-  end    
-
-  subgraph 应用定义
-    app --- module
-    module --- task
-  end
-```
-- 应用定义
-  - app：应用（流水线应用），包括多个module；
-  - module：模块，应用中算法的容器化封装；
-  - task：对应module中每个消息的处理；
-- 系统运行
-  - cluster：集群，一个或多个头节点+若干个计算节点组成
-  - host：节点
-  - slot：计算插槽，对应module在host上的运行
 
 
 

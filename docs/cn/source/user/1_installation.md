@@ -1,28 +1,8 @@
-# 1. 系统安装与部署
-
-- 环境要求（硬件、软件、网络）
-
-- 单节点集群部署（开发测试）
-
-- 多节点集群部署（生产环境）
-
-- 跨集群配置
-
-
-ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE）组成。HEAD节点上通常也运行着runtime的controld、actuator、database等服务；NODE节点执行具体计算的任务。
+# 1. 系统安装部署
 
 ## 1.1 环境要求
 
-- 环境要求（硬件、软件、网络）
-
-- 单节点集群部署（开发测试）
-
-- 多节点集群部署（生产环境）
-
-- 跨集群配置
-
-
-### 1.1.1 硬环境要求
+### 1.1.1 硬件要求
 
 #### 芯片架构及操作系统
 
@@ -48,7 +28,7 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
 
 #### 容器引擎/容器运行时
 
-  - 计算节点
+- 计算节点
 |  容器引擎/容器运行时     | 版本号             |  说明     |
 | --------------------- | ----------------- |  ------- |
 | docker-ce             | 20.10<sup>+</sup> |          |
@@ -58,7 +38,7 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
 | apptainer             |                   | 待测试    |
 | Kata Containers       |                   | 待测试    |
 
-  - 头节点：docker-ce 20.10<sup>+</sup>
+- 头节点：docker-ce 20.10<sup>+</sup>
 
 #### 数据库
 - 头节点：postgresql 18<sup>+</sup>，以容器化部署
@@ -72,6 +52,7 @@ ScaleBox集群有通常有1个头节点（HEAD）、若干个计算节点（NODE
 - 若需支持跨集群计算，头节点及相关传输节点需与其他集群通信的外网地址
 
 ## 1.2 安装步骤
+
 ### 1.2.1 基础安装
 
 #### 头节点的docker安装配置
@@ -90,12 +71,12 @@ passwd scalebox
 
 #### 软件包获取
 在头节点上安装git，获取软件安装包：
-```sh
+```bash
 git clone github.com/kaichao/scalebox
 ```
 #### 容器镜像获取
 在头节点上下载容器镜像
-```sh
+```bash
 docker pull hub.cstcloud.cn/scalebox/controld:latest
 docker pull hub.cstcloud.cn/scalebox/actuator:latest
 docker pull hub.cstcloud.cn/scalebox/database:latest
@@ -114,12 +95,12 @@ docker pull hub.cstcloud.cn/scalebox/database:latest
 | n3  | NODE | 10.0.6.104 |
 
 每个节点配置：
-| 类型     | 值       |
-| ------- | -------- |
-| CPU     |      4核 |
-| 内存     |    16GB |
-| 本地硬盘  |   200GB |
-| 操作系统  | CentOS8 |
+| 类型     | 值        |
+| ------- | --------- |
+| CPU     |       4核 |
+| 内存     |     16GB |
+| 本地硬盘  |    200GB |
+| 操作系统  | CentOS 8 |
 
 #### 所有节点配置
 
@@ -188,6 +169,7 @@ ssh n3 hostname n3
 - 安全策略
 
 ## 1.4 验证安装
+
 ### 1.4.1 健康检查
 - 服务状态
 - 组件连通性
