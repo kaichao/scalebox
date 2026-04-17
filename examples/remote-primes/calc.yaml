@@ -9,6 +9,9 @@ modules:
     base_image: app-primes/calc:python
     slots:
       - h0
+    sink_vmodules:
+      - main
+      - router
 
   router:
     base_image: hub.cstcloud.cn/scalebox/agent:latest

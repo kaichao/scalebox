@@ -57,9 +57,9 @@ flowchart TB
   - cluster1/cluster2为计算子集群
 
 ```sh
-scalebox cluster create cluster0.yaml 
-scalebox cluster create cluster1.yaml 
-scalebox cluster create cluster2.yaml 
+scalebox cluster create cluster0.yaml
+scalebox cluster create cluster1.yaml
+scalebox cluster create cluster2.yaml
 ```
 
 ### 3.2 创建应用本身
@@ -75,7 +75,6 @@ app_id_0=$(scalebox run --app-file main.yaml | cut -d':' -f2 | tr -d '}')
 ```sh
 app_id_1=$(CLUSTER=cluster1 scalebox run --app-file calc.yaml --main-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
 app_id_2=$(CLUSTER=cluster2 scalebox run --app-file calc.yaml --main-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
-
 ```
 
 ### 3.3 设置应用为运行状态
@@ -98,9 +97,8 @@ echo '1000' | scalebox task add --app-id=$app_id_0
 ### 3.5 检查计算结果
 
 ```sh
-scalebox semaphore get --app-id=$app_id_0 app-primes:sum_value	
+scalebox semaphore get --app-id=$app_id_0 app-primes:sum_value
 ```
-
 
 ## 四、问题与讨论
 

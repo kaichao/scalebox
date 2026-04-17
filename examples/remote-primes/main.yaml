@@ -12,3 +12,5 @@ modules:
       slot_options: slot_on_head
     environments:
       - NUM_GROUPS=${NUM_GROUPS}
+    sink_vmodules:
+      - calc
