@@ -2,7 +2,7 @@ version: '1.0.0'
 
 inline:
   parameters:
-    base_data_dir: /shared/mydata
+    data_root: /shared/mydata
     uname: root
   hosts:
     h0:

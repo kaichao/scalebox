@@ -2,7 +2,7 @@ package variable
 
 import (
 	// "errors"
-	"fmt"
+
 	"regexp"
 
 	"github.com/kaichao/gopkg/errors"
@@ -11,96 +11,56 @@ import (
 )
 
 // GetValue ...
-func GetValue(name string, vtaskID int64, appID int) (string, error) {
-	sqlFmt := `
+func GetValue(name string, appID int) (string, error) {
+	sqlText := `
 		SELECT value
 		FROM t_variable
-		WHERE app=$2 AND (name = $1) AND %s 
+		WHERE app=$2 AND (name = $1) AND vtask IS NULL
 	`
 	var v string
-	var err error
-
-	if vtaskID <= 0 {
-		// vtaskID <= 0 时，查询vtask IS NULL的记录
-		vtaskExpr := "vtask IS NULL"
-		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
-			name, appID).Scan(&v)
-	} else {
-		// vtaskID > 0 时，需要匹配vtask参数
-		vtaskExpr := "vtask=$3"
-		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
-			name, appID, vtaskID).Scan(&v)
-	}
-	if err != nil {
-		return "", errors.WrapE(err, "get variable",
-			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
-	}
-	return v, nil
+	err := postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
+	return v, errors.WrapE(err, "get variable",
+		"app-id", appID, "var-name", name)
 }
 
 // GetJSON ...
-func GetJSON(name string, vtaskID int64, appID int) (string, error) {
-	// 构建SQL查询，考虑vtaskID参数
-	var v string
-	var err error
-
-	sqlFmt := `
+func GetJSON(name string, appID int) (string, error) {
+	sqlText := `
 		WITH selected_rows AS (
 			SELECT name,value
 			FROM t_variable
-			WHERE app=$2 AND (name ~ $1) AND %s 
+			WHERE app=$2 AND (name ~ $1) AND vtask IS NULL
 			ORDER BY 1
 		)
 		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
 		FROM selected_rows
 	`
-
-	if vtaskID <= 0 {
-		// vtaskID <= 0 时，查询vtask IS NULL的记录
-		vtaskExpr := "vtask IS NULL"
-		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
-			name, appID).Scan(&v)
-	} else {
-		// vtaskID > 0 时，需要匹配vtask参数
-		vtaskExpr := "vtask=$3"
-		err = postgres.GetDB().QueryRow(fmt.Sprintf(sqlFmt, vtaskExpr),
-			name, appID, vtaskID).Scan(&v)
-	}
-	logrus.Tracef("In variable.Get(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",
-		name, v, vtaskID, appID, err)
-
-	if err != nil {
-		return "", errors.WrapE(err, "get variables",
-			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
-	}
+	var v string
+	err := postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
 	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
-	return packed, nil
+	return packed, errors.WrapE(err, "get variable-json",
+		"app-id", appID, "var-name", name)
 }
 
 // Set ...
-func Set(name string, value string, vtaskID int64, appID int) error {
+func Set(name string, value string, appID int) error {
 	sqlText := `
-		INSERT INTO t_variable(name,value,vtask,app)
-		VALUES($1,$2,$3,$4)
-		ON CONFLICT (name,vtask,app)
+		INSERT INTO t_variable(name,value,app)
+		VALUES($1,$2,$3)
+		ON CONFLICT (name,app)
 		DO UPDATE SET value = EXCLUDED.value;
 	`
 
-	pVtaskID := &vtaskID
-	if vtaskID <= 0 {
-		pVtaskID = nil
-	}
-	result, err := postgres.GetDB().Exec(sqlText, name, value, pVtaskID, appID)
+	result, err := postgres.GetDB().Exec(sqlText, name, value, appID)
 	if err != nil {
 		return errors.WrapE(err, "set-variable",
-			"app-id", appID, "vtask-id", vtaskID, "var-name", name, "var-value", value)
+			"app-id", appID, "var-name", name, "var-value", value)
 	}
-	logrus.Tracef("In variable.Set(),name=%s,value=%s,vtask-id:%d,app-id:%d,err:%v\n",
-		name, value, vtaskID, appID, err)
+	logrus.Tracef("In variable.Set(),name=%s,value=%s,app-id:%d,err:%v\n",
+		name, value, appID, err)
 
 	if n, _ := result.RowsAffected(); n == 0 {
-		return errors.E("variable not defined",
-			"app-id", appID, "vtask-id", vtaskID, "var-name", name)
+		return errors.E("variable not defined", "app-id", appID, "var-name", name)
 	}
 
 	return nil

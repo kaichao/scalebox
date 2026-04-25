@@ -71,6 +71,6 @@ host_dir=$(get_host_path ${path_in_container})
 - /tmp：本地临时文件目录
 - /dev/shm：本地缓存目录（tmpfs）
 - /local_data_root：计算节点本地根目录
-- /cluster_data_root：集群数据根目录（在集群定义中，用```base_data_dir```定义）
+- /cluster_data_root：集群数据根目录（在集群定义中，用```data_root```定义）
 
 要访问其它目录，需要在模块定义的```volumes```中定义映射关系。

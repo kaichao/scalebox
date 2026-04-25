@@ -154,7 +154,7 @@ cluster定义的示例如下：
     parameters:
       uname: myuser
       port: 10022
-      base_data_dir: /global-fs/scalebox/mydata
+      data_root: /global-fs/scalebox/mydata
       local_ip_index: 2
       num_of_executors: Inline cluster only
       channel_size: channel size fo executor, Inline cluster only
@@ -172,7 +172,7 @@ cluster定义的示例如下：
 - *parameters*:
   - *port*: 主机的缺省端口号
   - *uname*: 主机的缺省用户名
-  - *base_data_dir*: 集群的数据目录
+  - *data_root*: 集群的数据目录
   - *local_ip_index*: 用于提取本机IP地址的索引号（hostname -I）
   - *grpc_server*:	?有一个相同名称的外部字段。
   - *remote_grpc_server*:

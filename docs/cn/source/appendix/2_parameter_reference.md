@@ -3,13 +3,14 @@
 ## 2.1 应用配置参数表
 
 ### 2.1.1 app-parameters参数表
-| 参数名称            |   含义                         |
-| ------------------ | ----------------------------- |
-| initial_status     | 'RUNNING' / 'INITIAL' / 'PAUSED'            |
-| main_router        |  主路由模块名                             |
-| default_idle_polls | 所属module的缺省的空闲轮询次数    |
-| is_cluster_admin   |                               |
-| slot_group         | map形式的多节点的多module-slot配置，用于新增节点的slot自动创建。例：'{"module0":n0,"module1",n1}' |
+| 参数名称             |   含义                            |
+| ------------------- | -------------------------------- |
+| initial_status      | 'RUNNING' / 'INITIAL' / 'PAUSED' |
+| main_router         |  主路由模块名                      |
+| default_idle_polls  | 所属module的缺省的空闲轮询次数       |
+| is_cluster_admin    |                                  |
+| default_sleep_count | 各模块sleep_count的默认值          |
+| slot_group          | map形式的多节点的多module-slot配置，用于新增节点的slot自动创建。例：'{"module0":n0,"module1",n1}' |
 
 ### 2.1.2 module-arguments参数表
 
@@ -97,7 +98,7 @@ task-header可自定义参数，其中 ```_```开头的参数表示标准传递�
 ### 2.2.1 cluster-parameters参数表
 | 参数名称            |   含义                                                  |
 | ------------------ | ------------------------------------------------------ |
-| base_data_dir      |  容器内/cluster_data_root目录（改为data_root?）           |
+| data_root          |  容器内/cluster_data_root目录（改为data_root?）           |
 | code_dir           |  未使用                                                 |
 | uname              | ssh登录用户名                                            |
 | port               | ssh登录用户名                                            |

@@ -14,23 +14,17 @@ import (
 )
 
 // Create ...
-func Create(name string, value int, vtaskID int64, appID int) error {
-	pVtask := &vtaskID
-	if vtaskID <= 0 {
-		pVtask = nil
-	}
-
+func Create(name string, value int, appID int) error {
 	// 根据环境变量 CONFLICT_ACTION 决定冲突处理逻辑
 	conflictAction := os.Getenv("CONFLICT_ACTION")
 	var sqlText string
-
 	switch conflictAction {
 	case "OVERWRITE":
 		// 覆盖现有值
 		sqlText = `
-			INSERT INTO t_semaphore(name,value,value0,vtask,app)
-			VALUES($1,$2,$2,$3,$4)
-			ON CONFLICT (name, vtask, app)
+			INSERT INTO t_semaphore(name,value,value0,app)
+			VALUES($1,$2,$2,$3)
+			ON CONFLICT (name, app)
 				DO UPDATE SET
 				value  = EXCLUDED.value,
 				value0 = EXCLUDED.value0
@@ -38,31 +32,31 @@ func Create(name string, value int, vtaskID int64, appID int) error {
 	case "IGNORE":
 		// 忽略冲突，不报错
 		sqlText = `
-			INSERT INTO t_semaphore(name,value,value0,vtask,app)
-			VALUES($1,$2,$2,$3,$4)
-			ON CONFLICT (name, vtask, app) DO NOTHING
+			INSERT INTO t_semaphore(name,value,value0,app)
+			VALUES($1,$2,$2,$3)
+			ON CONFLICT (name, app) DO NOTHING
 		`
 	default:
 		// 默认行为：报错（不使用 ON CONFLICT 子句）
 		sqlText = `
-			INSERT INTO t_semaphore(name,value,value0,vtask,app)
-			VALUES($1,$2,$2,$3,$4)
+			INSERT INTO t_semaphore(name,value,value0,app)
+			VALUES($1,$2,$2,$3)
 		`
 	}
 	logrus.Tracef("In semaphore.Create(),sqlText:%s\n", sqlText)
 
-	if _, err := postgres.GetDB().Exec(sqlText, name, value, pVtask, appID); err != nil {
+	if _, err := postgres.GetDB().Exec(sqlText, name, value, appID); err != nil {
 		return errors.WrapE(err, "semaphore-create failed",
-			"app-id", appID, "vtask-id", vtaskID, "sema-name", name, "value", value, "conflict-action", conflictAction)
+			"app-id", appID, "sema-name", name, "value", value, "conflict-action", conflictAction)
 	}
-	logrus.Tracef("semaphore-create: name=%s,value=%d,vtask-id=%d,app-id=%d,conflict-action=%s\n",
-		name, value, vtaskID, appID, conflictAction)
+	logrus.Tracef("semaphore-create: name=%s,value=%d,app-id=%d,conflict-action=%s\n",
+		name, value, appID, conflictAction)
 
 	return nil
 }
 
 // CreateSemaphores ...
-func CreateSemaphores(lines []string, vtaskID int64, appID int, batchSize int) error {
+func CreateSemaphores(lines []string, appID int, batchSize int) error {
 	var semas []*Sema
 	re := regexp.MustCompile(`"([^"]+)":(\d+)`)
 	for _, line := range lines {
@@ -75,11 +69,11 @@ func CreateSemaphores(lines []string, vtaskID int64, appID int, batchSize int) e
 			logrus.Warnf("Not matched semaphore :%s,\n", line)
 		}
 	}
-	return createSemaphores(semas, vtaskID, appID, batchSize)
+	return createSemaphores(semas, appID, batchSize)
 }
 
 // CreateFileSemaphores ...
-func CreateFileSemaphores(fileName string, vtaskID int64, appID int, batchSize int) error {
+func CreateFileSemaphores(fileName string, appID int, batchSize int) error {
 	lines, err := common.GetTextFileLines(fileName)
 	if err != nil {
 		return errors.WrapE(err, "get-file-lines", "filename", fileName)
@@ -99,14 +93,14 @@ func CreateFileSemaphores(fileName string, vtaskID int64, appID int, batchSize i
 			logrus.Warnf("Not matched semaphore :%s,\n", line)
 		}
 	}
-	if err := createSemaphores(semas, vtaskID, appID, batchSize); err != nil {
-		return errors.WrapE(err, "createSemaphores failed", "app-id", appID, "vtask-id", vtaskID)
+	if err := createSemaphores(semas, appID, batchSize); err != nil {
+		return errors.WrapE(err, "createSemaphores failed", "app-id", appID)
 	}
 	return nil
 }
 
 // CreateJSONSemaphores ...
-func CreateJSONSemaphores(jsonText string, vtaskID int64, appID int, batchSize int) error {
+func CreateJSONSemaphores(jsonText string, appID int, batchSize int) error {
 	// Define a struct type for the semaphores
 	type semaItem struct {
 		Name  string `json:"name"`
@@ -147,10 +141,9 @@ func CreateJSONSemaphores(jsonText string, vtaskID int64, appID int, batchSize i
 	}
 
 	logrus.Tracef("Unmarshalled %d semaphores from JSON text", len(ordered))
-	err := createSemaphores(ordered, vtaskID, appID, batchSize)
+	err := createSemaphores(ordered, appID, batchSize)
 	if err != nil {
-		return errors.WrapE(err, "createSemaphores",
-			"app-id", appID, "vtask-id", vtaskID, "semas", ordered)
+		return errors.WrapE(err, "createSemaphores", "app-id", appID, "semas", ordered)
 	}
 	return nil
 }
@@ -161,12 +154,7 @@ type Sema struct {
 	Value int
 }
 
-func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) error {
-	pVtask := &vtaskID
-	if vtaskID <= 0 {
-		pVtask = nil
-	}
-
+func createSemaphores(ordered []*Sema, appID int, batchSize int) error {
 	// 根据环境变量 CONFLICT_ACTION 决定冲突处理逻辑
 	conflictAction := os.Getenv("CONFLICT_ACTION")
 	var sqlText string
@@ -175,9 +163,9 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 	case "OVERWRITE":
 		// 覆盖现有值
 		sqlText = `
-			INSERT INTO t_semaphore(name,value,value0,vtask,app) 
-			VALUES($1,$2,$2,$3,$4)
-			ON CONFLICT (name, vtask, app)
+			INSERT INTO t_semaphore(name,value,value0,app) 
+			VALUES($1,$2,$2,$3)
+			ON CONFLICT (name, app)
 				DO UPDATE SET
 				value  = EXCLUDED.value,
 				value0 = EXCLUDED.value0
@@ -185,15 +173,15 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 	case "IGNORE":
 		// 忽略冲突，不报错
 		sqlText = `
-			INSERT INTO t_semaphore(name,value,value0,vtask,app) 
-			VALUES($1,$2,$2,$3,$4)
-			ON CONFLICT (name, vtask, app) DO NOTHING
+			INSERT INTO t_semaphore(name,value,value0,app) 
+			VALUES($1,$2,$2,$3)
+			ON CONFLICT (name, app) DO NOTHING
 		`
 	default:
 		// 默认行为：报错（不使用 ON CONFLICT 子句）
 		sqlText = `
-			INSERT INTO t_semaphore(name,value,value0,vtask,app) 
-			VALUES($1,$2,$2,$3,$4)
+			INSERT INTO t_semaphore(name,value,value0,app) 
+			VALUES($1,$2,$2,$3)
 		`
 	}
 
@@ -218,11 +206,11 @@ func createSemaphores(ordered []*Sema, vtaskID int64, appID int, batchSize int) 
 		}
 
 		for _, v := range ordered[i:end] {
-			if _, err := stmt.Exec(v.Name, v.Value, pVtask, appID); err != nil {
+			if _, err := stmt.Exec(v.Name, v.Value, appID); err != nil {
 				// 如果存在冲突且不是IGNORE模式，记录错误但不一定失败
 				if conflictAction != "IGNORE" {
 					return errors.WrapE(err, "create prepared-semaphore",
-						"app-id", appID, "vtask-id", vtaskID, "sema-name", v.Name, "sema-value", v.Value)
+						"app-id", appID, "sema-name", v.Name, "sema-value", v.Value)
 				}
 				// IGNORE模式下，冲突错误被忽略
 			}

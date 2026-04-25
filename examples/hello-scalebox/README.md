@@ -58,5 +58,3 @@ echo "Singularity-based_Scalebox" | scalebox run --image-name=$sif_file
 ```sh
 scalebox app list
 ```
-
-

@@ -54,18 +54,53 @@ task-body为任务标识，在模块中具有唯一性：
 - **teardown**：退出前清理计算环境
 
 ### 2.3.2 算法运行run.sh
+
+
+#### agent接口文件
+
 用户程序运行结束后，agent对用户程序的运行做后处理，主要通过以下文件交换信息：
 
-| 文件名                           | 文件说明                                   |
-| -------------------------------- | ----------------------------------------- |
-| ${WORK_DIR}/task-exec.json       | 任务运行结果主文件，以JSON形式纪录用户程序运行结果 |
-| ${WORK_DIR}/sink-tasks.txt       | 后续任务列表文件，每行一个任务 |
-| ${WORK_DIR}/extra-attributes.txt | 运行附加属性文件 |
-| ${WORK_DIR}/timestamps.txt       | 自定义时间戳文件，常用于调试程序、测试程序性能 |
-| ${WORK_DIR}/input-files.txt      | 输入文件列表，用于统计输入文件字节数 |
-| ${WORK_DIR}/output-files.txt     | 输出文件列表，用于统计输出文件字节数 |
-| ${WORK_DIR}/removed-files.txt    | 待删除文件列表 |
-| ${WORK_DIR}/auxout.txt           | 辅助输出文件 |
+| 文件名                         | 文件说明                                   |
+| ----------------------------- | ----------------------------------------- |
+| ${WORK_DIR}/task-exec.yaml    | 任务运行结果主文件，以yaml形式纪录用户程序运行结果 |
+| ${WORK_DIR}/sink-tasks.txt    | 后续任务列表文件，每行一个任务 |
+| ${WORK_DIR}/extra-attrs.yaml  | 运行附加属性文件，以jsonb类型存放在extras字段中。 |
+| ${WORK_DIR}/timestamps.txt    | 自定义时间戳文件，常用于调试程序、测试程序性能，纪录在extras->>'timestamps' |
+| ${WORK_DIR}/input-files.txt   | 输入文件（目录）列表（绝对路径），用于统计输入文件字节数 |
+| ${WORK_DIR}/output-files.txt  | 输出文件（目录）列表（绝对路径），用于统计输出文件字节数 |
+| ${WORK_DIR}/removed-files.txt | 待删除文件（目录）列表（绝对路径），待完成读写量统计后删除 |
+| ${WORK_DIR}/auxout.txt        | 辅助输出文件，纪录用户关注输出信息 |
+
+#### sink-tasks.txt文件格式
+
+| 序号 | 名称 | 示例 |
+| --- | ------------------------------ | ---------------------------------------------- |
+| 1   | text-body                      | body1                                          |
+| 2   | json-body                      | {"bh0":"a","body":"body2"}                     |
+| 3   | text-body + headers            | body3,{"h0":"a","h1":"b"}                      |
+| 4   | json-body + headers            | {"bh0":"a","body":"body4"},{"h0":"a","h1":"b"} |
+| 5   | sink-mod + text-body           | sink-mod0,body5                                |
+| 6   | sink-mod + text-body + headers | sink_mod1,body6,{"h0":"a","h1":"b"}            |
+| 7   | sink-mod + json-body + headers | sink-mod2,{"bh0":"a","body":"body7"},{"h0":"a","h1":"b"} |
+
+其中，格式1-4的sink-module由环境变量SINK_MODULE确定。
+
+#### timestamps.txt文件格式
+- 每行为一条记录
+- 纪录第一个字符为```#```，为注释行
+- 每行格式：```[<label>,]<timestamp>```，label为可选项
+
+- timestamp的格式
+
+| name        | format                              |
+| ----------- | ----------------------------------- |
+| RFC3339Nano | 2006-01-02T15:04:05.999999999Z07:00 |
+| RFC3339     | 2006-01-02T15:04:05Z07:00           |
+|             | 2006-01-02T15:04:05.999999999       |
+|             | 2006-01-02T15:04:05                 |
+|             | 2006-01-02 15:04:05.999999999       |
+|             | 2006-01-02 15:04:05                 |
+
 
 ## 2.4 模块的镜像封装
 
@@ -101,7 +136,7 @@ echo ${task-body} | scalebox run --image-name ${module_image_name} --code-path $
 ```
 
 ### 2.5.3 基于流水线应用的单元测试
-- 写独立的应用定义文件app.yaml、环境变量定义文件scalebox.env
+- 针对较复杂的单元测试，可写独立的应用定义文件app.yaml、环境变量定义文件scalebox.env
 
 ## 2.6 模块类型详解
 
