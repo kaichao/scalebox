@@ -95,7 +95,7 @@ func TestAddRegexValue(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			result, err := semaphore.AddRegexValue(tc.regex, tc.appID, tc.delta)
+			result, err := semaphore.AddRegexValue(tc.regex, tc.delta, tc.appID)
 			if tc.expectErr {
 				if err == nil {
 					t.Errorf("Expected error but got none")
