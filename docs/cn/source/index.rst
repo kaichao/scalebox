@@ -51,7 +51,7 @@
    appendix/3_commandline_tools
    appendix/4_shell_programming
    appendix/5_best_practices
-   appendix/6_status_codes
+   appendix/6_exit_code_spec
    appendix/7_software_install
 
 .. toctree::

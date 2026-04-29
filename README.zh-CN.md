@@ -208,10 +208,10 @@ Scalebox 提供多种标准模块：
 
 ## 🔗 相关软件
 
+- [Docker](https://www.docker.com/) - 容器化平台
 - [PostgreSQL](https://github.com/postgres/postgres) - Scalebox 后台数据库
 - [gRPC](https://github.com/grpc/grpc) - 不同软件模块间的高效通信协议
 - [Go](https://github.com/golang/go) - 云原生应用的程序语言
-- [Docker](https://www.docker.com/) - 容器化平台
 
 ---
 

@@ -37,18 +37,14 @@ task_dist_mode设置
 ```sh
 cd /shared/scalebox/examples/vtask
 
-export CLUSTER=local
-export TASK_DIST_MODE=
-export HEAD_SLOTS=h0
-export CORE_MODE=
-export CORE_SLOTS=h0
-app_id=$( cat default-tasks.txt | scalebox run | cut -d':' -f2 | tr -d '}' )
+cat default-tasks.txt | scalebox run
 ```
 
 ### 1.2 increment semaphore
 
+- 以当前最新app-id
 ```sh
-scalebox semaphore increment --app-id=${app_id} vtask_size:vtask-head
+scalebox semaphore increment vtask_size:vtask-head
 ```
 
 ## 2. host-bound

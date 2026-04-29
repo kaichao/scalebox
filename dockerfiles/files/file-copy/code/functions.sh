@@ -44,7 +44,7 @@ function parse_remote_path() {
         fi
         echo "RSYNC_OVER_SSH $data_root $ssh_host $ssh_port"
     else
-        echo "wrong message format, message: $1" >&2
+        echo "invalid format in parse_remote_path(), remote-path: $1" >&2
         return 26
     fi
 }
@@ -72,20 +72,20 @@ function get_ssh_option() {
     echo "data_root:$data_root" >&2
     
     jump_servers=$(get_header "$json" "$jump_servers_name") 
-    jump_servers_option=""
+    jump_option=""
     if [ "$jump_servers" ]; then
-        jump_servers_option="-J '${jump_servers}' "
+        jump_option="-J '${jump_servers}' "
     fi
-    # ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x ${jump_servers_option}"
-    option="-p ${ssh_port} ${jump_servers_option}"
+    # ssh_args="-T -c aes128-gcm@openssh.com -o Compression=no -x ${jump_option}"
+    option="-p ${ssh_port} ${jump_option}"
     echo "$option"
 }
 # source "/usr/local/bin/functions.sh"
 # headers='{
-#   "source_jump_servers": "jump-servers:22",
+#   "source_jump": "jump-server1:22,jump-server2:10022",
 #   "source_url": "user@myhost:10022/my-root"
 # }'
-# get_ssh_option "$headers" "source_url" "source_jump_servers"
+# get_ssh_option "$headers" "source_url" "source_jump"
 
 function get_data_root() {
     local url="$1"
@@ -115,7 +115,7 @@ function to_ssh_url() {
     # echo ${ss[2]}
     echo "${ss[2]}:${ss[1]}"
 }
-# echo $(to_ssh_url "user@host:10022/my-dir")
+#echo $(to_ssh_url "user@host:10022/my-dir")
 #echo $(to_ssh_url "user@host/my-dir")
 
 function get_ssh_port() {
