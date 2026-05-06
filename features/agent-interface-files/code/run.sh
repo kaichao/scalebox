@@ -28,15 +28,19 @@ EOF
 
 # extra-attrs.yaml
 cat > extra-attrs.yaml << 'EOF'
-  iobytes:
-    global_ibytes: 1024
-    global_obytes: 2048
-    ssd_ibytes: 3072
-    ssd_obytes: 4096
-    tmpfs_ibytes: 5120
-    tmpfs_obytes: 6144
-    input_bytes: 9216
-    output_bytes: 12288
+  extra-attr-set:
+    myattr1: 1024
+    myattr2: 3.14
+    myattr3: str
+    myattr4: false
+    myattr5: 2026-05-02T10:30:00Z
+    arr_attr:
+      - v0
+      - v1
+    obj_attr:
+      id: 1
+      key: mykey
+      value: myval
 EOF
 
 # timestamps.txt
@@ -50,6 +54,8 @@ cat > input-files.txt << 'EOF'
 /tmp/agent-interface-files/input-dir/sub-dir2
 /tmp/agent-interface-files/input-dir/sub-dir3/file30.txt
 /tmp/agent-interface-files/input-dir/sub-dir3/file31.txt
+/dev/shm/input-dir,1024
+/shared/mydata/input-file,2048
 EOF
 
 # output-files.txt
@@ -57,6 +63,16 @@ cat > output-files.txt << 'EOF'
 /tmp/agent-interface-files/output-dir/sub-dir1
 /tmp/agent-interface-files/output-dir/sub-dir2/file20.txt
 /tmp/agent-interface-files/output-dir/sub-dir2/file21.txt
+/dev/shm/output-dir,1024
+/shared/mydata/output-file,2048
+EOF
+
+# network-files.txt
+cat > network-files.txt << 'EOF'
+from,10.0.6.100,/tmp/agent-interface-files/input-dir/sub-dir1
+from,10.0.6.100,1024
+to,10.0.6.100,/tmp/agent-interface-files/output-dir/sub-dir1
+to,10.0.6.101,1024
 EOF
 
 # removed-files.txt

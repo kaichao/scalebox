@@ -10,6 +10,7 @@
 | default_idle_polls  | 所属module的缺省的空闲轮询次数       |
 | is_cluster_admin    |                                  |
 | default_sleep_count | 各模块sleep_count的默认值          |
+| global_directories  | 全局目录列表，用于所属模块的读写数据量分类统计。（local/global/tmpfs）|
 | slot_group          | map形式的多节点的多module-slot配置，用于新增节点的slot自动创建。例：'{"module0":n0,"module1",n1}' |
 
 ### 2.1.2 module-arguments参数表
@@ -73,18 +74,19 @@
 
 ### 2.1.4 task-headers标准参数表
 
-| 参数名称      | 含义 |
-| --------------- | ----------------------------------------------- |
-| to_ip           | 当前task的待处理主机ip                             |
-| to_host         | 当前task的待处理主机名(t_host主键)                  |
-| from_ip         | 生成task消息的主机ip                               |
-| from_ip_last    | 生成task消息的主机ip                               |
-| from_host       | 生成task消息的主机名(t_host主键)                    |
-| from_module        | 生成task消息的job名                               |
-| from_module_last   | 若from_job为消息路由，消息路由之前的from_job         |
-| to_slot         | SLOT-BOUND模块中当前task的待处理slot_id                 |
-| to_slot_index   | 以本机seq表示的slot_id                           |
-| repeatable      | 缺省task对应消息在指定时间内不可重复分发，缺省值可通过job的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
+| 参数名称          | 含义                                            |
+| ---------------- | ----------------------------------------------- |
+| to_ip            | 当前task的待处理主机ip                             |
+| to_host          | 当前task的待处理主机名(t_host主键)                  |
+| from_ip          | 生成task的主机ip                                 |
+| from_ip_last     | 若from_module为主路由，主机ip                     |
+| from_host        | 生成task的主机名(t_host主键)                      |
+| from_module      | 生成task的模块名                                 |
+| from_module_last | 若from_module为主路由，主路由之前的from_module     |
+| from_cluster     | 跨集群应用的上一集群名                             |
+| to_slot          | SLOT-BOUND模块中当前task的待处理slot_id           |
+| to_slot_index    | 以本机seq表示的slot_id                           |
+| repeatable       | 缺省task在指定时间内不可重复分发，缺省值可通过module的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
 
 其中，from_ip、from_module、from_module_last等，由系统自动生成。
 

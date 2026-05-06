@@ -58,18 +58,19 @@ task-body为任务标识，在模块中具有唯一性：
 
 #### agent接口文件
 
-用户程序运行结束后，agent对用户程序的运行做后处理，主要通过以下文件交换信息：
+用户程序运行结束后，agent对用户程序的运行结果做后处理，文件路径在```${WORK_DIR}```之下，主要通过以下文件交换信息：
 
-| 文件名                         | 文件说明                                   |
-| ----------------------------- | ----------------------------------------- |
-| ${WORK_DIR}/task-exec.yaml    | 任务运行结果主文件，以yaml形式纪录用户程序运行结果 |
-| ${WORK_DIR}/sink-tasks.txt    | 后续任务列表文件，每行一个任务 |
-| ${WORK_DIR}/extra-attrs.yaml  | 运行附加属性文件，以jsonb类型存放在extras字段中。 |
-| ${WORK_DIR}/timestamps.txt    | 自定义时间戳文件，常用于调试程序、测试程序性能，纪录在extras->>'timestamps' |
-| ${WORK_DIR}/input-files.txt   | 输入文件（目录）列表（绝对路径），用于统计输入文件字节数 |
-| ${WORK_DIR}/output-files.txt  | 输出文件（目录）列表（绝对路径），用于统计输出文件字节数 |
-| ${WORK_DIR}/removed-files.txt | 待删除文件（目录）列表（绝对路径），待完成读写量统计后删除 |
-| ${WORK_DIR}/auxout.txt        | 辅助输出文件，纪录用户关注输出信息 |
+| 文件名             | 文件说明                                   |
+| ----------------- | ----------------------------------------- |
+| task-exec.yaml    | 任务运行结果主文件，以yaml形式纪录用户程序运行结果 |
+| extra-attrs.yaml  | 运行附加属性文件，以jsonb类型存放在extras字段中。 |
+| sink-tasks.txt    | 后续任务列表文件，每行一个任务 |
+| timestamps.txt    | 自定义时间戳文件，常用于调试程序、测试程序性能，纪录在extras->>'timestamps' |
+| input-files.txt   | 输入文件（目录）列表（绝对路径），用于统计输入文件字节数 |
+| output-files.txt  | 输出文件（目录）列表（绝对路径），用于统计输出文件字节数 |
+| network-files.txt | 网络读写的文件（目录）列表（绝对路径），用于统网络读写的字节数 |
+| removed-files.txt | 待删除文件（目录）列表（绝对路径），待完成读写量统计后删除 |
+| auxout.txt        | 辅助输出文件，纪录用户关注输出信息 |
 
 #### sink-tasks.txt文件格式
 
@@ -100,6 +101,42 @@ task-body为任务标识，在模块中具有唯一性：
 |             | 2006-01-02T15:04:05                 |
 |             | 2006-01-02 15:04:05.999999999       |
 |             | 2006-01-02 15:04:05                 |
+
+#### input-files.txt/output-files.txt文件格式及处理
+- 每行为一条记录
+- 应用程序输出的每行格式：```<path-item>[,<bytes>]```
+- 客户端处理完格式：```<path-item>,<bytes>```
+- 合并后纪录在数据库字段```extra->>'iobytes'```中，以下每项都是数字型的字节数
+  - global_input
+  - global_output
+  - tmpfs_input
+  - tmpfs_output
+  - local_input
+  - local_output
+  - input_bytes
+  - output_bytes
+
+其中，
+- global通过cluster的data_root或app的global_directories属性来确定全局目录
+- tmpfs是以/dev/shm为前缀来确定
+- local则是除global/tmpfs之外的部分
+- input_bytes/output_bytes则是总计量
+
+以上纪录可通过视图```v_module_iobytes```查看。
+
+#### network-files.txt文件格式及处理
+- 每行为一条记录
+- 应用程序输出的每行格式：```<from_to>,<host>,(<path-item>|<bytes)>```
+  - from_to：为输入/输出方向，from表示从外部读取，to表示写到外部节点
+  - host：表示主机名或IP地址，在服务端入库前统一转换为主机名
+  - path-item：表示文件名或目录名，在客户端需转换为字节数
+  - bytes：路径项的字节数
+- 客户端处理完格式：```<from_host>,<to_host>,<bytes>```
+- 合并后纪录在数据库字段```extra->>'network_io'```中
+  - 纪录格式为数组类型
+  - ```<from-host>,<to-host>,<bytes>```
+
+以上纪录可通过视图```v_network_io```查看。
 
 
 ## 2.4 模块的镜像封装
