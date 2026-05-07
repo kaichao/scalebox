@@ -126,3 +126,43 @@ SOURCE_URL=root@10.0.6.102/etc \
 TARGET_URL=root@10.0.6.101/tmp/etc \
 scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
 ```
+
+## 五、输出文件
+
+模块运行后会在 `WORK_DIR` 下生成以下文件追踪记录：
+
+### 5.1 input-files.txt
+
+记录从**本地磁盘读取**的源文件，每行一个文件路径。以下传输模式会写入该文件：
+
+| 传输模式 | 说明 |
+| -------- | ---- |
+| LOCAL → SSH | 本地文件经 SSH 发往远程 |
+| LOCAL → RSYNC_OVER_SSH | 本地文件经 rsync over SSH 发往远程 |
+| LOCAL → RSYNC | 本地文件经原生 rsync 发往远程 |
+
+### 5.2 output-files.txt
+
+记录**写入本地磁盘**的目标文件，每行一个文件路径。以下传输模式会写入该文件：
+
+| 传输模式 | 说明 |
+| -------- | ---- |
+| SSH → LOCAL | 从远程经 SSH 拉取文件到本地 |
+| RSYNC_OVER_SSH → LOCAL | 从远程经 rsync over SSH 拉取文件到本地 |
+| RSYNC → LOCAL | 从远程经原生 rsync 拉取文件到本地 |
+
+### 5.3 network-files.txt
+
+记录**经网络传输**的文件，每行格式为 `direction,remote-ip,filename`，其中 `direction` 取值为 `from`（从网络读取）或 `to`（写出到网络）。所有非 LOCAL→LOCAL 的传输模式均会写入该文件：
+
+| 传输模式 | 记录内容 |
+| -------- | -------- |
+| LOCAL → SSH | `to,<target_host>,<file>` |
+| LOCAL → RSYNC_OVER_SSH | `to,<target_host>,<file>` |
+| LOCAL → RSYNC | `to,<target_host>,<file>` |
+| SSH → LOCAL | `from,<source_host>,<file>` |
+| SSH → SSH | `from,<source_host>,<file>` + `to,<target_host>,<file>` |
+| RSYNC_OVER_SSH → LOCAL | `from,<source_host>,<file>` |
+| RSYNC → LOCAL | `from,<source_host>,<file>` |
+
+> `remote-ip` 为远端主机名（不含用户名），由 `get_host_from_url` 从 `source_url` / `target_url` 中提取。

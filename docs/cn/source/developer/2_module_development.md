@@ -70,6 +70,7 @@ task-body为任务标识，在模块中具有唯一性：
 | output-files.txt  | 输出文件（目录）列表（绝对路径），用于统计输出文件字节数 |
 | network-files.txt | 网络读写的文件（目录）列表（绝对路径），用于统网络读写的字节数 |
 | removed-files.txt | 待删除文件（目录）列表（绝对路径），待完成读写量统计后删除 |
+| cleanup-files.txt | 退出前的bash清除命令（removed-files.txt仅删除本地文件）(待实现)|
 | auxout.txt        | 辅助输出文件，纪录用户关注输出信息 |
 
 #### sink-tasks.txt文件格式
