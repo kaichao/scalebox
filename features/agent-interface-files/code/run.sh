@@ -1,6 +1,6 @@
 #!/bin/bash
 
-echo "start,$(date +%Y-%m-%dT%H:%M:%S.%6N)" > "${WORK_DIR}/timestamps.txt"
+date +%Y-%m-%dT%H:%M:%S.%6N > "${WORK_DIR}/timestamps.txt"
 
 code_dir=$(dirname $0)
 # prepare files/dirs in /tmp/agent-interface-files for this test
@@ -44,9 +44,9 @@ cat > extra-attrs.yaml << 'EOF'
 EOF
 
 # timestamps.txt
-echo "before-sleep,$(date +%Y-%m-%dT%H:%M:%S.%6N)" >> timestamps.txt
+echo "$(date +%Y-%m-%dT%H:%M:%S.%6N),before-sleep" >> timestamps.txt
 sleep 3
-echo "after-sleep,$(date +%Y-%m-%dT%H:%M:%S.%6N)" >> timestamps.txt
+echo "$(date +%Y-%m-%dT%H:%M:%S.%6N),after-sleep" >> timestamps.txt
 
 # input-files.txt
 cat > input-files.txt << 'EOF'

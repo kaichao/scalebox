@@ -36,7 +36,8 @@ func Add(body string, headers string, envVars map[string]string) (taskID int64, 
 	escapedHeaders := strings.ReplaceAll(headers, "'", "'\\''")
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' %s`,
 		strings.Join(parts, " "), escapedHeaders, body)
-	code, stdout, stderr, err := exec.RunReturnAll(cmd, 30)
+	stdout, stderr, err := exec.RunReturnAll(cmd, 30)
+	code := errors.GetCode(err)
 	logrus.Tracef("In task.Add(),headers:%s\ncmd:'%s'\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
 		headers, cmd, code, stdout, stderr, err)
 
@@ -103,7 +104,8 @@ func AddTasks(bodies []string, headers string, envVars map[string]string) (int, 
 	}
 	cmd := fmt.Sprintf(`%s scalebox task add --headers='%s' --task-file=%s`,
 		strings.Join(parts, " "), escapedHeaders, taskFilePath)
-	code, stdout, stderr, err := exec.RunReturnAll(cmd, 15)
+	stdout, stderr, err := exec.RunReturnAll(cmd, 15)
+	code := errors.GetCode(err)
 	logrus.Tracef("In task.AddTask(),cmd:'%s'\ntask-body:%v\nexit-code:%d\nstdout:%s\nstderr:%s\nerr:%v\n",
 		cmd, bodies, code, stdout, stderr, err)
 

@@ -5,8 +5,8 @@ cluster0:
     data_root: /shared/scalebox/mydata
     # uname: root
     # port: 22
-    grpc_server:
-    pghost :
+    grpc_server: 10.0.6.100
+    pghost: 10.0.6.100
     remote_grpc_server: 10.0.6.100
     remote_pghost: 10.0.6.100
   hosts:

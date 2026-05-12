@@ -90,7 +90,7 @@ task-body为任务标识，在模块中具有唯一性：
 #### timestamps.txt文件格式
 - 每行为一条记录
 - 纪录第一个字符为```#```，为注释行
-- 每行格式：```[<label>,]<timestamp>```，label为可选项
+- 每行格式：```<timestamp>[,<label>]```，label为可选项
 
 - timestamp的格式
 

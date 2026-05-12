@@ -6,9 +6,9 @@ agent的用户程序与基础平台的接口文件。
 
 ### task-exec.yaml
 
-### sink-tasks.txt
-
 ### extra-attrs.yaml
+
+### sink-tasks.txt
 
 ### timestamps.txt
 - 格式为:label,时间，```#```开头为注释行

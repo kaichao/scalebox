@@ -53,7 +53,7 @@ if [ "$source_mode" = "RSYNC_OVER_SSH" ] && [ "$target_mode" = "RSYNC_OVER_SSH" 
     target_mode="SSH"
 fi
 
-date --iso-8601=ns | sed 's/,/./' >> timestamps.txt
+date +%Y-%m-%dT%H:%M:%S.%6N > timestamps.txt
 
 echo "[DEBUG]source_mode:$source_mode,target_mode:$target_mode" >> ${WORK_DIR}/auxout.txt
 dispatch_func="transfer_${source_mode}_${target_mode}"
@@ -64,9 +64,10 @@ else
     exit 40
 fi
 
-date --iso-8601=ns | sed 's/,/./' >> ${WORK_DIR}/timestamps.txt
+date +%Y-%m-%dT%H:%M:%S.%6N >> "${WORK_DIR}/timestamps.txt"
 
 if [ -n "$SINK_MODULE" ]; then
     echo "$1" > ${WORK_DIR}/sink-tasks.txt
 fi
+
 exit 0

@@ -4,7 +4,7 @@ go 1.25.2
 
 require (
 	github.com/jackc/pgx/v5 v5.8.0
-	github.com/kaichao/gopkg v0.0.0-20260428031454-092662e918df
+	github.com/kaichao/gopkg v0.0.0-20260512020252-8da80054f979
 	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
