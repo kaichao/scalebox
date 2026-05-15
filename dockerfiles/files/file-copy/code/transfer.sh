@@ -30,7 +30,7 @@ transfer_LOCAL_SSH() {
 
     cleanup_source "LOCAL" "$local_file" "$keep_source"
     echo "$local_file" >> "${WORK_DIR}/input-files.txt"
-    echo "to,$(get_host_from_url "$target_url"),$1" >> "${WORK_DIR}/network-files.txt"
+    echo "to,$(get_host_from_url "$target_url"),$local_file,$remote_file" >> "${WORK_DIR}/network-files.txt"
 
     echo "[DEBUG] local_file:$local_file" >> ${WORK_DIR}/auxout.txt
 }
@@ -59,7 +59,7 @@ transfer_LOCAL_RSYNC_OVER_SSH() {
 
     cleanup_source "LOCAL" "$source_dir/$1" "$keep_source"
     echo "$source_dir/$1" >> "${WORK_DIR}/input-files.txt"
-    echo "to,$(get_host_from_url "$target_url"),$source_dir/$1" >> "${WORK_DIR}/network-files.txt"
+    echo "to,$(get_host_from_url "$target_url"),$source_dir/$1,${target_ssh_url#*:}/$1" >> "${WORK_DIR}/network-files.txt"
 }
 
 # ===== LOCAL -> RSYNC =====
@@ -79,7 +79,7 @@ transfer_LOCAL_RSYNC() {
     [[ $code -ne 0 ]] && echo "[ERROR] cp file from local to remote, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/auxout.txt && exit $code
     local local_file=$(get_host_path "${source_dir}/$1")
     echo "$local_file" >> "${WORK_DIR}/input-files.txt"
-    echo "to,$(get_host_from_url "$target_url"),$local_file" >> "${WORK_DIR}/network-files.txt"
+    echo "to,$(get_host_from_url "$target_url"),$local_file,$target_dir" >> "${WORK_DIR}/network-files.txt"
 }
 
 # ===== SSH -> LOCAL =====
@@ -99,7 +99,7 @@ transfer_SSH_LOCAL() {
 
     cleanup_source "SSH" "$remote_file" "$keep_source" "$ssh_cmd"
     echo "$local_file" >> "${WORK_DIR}/output-files.txt"
-    echo "from,$(get_host_from_url "$source_url"),$1" >> "${WORK_DIR}/network-files.txt"
+    echo "from,$(get_host_from_url "$source_url"),$local_file,$remote_file" >> "${WORK_DIR}/network-files.txt"
 }
 
 # ===== SSH -> SSH =====
@@ -121,8 +121,8 @@ transfer_SSH_SSH() {
     [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to remote, cmd=$cmd, error_code:$code" >&2 && exit $code
 
     cleanup_source "SSH" "$source_file" "$keep_source" "$source_ssh_cmd"
-    echo "from,$(get_host_from_url "$source_url"),$1" >> "${WORK_DIR}/network-files.txt"
-    echo "to,$(get_host_from_url "$target_url"),$1" >> "${WORK_DIR}/network-files.txt"
+    echo "from,$(get_host_from_url "$source_url"),$bytes_transferred,$source_file" >> "${WORK_DIR}/network-files.txt"
+    echo "to,$(get_host_from_url "$target_url"),$bytes_transferred,$target_file" >> "${WORK_DIR}/network-files.txt"
 }
 
 # ===== RSYNC_OVER_SSH -> LOCAL =====
@@ -162,7 +162,7 @@ transfer_RSYNC_OVER_SSH_LOCAL() {
         local local_file="/local_data_root${target_url}/$1"
     fi
     echo "$local_file" >> "${WORK_DIR}/output-files.txt"
-    echo "from,$(get_host_from_url "$source_url"),$local_file" >> "${WORK_DIR}/network-files.txt"
+    echo "from,$(get_host_from_url "$source_url"),$local_file,$remote_file" >> "${WORK_DIR}/network-files.txt"
 }
 
 # ===== RSYNC -> LOCAL =====
@@ -180,5 +180,5 @@ transfer_RSYNC_LOCAL() {
     [[ $code -ne 0 ]] && echo "[ERROR] cp file from remote to local, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/auxout.txt && exit $code
     local local_file="/local_data_root${target_dir}/$1"
     echo "$local_file" >> "${WORK_DIR}/output-files.txt"
-    echo "from,$(get_host_from_url "$source_url"),$local_file" >> "${WORK_DIR}/network-files.txt"
+    echo "from,$(get_host_from_url "$source_url"),$local_file,$target_dir" >> "${WORK_DIR}/network-files.txt"
 }

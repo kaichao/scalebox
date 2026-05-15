@@ -69,10 +69,10 @@ EOF
 
 # network-files.txt
 cat > network-files.txt << 'EOF'
-from,10.0.6.100,/tmp/agent-interface-files/input-dir/sub-dir1
-from,10.0.6.100,1024
-to,10.0.6.100,/tmp/agent-interface-files/output-dir/sub-dir1
-to,10.0.6.101,1024
+from,10.0.6.101,/tmp/agent-interface-files/input-dir/sub-dir1,/dev/shm/scalebox
+from,10.0.6.101,1024,/path-to-local/mydata,4096
+to,10.0.6.101,/tmp/agent-interface-files/output-dir/sub-dir1,/shared/mydata,8192
+to,10.0.6.101,1024,/local-dir,16384
 EOF
 
 # removed-files.txt
