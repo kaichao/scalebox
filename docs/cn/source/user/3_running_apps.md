@@ -22,7 +22,7 @@ Scalebox应用通过YAML配置文件定义。主要包括：
 scalebox run
 
 # 指定配置文件
-scalebox run --env-file scalebox.env app.yaml
+scalebox run --env-file scalebox.env --app-file app.yaml
 
 # 带参数创建
 scalebox run --tag v1 --num-groups 4

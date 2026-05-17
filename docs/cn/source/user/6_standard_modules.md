@@ -20,7 +20,7 @@ modules:
     base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/code
-      task_max_seconds: 3600
+      task_max_seconds: 600
     parameters:
       task_dist_mode: DEFAULT
 ```

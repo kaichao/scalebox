@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # 公共工具函数，供 transfer.sh 中的传输函数调用
+# 依赖库: /usr/local/lib/scalebox/
 
 # 创建本地目录，失败时退出
 ensure_local_dir() {
@@ -39,21 +40,5 @@ cleanup_source() {
             eval "$ssh_cmd rm -f $path"
             ;;
         # RSYNC: cleanup already done by --remove-source-files in rsync command
-    esac
-}
-
-# 从 URL 中提取主机名（不含用户名），用于 network-files.txt 中的 remote-ip 字段
-get_host_from_url() {
-    local url="$1"
-    local mode=$(get_mode "$url")
-    case "$mode" in
-        "SSH"|"RSYNC_OVER_SSH")
-            get_ssh_host "$url" | sed 's/.*@//'
-            ;;
-        "RSYNC")
-            if [[ $url =~ ^rsync://(([^@:]+)(:[^@]+)?@)?([^:/]+)(:[0-9]+)?(/.*)$ ]]; then
-                echo "${BASH_REMATCH[4]}"
-            fi
-            ;;
     esac
 }

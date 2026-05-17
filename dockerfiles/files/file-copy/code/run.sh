@@ -2,8 +2,7 @@
 
 set -e
 
-source /usr/local/bin/functions.sh
-source /app/share/bin/functions.sh
+source /usr/local/lib/scalebox/functions.sh
 source /app/share/bin/common.sh
 source /app/share/bin/transfer.sh
 
@@ -12,25 +11,25 @@ source /app/share/bin/transfer.sh
 echo "[DEBUG] WORK_DIR:${WORK_DIR}:" >> ${WORK_DIR}/auxout.txt
 cd "${WORK_DIR}"
 
-source_url=$(get_header "$2" "source_url")
-target_url=$(get_header "$2" "target_url")
+source_url=$(scalebox::task_header "$2" "source_url")
+target_url=$(scalebox::task_header "$2" "target_url")
 
-keep_source=$(get_header "$2" "keep_source")
+keep_source=$(scalebox::task_header "$2" "keep_source")
 
 if [ -z "$SOURCE_MODE" ]; then
-    source_mode=$(get_mode "$source_url")
+    source_mode=$(url::mode "$source_url")
 else
     source_mode="$SOURCE_MODE"
 fi
 
 if [ -z "$TARGET_MODE" ]; then
-    target_mode=$(get_mode "$target_url")
+    target_mode=$(url::mode "$target_url")
 else
     target_mode="$TARGET_MODE"
 fi
 
-source_dir=$(get_data_root "$source_url")
-target_dir=$(get_data_root "$target_url")
+source_dir=$(url::data_root "$source_url")
+target_dir=$(url::data_root "$target_url")
 
 
 # 如果source_url/target_url/source_mode/target_mode任意一个为空，则显示输入错误，退出，退出码120
@@ -46,11 +45,6 @@ if [[ $ZSTD_CLEVEL != "" ]]; then
     rsync_args="--cc=xxh3 --compress --compress-choice=zstd --compress-level=${ZSTD_CLEVEL}"
 else
     rsync_args=""
-fi
-
-if [ "$source_mode" = "RSYNC_OVER_SSH" ] && [ "$target_mode" = "RSYNC_OVER_SSH" ]; then
-    source_mode="SSH"
-    target_mode="SSH"
 fi
 
 date +%Y-%m-%dT%H:%M:%S.%6N > timestamps.txt

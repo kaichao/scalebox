@@ -1,14 +1,14 @@
 #!/bin/bash
 
-source /usr/local/bin/functions.sh
+source /usr/local/lib/scalebox/functions.sh
 
 # set -euo pipefail
 
-from_module=$(get_header "$2" "from_module")
+from_module=$(scalebox::task_header "$2" "from_module")
 case $from_module in
     "calc")
         echo "from local module calc" >> auxout.txt
-        part_primes=$(get_header "$2" "part_primes")
+        part_primes=$(scalebox::task_header "$2" "part_primes")
         scalebox task add --remote-cluster="cluster0" --header part_primes="$part_primes" "$1"
         ;;
     *)  

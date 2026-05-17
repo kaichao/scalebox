@@ -8,7 +8,7 @@
 
 ```bash
 cd examples/hello-scalebox
-echo "Docker-based_Scalebox" | scalebox run 
+echo "Scalebox" | scalebox run 
 ```
 
 ### 应用特点

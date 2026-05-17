@@ -21,12 +21,7 @@ RUN apt update \
 
 ## 4.5 常用scalebox内置函数
 
-### 4.5.1 get_host_path
-
-参数：容器内dir名
-返回：容器可访问的主机目录
-
-### 4.5.2 get_json_value
+### 4.5.1 scalebox::json_val
 
 功能：从json中提取参数值
 参数列表：
@@ -34,7 +29,7 @@ RUN apt update \
     json字段名
 返回：json字段值（字符串）
 
-### 4.5.3 get_header
+### 4.5.2 scalebox::task_header
 
 功能：从json中提取消息头的值，若不存在，则从环境变量中提取值（环境变量名为消息头对应的全大写字母）
 参数列表：
@@ -42,7 +37,7 @@ RUN apt update \
     json字段名：以消息字母、下划线定义
 返回：参数值（字符串）
 
-### 4.5.4 parse_json
+### 4.5.3 scalebox::json_parse
 
 功能：将json字符串映射为hash table
 参数列表：
@@ -50,18 +45,27 @@ RUN apt update \
     bash的hashtable：返回值
 返回：无
 
+### 4.5.4 path::host_path
+
+参数：容器内dir名
+返回：容器可访问的主机目录
+
+### 4.5.5 path::size
+
+参数：容器可访问的主机目录
+返回：该目录字节数
 
 ## 4.6 内置函数的用法示例
 
 ```bash
 #!/usr/bin/env bash
 
-source functions.sh
+source /usr/local/lib/scalebox/functions.sh
 
-my_header=$(get_header "$2" "my_header")
+my_header=$(scalebox::task_header "$2" "my_header")
 
 path_in_container="mypath"
-host_dir=$(get_host_path ${path_in_container})
+host_dir=$(path::host_path ${path_in_container})
 
 ```
 
@@ -70,7 +74,7 @@ host_dir=$(get_host_path ${path_in_container})
 容器内缺省可访问外部目录包括：
 - /tmp：本地临时文件目录
 - /dev/shm：本地缓存目录（tmpfs）
-- /local_data_root：计算节点本地根目录
 - /cluster_data_root：集群数据根目录（在集群定义中，用```data_root```定义）
+- /local_data_root：计算节点本地根目录
 
 要访问其它目录，需要在模块定义的```volumes```中定义映射关系。

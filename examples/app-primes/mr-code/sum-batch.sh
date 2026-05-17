@@ -1,7 +1,7 @@
 #!/bin/bash
 
 set -e
-source "/usr/local/bin/functions.sh"
+source /usr/local/lib/scalebox/functions.sh
 
 # 2025-06-08T21:24:14.369583794+08:00
 ds=$(date --iso-8601=ns | sed 's/,/./')
@@ -15,7 +15,7 @@ while read -r line; do
     # task_body=$(echo "$line" | cut -d',' -f2)
     headers=$(echo "$line" | cut -d',' -f3-)
     # very slow
-    # n=$(get_header "$headers" "part_primes")
+    # n=$(scalebox::task_header "$headers" "part_primes")
     if [[ $headers =~ $pattern ]]; then
         n="${BASH_REMATCH[1]}"
     else

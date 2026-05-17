@@ -6,12 +6,12 @@
 
 ```bash
 # 检查服务状态
-docker-compose ps
+docker compose ps
 
 # 查看服务日志
-docker-compose logs controld
-docker-compose logs actuator
-docker-compose logs database
+docker compose logs controld
+docker compose logs actuator
+docker compose logs database
 
 # 检查服务健康
 scalebox cluster status

@@ -4,9 +4,9 @@ local:
   parameters:
     data_root: /tmp/scalebox/mydata
     uname: ${USER}
-    port: 22
-    local_ip_index: 1
+    # port: 22
+    # local_ip_index: 1
   hosts:
     h0:
-      ip_addr: ${LOCAL_ADDR}
+      # ip_addr: ${LOCAL_ADDR}
       role: HEAD
