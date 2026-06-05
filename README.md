@@ -26,10 +26,10 @@ Scalebox具有以下重要特性：
 
 本仓库主要包含以下内容：
 
-1. 基于docker-compose的scalebox服务端环境（[服务环境](./server/README.md)）
+1. 基于docker compose的scalebox服务端环境（[服务环境](./server/README.md)）
 2. scalebox标准模块的Dockerfile定义 ([标准模块](./dockerfiles/README.md))
 3. scalebox的应用示例（[应用示例](./examples/README.md)）
-4. scalebox主要特性的测试（[特性测试](./tests/README.md)）
+4. scalebox主要特性的测试（[特性测试](./features/README.md)）
 
 ## 内容列表
 

@@ -66,8 +66,6 @@ graph LR
   slot --> slot-update[<a href="#slot-update">update</a>]
 
   scalebox --> app[<a href="#app">app</a>]
-  app --> app-create[<a href="#app-create">create</a>]
-  app --> app-run[<a href="#app-run">run</a>]
   app --> main-router[<a href="#app-main-router">main-router</a>]
   app --> app-list[<a href="#app-list">list</a>]
   app --> app-add-remote[<a href="#app-add-remote">add-remote</a>]
@@ -89,7 +87,6 @@ graph LR
   semaphore --> increment[<a href="#semaphore-increment">increment</a>]
   semaphore --> decrement[<a href="#semaphore-decrement">decrement</a>]
   semaphore --> increment-n[<a href="#semaphore-increment-n">increment-n</a>]
-  semaphore --> semaphore-group[<a href="#semaphore-group">group</a>]
 
   scalebox --> semagroup[<a href="#semagroup">semagroup</a>]
   semagroup --> semagroup-min[<a href="#semagroup-min">min</a>]
@@ -256,8 +253,8 @@ scalebox app run --param-name=param-value start-item
 
 - 若有应用定义文件，则以此创建应用
 - 启动消息start-task
-  - 若有消息路由，则启动消息发给消息路由
-  - 若无消息路由，则启动消息发给首模块
+  - 若有主路由，则启动任务发给主路由
+  - 若无主路由，则启动任务发给首模块
 
 - 启动项start-item
 若非json串，则为启动消息start-task；否则start-item中包括前述参数及start-task。json格式定义如下：
@@ -274,7 +271,7 @@ scalebox app run --param-name=param-value start-item
 ```
 实际应用中，去除json字符串中的无空格、换行等空字符
 
-#### 基于管道的多启动消息
+#### 基于管道的多启动任务
 
 针对多启动消息，可通过管道将多消息按行传递给启动命令。每行的消息体不按前述json格式解析。
 ```sh

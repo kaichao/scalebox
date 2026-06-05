@@ -59,6 +59,7 @@
    :caption: 其他
    :hidden:
 
+   faq
    release_notes
    about_us/contributors
    about_us/contact_us

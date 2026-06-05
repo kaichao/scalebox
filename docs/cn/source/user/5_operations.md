@@ -39,7 +39,7 @@ docker stats
 **解决方案**：
 1. 等待数据库完全启动：`sleep 10`
 2. 手动检查数据库：`docker exec database psql -U scalebox -c "\l"`
-3. 重新创建数据库卷：`docker-compose down -v && docker-compose up -d`
+3. 重新创建数据库卷：`docker compose down -v && docker compose up -d`
 
 ### 5.2.2 任务执行问题
 
@@ -48,7 +48,7 @@ docker stats
 **解决方案**：
 1. 检查actuator日志：`docker logs actuator`
 2. 检查slot状态：`scalebox slot list`
-3. 重新启动actuator：`docker-compose restart actuator`
+3. 重新启动actuator：`docker compose restart actuator`
 
 ### 5.2.3 网络问题
 
@@ -127,7 +127,7 @@ docker exec database psql -U scalebox -c "ALTER USER scalebox WITH PASSWORD 'new
 cd runtime && make pull-all
 
 # 重启服务
-docker-compose down && docker-compose up -d
+docker compose down && docker compose up -d
 ```
 
 ## 5.6 日志管理
@@ -136,10 +136,10 @@ docker-compose down && docker-compose up -d
 
 ```bash
 # 收集所有服务日志
-docker-compose logs > scalebox.log
+docker compose logs > scalebox.log
 
 # 按时间筛选日志
-docker-compose logs --since "2024-01-01" --until "2024-01-02"
+docker compose logs --since "2024-01-01" --until "2024-01-02"
 ```
 
 ### 5.6.2 日志分析
@@ -164,7 +164,7 @@ git pull origin main
 make pull-all
 
 # 平滑重启服务
-docker-compose restart
+docker compose restart
 ```
 
 ### 5.7.2 配置迁移

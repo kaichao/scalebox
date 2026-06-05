@@ -1,4 +1,3 @@
-version: '3.8'
 services:
   controld:
     container_name: controld
@@ -15,7 +14,7 @@ services:
         condition: service_healthy
     ports:
       - 50051:50051
-      - 50061:8080
+#      - 50061:8080
     environment:
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
@@ -49,14 +48,14 @@ services:
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
-      - LOCAL_ADDR=${LOCAL_ADDR}
+      # - LOCAL_ADDR=${LOCAL_ADDR}
       - SLOT_POLL_INTERVAL_SECONDS=5
       # for external cluster to start external slots
       - HEAD_SSH_USER=${USER}
       - HEAD_SSH_PORT=10022
       - TRACE_EXECUTOR=yes
-    ports:
-      - 50062:8080
+    # ports:
+    #   - 50062:8080
     user: root
     cap_add:
     #   update default route, for CentOS8

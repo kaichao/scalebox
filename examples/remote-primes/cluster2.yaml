@@ -3,10 +3,10 @@ version: '1.0.0'
 cluster2:
   parameters:
     data_root: /shared/scalebox/mydata
-    grpc_server: 10.0.6.102
-    pghost: 10.0.6.102
-    remote_grpc_server: 10.0.6.102
-    remote_pghost: 10.0.6.102
+    grpc_server: 10.0.6.102:20051
+    pghost: 10.0.6.102:25432
+    remote_grpc_server: 10.0.6.102:20051
+    remote_pghost: 10.0.6.102:25432
   hosts:
     h0:
       ip_addr: 10.0.6.102

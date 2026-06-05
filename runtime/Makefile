@@ -23,7 +23,6 @@ ifeq ($(origin LOCAL_ADDR), undefined)
 	else
 		$(info This is neither a Linux nor a macOS system)
 	endif
-
 endif
 
 default:

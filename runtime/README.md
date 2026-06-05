@@ -33,8 +33,8 @@ Scalebox的主要对象：
 - 操作系统：
   - CentOS 7以上（其他版本的Linux待测试）
   - macOS 10.15(amd64)以上（ARM版的macos待测试）
-- 容器化引擎：DockerCE / rootless docker，版本20.10+
-- docker-compose: 1.29.2+
+- 容器化引擎：DockerCE，版本29.5+
+- docker compose: v5.1+
 - 安装dstat、htop、rsync、zstd、gmake、git、rsync、glances、dstat、pdsh等工具软件，用于性能监控、开发运行等
 
 ### 2.1 安装CentOS 7/8下基本软件
@@ -64,7 +64,7 @@ yum install -y git
 
 基于Homebrew，安装所需基本软件
 
-### 2.3 安装docker及docker-compose
+### 2.3 安装docker
 安装docker可以有两种方式：
 - 以root用户安装docker-ce，docker可供本节点的所有用户共享，或
 - 以当前用户安装rootless docker
@@ -116,14 +116,6 @@ systemctl --user start docker
 #### 2.3.3 验证docker有效
 ```bash
 docker run --rm hello-world
-```
-
-### 2.3.4 以scalebox用户，下载安装docker-compose
-- 安装docker-compose
-```bash
-mkdir -p ~/bin
-wget -O ~/bin/docker-compose https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64
-chmod +x ~/bin/docker-compose
 ```
 
 ### 2.4 scalebox的安装配置
