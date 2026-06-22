@@ -12,7 +12,7 @@ FROM openjdk:11-slim
 
 LABEL maintainer="kaichao"
 
-COPY --from=hub.cstcloud.cn/scalebox/base:dev /usr/local/sbin /usr/local/sbin
+COPY --from=scalebox.net/platform/agent /usr/local/sbin /usr/local/sbin
 
 COPY --from=0 prime /
 

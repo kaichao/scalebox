@@ -15,7 +15,7 @@ RUN gcc -std=c99 -D CONTAINER_APP -Iinclude -static -fopenmp -O3 primes.c -o pri
 # #     && apt-get install -y libgomp1 \
 # #     && apt-get clean \
 # #     && rm -rf /var/lib/apt/lists/*
-# COPY --from=hub.cstcloud.cn/scalebox/agent:latest /usr/local/sbin /usr/local/sbin
+# COPY --from=scalebox.net/platform/agent:latest /usr/local/sbin /usr/local/sbin
 
 # ENV OMP_NUM_THREADS= \
 #     GROUP_SIZE=10000

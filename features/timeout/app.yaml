@@ -3,7 +3,6 @@ cluster: local
 
 modules:
   timeout:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/code
       task_max_seconds:	${TIMEOUT_SECONDS}

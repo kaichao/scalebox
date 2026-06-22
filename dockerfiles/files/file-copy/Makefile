@@ -1,4 +1,4 @@
-IMAGE_NAME:=hub.cstcloud.cn/scalebox/file-copy:latest
+IMAGE_NAME:=scalebox.net/platform/file-copy:latest
 
 build:
 	DOCKER_BUILDKIT=1 docker build --network=host -t $(IMAGE_NAME) .

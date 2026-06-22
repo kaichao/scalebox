@@ -157,12 +157,12 @@ task-body为任务标识，在模块中具有唯一性：
 
 ### 2.4.1 基于agent构建算法模块
 ```dockerfile
-FROM hub.cstcloud.cn/scalebox/agent:latest
+FROM scalebox.net/platform/agent:latest
 ```
 
 ### 2.4.2 拷贝agent组件至算法模块
 ```dockerfile
-COPY --from=hub.cstcloud.cn/scalebox/agent:latest /usr/local/ /usr/local/
+COPY --from=scalebox.net/platform/agent:latest /usr/local/ /usr/local/
 ```
 
 ## 2.5 模块单元测试

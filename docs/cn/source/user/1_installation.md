@@ -80,9 +80,9 @@ git clone github.com/kaichao/scalebox
 #### 容器镜像获取
 在头节点上下载容器镜像
 ```bash
-docker pull hub.cstcloud.cn/scalebox/controld:latest
-docker pull hub.cstcloud.cn/scalebox/actuator:latest
-docker pull hub.cstcloud.cn/scalebox/database:latest
+docker pull scalebox.net/platform/controld:latest
+docker pull scalebox.net/platform/actuator:latest
+docker pull scalebox.net/platform/database:latest
 ```
 
 ### 1.2.2 集群部署

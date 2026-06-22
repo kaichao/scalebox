@@ -4,7 +4,7 @@ LABEL maintainer="kaichao"
 
 COPY run.sh primes primes.py /app/bin/
 
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local /usr/local
+COPY --from=scalebox.net/platform/agent /usr/local /usr/local
 RUN mkdir -p /work
 WORKDIR /work
 

@@ -14,7 +14,6 @@ modules:
       - router
 
   router:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/router-code
       slot_options: slot_on_head

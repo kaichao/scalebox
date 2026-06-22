@@ -5,7 +5,6 @@ parameters:
 
 modules:
   wait-queue:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/modules/wait-queue/code
       slot_options: slot_on_head
@@ -16,7 +15,6 @@ modules:
       - TASK_DIST_MODE=${TASK_DIST_MODE}
 
   vtask-head:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     parameters:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
@@ -26,7 +24,6 @@ modules:
       - ${HEAD_SLOTS}
 
   vtask-core:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/modules/vtask-core/code
     parameters:
@@ -38,14 +35,12 @@ modules:
       - ${CORE_SLOTS}
 
   vtask-tail:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       slot_options: slot_on_head
     parameters:
       vtask_role: tail
 
   main-router:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/mr-code
       slot_options: slot_on_head

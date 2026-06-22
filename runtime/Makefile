@@ -73,7 +73,7 @@ list:
 pull-all:
 	@ for i in database actuator controld agent; do \
 		echo $$i; \
-		docker pull hub.cstcloud.cn/scalebox/$$i; \
+		docker pull scalebox.net/platform/$$i; \
 	done
 
 get-cli:
@@ -82,7 +82,7 @@ get-cli:
 	ARCH="$$(uname -m)" ; \
 	if [ "$$OS" = "linux" ] && [ "$$ARCH" = "x86_64" ] ; then \
 		echo "obtain scalebox CLI for $$OS/amd64..." ; \
-		id=`docker create hub.cstcloud.cn/scalebox/agent:latest` ; \
+		id=`docker create scalebox.net/platform/agent:latest` ; \
 		docker cp $$id:/usr/local/sbin/scalebox $$HOME/bin/scalebox ; \
 		docker rm -v $$id ; \
 	else \
@@ -91,11 +91,11 @@ get-cli:
 
 auto-keygen-actuator:
 	@ make -C ../dockerfiles/actuator build
-	@ docker tag my-actuator hub.cstcloud.cn/scalebox/actuator
+	@ docker tag my-actuator scalebox.net/platform/actuator
 	@ docker rmi my-actuator
 
 get-pubkey:
-	@ cid=`docker create hub.cstcloud.cn/scalebox/actuator` \
+	@ cid=`docker create scalebox.net/platform/actuator` \
 	&& docker cp $$cid:/root/.ssh/id_rsa.pub ${PWD} \
 	&& docker rm -v $$cid
 

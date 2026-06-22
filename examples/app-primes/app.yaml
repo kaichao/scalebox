@@ -15,7 +15,6 @@ modules:
 
   mr-module:
     label: Main router
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       code_path: ${PWD}/mr-code
       slot_options: slot_on_head

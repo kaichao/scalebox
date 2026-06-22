@@ -1,5 +1,5 @@
-IMAGE_BASE:=hub.cstcloud.cn/scalebox/rsyncd
-IMAGE_AGENT:=hub.cstcloud.cn/scalebox/rsyncd-agent
+IMAGE_BASE:=scalebox.net/platform/rsyncd
+IMAGE_AGENT:=scalebox.net/platform/rsyncd-agent
 
 build:
 	docker build --network=host --target base -t $(IMAGE_BASE) .

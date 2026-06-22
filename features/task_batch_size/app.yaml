@@ -3,7 +3,6 @@ cluster: ${CLUSTER}
 
 modules:
   task-batch-size:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     arguments:
       slot_options: slot_on_head
     parameters:

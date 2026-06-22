@@ -30,8 +30,8 @@ ENV ACTION_RUN=/usr/local/bin/run.sh
 
 COPY rootfs/ /
 
-COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
-COPY --from=hub.cstcloud.cn/scalebox/list-dir /usr/local/bin/url_parser /app/bin/ 
+COPY --from=scalebox.net/platform/actuator /root/.ssh/id_rsa.pub /root/.ssh/authorized_keys
+COPY --from=scalebox.net/platform/list-dir /usr/local/bin/url_parser /app/bin/ 
 
 EXPOSE 2222 873
 
@@ -39,7 +39,7 @@ CMD run.sh
 
 FROM base
 
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
+COPY --from=scalebox.net/platform/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 

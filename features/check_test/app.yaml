@@ -3,7 +3,6 @@ cluster: ${CLUSTER}
 
 modules:
   check_test:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
     parameters:
       slot_on_head: yes
       start_task: ANY

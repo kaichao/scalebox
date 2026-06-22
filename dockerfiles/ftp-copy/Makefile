@@ -1,4 +1,4 @@
-IMAGE_NAME:=hub.cstcloud.cn/scalebox/ftp-copy
+IMAGE_NAME:=scalebox.net/platform/ftp-copy
 
 build:
 	docker build --network=host -t $(IMAGE_NAME) .

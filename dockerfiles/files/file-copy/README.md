@@ -59,23 +59,23 @@ SOURCE_URL/TARGET_URL
 echo 'postfix/master.cf' | \
 SOURCE_URL=root@10.0.6.101/etc \
 TARGET_URL=/tmp \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 echo 'postfix/master.cf' | \
 SOURCE_URL=root@10.0.6.101/etc \
 TARGET_URL=/tmp/etc \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 echo 'master.cf' | \
 SOURCE_URL=root@10.0.6.101/etc/postfix \
 TARGET_URL=/tmp \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 echo 'master.cf' | \
 SOURCE_MODE=SSH \
 SOURCE_URL=root@10.0.6.101/etc/postfix \
 TARGET_URL=/tmp \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 ```
 
 ```sh
@@ -83,25 +83,25 @@ echo 'master.cf' | \
 SOURCE_URL=root@10.0.6.101/tmp \
 TARGET_URL=/tmp \
 KEEP_SOURCE=no \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 echo 'postfix/master.cf' | \
 SOURCE_URL=root@10.0.6.101/tmp \
 TARGET_URL=/tmp \
 KEEP_SOURCE=no \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 ```
 
 ```sh
 echo '1115381072/1115381072_1115382688_combined.tar' | \
 SOURCE_URL=scalebox@10.255.128.1:10022/raid0/mwa \
 TARGET_URL=/tmp \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 echo '1115381072/1115381072_1115382688_combined.tar' | \
 SOURCE_URL=scalebox@10.255.128.1:10022/raid0/mwa \
 TARGET_URL=/tmp SOURCE_MODE=SSH \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 ```
 
 ### 4.2 local to ssh-server
@@ -109,13 +109,13 @@ scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
 echo 'postfix/master.cf' | \
 SOURCE_URL=/etc \
 TARGET_URL=root@10.0.6.101/tmp \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 echo 'postfix/master.cf' | \
 SOURCE_URL=/etc \
 TARGET_URL=root@10.0.6.101/tmp \
 TARGET_MODE=SSH \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 ```
 
@@ -124,7 +124,7 @@ scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
 echo 'postfix/master.cf' | \
 SOURCE_URL=root@10.0.6.102/etc \
 TARGET_URL=root@10.0.6.101/tmp/etc \
-scalebox run --image-name hub.cstcloud.cn/scalebox/file-copy:latest
+scalebox run --image-name scalebox.net/platform/file-copy:latest
 ```
 
 ## 五、输出文件

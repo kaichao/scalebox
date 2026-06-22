@@ -1,7 +1,7 @@
 services:
   controld:
     container_name: controld
-    image: hub.cstcloud.cn/scalebox/controld
+    image: scalebox.net/platform/controld
     restart: unless-stopped
     # hostname: host1
     logging:
@@ -36,7 +36,7 @@ services:
 
   actuator:
     container_name: actuator
-    image: hub.cstcloud.cn/scalebox/actuator
+    image: scalebox.net/platform/actuator
     restart: unless-stopped
     logging:
       driver: "json-file"
@@ -71,7 +71,7 @@ services:
 
   database:
     container_name: database
-    image: hub.cstcloud.cn/scalebox/database
+    image: scalebox.net/platform/database
     restart: unless-stopped
     # Set postgresql max connections at runtime
     # command: postgres -c 'max_connections=800'

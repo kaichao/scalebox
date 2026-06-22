@@ -243,7 +243,7 @@ scalebox app run --param-name=param-value start-item
 | ------------- | -------------- | -------------- | ------------------------------------------- |
 | app-name       | app名称       | _APP_NAME       | 
 | cluster       | cluster名      | _CLUSTER       | local                                       |
-| image-name    | 主模块镜像名     | _IMAGE_NAME    | hub.cstcloud.cn/scalebox/agent:latest       |
+| image-name    | 主模块镜像名     | _IMAGE_NAME    | scalebox.net/platform/agent:latest       |
 | code-path     | 主模块代码目录   | _CODE_PATH     | 若当前目录下有./code/，则为./code;否则为空       |
 | slot-regex    | 主模块的slot配置 | _SLOT_REGEX    | 缺省为：h0，在头节点上1个slot                  |
 | mr-image-name | 路由模块镜像名   | _MR_IMAGE_NAME | 若mr_code_path已设置，则设置为agent            |
@@ -285,11 +285,11 @@ export SOURCE_URL=/data2/mydata/mwa/tar
 export TARGET_URL=cstu0036@10.100.1.104:65010/work2/cstu0036/mydata/mwa/tar
 
 # 单文件传输
-scalebox app run --image-name=hub.cstcloud.cn/scalebox/file-copy:latest 1267459328/1267464090_1267464129_ch127.dat.tar.zst
+scalebox app run --image-name=scalebox.net/platform/file-copy:latest 1267459328/1267464090_1267464129_ch127.dat.tar.zst
 
 # 多文件传输
 cd /data2/mydata/mwa/tar
-find 1267459328 -type f | scalebox app run --image-name=hub.cstcloud.cn/scalebox/file-copy:latest --slot-regex=h0:2
+find 1267459328 -type f | scalebox app run --image-name=scalebox.net/platform/file-copy:latest --slot-regex=h0:2
 ```
 
 ### 1.6.3 app main-router

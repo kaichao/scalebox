@@ -3,7 +3,6 @@ cluster: local
 
 modules:
   side_car_test:
-    base_image: hub.cstcloud.cn/scalebox/agent
     arguments:
       code_path: ${PWD}/code
       slot_options: slot_on_head,reserved_on_exit

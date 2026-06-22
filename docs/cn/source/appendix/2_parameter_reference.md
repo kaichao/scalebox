@@ -108,6 +108,8 @@ task-header可自定义参数，其中 ```_```开头的参数表示标准传递�
 | grpc_server        | controld连接信息，${controld_ip}[:${port}]，缺省端口号50051 |
 | remote_pghost      | 供跨集群应用远端路由连接的postgres的连接信息                  |
 | remote_grpc_server | 供跨集群应用远端路由连接的controld连接信息                    |
+| remote_check_mode  | 'ip':精确IP比对，测试集群、同网段多集群；'subnet'：子网匹配，生产集群、跨网段部署。|
+| initial_status     | 'ON'/'OFF' |
 
 ### 2.2.2 host-parameters参数表
 
@@ -119,8 +121,8 @@ task-header可自定义参数，其中 ```_```开头的参数表示标准传递�
 | group_id        | 该节点所属节点组的编号            |
 | slurm_node      | 在slurm调度系统中对应的节点编号    |
 | reg_time        | 在scalebox中注册时间             |
-| slot_module_id     | 在slurm调度系统重，node-agent的slurm module id |
-| default_runtime | 缺省容器引擎,'docker'/'singularity' |
+| slot_module_id  | 在slurm调度系统中，node-agent的slurm module id |
+| default_runtime | 缺省容器引擎,'docker'/'singularity'/'podman' |
 | use_home_tmp    | 针对不允许/tmp下运行程序的节点(I/O节点)，以$HOME/tmp代替 /tmp作为远程启动slot的临时目录。|
 | ssh_cepher      | 'aes128-gcm@openssh.com' / 'aes256-gcm@openssh.com' / 'chacha20-poly1305@openssh.com' |
 

@@ -1,4 +1,4 @@
-FROM hub.cstcloud.cn/scalebox/actuator
+FROM scalebox.net/platform/actuator
 
 RUN \
     echo "auto keygen in actuator ..." ; \

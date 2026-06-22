@@ -7,7 +7,7 @@ FROM ${BASE_IMAGE}
 
 LABEL maintainer="kaichao"
 
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local /usr/local
+COPY --from=scalebox.net/platform/agent /usr/local /usr/local
 
 COPY --from=0 /src/ /app/bin/
 COPY run.sh /app/bin/

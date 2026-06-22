@@ -6,7 +6,7 @@ parameters:
 jobs:
 
   ftp-copy:
-    base_image: hub.cstcloud.cn/scalebox/ftp-copy
+    base_image: scalebox.net/platform/ftp-copy
     schedule_mode: HEAD
     variables:
     # 10 mins
@@ -22,4 +22,4 @@ jobs:
       - next-job
 
   next-job:
-    base_image: hub.cstcloud.cn/scalebox/agent
+    base_image: scalebox.net/platform/agent

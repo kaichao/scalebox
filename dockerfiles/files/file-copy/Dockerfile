@@ -25,7 +25,7 @@ RUN --mount=type=cache,target=/var/cache/apt  \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-COPY --from=hub.cstcloud.cn/scalebox/actuator /root/.ssh /root/.ssh
+COPY --from=scalebox.net/platform/actuator /root/.ssh /root/.ssh
 
 ENV \
     SOURCE_URL= \
@@ -48,7 +48,7 @@ ENV \
 
 COPY code/*.sh /app/share/bin/
 
-COPY --from=hub.cstcloud.cn/scalebox/agent /usr/local/ /usr/local/
+COPY --from=scalebox.net/platform/agent /usr/local/ /usr/local/
 RUN mkdir -p /work/.scalebox /app/bin && echo "PATH=/app/bin:\${PATH}" >> /root/.bashrc
 WORKDIR /work
 ENTRYPOINT [ "entrypoint.sh" ]

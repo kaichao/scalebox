@@ -33,7 +33,7 @@ fi
 ```bash
 #!/bin/bash
 
-IMAGE=hub.cstcloud.cn/scalebox/parser
+IMAGE=scalebox.net/platform/parser
 PGHOST=localhost
 PGPORT=5432
 

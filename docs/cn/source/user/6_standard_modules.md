@@ -17,7 +17,7 @@
 ```yaml
 modules:
   my-module:
-    base_image: hub.cstcloud.cn/scalebox/agent:latest
+    base_image: scalebox.net/platform/agent:latest
     arguments:
       code_path: ${PWD}/code
       task_max_seconds: 600
@@ -27,8 +27,8 @@ modules:
 
 ### 6.1.4 非agent模块的构建
 ```dockerfile
-FROM hub.cstcloud.cn/scalebox/agent:latest
-COPY --from=hub.cstcloud.cn/scalebox/agent:latest /usr/local/ /usr/local/
+FROM scalebox.net/platform/agent:latest
+COPY --from=scalebox.net/platform/agent:latest /usr/local/ /usr/local/
 COPY ./code /app/bin/
 ```
 
@@ -54,7 +54,7 @@ COPY ./code /app/bin/
 ```yaml
 modules:
   file-copy:
-    base_image: hub.cstcloud.cn/scalebox/file-copy
+    base_image: scalebox.net/platform/file-copy
     parameters:
       task_dist_mode: SLOT-BOUND
 ```
@@ -71,7 +71,7 @@ modules:
 ```yaml
 modules:
   dir-copy:
-    base_image: hub.cstcloud.cn/scalebox/dir-copy
+    base_image: scalebox.net/platform/dir-copy
     parameters:
       task_dist_mode: SLOT-BOUND
 ```
@@ -83,7 +83,7 @@ modules:
 ```yaml
 modules:
   rsync-copy:
-    base_image: hub.cstcloud.cn/scalebox/rsync-copy
+    base_image: scalebox.net/platform/rsync-copy
     parameters:
       task_dist_mode: SLOT-BOUND
 ```
@@ -100,7 +100,7 @@ modules:
 ```yaml
 modules:
   ftp-copy:
-    base_image: hub.cstcloud.cn/scalebox/ftp-copy
+    base_image: scalebox.net/platform/ftp-copy
     parameters:
       task_dist_mode: SLOT-BOUND
 ```
@@ -120,7 +120,7 @@ modules:
 ```yaml
 modules:
   cron:
-    base_image: hub.cstcloud.cn/scalebox/cron
+    base_image: scalebox.net/platform/cron
     arguments:
       cron_expression: "0 2 * * *"
       command: "/app/bin/backup.sh"
@@ -138,7 +138,7 @@ modules:
 ```yaml
 modules:
   cluster-head:
-    base_image: hub.cstcloud.cn/scalebox/cluster-head
+    base_image: scalebox.net/platform/cluster-head
     parameters:
       slot_options: slot_on_head
 ```
@@ -155,7 +155,7 @@ modules:
 ```yaml
 modules:
   node-agent:
-    base_image: hub.cstcloud.cn/scalebox/node-agent
+    base_image: scalebox.net/platform/node-agent
     parameters:
       cluster: ${CLUSTER}
 ```
@@ -172,7 +172,7 @@ modules:
 ```yaml
 modules:
   dir-list:
-    base_image: hub.cstcloud.cn/scalebox/dir-list
+    base_image: scalebox.net/platform/dir-list
     arguments:
       target_dir: /data/input
       pattern: "*.txt"
@@ -208,14 +208,14 @@ modules:
 modules:
   # 生成文件列表
   dir-list:
-    base_image: hub.cstcloud.cn/scalebox/dir-list
+    base_image: scalebox.net/platform/dir-list
     arguments:
       target_dir: /data/input
       pattern: "*.dat"
   
   # 数据传输
   file-copy:
-    base_image: hub.cstcloud.cn/scalebox/file-copy
+    base_image: scalebox.net/platform/file-copy
     parameters:
       task_dist_mode: SLOT-BOUND
   
@@ -227,7 +227,7 @@ modules:
   
   # 结果传输
   rsync-copy:
-    base_image: hub.cstcloud.cn/scalebox/rsync-copy
+    base_image: scalebox.net/platform/rsync-copy
     parameters:
       task_dist_mode: SLOT-BOUND
 ```
@@ -237,14 +237,14 @@ modules:
 modules:
   # 定时触发
   cron:
-    base_image: hub.cstcloud.cn/scalebox/cron
+    base_image: scalebox.net/platform/cron
     arguments:
       cron_expression: "0 2 * * *"
       command: "/app/bin/backup.sh"
   
   # 数据备份
   rsync-copy:
-    base_image: hub.cstcloud.cn/scalebox/rsync-copy
+    base_image: scalebox.net/platform/rsync-copy
     parameters:
       task_dist_mode: SLOT-BOUND
       compress: yes

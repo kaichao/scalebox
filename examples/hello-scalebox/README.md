@@ -27,7 +27,7 @@
 | cluster    | local                        | 应用所在集群名，缺省为'local'          |
 | slot-regex | h0                           | 计算节点的正则表达式，缺省为头节点'h0'   |
 | code-path  | /path/to/hello-scalebox/code | 脚本代码所在目录的绝对路径，缺省为当前路径下的./code |
-| image-name | /path/to/agent.sif           | 镜像名，针对singularity容器，为sif文件路径。缺省为'hub.cstcloud.cn/scalebox/agent:latest' |
+| image-name | /path/to/agent.sif           | 镜像名，针对singularity容器，为sif文件路径。缺省为'scalebox.net/platform/agent:latest' |
 
 ### 2.4 运行应用程序
 
@@ -42,7 +42,7 @@ echo "Docker-based_Scalebox" | scalebox run
 - 构建singularity镜像文件
 ```sh
 	sif_file=/shared/singularity/scalebox/agent.sif
-	docker save hub.cstcloud.cn/scalebox/agent:latest -o agent.tar
+	docker save scalebox.net/platform/agent:latest -o agent.tar
 	mkdir -p $(dirname $sif_file)
 	singularity build -F $sif_file docker-archive://agent.tar
 	rm -f agent.tar
