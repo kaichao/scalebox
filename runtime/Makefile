@@ -1,5 +1,9 @@
 clusters ?= local inline
 
+# compose_files := -f compose.yaml -f compose.security.yaml 
+compose_files := -f compose.yaml -f compose.security.yaml
+# 含 TLS: compose_files := -f compose.yaml -f compose.security.yaml -f compose.tls.yaml
+
 include defs.mk
 
 # Get Local IPv4 addr
@@ -27,13 +31,14 @@ endif
 
 default:
 	@ echo "LOCAL_ADDR is "$(LOCAL_ADDR)
+	@echo "Using compose_files: $(compose_files)"
 	# [[ $(LOCAL_ADDR) =~ ^([0-9]+\.){3}[0-9]+$ ]] && echo valid ip-addr
 
 all: reset import
 
 reset: down
 	@ docker volume rm -f runtime_pgdata
-	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose $(compose_files) up -d
 	@ sleep 25
 
 import:
@@ -43,10 +48,10 @@ import:
 	done
 
 up:
-	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose up -d
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose $(compose_files) up -d
 
 down: clean-agents
-	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose down
+	@ LOCAL_ADDR=$(LOCAL_ADDR) docker compose $(compose_files) down
 	# @ docker ps -a|grep -v CONTAINER|awk '{print $$1}'| while read line; do docker rm -f $$line;done
 
 restart: down up

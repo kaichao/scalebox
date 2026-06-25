@@ -1,11 +1,4 @@
 services:
-  security-init:
-    image: scalebox.net/platform/security:latest
-    restart: "no"
-    volumes:
-      - plugins-data:/opt/scalebox/plugins
-    command: cp /data/security.so /opt/scalebox/plugins/
-
   controld:
     container_name: controld
     image: scalebox.net/platform/controld:latest
@@ -17,8 +10,6 @@ services:
         max-size: "100m"
         max-file: "5"
     depends_on:
-      security-init:
-        condition: service_completed_successfully
       database:
         condition: service_healthy
     ports:
@@ -29,14 +20,6 @@ services:
       - PGPORT=${PGPORT}
       - LOG_LEVEL=WARN
       - TASK_POOL_BATCH_WRITE=yes
-      # for security
-      - SECURITY_ENABLED=false
-      - SECURITY_PLUGIN_DIR=/opt/scalebox/plugins
-      # noop / jwt
-      - AUTH_MODE=jwt
-      - JWT_PUBLIC_KEY_FILE=/etc/scalebox/jwt/public.pem
-      # noop / rbac
-      - AUTHZ_MODE=rbac
     user: root
     cap_add:
       - SYS_NICE
@@ -44,9 +27,6 @@ services:
       - /etc/localtime:/etc/localtime:ro
       - log:/controld:/tmp/scalebox/log/controld
       - profile:/controld-profile:/profile
-      # for security
-      - plugins-data:/opt/scalebox/plugins
-      - /etc/scalebox/jwt/public.pem:/etc/scalebox/jwt/public.pem:ro
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=localhost:50051"]
       interval: 10s
@@ -125,5 +105,3 @@ volumes:
   pgdata:
   profile:
   log:
-  plugins-data:
-

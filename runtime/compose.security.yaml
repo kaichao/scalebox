@@ -1,0 +1,29 @@
+# compose.security.yaml — 安全机制增量配置
+# 用法: docker compose -f compose.yaml -f compose.security.yaml up -d
+#       docker compose -f compose.yaml up -d                   (不含安全)
+
+services:
+  security-init:
+    container_name: security-init
+    image: scalebox.net/platform/security:latest
+    restart: "no"
+    volumes:
+      - plugins-data:/opt/scalebox/plugins
+    command: cp /data/security.so /opt/scalebox/plugins/
+
+  controld:
+    depends_on:
+      security-init:
+        condition: service_completed_successfully
+    environment:
+      - SECURITY_ENABLED=true
+#      - SECURITY_PLUGIN_DIR=/opt/scalebox/plugins
+      - AUTH_MODE=jwt
+      - AUTHZ_MODE=rbac
+#      - JWT_PUBLIC_KEY_FILE=/etc/scalebox/jwt/public.pem
+    volumes:
+      - plugins-data:/opt/scalebox/plugins
+      - /etc/scalebox/jwt/public.pem:/etc/scalebox/jwt/public.pem:ro
+
+volumes:
+  plugins-data:
