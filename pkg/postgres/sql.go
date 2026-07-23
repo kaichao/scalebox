@@ -24,29 +24,28 @@ func NewSQLNullString(s string) sql.NullString {
 }
 
 var (
-	db         *sql.DB
-	lastPGHost string
-	dbMutex    sync.RWMutex
+	db          *sql.DB
+	lastConnStr string
+	dbMutex     sync.Mutex
 )
 
-// GetDB ...
+// GetDB 返回 *sql.DB。
+// 当连接参数变化（DATABASE_URL/PGURL/PGHOST/PGPASS/PG_CERT_DIR 等）时自动重建连接。
 func GetDB() *sql.DB {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()
 
-	currentPGHost := os.Getenv("PGHOST")
+	connString := getConnString()
+
 	if db != nil {
-		if lastPGHost == currentPGHost {
-			// 如果连接已存在且PGHOST未变化，直接返回
+		if lastConnStr == connString {
 			return db
 		}
-		// PGHOST发生变化，需要创建新连接
+		logrus.Debugf("Connection config changed, closing old connection")
 		db.Close()
 		db = nil
-		logrus.Debugf("PGHOST changed from %s to %s, closing old connection", lastPGHost, currentPGHost)
 	}
 
-	connString := getConnString()
 	s := os.Getenv("PG_MAX_IDLE_CONNS")
 	maxIdles, _ := strconv.Atoi(s)
 	if maxIdles <= 0 {
@@ -57,26 +56,20 @@ func GetDB() *sql.DB {
 	if maxOpens <= 0 {
 		maxOpens = 4
 	}
-	// set database connection
+
 	var err error
 	db, err = sql.Open("pgx", connString)
 	if err != nil {
-		logrus.Errorf("Unable to connect to database:%v\n", err)
-		// 即使连接失败，也返回db对象（可能为nil或无效连接）
-		// 不更新lastPGHost，这样下次会重试
-	} else {
-		// 更新记录的PGHOST值
-		lastPGHost = currentPGHost
-		logrus.Debugf("Created new database connection with PGHOST=%s", currentPGHost)
+		logrus.Errorf("Unable to connect to database: %v", err)
+		return db
 	}
 
-	// 如果db不为nil，设置连接参数
-	if db != nil {
-		// 设置较短间隔，主要不用作连接池
-		db.SetConnMaxLifetime(1 * time.Second)
-		db.SetMaxIdleConns(maxIdles)
-		db.SetMaxOpenConns(maxOpens)
-		// db.Stats()
-	}
+	lastConnStr = connString
+
+	db.SetConnMaxLifetime(1 * time.Second)
+	db.SetMaxIdleConns(maxIdles)
+	db.SetMaxOpenConns(maxOpens)
+
+	logrus.Debugf("Database connection established")
 	return db
 }

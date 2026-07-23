@@ -4,25 +4,43 @@ import (
 	"context"
 	"os"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/sirupsen/logrus"
 )
 
-var pool *pgxpool.Pool
+var (
+	pool         *pgxpool.Pool
+	lastPoolStr  string
+	poolMutex    sync.Mutex
+)
 
-func initPool() {
-	// 数据库连接字符串
-	connString := getConnString() + "?sslmode=disable"
+// GetPgxPool 返回 *pgxpool.Pool。
+// 当连接参数变化时自动重建连接池。
+func GetPgxPool() *pgxpool.Pool {
+	poolMutex.Lock()
+	defer poolMutex.Unlock()
 
-	// 创建连接池配置
-	config, err := pgxpool.ParseConfig(connString)
-	if err != nil {
-		logrus.Fatalf("无法解析连接字符串: %v", err)
+	connString := getConnString()
+
+	if pool != nil {
+		if lastPoolStr == connString {
+			return pool
+		}
+		logrus.Debugf("Connection config changed, closing old pool")
+		pool.Close()
+		pool = nil
 	}
 
-	// 配置最大和最小连接数
+	config, err := pgxpool.ParseConfig(connString)
+	if err != nil {
+		logrus.Errorf("Failed to parse connection string: %v", err)
+		return nil
+	}
+
+	// 连接池大小
 	s := os.Getenv("PG_MAX_CONNS")
 	maxConns, err := strconv.Atoi(s)
 	if err != nil || maxConns <= 0 {
@@ -34,7 +52,7 @@ func initPool() {
 		minConns = 5
 	}
 
-	// 配置连接存活时间和空闲时间
+	// 连接生命周期
 	s = os.Getenv("PG_MAX_CONN_LIFETIME_MIN")
 	maxConnLifetime, err := strconv.Atoi(s)
 	if err != nil || maxConnLifetime <= 0 {
@@ -46,30 +64,24 @@ func initPool() {
 		maxConnIdleTime = 5
 	}
 
-	// 设置连接池参数
 	config.MaxConns = int32(maxConns)
 	config.MinConns = int32(minConns)
 	config.MaxConnLifetime = time.Duration(maxConnLifetime) * time.Minute
 	config.MaxConnIdleTime = time.Duration(maxConnIdleTime) * time.Minute
 	config.HealthCheckPeriod = 1 * time.Minute
 
-	// 创建连接池
 	ctx := context.Background()
 	pool, err = pgxpool.NewWithConfig(ctx, config)
 	if err != nil {
-		logrus.Errorf("无法创建连接池: %v", err)
-		logrus.Errorf("Unable to create connection pool:%v\n", err)
+		logrus.Errorf("Failed to create connection pool: %v", err)
+		return nil
 	}
 
 	if err := pool.Ping(ctx); err != nil {
-		logrus.Errorf("Unable to connect to database:%v\n", err)
+		logrus.Errorf("Unable to ping database: %v", err)
 	}
-}
 
-// GetPgxPool ...
-func GetPgxPool() *pgxpool.Pool {
-	if pool == nil {
-		initPool()
-	}
+	lastPoolStr = connString
+	logrus.Debugf("Connection pool created")
 	return pool
 }
