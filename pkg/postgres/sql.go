@@ -30,7 +30,7 @@ var (
 )
 
 // GetDB 返回 *sql.DB。
-// 当连接参数变化（DATABASE_URL/PGURL/PGHOST/PGPASS/PG_CERT_DIR 等）时自动重建连接。
+// 当连接参数变化（DATABASE_URL/PGURL/PGHOST/PGPASS/SCALEBOX_CERTS_DIR 等）时自动重建连接。
 func GetDB() *sql.DB {
 	dbMutex.Lock()
 	defer dbMutex.Unlock()

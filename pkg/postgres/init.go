@@ -14,7 +14,7 @@ import (
 //
 //	1. DATABASE_URL — 完整连接串（业界标准）
 //	2. PGURL         — 同上（存量兼容）
-//	3. 证书认证       — $PG_CERT_DIR/client.crt + client.key 存在时自动启用
+//	3. 证书认证       — $SCALEBOX_CERTS_DIR/client.crt + client.key 存在时自动启用
 //	4. 密码认证       — PGPASS 环境变量
 func getConnString() string {
 	// 1. DATABASE_URL
@@ -30,15 +30,14 @@ func getConnString() string {
 	}
 
 	// 解析连接参数
-	pgHost := resolveHost()
-	pgPort := resolvePort(pgHost)
+	pgHost, pgPort := resolveHostPort()
 	pgUser := resolveUser()
 	pgDB := resolveDB()
 
 	// 3. 证书认证
-	certDir := os.Getenv("PG_CERT_DIR")
+	certDir := os.Getenv("SCALEBOX_CERTS_DIR")
 	if certDir == "" {
-		certDir = "./certs"
+		certDir = "./secrets/shared"
 	}
 	certFile := filepath.Join(certDir, "client.crt")
 	keyFile := filepath.Join(certDir, "client.key")
@@ -71,37 +70,35 @@ func getConnString() string {
 
 // ── 辅助函数 ──────────────────────────────────────────────────
 
-func resolveHost() string {
+func resolveHostPort() (string, string) {
 	pgHost := os.Getenv("PGHOST")
+	pgPort := os.Getenv("PGPORT")
+
+	// PGHOST 可能包含端口：host:port
 	if pgHost != "" {
-		return pgHost
+		if ss := strings.SplitN(pgHost, ":", 2); len(ss) == 2 {
+			pgHost = ss[0]
+			if pgPort == "" {
+				pgPort = ss[1]
+			}
+		}
+	} else {
+		// agent 场景：用 gRPC server 地址推断
+		if grpcServer := os.Getenv("GRPC_SERVER"); grpcServer != "" {
+			pgHost = strings.Split(grpcServer, ":")[0]
+			logrus.Debugf("PGHOST fallback from GRPC_SERVER: %s", pgHost)
+		} else if localAddr := os.Getenv("LOCAL_ADDR"); localAddr != "" {
+			pgHost = localAddr
+		} else {
+			pgHost = common.GetLocalIP()
+			logrus.Debugf("PGHOST fallback to local IP: %s", pgHost)
+		}
 	}
 
-	// agent 场景：用 gRPC server 地址推断
-	if grpcServer := os.Getenv("GRPC_SERVER"); grpcServer != "" {
-		host := strings.Split(grpcServer, ":")[0]
-		logrus.Debugf("PGHOST fallback from GRPC_SERVER: %s", host)
-		return host
+	if pgPort == "" {
+		pgPort = "5432"
 	}
-
-	if localAddr := os.Getenv("LOCAL_ADDR"); localAddr != "" {
-		return localAddr
-	}
-
-	localIP := common.GetLocalIP()
-	logrus.Debugf("PGHOST fallback to local IP: %s", localIP)
-	return localIP
-}
-
-func resolvePort(pgHost string) string {
-	// 支持 PGHOST=host:port 格式
-	if ss := strings.Split(pgHost, ":"); len(ss) == 2 {
-		return ss[1]
-	}
-	if pgPort := os.Getenv("PGPORT"); pgPort != "" {
-		return pgPort
-	}
-	return "5432"
+	return pgHost, pgPort
 }
 
 func resolveUser() string {

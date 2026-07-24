@@ -9,7 +9,7 @@ go-scalebox 系列项目的统一数据库连接管理，支持密码和证书�
 | **密码** | 开发/测试 | `PGPASS` 环境变量 | `scram-sha-256` |
 | **证书** | 生产环境 | `client.crt` + `client.key` | `cert`（CN 匹配用户名） |
 
-模式由客户端自动检测：`$PG_CERT_DIR/client.crt` 存在则走证书，否则走密码。
+模式由客户端自动检测：`$SCALEBOX_CERTS_DIR/client.crt` 存在则走证书，否则走密码。
 
 ## 客户端环境变量
 
@@ -29,7 +29,7 @@ go-scalebox 系列项目的统一数据库连接管理，支持密码和证书�
 | 环境变量 | 默认值 | 说明 |
 |----------|--------|------|
 | `PGPASS` | — | 密码（密码模式） |
-| `PG_CERT_DIR` | `./certs` | 证书目录（证书模式） |
+| `SCALEBOX_CERTS_DIR` | `./secrets/shared` | 证书目录（证书模式） |
 
 ### 连接池
 
@@ -49,52 +49,55 @@ go-scalebox 系列项目的统一数据库连接管理，支持密码和证书�
 ```
 1. DATABASE_URL          完整控制权，有值直接返回
 2. PGURL                 存量兼容
-3. 证书文件存在           检测 $PG_CERT_DIR/client.crt + client.key
+3. 证书文件存在           检测 $SCALEBOX_CERTS_DIR/client.crt + client.key
    └─ sslmode=verify-full（CA 存在）/ require（CA 不存在）
 4. PGPASS                密码认证
 ```
 
 ## 证书体系
 
-同一内部 CA 签发所有服务间通信证书，由 `gen-certs.sh` 一次性生成：
+同一 CA 签发所有证书 + JWT 密钥对，由 `gen-secrets.sh` 一次性生成：
 
 ```
-./certs/
-├── ca.crt              CA 公钥（所有容器挂载）
-├── ca.key              CA 私钥（仅签发用，不部署）
+./secrets/
+├── ca.key              CA 私钥（仅签发，部署前移走保管）
+├── private.pem         JWT 签发私钥
 │
-├── db/                 PostgreSQL 服务端
+├── db/                 PostgreSQL SSL（database 容器）
 │   ├── server.crt        CN=scalebox-db
 │   └── server.key
 │
-├── controld/           controld gRPC 服务端（compose.tls.yaml 使用）
+├── controld/           gRPC TLS（controld 容器）
 │   ├── server.crt        CN=controld
 │   └── server.key
 │
-└── client/             所有数据库客户端共用（PG_CERT_DIR 指向此目录）
+└── shared/             所有客户端共用（SCALEBOX_CERTS_DIR 指向此目录）
     ├── ca.crt            验证服务端
     ├── client.crt        CN=scalebox
-    └── client.key
+    ├── client.key
+    └── public.pem        JWT 验签公钥
 ```
 
 ```bash
 cd build
-bash gen-certs.sh              # 生成所有证书到 ./certs/
+bash gen-secrets.sh            # 生成所有密钥到 ./secrets/
+make copy-secrets              # 拷贝 shared/ 到 agent 镜像 rootfs
+make agent                     # 构建 agent 镜像
 ```
 
 ### 各容器挂载
 
 | 容器 | 挂载 | 用途 |
 |------|------|------|
-| database | `./certs/ca.crt` + `./certs/db/` | PostgreSQL SSL |
-| controld | `./certs/controld/` + `./certs/client/` | gRPC TLS + DB 客户端 |
-| actuator | `./certs/client/` | DB 客户端 |
-| agent | `scp certs/client/ agent:/etc/scalebox/certs/` | DB 客户端 |
-| CLI | `export PG_CERT_DIR=./certs/client` | DB 客户端 |
+| database | `./secrets/shared/ca.crt` + `./secrets/db/` | PostgreSQL SSL |
+| controld | `./secrets/controld/` + `./secrets/shared/` | gRPC TLS + DB 客户端 + JWT |
+| actuator | `./secrets/shared/` | DB 客户端 |
+| agent | 镜像内置 `shared/`（`make copy-secrets`） | DB 客户端 + JWT |
+| CLI | `export SCALEBOX_CERTS_DIR=./secrets/shared` | DB 客户端 |
 
 ## 连接变化检测
 
-`GetDB()` 和 `GetPgxPool()` 每次调用时比较当前连接串与上次是否一致。任何环境变量变化（`DATABASE_URL`、`PGHOST`、`PGPASS`、`PG_CERT_DIR` 等）都会触发旧连接关闭、新连接重建。
+`GetDB()` 和 `GetPgxPool()` 每次调用时比较当前连接串与上次是否一致。任何环境变量变化（`DATABASE_URL`、`PGHOST`、`PGPASS`、`SCALEBOX_CERTS_DIR` 等）都会触发旧连接关闭、新连接重建。
 
 ## 数据库服务端
 
@@ -143,7 +146,7 @@ docker compose -f compose.yaml -f compose.tls.yaml -f compose.db-cert.yaml -f co
 ```bash
 # 证书模式（需先运行 gen-certs.sh）
 export PGHOST=localhost
-export PG_CERT_DIR=./build/certs/client
+export SCALEBOX_CERTS_DIR=./build/secrets/shared
 
 # 密码模式
 export PGHOST=localhost
