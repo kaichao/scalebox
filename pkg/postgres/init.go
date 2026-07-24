@@ -34,27 +34,26 @@ func getConnString() string {
 	pgUser := resolveUser()
 	pgDB := resolveDB()
 
-	// 3. 证书认证
+	// 3. 证书认证（仅当 SCALEBOX_CERTS_DIR 显式设置时启用）
 	certDir := os.Getenv("SCALEBOX_CERTS_DIR")
-	if certDir == "" {
-		certDir = "./secrets/shared"
-	}
-	certFile := filepath.Join(certDir, "client.crt")
-	keyFile := filepath.Join(certDir, "client.key")
-	caFile := filepath.Join(certDir, "ca.crt")
+	if certDir != "" {
+		certFile := filepath.Join(certDir, "client.crt")
+		keyFile := filepath.Join(certDir, "client.key")
+		caFile := filepath.Join(certDir, "ca.crt")
 
-	if fileExists(certFile) && fileExists(keyFile) {
-		sslMode := "verify-full"
-		if !fileExists(caFile) {
-			logrus.Warnf("CA cert not found at %s, falling back to sslmode=require", caFile)
-			sslMode = "require"
+		if fileExists(certFile) && fileExists(keyFile) {
+			sslMode := "verify-full"
+			if !fileExists(caFile) {
+				logrus.Warnf("CA cert not found at %s, falling back to sslmode=require", caFile)
+				sslMode = "require"
+			}
+			connString := fmt.Sprintf(
+				"postgres://%s@%s:%s/%s?sslmode=%s&sslcert=%s&sslkey=%s&sslrootcert=%s",
+				pgUser, pgHost, pgPort, pgDB, sslMode, certFile, keyFile, caFile,
+			)
+			logrus.Debugf("Cert auth: sslmode=%s cert=%s", sslMode, certFile)
+			return connString
 		}
-		connString := fmt.Sprintf(
-			"postgres://%s@%s:%s/%s?sslmode=%s&sslcert=%s&sslkey=%s&sslrootcert=%s",
-			pgUser, pgHost, pgPort, pgDB, sslMode, certFile, keyFile, caFile,
-		)
-		logrus.Debugf("Cert auth: sslmode=%s cert=%s", sslMode, certFile)
-		return connString
 	}
 
 	// 4. 密码认证
