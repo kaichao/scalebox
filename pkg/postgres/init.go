@@ -59,7 +59,7 @@ func getConnString() string {
 
 	// 4. 密码认证
 	pgPass := os.Getenv("PGPASS")
-	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+	connString := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=disable",
 		pgUser, pgPass, pgHost, pgPort, pgDB)
 	if pgPass == "" {
 		logrus.Warnf("PGPASS not set, connecting without password")
