@@ -77,16 +77,7 @@ app_id_1=$(CLUSTER=cluster1 scalebox run --app-file calc.yaml --main-app-id=$app
 app_id_2=$(CLUSTER=cluster2 scalebox run --app-file calc.yaml --main-app-id=$app_id_0| cut -d':' -f2 | tr -d '}' )
 ```
 
-### 3.3 设置应用为运行状态
-
-```sh
-scalebox app set-status --remote-cluster=cluster1 --app-id=$app_id_1 RUNNING
-scalebox app set-status --remote-cluster=cluster2 --app-id=$app_id_2 RUNNING
-
-scalebox app set-status --app-id=$app_id_0 RUNNING
-```
-
-### 3.4 给主应用分配初始任务
+### 3.3 给主应用分配初始任务
 
 计算[1..1000]范围内的质数数量，分为10个子区间做计算。
 
@@ -94,7 +85,7 @@ scalebox app set-status --app-id=$app_id_0 RUNNING
 echo '1000' | scalebox task add --app-id=$app_id_0
 ```
 
-### 3.5 检查计算结果
+### 3.4 检查计算结果
 
 ```sh
 scalebox semaphore get --app-id=$app_id_0 app-primes:sum_value

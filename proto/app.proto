@@ -1,0 +1,160 @@
+syntax = "proto3";
+
+package scalebox;
+
+option go_package="./;scalebox";
+option java_multiple_files = true;
+option java_package = "net.scalebox.gprc";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+message Pagination { int32 page = 1; int32 page_size = 2; }
+message PageInfo { int32 page = 1; int32 page_size = 2; int32 total = 3; }
+
+// ===== AppService =====
+
+service AppService {
+  rpc ListApps(ListAppsRequest) returns (ListAppsResponse);
+  rpc GetApp(GetAppRequest) returns (GetAppResponse);
+  rpc CreateApp(CreateAppRequest) returns (CreateAppResponse);
+  rpc DeleteApp(DeleteAppRequest) returns (google.protobuf.Empty);
+  rpc SetAppStatus(SetAppStatusRequest) returns (google.protobuf.Empty);
+  rpc SetAppFinished(SetAppFinishedRequest) returns (google.protobuf.Empty);
+  rpc AppAddSlots(AppAddSlotsRequest) returns (AppAddSlotsResponse);
+  rpc GetAppRouter(GetAppRouterRequest) returns (GetAppRouterResponse);
+  rpc GetAppDAG(GetAppDAGRequest) returns (GetAppDAGResponse);
+  rpc ListModules(ListModulesRequest) returns (ListModulesResponse);
+  rpc GetModule(GetModuleRequest) returns (GetModuleResponse);
+  rpc ListTasks(ListTasksRequest) returns (ListTasksResponse);
+  rpc GetTask(GetTaskRequest) returns (GetTaskResponse);
+  rpc GetTaskHeader(GetTaskHeaderRequest) returns (GetTaskHeaderResponse);
+  rpc SetTaskHeader(SetTaskHeaderRequest) returns (google.protobuf.Empty);
+  rpc RemoveTaskHeader(RemoveTaskHeaderRequest) returns (google.protobuf.Empty);
+  rpc RegisterRemoteAppLink(RegisterRemoteAppLinkRequest) returns (RegisterRemoteAppLinkResponse);
+  rpc GetVtaskVariable(GetVtaskVariableRequest) returns (GetVtaskVariableResponse);
+  rpc SetVtaskVariable(SetVtaskVariableRequest) returns (SetVtaskVariableResponse);
+  rpc GetVtaskSemaphore(GetVtaskSemaphoreRequest) returns (GetVtaskSemaphoreResponse);
+  rpc CreateVtaskSemaphore(CreateVtaskSemaphoreRequest) returns (CreateVtaskSemaphoreResponse);
+  rpc AddVtaskSemaphore(AddVtaskSemaphoreRequest) returns (AddVtaskSemaphoreResponse);
+  rpc DeleteVtaskSemaphore(DeleteVtaskSemaphoreRequest) returns (google.protobuf.Empty);
+  rpc ListVTasks(ListVTasksRequest) returns (ListVTasksResponse);
+  rpc ListVTaskSubtasks(ListVTaskSubtasksRequest) returns (ListVTasksResponse);
+}
+
+// ===== Task Messages =====
+
+message ListTasksRequest {
+  int32 app_id = 1; int32 module_id = 2; string status = 3; string from_module = 4;
+  google.protobuf.Timestamp from_time = 5; google.protobuf.Timestamp to_time = 6;
+  Pagination pagination = 10;
+}
+message ListTasksResponse {
+  message Item {
+    int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
+    string body = 5; string from_module = 6; string from_ip = 7;
+    google.protobuf.Timestamp created_at = 8; google.protobuf.Timestamp finished_at = 9; int32 exit_code = 10;
+  }
+  repeated Item items = 1; PageInfo page_info = 2;
+}
+message GetTaskRequest { int64 task_id = 1; }
+message GetTaskResponse {
+  int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
+  string body = 5; string headers = 6; string stdout = 7; string stderr = 8;
+  string from_module = 9; string from_ip = 10; int32 exit_code = 11;
+  int64 input_bytes = 12; int64 output_bytes = 13; string extras = 14;
+  google.protobuf.Timestamp created_at = 15; google.protobuf.Timestamp started_at = 16; google.protobuf.Timestamp finished_at = 17;
+}
+message GetTaskHeaderRequest { int64 task_id = 1; string name = 2; }
+message GetTaskHeaderResponse { string value = 1; }
+message SetTaskHeaderRequest { int64 task_id = 1; string name = 2; string value = 3; }
+message RemoveTaskHeaderRequest { int64 task_id = 1; string name = 2; }
+// ===== App Messages =====
+
+message ListAppsRequest { int32 cluster_id = 1; string status = 2; int32 user_id = 3; Pagination pagination = 10; }
+message ListAppsResponse {
+  message Item { int32 id = 1; string name = 2; int32 cluster_id = 3; string cluster_name = 4; string status = 5; int32 module_count = 6; int32 user_id = 7; google.protobuf.Timestamp created_at = 8; string ext = 9; }
+  repeated Item items = 1; PageInfo page_info = 2;
+}
+message GetAppRequest { int32 app_id = 1; }
+message GetAppResponse { int32 id = 1; string name = 2; int32 cluster_id = 3; string cluster_name = 8; string status = 4; int32 user_id = 5; string parameters = 6; google.protobuf.Timestamp created_at = 7; }
+message CreateAppRequest {
+  string yaml_content = 1;
+  map<string, string> env_vars = 2;
+  int32 main_app_id = 3;
+  string main_grpc_server = 4;
+}
+message CreateAppResponse { int32 app_id = 1; string name = 2; }
+message DeleteAppRequest { int32 app_id = 1; }
+message SetAppStatusRequest { int32 app_id = 1; string status = 2; }
+message SetAppFinishedRequest { int32 app_id = 1; string result = 2; }
+message AppAddSlotsRequest { int32 app_id = 1; int32 module_id = 2; int32 count = 3; string host_regex = 4; }
+message AppAddSlotsResponse { int32 added = 1; }
+message GetAppRouterRequest { int32 app_id = 1; }
+message GetAppRouterResponse { int32 module_id = 1; string module_name = 2; }
+message GetAppDAGRequest { int32 app_id = 1; }
+message GetAppDAGResponse {
+  message ModuleNode { string name = 1; int32 slot_count = 2; string slot_regex = 3; string status = 4; string image = 5; }
+  message Edge { string from = 1; string to = 2; }
+  repeated ModuleNode nodes = 1; repeated Edge edges = 2;
+}
+
+// ===== Module Messages =====
+
+message ListModulesRequest { int32 app_id = 1; }
+message ListModulesResponse {
+  message Item { int32 id = 1; int32 app_id = 2; string name = 3; string image = 4; string slot_regex = 5; string status = 6; int32 slot_count = 7; bool is_main_router = 8; string cluster = 9; }
+  repeated Item items = 1;
+}
+message GetModuleRequest { int32 app_id = 1; string module_name = 2; }
+message GetModuleResponse { int32 id = 1; string name = 2; string image = 3; string slot_regex = 4; string status = 5; int32 slot_count = 6; bool is_main_router = 7; map<string, string> parameters = 8; }
+
+// ===== Cross-Cluster Messages =====
+
+message RegisterRemoteAppLinkRequest {
+  int32 main_app_id = 1;
+  int32 new_app_id = 2;
+  string new_cluster = 3;
+  string yaml_text = 4;
+}
+message RegisterRemoteAppLinkResponse {
+  repeated RemoteLinkEntry local_remote_links = 1;
+  repeated ModuleVLinkEntry local_vlinks = 2;
+}
+message RemoteLinkEntry {
+  int32 app_id = 1;
+  string remote_cluster = 2;
+  int32 remote_app_id = 3;
+}
+message ModuleVLinkEntry {
+  string remote_cluster = 1;
+  int32 remote_mod_id = 2;
+  string remote_mod_name = 3;
+  int32 mod_id = 4;
+  string mod_name = 5;
+}
+
+// ===== Vtask Messages =====
+
+message GetVtaskVariableRequest { int32 app_id = 1; int64 vtask_id = 2; string name = 3; }
+message GetVtaskVariableResponse { string name = 1; string value = 2; }
+message SetVtaskVariableRequest { int32 app_id = 1; int64 vtask_id = 2; string name = 3; string value = 4; }
+message SetVtaskVariableResponse { string name = 1; string value = 2; }
+message GetVtaskSemaphoreRequest { int32 app_id = 1; int64 vtask_id = 2; string name = 3; }
+message GetVtaskSemaphoreResponse { string name = 1; int32 value = 2; }
+message CreateVtaskSemaphoreRequest { int32 app_id = 1; int64 vtask_id = 2; string name = 3; int32 value = 4; }
+message CreateVtaskSemaphoreResponse { string name = 1; int32 value = 2; }
+message AddVtaskSemaphoreRequest { int32 app_id = 1; int64 vtask_id = 2; string name = 3; int32 delta = 4; }
+message AddVtaskSemaphoreResponse { string name = 1; int32 value = 2; }
+message DeleteVtaskSemaphoreRequest { int32 app_id = 1; int64 vtask_id = 2; string name = 3; }
+
+message ListVTasksRequest { int32 app_id = 1; }
+message ListVTasksResponse {
+  message Item {
+    int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
+    string body = 5; google.protobuf.Timestamp created_at = 6;
+  }
+  repeated Item items = 1;
+}
+
+message ListVTaskSubtasksRequest { int64 vtask_id = 1; }

@@ -18,6 +18,7 @@ services:
     environment:
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
+      - PGPASS=${PGPASS:-${POSTGRES_PASSWORD}}
       - LOG_LEVEL=WARN
       - TASK_POOL_BATCH_WRITE=yes
     user: root
@@ -25,8 +26,6 @@ services:
       - SYS_NICE
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - log:/controld:/tmp/scalebox/log/controld
-      - profile:/controld-profile:/profile
     healthcheck:
       test: ["CMD", "grpc_health_probe", "-addr=localhost:50051"]
       interval: 10s
@@ -47,6 +46,7 @@ services:
       - GRPC_SERVER=controld:50051
       - PGHOST=${PGHOST}
       - PGPORT=${PGPORT}
+      - PGPASS=${PGPASS:-${POSTGRES_PASSWORD}}
       - LOG_LEVEL=WARN
       # - LOCAL_ADDR=${LOCAL_ADDR}
       - SLOT_POLL_INTERVAL_SECONDS=5
@@ -63,8 +63,6 @@ services:
       - SYS_NICE
     volumes:
       - /etc/localtime:/etc/localtime:ro
-      - log:/actuator:/tmp/scalebox/log/actuator
-      - profile:/actuator-profile:/profile
     depends_on:
       controld:
         condition: service_healthy
@@ -78,6 +76,7 @@ services:
     environment:
 #      - TZ='GMT-8'
 #      - PGTZ='GMT-8'
+      - AUTH_MODE=password
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
@@ -94,6 +93,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
   redis-server:
     container_name: redis-server
     image: redis:7
@@ -103,5 +103,3 @@ services:
 
 volumes:
   pgdata:
-  profile:
-  log:

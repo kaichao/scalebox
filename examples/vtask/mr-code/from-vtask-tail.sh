@@ -9,7 +9,8 @@ if [ "$TASK_DIST_MODE" = "SLOT-BOUND" ] || [ "$TASK_DIST_MODE" = "HOST-BOUND" ];
     echo  "semaphore increment ${sema}"
     scalebox semaphore increment "${sema}"
     # 当前未正确返回错误码
-    # code=$?
+    code=$?
+    echo "exit-code of sema-increment is $code"
     # exit $code
 fi
 

@@ -2,7 +2,6 @@ name: remote-primes
 cluster: cluster0
 parameters:
   main_router: main
-  initial_status: INITIAL
 
 modules:
   main:

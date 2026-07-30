@@ -1,10 +1,10 @@
 # vtask
 
-vtask作为节点本地计算编程模型的基本单元，通过参数设计，简化本地计算在应用程序中的流控、容错等的实现；
+vtask是同一应用中跨模块的task集合，还包含信号量、共享变量的集合等，vtask是节点本地计算编程模型的基本单元，通过参数设计，简化本地计算在应用程序中的准入控制、容错等的实现；
 
 主要功能：
 - 任务管理：跨模块的任务（task）组成vtask，简化任务管理、状态管理
-- 计数流控：以配合HPC计算资源的动态调度，实现超长任务计算；
+- 计数准入控制：以配合HPC计算资源的动态调度，实现超长任务计算；
 - 粗粒度容错；实现细粒度检查点功能；
 
 示例中包括以下模块：
@@ -35,16 +35,16 @@ task_dist_mode设置
 ### 1.1 Create app
 
 ```sh
-cd /shared/scalebox/examples/vtask
+cd scalebox/examples/vtask
 
 cat default-tasks.txt | scalebox run
 ```
 
-### 1.2 increment semaphore
+### 1.2 semaphore ls
 
 - 以当前最新app-id
 ```sh
-scalebox semaphore increment vtask_size:vtask-head
+scalebox semaphore ls vtask_size
 ```
 
 ## 2. host-bound
@@ -52,21 +52,16 @@ scalebox semaphore increment vtask_size:vtask-head
 ### 2.1 Create app
 
 ```sh
-cd /shared/scalebox/examples/vtask
+cd scalebox/examples/vtask
 
-export CLUSTER=inline
-export TASK_DIST_MODE=HOST-BOUND
-export HEAD_SLOTS=n0-[01]
-export CORE_MODE=HOST-BOUND
-export CORE_SLOTS=n0-[01]
-app_id=$( cat host-tasks.txt | scalebox run | cut -d':' -f2 | tr -d '}' )
+app_id=$( cat host-tasks.txt | scalebox run -e host-bound.env| cut -d':' -f2 | tr -d '}' )
 ```
 
-### 2.2 increment semaphore
+### 2.2 semaphore ls
 
 ```sh
-scalebox semaphore increment --app-id=${app_id} host_vtask_size:wait-queue
-
+scalebox semaphore ls host_vtask_size:vtask-head
+scalebox semaphore ls vtask_size
 ```
 
 ## 3. slot-bound
@@ -76,14 +71,9 @@ group-bound
 ### 3.1 Create app
 
 ```sh
-cd /shared/scalebox/examples/vtask
+cd scalebox/examples/vtask
 
-export CLUSTER=inline
-export TASK_DIST_MODE=SLOT-BOUND
-export HEAD_SLOTS=h0:2
-export CORE_MODE=HOST-BOUND
-export CORE_SLOTS=n[01]-[01]
-app_id=$( cat slot-tasks.txt | scalebox run | cut -d':' -f2 | tr -d '}' )
+app_id=$( cat slot-tasks.txt | scalebox run -e slot-bound.env| cut -d':' -f2 | tr -d '}' )
 
 ```
 ### 3.2 add tasks
@@ -97,7 +87,7 @@ done
 
 ```
 
-### 3.3 increment semaphore
+### 3.3 semaphore ls
 
 ```sh
 scalebox semaphore increment --app-id=${app_id} host_vtask_size:wait-queue

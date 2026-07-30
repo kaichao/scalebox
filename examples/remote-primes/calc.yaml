@@ -2,7 +2,6 @@ name: primes-calc
 cluster: ${CLUSTER}
 parameters:
   main_router: router
-  initial_status: INITIAL
 
 modules:
   calc:

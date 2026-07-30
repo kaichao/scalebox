@@ -8,3 +8,5 @@ docs/en/build
 docs/cn/build
 
 /tmp
+
+pkg/pb

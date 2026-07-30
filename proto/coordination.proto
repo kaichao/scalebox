@@ -1,0 +1,81 @@
+syntax = "proto3";
+
+package scalebox;
+
+option go_package="./;scalebox";
+option java_multiple_files = true;
+option java_package = "net.scalebox.gprc";
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+// ===== CoordinationService =====
+// 分布式协调原语：Semaphore / Variable / Global
+// Semagroup 也将归入此 Service（后续迁移）
+
+service CoordinationService {
+  rpc GetSemaphore(GetSemaphoreRequest) returns (GetSemaphoreResponse);
+  rpc ListSemaphores(ListSemaphoresRequest) returns (ListSemaphoresResponse);
+  rpc CreateSemaphore(CreateSemaphoreRequest) returns (CreateSemaphoreResponse);
+  rpc UpdateSemaphore(UpdateSemaphoreRequest) returns (UpdateSemaphoreResponse);
+  rpc DeleteSemaphore(DeleteSemaphoreRequest) returns (google.protobuf.Empty);
+  rpc GetVariable(GetVariableRequest) returns (GetVariableResponse);
+  rpc ListVariables(ListVariablesRequest) returns (ListVariablesResponse);
+  rpc SetVariable(SetVariableRequest) returns (SetVariableResponse);
+  rpc DeleteVariable(DeleteVariableRequest) returns (google.protobuf.Empty);
+  rpc GetGlobal(GetGlobalRequest) returns (GetGlobalResponse);
+  rpc ListGlobals(google.protobuf.Empty) returns (ListGlobalsResponse);
+  rpc SetGlobal(SetGlobalRequest) returns (google.protobuf.Empty);
+  rpc DeleteGlobal(DeleteGlobalRequest) returns (google.protobuf.Empty);
+
+  // Semagroup
+  rpc GetSemagroupMin(SemagroupRequest) returns (SemagroupKeyValueResponse);
+  rpc GetSemagroupMax(SemagroupRequest) returns (SemagroupKeyValueResponse);
+  rpc DiffSemagroupMin(SemagroupRequest) returns (SemagroupDiffResponse);
+  rpc DiffSemagroupMax(SemagroupRequest) returns (SemagroupDiffResponse);
+  rpc IncrementSemagroup(SemagroupRequest) returns (SemagroupKeyValueResponse);
+  rpc DecrementSemagroup(SemagroupRequest) returns (SemagroupKeyValueResponse);
+}
+
+// ===== Semaphore Messages =====
+
+message GetSemaphoreRequest { int32 app_id = 1; string name = 2; }
+message GetSemaphoreResponse { string name = 1; int32 value = 2; int32 value0 = 3; }
+message ListSemaphoresRequest { int32 app_id = 1; string prefix = 2; bool leaf_only = 3; }
+message ListSemaphoresResponse {
+  message Node { string name = 1; int32 value = 2; int32 value0 = 3; string path = 4; bool is_leaf = 5; int32 child_count = 6; int64 vtask = 7; google.protobuf.Timestamp t = 8; }
+  repeated Node nodes = 1;
+}
+message CreateSemaphoreRequest { int32 app_id = 1; string name = 2; int32 value = 3; string conflict_action = 4; }
+message CreateSemaphoreResponse { string name = 1; int32 value = 2; }
+message UpdateSemaphoreRequest { int32 app_id = 1; string name = 2; int32 delta = 3; }
+message UpdateSemaphoreResponse { string name = 1; int32 value = 2; }
+message DeleteSemaphoreRequest { int32 app_id = 1; string name = 2; }
+
+// ===== Variable Messages =====
+
+message GetVariableRequest { int32 app_id = 1; string name = 2; }
+message GetVariableResponse { string name = 1; string value = 2; }
+message ListVariablesRequest { int32 app_id = 1; string prefix = 2; bool leaf_only = 3; }
+message ListVariablesResponse {
+  message Node { string name = 1; string value = 2; string path = 3; bool is_leaf = 4; int32 child_count = 5; int64 vtask = 6; google.protobuf.Timestamp t = 7; }
+  repeated Node nodes = 1;
+}
+message SetVariableRequest { int32 app_id = 1; string name = 2; string value = 3; }
+message SetVariableResponse { string name = 1; string value = 2; }
+message DeleteVariableRequest { int32 app_id = 1; string name = 2; }
+
+// ===== Global Messages =====
+
+message GetGlobalRequest { string name = 1; }
+message GetGlobalResponse { string name = 1; string value = 2; }
+message KeyValue { string key = 1; string value = 2; google.protobuf.Timestamp t = 3; }
+message ListGlobalsResponse { repeated KeyValue globals = 1; }
+message SetGlobalRequest { string name = 1; string value = 2; }
+message DeleteGlobalRequest { string name = 1; }
+
+// ===== Semagroup Messages =====
+
+message SemagroupRequest { int32 app_id = 1; string sema_expr = 2; }
+message SemagroupKeyValueResponse { string name = 1; int32 value = 2; }
+message SemagroupDiffResponse { int32 value = 1; }

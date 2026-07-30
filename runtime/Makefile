@@ -1,7 +1,7 @@
 clusters ?= local inline
 
 # compose_files := -f compose.yaml -f compose.security.yaml 
-compose_files := -f compose.yaml -f compose.security.yaml
+compose_files := -f compose.yaml
 # 含 TLS: compose_files := -f compose.yaml -f compose.security.yaml -f compose.tls.yaml
 
 include defs.mk
