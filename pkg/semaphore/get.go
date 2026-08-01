@@ -1,75 +1,75 @@
 package semaphore
 
 import (
-	"database/sql"
-	"os"
+	"encoding/json"
 	"regexp"
 
 	"github.com/kaichao/gopkg/errors"
+	"github.com/kaichao/scalebox/pkg/client"
 	"github.com/kaichao/scalebox/pkg/common"
-	"github.com/kaichao/scalebox/pkg/postgres"
+	pb "github.com/kaichao/scalebox/pkg/pb"
 	"github.com/sirupsen/logrus"
 )
 
-// GetJSON ...
-//
-//	按regex获取semaphore列表name/value的json格式
-func GetJSON(name string, appID int) (v string, err error) {
-	sqlText := `
-		WITH selected_rows AS (
-			SELECT name,value
-			FROM t_semaphore
-			WHERE app=$2 AND (name ~ $1) AND vtask IS NULL
-			ORDER BY 1
-		)
-		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-		FROM selected_rows
-	`
-
-	if !common.IsRegexString(name[0:1]) {
-		// 首字母不是regex元字符，自动添加^
-		name = "^" + name
-	}
-
-	err = postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
+// GetValue returns the current value of a semaphore.
+func GetValue(name string, appID int) (int, error) {
+	c, err := client.Default()
 	if err != nil {
-		v = "{}"
-	} else {
-		// 删除结果的空字符
-		v = regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
+		return -1, errors.WrapE(err, "get client", "app-id", appID, "sema-name", name)
 	}
-	logrus.Tracef("In semaphore.GetValue(),name=%s,app-id:%d,json-value:%s,err:%v\n",
-		name, appID, v, err)
-	return v, errors.WrapE(err, "get-semaphore",
-		"app-id", appID, "sema-name", name)
+
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	resp, err := c.Coordination.GetSemaphore(reqCtx, &pb.GetSemaphoreRequest{
+		AppId: int32(appID),
+		Name:  name,
+	})
+	if err != nil {
+		return -1, errors.WrapE(err, "get semaphore", "app-id", appID, "sema-name", name)
+	}
+	logrus.Tracef("In semaphore.GetValue(),name=%s,app-id:%d,value:%d\n",
+		name, appID, resp.Value)
+	return int(resp.Value), nil
 }
 
-// GetValue ...
-func GetValue(name string, appID int) (value int, err error) {
-	sqlText := `
-		SELECT value
-		FROM t_semaphore
-		WHERE app=$2 AND name=$1 AND vtask IS NULL
-	`
-	err = postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&value)
-	logrus.Tracef("In semaphore.GetValue(),name=%s,app-id:%d,value:%d,err:%v\n",
-		name, appID, value, err)
-	if err == nil {
-		return value, nil
+// GetJSON returns semaphore values matching a regex as a JSON object string.
+func GetJSON(name string, appID int) (string, error) {
+	c, err := client.Default()
+	if err != nil {
+		return "{}", errors.WrapE(err, "get client", "app-id", appID, "sema-name", name)
 	}
-	if err != sql.ErrNoRows {
-		return -1, errors.WrapE(err, "get semaphore",
+
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	resp, err := c.Coordination.ListSemaphores(reqCtx, &pb.ListSemaphoresRequest{
+		AppId:    int32(appID),
+		LeafOnly: true,
+	})
+	if err != nil {
+		return "{}", errors.WrapE(err, "list semaphores for get-json",
 			"app-id", appID, "sema-name", name)
 	}
-	// not-defined semaphore
-	if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
-		// create semaphore first time
-		if err := Create(name, 0, appID); err != nil {
-			return -1, errors.WrapE(err, "create semaphore",
-				"app-id", appID, "sema-name", name)
-		}
-		return 0, nil
+
+	if !common.IsRegexString(name[0:1]) {
+		name = "^" + name
 	}
-	return -1, errors.WrapE(err, "semaphore not found",
-		"app-id", appID, "sema-name", name)
+	re, reErr := regexp.Compile(name)
+	if reErr != nil {
+		return "{}", errors.WrapE(reErr, "compile regex", "pattern", name)
+	}
+
+	result := make(map[string]int32)
+	for _, n := range resp.Nodes {
+		if re.MatchString(n.Name) {
+			result[n.Name] = n.Value
+		}
+	}
+
+	packed, _ := json.Marshal(result)
+	v := string(packed)
+	logrus.Tracef("In semaphore.GetJSON(),name=%s,app-id:%d,json-value:%s\n",
+		name, appID, v)
+	return v, nil
 }

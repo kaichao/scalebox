@@ -1,42 +1,54 @@
 package global
 
 import (
-	"database/sql"
+	"context"
+	"time"
 
 	"github.com/kaichao/gopkg/errors"
-	"github.com/kaichao/scalebox/pkg/postgres"
+	"github.com/kaichao/scalebox/pkg/client"
+	pb "github.com/kaichao/scalebox/pkg/pb"
 	"github.com/sirupsen/logrus"
 )
 
-// Set ...
+func ctx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Second)
+}
+
+// Set creates or updates a global variable.
 func Set(name string, value string) error {
-	sqlText := `
-		INSERT INTO t_global (name, value)
-		VALUES ($1, $2)
-		ON CONFLICT (name)
-		DO UPDATE SET value = EXCLUDED.value;
-	`
-	_, err := postgres.GetDB().Exec(sqlText, name, value)
-	logrus.Tracef("In global.Set(),global-name:%s,global-value:%s,err:%v\n",
-		name, value, err)
+	c, err := client.Default()
+	if err != nil {
+		return errors.WrapE(err, "get client", "name", name, "value", value)
+	}
+
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	_, err = c.Coordination.SetGlobal(reqCtx, &pb.SetGlobalRequest{
+		Name:  name,
+		Value: value,
+	})
 	if err != nil {
 		return errors.WrapE(err, "global-set", "name", name, "value", value)
 	}
+	logrus.Tracef("In global.Set(),global-name:%s,global-value:%s\n", name, value)
 	return nil
 }
 
-// Get ...
+// Get returns the value of a global variable.
 func Get(name string) (string, error) {
-	sqlText := `SELECT value FROM t_global WHERE name=$1`
-	var value string
-	err := postgres.GetDB().QueryRow(sqlText, name).Scan(&value)
-	logrus.Tracef("In global.Get(),global-name:%s,global-value:%s,err:%v\n",
-		name, value, err)
-	if err == nil {
-		return value, nil
+	c, err := client.Default()
+	if err != nil {
+		return "", errors.WrapE(err, "get client", "name", name)
 	}
-	if err == sql.ErrNoRows {
-		return "", errors.WrapE(err, "global not found", "name", name)
+
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	resp, err := c.Coordination.GetGlobal(reqCtx, &pb.GetGlobalRequest{Name: name})
+	if err != nil {
+		return "", errors.WrapE(err, "global get", "name", name)
 	}
-	return "", errors.WrapE(err, "global get", "name", name)
+	logrus.Tracef("In global.Get(),global-name:%s,global-value:%s\n", name, resp.Value)
+	return resp.Value, nil
 }

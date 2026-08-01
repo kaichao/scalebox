@@ -2,6 +2,6 @@
 
 echo "task-body:$1"
 
-scalebox app set-finished "Hello $1, it is OK!"
+scalebox app set-status 'FINISHED' "Hello $1, it is OK!"
 
 exit $?

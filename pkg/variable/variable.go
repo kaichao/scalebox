@@ -1,67 +1,101 @@
 package variable
 
 import (
-	// "errors"
-
+	"context"
+	"encoding/json"
 	"regexp"
+	"time"
 
 	"github.com/kaichao/gopkg/errors"
-	"github.com/kaichao/scalebox/pkg/postgres"
+	"github.com/kaichao/scalebox/pkg/client"
+	"github.com/kaichao/scalebox/pkg/common"
+	pb "github.com/kaichao/scalebox/pkg/pb"
 	"github.com/sirupsen/logrus"
 )
 
-// GetValue ...
+func ctx() (context.Context, context.CancelFunc) {
+	return context.WithTimeout(context.Background(), 10*time.Second)
+}
+
+// GetValue returns the value of an app-level variable.
 func GetValue(name string, appID int) (string, error) {
-	sqlText := `
-		SELECT value
-		FROM t_variable
-		WHERE app=$2 AND (name = $1) AND vtask IS NULL
-	`
-	var v string
-	err := postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
-	return v, errors.WrapE(err, "get variable",
-		"app-id", appID, "var-name", name)
+	c, err := client.Default()
+	if err != nil {
+		return "", errors.WrapE(err, "get client", "app-id", appID, "var-name", name)
+	}
+
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	resp, err := c.Coordination.GetVariable(reqCtx, &pb.GetVariableRequest{
+		AppId: int32(appID),
+		Name:  name,
+	})
+	if err != nil {
+		return "", errors.WrapE(err, "get variable",
+			"app-id", appID, "var-name", name)
+	}
+	return resp.Value, nil
 }
 
-// GetJSON ...
+// GetJSON returns variable values matching a regex as a JSON object string.
 func GetJSON(name string, appID int) (string, error) {
-	sqlText := `
-		WITH selected_rows AS (
-			SELECT name,value
-			FROM t_variable
-			WHERE app=$2 AND (name ~ $1) AND vtask IS NULL
-			ORDER BY 1
-		)
-		SELECT COALESCE(JSON_OBJECT_AGG(name, value), '{}') AS aggregated_values
-		FROM selected_rows
-	`
-	var v string
-	err := postgres.GetDB().QueryRow(sqlText, name, appID).Scan(&v)
-	packed := regexp.MustCompile(`\s+`).ReplaceAllString(v, "")
-	return packed, errors.WrapE(err, "get variable-json",
-		"app-id", appID, "var-name", name)
+	c, err := client.Default()
+	if err != nil {
+		return "{}", errors.WrapE(err, "get client", "app-id", appID, "var-name", name)
+	}
+
+	if !common.IsRegexString(name[0:1]) {
+		name = "^" + name
+	}
+	re, reErr := regexp.Compile(name)
+	if reErr != nil {
+		return "{}", errors.WrapE(reErr, "compile regex", "pattern", name)
+	}
+
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	resp, err := c.Coordination.ListVariables(reqCtx, &pb.ListVariablesRequest{
+		AppId:    int32(appID),
+		LeafOnly: true,
+	})
+	if err != nil {
+		return "{}", errors.WrapE(err, "list variables for get-json",
+			"app-id", appID, "var-name", name)
+	}
+
+	result := make(map[string]string)
+	for _, n := range resp.Nodes {
+		if re.MatchString(n.Name) {
+			result[n.Name] = n.Value
+		}
+	}
+
+	packed, _ := json.Marshal(result)
+	return regexp.MustCompile(`\s+`).ReplaceAllString(string(packed), ""), nil
 }
 
-// Set ...
+// Set creates or updates an app-level variable.
 func Set(name string, value string, appID int) error {
-	sqlText := `
-		INSERT INTO t_variable(name,value,app)
-		VALUES($1,$2,$3)
-		ON CONFLICT (name,app)
-		DO UPDATE SET value = EXCLUDED.value;
-	`
+	c, err := client.Default()
+	if err != nil {
+		return errors.WrapE(err, "get client", "app-id", appID, "var-name", name)
+	}
 
-	result, err := postgres.GetDB().Exec(sqlText, name, value, appID)
+	reqCtx, cancel := ctx()
+	defer cancel()
+
+	_, err = c.Coordination.SetVariable(reqCtx, &pb.SetVariableRequest{
+		AppId: int32(appID),
+		Name:  name,
+		Value: value,
+	})
 	if err != nil {
 		return errors.WrapE(err, "set-variable",
 			"app-id", appID, "var-name", name, "var-value", value)
 	}
-	logrus.Tracef("In variable.Set(),name=%s,value=%s,app-id:%d,err:%v\n",
-		name, value, appID, err)
-
-	if n, _ := result.RowsAffected(); n == 0 {
-		return errors.E("variable not defined", "app-id", appID, "var-name", name)
-	}
-
+	logrus.Tracef("In variable.Set(),name=%s,value=%s,app-id:%d\n",
+		name, value, appID)
 	return nil
 }
