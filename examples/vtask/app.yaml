@@ -6,13 +6,13 @@ parameters:
 modules:
   wait-queue:
     arguments:
-      code_path: ${PWD}/modules/wait-queue/code
+      # code_path: ${PWD}/modules/wait-queue/code
       slot_options: slot_on_head
     parameters:
       # 避免提早分配资源，使得vtask在wait-queue中
       vtask_size: 1
     environments:
-      - TASK_DIST_MODE=${TASK_DIST_MODE}
+      # - TASK_DIST_MODE=${TASK_DIST_MODE}
 
   vtask-head:
     parameters:
@@ -25,7 +25,7 @@ modules:
 
   vtask-core:
     arguments:
-      code_path: ${PWD}/modules/vtask-core/code
+      code_path: ${PWD}/vtask-core
     parameters:
       task_dist_mode: ${CORE_MODE}
       vtask_role: core
@@ -42,7 +42,7 @@ modules:
 
   main-router:
     arguments:
-      code_path: ${PWD}/mr-code
+      code_path: ${PWD}/main-router
       slot_options: slot_on_head
     environments:
       - TASK_DIST_MODE=${TASK_DIST_MODE}

@@ -40,6 +40,12 @@ service AppService {
   rpc DeleteVtaskSemaphore(DeleteVtaskSemaphoreRequest) returns (google.protobuf.Empty);
   rpc ListVTasks(ListVTasksRequest) returns (ListVTasksResponse);
   rpc ListVTaskSubtasks(ListVTaskSubtasksRequest) returns (ListVTasksResponse);
+  // VTask 高级操作
+  rpc BindVtaskResource(BindVtaskResourceRequest) returns (BindVtaskResourceResponse);
+  rpc UnbindVtaskResource(UnbindVtaskResourceRequest) returns (google.protobuf.Empty);
+  rpc AddVtaskSubtask(AddVtaskSubtaskRequest) returns (AddVtaskSubtaskResponse);
+  rpc GetVtask(GetVtaskRequest) returns (GetVtaskResponse);
+  rpc FailVtask(FailVtaskRequest) returns (google.protobuf.Empty);
 }
 
 // ===== Task Messages =====
@@ -152,9 +158,52 @@ message ListVTasksRequest { int32 app_id = 1; }
 message ListVTasksResponse {
   message Item {
     int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
-    string body = 5; google.protobuf.Timestamp created_at = 6;
+    string body = 5; google.protobuf.Timestamp created_at = 6; string from_module = 7;
   }
   repeated Item items = 1;
 }
 
 message ListVTaskSubtasksRequest { int64 vtask_id = 1; }
+
+// ===== VTask 高级操作 Messages =====
+
+message BindVtaskResourceRequest {
+  int32 app_id = 1;
+  string module_name = 2;
+}
+message BindVtaskResourceResponse {
+  string resource = 1;
+  string mode = 2;
+}
+
+message UnbindVtaskResourceRequest {
+  int32 app_id = 1;
+  int64 vtask_id = 2;
+  string sema_name = 3;
+}
+
+message AddVtaskSubtaskRequest {
+  int32 app_id = 1;
+  string module = 2;
+  string body = 3;
+  map<string, string> headers = 4;
+}
+message AddVtaskSubtaskResponse {
+  int64 task_id = 1;
+}
+
+message GetVtaskRequest { int64 vtask_id = 1; }
+message GetVtaskResponse {
+  int64 id = 1;
+  int32 app_id = 2;
+  string body = 3;
+  string status = 4;
+  string module_name = 5;
+  string bound_resource = 6;
+  string sema_name = 7;
+  int32 subtask_count = 8;
+  int32 finished_count = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+message FailVtaskRequest { int64 vtask_id = 1; }

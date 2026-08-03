@@ -104,9 +104,7 @@ task-header可自定义参数，其中 ```_```开头的参数表示标准传递�
 | code_dir           |  未使用                                                 |
 | uname              | ssh登录用户名                                            |
 | port               | ssh登录用户名                                            |
-| pghost             | postgres连接信息，${pg_ip}[:${port}]，缺省端口号5432       |
 | grpc_server        | controld连接信息，${controld_ip}[:${port}]，缺省端口号50051 |
-| remote_pghost      | 供跨集群应用远端路由连接的postgres的连接信息                  |
 | remote_grpc_server | 供跨集群应用远端路由连接的controld连接信息                    |
 | remote_check_mode  | 'ip':精确IP比对，测试集群、同网段多集群；'subnet'：子网匹配，生产集群、跨网段部署。|
 | initial_status     | 'ON'/'OFF' |
