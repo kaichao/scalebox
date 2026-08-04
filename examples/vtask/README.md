@@ -52,13 +52,13 @@ main-router → default.sh（入口路由）
                             wait-queue（串行化 + 资源分配）
                               from-wait-queue.sh:
                                 ① vtask bind（原子化绑定资源）
-                                ② vtask add-subtask（创建 vtask-head 任务）
+                                ② vtask add-subtask --direct（gRPC 直连，需同步感知错误）
                                 ③ 失败时 vtask unbind 回滚
                                   │
                                   ▼
                             vtask-head（vtask 根标记 + 业务路由）
                               from-vtask-head.sh:
-                                ① vtask add-subtask（分发到 vtask-core）
+                                ① vtask add-subtask（异步路径，_ 前缀自动传播）
                                 ② gate increment（放行下一个 vtask）
                                   │
                                   ▼
@@ -100,14 +100,14 @@ wait-queue 是整个 vtask 管道的准入控制点。核心参数 `vtask_size: 
 `from-wait-queue.sh` 的执行流程：
 
 ```bash
-① vtask bind --app-id=$APP_ID
+① vtask bind
    ↓ 内部：查 module 配置 → 构造 semagroup（如 :host_vtask_size:vtask-head）
    → semagroup.Decrement 原子减信号量 → 提取 hostname/slot_seq → 返回 resource
    ↓ HOST-BOUND 返回 "n0-0"，GROUP-BOUND 返回 "0"
 
 ② 构造 _vtask_size_sema（如 host_vtask_size:vtask-head:n0-0）
 
-③ vtask add-subtask --app-id=$APP_ID --module=vtask-head
+③ vtask add-subtask --direct --module=vtask-head
       --header _vtask_size_sema=$sema_name
       --header to_host=$to_host $body
    ↓ 内部：doAddLocalTaskList → INSERT t_task（vtask 列暂未设置）
@@ -121,6 +121,7 @@ wait-queue 是整个 vtask 管道的准入控制点。核心参数 `vtask_size: 
 
 **关键细节**：
 - 步骤 ① 和 ③ 之间无事务保证。如果进程在两步之间被 kill，资源泄漏。这是已知的设计权衡（`vtask_size=1` 串行化 + 进程崩溃概率极低）
+- 所有命令均不传 `--app-id`：`APP_ID` 环境变量在 agent 容器内已设定，`param` 包自动从环境变量解析
 - `_vtask_size_sema` 在 bind 返回后**由脚本构造**，作为 header 传给 vtask-head。后续 controld 的 `updateVTask` 按此值分组聚合 decrement
 
 ### vtask-head（vtask 根标记 + 业务路由 + gate 释放）
@@ -147,10 +148,9 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 **脚本侧**（`from-vtask-head.sh`）：
 
 ```bash
-① vtask add-subtask --app-id=$APP_ID --module=vtask-core
-      --header _vtask_id=$vtask_id
-      --header _vtask_size_sema=$sema_name
+① vtask add-subtask --module=vtask-core
       [--header to_host=$to_host | --header to_ip=$from_ip] $body
+   ↓ _vtask_id、_vtask_size_sema 由 agent 自动传播（异步路径，无需显式传）
    ↓ HOST-BOUND：传 to_ip，controld 自动转 to_host（同节点路由）
    ↓ GROUP-BOUND：按 body 哈希计算 to_host（业务逻辑），显式传 --header to_host
 
@@ -180,10 +180,10 @@ scalebox task add --sink-module=vtask-tail "$1"
 
 **为什么用 `task add` 而非 `vtask add-subtask`**：
 
-- `vtask add-subtask` 需要显式传 `--header _vtask_id=X` 建立 `vtask` 列父子关系
-- `task add` 创建的子 task，其 `_vtask_id` header 由 **agent 的 `_` 前缀规则**自动传播
-- 实际效果等价：子 task 的 `_vtask_id` header 保持一致，`doVTaskFinished` 能正确识别
-- 使用 `task add` 更简单，调用方无需关心 vtask 上下文
+- `vtask add-subtask`：agent 内默认走异步路径，`_vtask_id` 由 `addSinkTasks` 自动传播（同 `task add`）；`--direct` 或 agent 外需显式传 `--header _vtask_id=X`
+- `task add` 创建的子 task，其 `_vtask_id` header 同样由 agent 的 `_` 前缀规则自动传播
+- 两者在 agent 内行为统一：`_` 前缀 header 均自动传播，调用方无需关心
+- `vtask add-subtask` 额外设置 `vtask` 列建立父子关系，`task add` 不设
 
 **多级联扩展**（GROUP-BOUND 典型场景）：
 
@@ -269,7 +269,7 @@ vtask-tail (from-vtask-tail.sh)
 |------|------|-----------|
 | `vtask bind` | 原子化绑定计算资源，返回 hostname（HOST-BOUND）或 slot_seq（GROUP-BOUND） | from-wait-queue.sh |
 | `vtask unbind` | 释放计算资源（increment 可编程版信号量） | from-vtask-tail.sh, 错误回滚 |
-| `vtask add-subtask` | 向 vtask 添加子任务（设置 `vtask` 列建立父子关系） | from-wait-queue.sh, from-vtask-head.sh |
+| `vtask add-subtask` | 向 vtask 添加子任务（agent 内默认异步路径自动传播 `_` 前缀，`--direct` 强制 gRPC 直连） | from-wait-queue.sh（`--direct`）, from-vtask-head.sh（异步） |
 | `vtask get` | 查询 vtask 详情（派生状态、资源绑定、子任务完成比例） | 运维 / 调试 |
 | `vtask fail` | 强制终止 vtask（unbind + 标记 status_code=1） | 运维 / 脚本错误处理 |
 | `vtask list` | 列出 app 下所有 vtask | 运维 |
@@ -278,17 +278,14 @@ vtask-tail (from-vtask-tail.sh)
 ### 用法示例
 
 ```bash
-# bind：自动查找 vtask_role=head 的模块
-to_host=$(scalebox vtask bind --app-id=$APP_ID) || exit 1
+# bind：自动查找 vtask_role=head 的模块（APP_ID 从环境变量获取）
+to_host=$(scalebox vtask bind) || exit 1
 # HOST-BOUND → "n0-0"（hostname）
 # GROUP-BOUND → "0"（slot_seq）
 
-# add-subtask：向 vtask 添加子任务
-scalebox vtask add-subtask --app-id=$APP_ID --module=vtask-core \
-    --header _vtask_id=$vtask_id \
-    --header _vtask_size_sema=$sema_name \
-    --header to_host=$to_host \
-    $body
+# add-subtask（agent 内异步路径）：_ 前缀 header 由 agent 自动传播
+scalebox vtask add-subtask --module=vtask-core \
+    --header to_host=$to_host $body
 
 # unbind：通过信号量名释放资源
 scalebox vtask unbind --sema-name=":host_vtask_size:vtask-head:${to_host}"
@@ -317,7 +314,7 @@ scalebox vtask list-subtasks --vtask-id=42
 
 ### 与 `task add` 的区别
 
-- `vtask add-subtask`：设置 `vtask` 列为父 task ID，建立父子关系链。需要手动传 `--header _vtask_id=X`
+- `vtask add-subtask`：设置 `vtask` 列为父 task ID，建立父子关系链。agent 内 `_vtask_id` 由 `addSinkTasks` 自动传播；agent 外需手动传 `--header _vtask_id=X`
 - `task add`：不设置 `vtask` 列，子 task 的 `_vtask_id` header 由 agent `_` 前缀规则自动传播
 
 vtask-head → vtask-core 用 `vtask add-subtask`（建立 vtask 树），vtask-core → vtask-tail 可用 `task add`（agent 自动传播上下文）。
@@ -440,11 +437,11 @@ done
 
 | 脚本 | 行数 | 职责 |
 |------|------|------|
-| `run.sh` | 37 | 总入口，按 `from_module` 分发到对应脚本 |
+| `run.sh` | 36 | 总入口，按 `from_module` 分发到对应脚本 |
 | `default.sh` | 14 | main-router 路由：DEFAULT→vtask-head，其他→wait-queue |
-| `from-wait-queue.sh` | 32 | bind 资源 + add-subtask（失败时 unbind 回滚） |
-| `from-vtask-head.sh` | 43 | add-subtask 到 vtask-core + gate 释放 |
-| `from-vtask-core.sh` | 9 | 实际计算（示例中仅转发到 vtask-tail） |
+| `from-wait-queue.sh` | 31 | bind 资源 + add-subtask `--direct`（失败时 unbind 回滚） |
+| `from-vtask-head.sh` | 39 | add-subtask（异步路径，`_` 前缀自动传播）+ gate 释放 |
+| `from-vtask-core.sh` | 8 | 实际计算（示例中仅转发到 vtask-tail） |
 | `from-vtask-tail.sh` | 16 | unbind 归还资源（仅 HOST-BOUND / SLOT-BOUND） |
 
 相对于旧版的主要变化：
@@ -453,6 +450,8 @@ done
 |------|------|
 | `check.sh` 删除 | bind 已原子化 check + semagroup decrement |
 | `semagroup max/decrement` → `vtask bind` | 资源分配从两步变一步 |
-| `task add` → `vtask add-subtask` | vtask-head 使用，显式建立 vtask 父子关系 |
+| `task add` → `vtask add-subtask` | vtask-head 使用，agent 内异步路径自动传播 `_` 前缀 |
+| `--app-id` 参数去掉 | `APP_ID` 环境变量在 agent 容器内已设定 |
+| `--direct` flag | from-wait-queue.sh 使用，强制 gRPC 直连保护回滚链路 |
 | `semaphore increment` → `vtask unbind` | tail 脚本释放资源 |
 | tail 加 case 前缀匹配 | 仅 HOST-BOUND/SLOT-BOUND 时 unbind，DEFAULT 不触发 |
