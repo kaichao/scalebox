@@ -1,8 +1,10 @@
 # VTask 应用示例
 
+> 完整设计文档见 [go-scalebox docs/vtask-design.md](../../go-scalebox/docs/vtask-design.md)。
+
 ## 概念
 
-**VTask** 是跨模块的 task 集合，是 scalebox 节点本地计算编程模型的基本单元。它封装了信号量（semaphore）、共享变量（variable），提供准入控制、状态追踪、粗粒度容错能力。
+**VTask**（Virtual Task）是 scalebox 在细粒度 task 之上建立的应用级粗粒度计算单元。一个 vtask 是跨模块的 task 集合，内置信号量（semaphore）和共享变量（variable），由 wait-queue（可选）、vtask-head、一个或多个级联的 vtask-core、vtask-tail 组成管道，统一管理流控、资源绑定、状态追踪和全链路上下文传播。
 
 ### 三种类型
 
@@ -444,14 +446,4 @@ done
 | `from-vtask-core.sh` | 8 | 实际计算（示例中仅转发到 vtask-tail） |
 | `from-vtask-tail.sh` | 16 | unbind 归还资源（仅 HOST-BOUND / SLOT-BOUND） |
 
-相对于旧版的主要变化：
-
-| 变更 | 说明 |
-|------|------|
-| `check.sh` 删除 | bind 已原子化 check + semagroup decrement |
-| `semagroup max/decrement` → `vtask bind` | 资源分配从两步变一步 |
-| `task add` → `vtask add-subtask` | vtask-head 使用，agent 内异步路径自动传播 `_` 前缀 |
-| `--app-id` 参数去掉 | `APP_ID` 环境变量在 agent 容器内已设定 |
-| `--direct` flag | from-wait-queue.sh 使用，强制 gRPC 直连保护回滚链路 |
-| `semaphore increment` → `vtask unbind` | tail 脚本释放资源 |
-| tail 加 case 前缀匹配 | 仅 HOST-BOUND/SLOT-BOUND 时 unbind，DEFAULT 不触发 |
+相对于旧版的主要变更：`check.sh` 删除（`bind` 原子化替代）、`semagroup max/decrement` → `vtask bind`、`semaphore increment` → `vtask unbind`、tail 加 case 前缀匹配、`from-wait-queue.sh` 使用 `--direct` 保护回滚链、`from-vtask-head.sh` 使用异步路径享受 `_` 前缀自动传播。

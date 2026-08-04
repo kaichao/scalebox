@@ -158,7 +158,7 @@ message ListVTasksRequest { int32 app_id = 1; }
 message ListVTasksResponse {
   message Item {
     int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
-    string body = 5; google.protobuf.Timestamp created_at = 6; string from_module = 7;
+    string body = 5; google.protobuf.Timestamp created_at = 6; string from_module = 7; int32 app_id = 8;
   }
   repeated Item items = 1;
 }
