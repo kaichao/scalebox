@@ -13,6 +13,8 @@ Scalebox应用程序采用分层组织。模块层将算法封装为标准容器
 | 执行实例 | **Task**   | **任务** | 基本运行单位，输入数据在具体Module上的执行过程。 |
 | 计算节点 | **Host**   | **节点** | 执行计算任务的服务器节点。                                 |
 | 资源单元 | **Slot**   | **插槽** | 节点上与Module对应的计算资源切片，是Task细粒度运行调度的基础单位  |
+| 虚拟任务 | **VTask**  | **任务组** | 跨模块的Task集合，是应用级粗粒度计算单元。内置信号量和共享变量，由wait-queue、vtask-head、vtask-core、vtask-tail 组成管道，统一管理流控、资源绑定、状态追踪。|
+| 资源集合 | **Cluster** | **集群** | 计算资源的逻辑分组，包含多个Host。支持单节点集群、静态集群、动态集群、内联集群等多种类型。跨集群计算通过 t_cluster 全网格复制 + gRPC 代理实现。|
 
 ## 2.3 应用（App）
 
@@ -76,7 +78,45 @@ Scalebox应用程序采用分层组织。模块层将算法封装为标准容器
 - **计算节点**：执行具体计算任务
 - **共享存储**：可选，用于节点间数据共享
 
-## 2.8 并行化方式
+## 2.8 虚拟任务（VTask / 任务组）
+
+VTask 是 Scalebox 在细粒度 Task 之上建立的应用级粗粒度计算单元。一个 VTask 是跨模块的 Task 集合，解决三个核心问题：
+
+1. **跨模块关联**：同一 App 内多个 Module 协作完成一项工作时，通过 `_vtask_id` header 将分散在各 Module 的 Task 串联
+2. **流控与资源绑定**：通过信号量（semaphore）限制并发 VTask 数量，支持将 VTask 绑定到特定计算节点或节点组
+3. **状态追踪与容错**：`vtask get` / `vtask list` 实时展示进度，`vtask fail` 终止管道并级联清理
+
+### 三种模式
+
+| 模式 | 资源绑定 | 管道结构 | 适用场景 |
+|------|---------|---------|---------|
+| DEFAULT | 无 | task → vtask-head → vtask-core → vtask-tail | 轻量批处理 |
+| HOST-BOUND | 单节点 | task → wait-queue → vtask-head → vtask-core → vtask-tail | 单节点独占计算 |
+| GROUP-BOUND | 节点组 | task → wait-queue → vtask-head → vtask-core-1 → vtask-core-2 → ... → vtask-tail | 多节点协同计算 |
+
+> 详细设计见 :doc:`VTask 虚拟任务 <../developer/9_vtask>`。
+
+## 2.9 集群详解
+
+### 集群分类
+
+| 类型 | 用途 | 说明 |
+|------|------|------|
+| 单节点集群 | 测试、开发 | 单节点同时充当管理节点和计算节点 |
+| 静态集群 | 生产环境 | 头节点 + 固定计算节点 |
+| 动态集群 | 弹性计算 | 头节点 + 外部调度器（Slurm）动态分配节点 |
+| 内联集群 | 混合模式 | 头节点 + 动态申请的计算节点 |
+
+### 跨集群计算
+
+Scalebox 支持跨广域网异构算力集群的统一调度：
+- `t_cluster` 表在所有集群数据库间全网格复制，每个 controld 可查询任意集群的 gRPC 地址
+- CLI 始终连接本地 controld，跨集群操作由服务端 gRPC 代理转发
+- 通过 `RegisterRemoteAppLink` 建立跨集群 App 引用，`t_app_rlink` + `t_module_rvlink` 管理模块级联路由
+
+> 详细设计见 :doc:`跨集群架构 <../developer/10_cross_cluster>`。
+
+## 2.10 并行化方式
 
 ### 模块内并行
 算法内部的代码级并行，如多线程、GPU加速等。

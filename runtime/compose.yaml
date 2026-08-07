@@ -33,6 +33,24 @@ services:
       retries: 3
       start_period: 10s
 
+  webui:
+    container_name: webui
+    image: scalebox.net/platform/webui:latest
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+        max-file: "5"
+    ports:
+      - 8088:8080
+    environment:
+      - GRPC_SERVER=controld:50051
+      - LOG_LEVEL=INFO
+    depends_on:
+      controld:
+        condition: service_healthy
+
   actuator:
     container_name: actuator
     image: scalebox.net/platform/actuator

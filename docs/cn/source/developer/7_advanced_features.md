@@ -1,5 +1,14 @@
 # 7. 高级编程特性
 
+- §7.1 容错机制（任务级/平台级/跨模块容错 + 分级策略）
+- §7.2 准入控制（存储容量/计数/同步/自定义流控）
+- §7.3 任务运行排序（sort_tag / group_regex / group_index）
+- §7.4 超时设置（task_max_seconds + timeout 封装建议）
+- §7.5 时间戳格式（RFC3339Nano / bash / golang 示例）
+- §7.6 跨集群应用
+- §7.7 Slot 启动命令表达式（`((@seq))` / `((@v:var_name))` 动态求解）
+- §7.8 gRPC Metadata 传参（semaphore-auto-create）
+- §7.9 Slot 自动扩缩容
 
 ## 7.1 容错机制
 
@@ -257,23 +266,23 @@ slot启动命令支持参数化配置。
       free_space_gb: '{"${LOCAL_SHMDIR}":${BEAM_MAKE_FREE_GB}}'
 ```
 #### ***准入控制参数定义***
-```env
+```bash
 LOCAL_SHMDIR=/dev/shm/scalebox/mydata
 BEAM_MAKE_FREE_GB='((@seq*5+11))'
 
 ```
 #### singularity多GPU配置命令
-```env
+```bash
 ROCM_COMMAND='singularity exec --rocm --env ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}} goagent'
 ```
 
 #### docker多GPU配置命令1
-```env
+```bash
 ROCM_COMMAND='docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video -e ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}}'
 ```
 
 #### docker多GPU配置命令2
-```env
+```bash
 docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((n%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
 ```
 
@@ -290,7 +299,61 @@ docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/
 scalebox global set pipeline_version 20260411
 ```
 
-## 7.9 slot自动扩缩容
+## 7.8 gRPC Metadata 传参
+
+部分标志通过 gRPC metadata 传递，避免环境变量跨进程污染。
+
+### 7.8.1 semaphore-auto-create
+
+| metadata key | 值 | 用途 |
+|-------------|------|------|
+| `semaphore-auto-create` | `yes` | 信号量不存在时自动创建（初值为 0） |
+
+**CLI 端**（`metadata.AppendToOutgoingContext`）：
+
+```go
+func semaContext() context.Context {
+    if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
+        return metadata.AppendToOutgoingContext(
+            context.Background(), "semaphore-auto-create", "yes")
+    }
+    return context.Background()
+}
+```
+
+**Server 端**（`metadata.FromIncomingContext`）：
+
+```go
+func getSemaphoreAutoCreate(ctx context.Context) bool {
+    if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
+        return true
+    }
+    md, ok := metadata.FromIncomingContext(ctx)
+    if !ok { return false }
+    for _, v := range md.Get("semaphore-auto-create") {
+        if v == "yes" { return true }
+    }
+    return false
+}
+```
+
+### 7.8.2 使用方式
+
+```bash
+# 设置环境变量后，CLI 自动通过 metadata 传给 controld
+SEMAPHORE_AUTO_CREATE=yes scalebox semaphore get my_sema
+```
+
+### 7.8.3 Semaphore 函数签名
+
+```go
+// autoCreate 参数替代 os.Getenv("SEMAPHORE_AUTO_CREATE")
+// Server 端通过 gRPC metadata 获取，controld task 包直接传 true
+func GetValue(name string, appID int, autoCreate bool) (int, error)
+func AddValue(name string, delta int, appID int, autoCreate bool) (int, error)
+```
+
+## 7.9 Slot 自动扩缩容
 
 ### 7.9.1 概述
 
@@ -353,3 +416,15 @@ Slot 自动扩缩容根据资源使用情况自动调整任务执行槽数量，
 初始状态：slot=5，最大可用=1
 结果：强制缩容到物理容量内
 ```
+
+## 7.10 相关文档
+
+以下高级特性有独立详述：
+
+| 主题 | 文档 | 说明 |
+|------|------|------|
+| VTask 任务组 | :doc:`9_vtask` | 完整的概念模型、模块结构、信号量机制、管道流程、CLI 命令参考 |
+| 跨集群架构 | :doc:`10_cross_cluster` | 数据复制模型、地址解析、gRPC 代理转发、Task 跨集群路由 |
+| 安全框架 | :doc:`11_security` | JWT + RBAC + TLS、证书管理、Automation Token 轮换 |
+| WebUI 使用 | :doc:`WebUI 指南 <../user/7_webui>` | REST 网关、导航结构、构建部署 |
+| VS Code 插件 | :doc:`VS Code 插件 <../user/8_vscode>` | TreeView、DAG、LSP、安装配置 |

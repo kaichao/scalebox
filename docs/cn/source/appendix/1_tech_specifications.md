@@ -11,6 +11,7 @@ Scalebox的运行时环境包括以下核心组件：
 - **controld**：基于gRPC的控制服务，管理actuator和计算节点
 - **actuator**：启动器服务，通过SSH或外部调度器在计算节点上启动slot
 - **database**：PostgreSQL数据库，存储app、module、task、slot等元数据
+- **webui**：scalebox 操作管理的web接口
 - **agent**：运行在计算节点上的代理，负责任务执行和状态管理
 - **cluster-admin**：与HPC调度系统交互的资源申请、管理的软件模块，也是一个系统级应用
 
@@ -176,8 +177,6 @@ cluster定义的示例如下：
   - *local_ip_index*: 用于提取本机IP地址的索引号（hostname -I）
   - *grpc_server*:	?有一个相同名称的外部字段。
   - *remote_grpc_server*:
-  - *pghost*:
-  - *remote_pghost*:
 
 ## 1.4 标识符命名规则
 ### 1.4.1	文件名命名规则

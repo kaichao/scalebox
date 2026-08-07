@@ -36,376 +36,539 @@
 - p419.env
 
 
-## 1.2 子命令图
-
-```{mermaid}
-
-graph LR
-  scalebox --> run[<a href="#run">run</a>]
-
-  scalebox --> cluster[<a href="#cluster">cluster</a>]
-  cluster --> cluster-get-parameter[<a href="#cluster-get-parameter">get-parameter</a>]
-  cluster --> cluster-check-status[<a href="#cluster-check-status">check-status</a>]
-  cluster --> cluster-dist-image[<a href="#cluster-dist-image">dist-image</a>]
-  cluster --> cluster-app-view[<a href="#cluster-app-view">app-view</a>]
-  cluster --> cluster-host-view[<a href="#cluster-host-view">host-view</a>]
-
-  scalebox --> host[<a href="#host">host</a>]
-  host --> host-check-status[<a href="#host-check-status">check-status</a>]
-  host --> host-get-info[<a href="#host-get-info">get-info</a>] 
-  host --> host-add-node[<a href="#host-add-node">add-node</a>]
-  host --> host-dist-image[<a href="#host-dist-image">dist-image</a>]
-  host --> host-recover[<a href="#host-recover">recover</a>]
-  host --> host-migrate[<a href="#host-migrate">migrate</a>]
-  host --> host-replace[<a href="#host-replace">replace</a>]
-  host --> host-asign[<a href="#host-asign">asign</a>]
-  
-  scalebox --> slot[<a href="#slot">slot</a>]
-  slot --> slot-add[<a href="#slot-add">add</a>]
-  slot --> slot-add-group[<a href="#slot-add-group">add-group</a>]
-  slot --> slot-update[<a href="#slot-update">update</a>]
-
-  scalebox --> app[<a href="#app">app</a>]
-  app --> main-router[<a href="#app-main-router">main-router</a>]
-  app --> app-list[<a href="#app-list">list</a>]
-  app --> app-add-remote[<a href="#app-add-remote">add-remote</a>]
-  app --> app-set-finished[<a href="#app-set-finished">set-finished</a>]
-
-  scalebox --> module[<a href="#module">module</a>]
-  module --> module-list[<a href="#module-list">list</a>]
-  module --> module-info[<a href="#module-info">info</a>]
-
-  scalebox --> task[<a href="#task">task</a>]
-  task --> task-add[<a href="#task-add">add</a>]
-  task --> task-get-header[<a href="#task-get-header">get-header</a>]
-  task --> task-set-header[<a href="#task-set-header">set-header</a>]
-  task --> task-remove-header[<a href="#task-remove-header">remove-header</a>]
-
-  scalebox --> semaphore[<a href="#semaphore">semaphore</a>]
-  semaphore --> sema-create[<a href="#semaphore-create">create</a>]
-  semaphore --> semaphore-get[<a href="#semaphore-get">get</a>]
-  semaphore --> increment[<a href="#semaphore-increment">increment</a>]
-  semaphore --> decrement[<a href="#semaphore-decrement">decrement</a>]
-  semaphore --> increment-n[<a href="#semaphore-increment-n">increment-n</a>]
-
-  scalebox --> semagroup[<a href="#semagroup">semagroup</a>]
-  semagroup --> semagroup-min[<a href="#semagroup-min">min</a>]
-  semagroup --> semagroup-max[<a href="#semagroup-max">max</a>]
-  semagroup --> semagroup-increment[<a href="#semagroup-increment">increment</a>]
-  semagroup --> semagroup-decrement[<a href="#semagroup-decrement">decrement</a>]
-  semagroup --> semagroup-diffmin[<a href="#semagroup-diffmin">diffmin</a>]
-  semagroup --> semagroup-diffmax[<a href="#semagroup-diffmax">diffmax</a>]
-
-  scalebox --> variable[<a href="#variable">variable</a>]
-  variable --> variable-get[<a href="#variable-get">get</a>]
-  variable --> variable-set[<a href="#variable-set">set</a>]
-
-  scalebox --> global[<a href="#global">global</a>]
-  global --> global-get[<a href="#global-get">get</a>]
-  global --> global-set[<a href="#global-set">set</a>]
-
-  scalebox --> channel[<a href="#channel">channel</a>]
-  channel --> channel-pull[<a href="#channel-pull">pull</a>]
-  channel --> channel-push[<a href="#channel-push">push</a>]
-
-  scalebox --> event[<a href="#event">event</a>]
-  event --> event-task-add[<a href="#event-task-add">task-add</a>]
-  event --> event-slot-add[<a href="#event-slot-add">slot-add</a>]
-  event --> event-misc-add[<a href="#event-misc-add">misc-add</a>]
-
-  scalebox --> fs[<a href="#fs">fs</a>]
-  fs --> fs-ls[<a href="#fs-ls">ls</a>]
-  fs --> fs-stat[<a href="#fs-stat">stat</a>]
-
-  scalebox --> status
-
-  scalebox --> help
+## 1.2 子命令概览
 
 ```
-
-## 1.3 <span id="cluster">cluster子命令</span>
-
-### 1.3.1 cluster get-parameter
-
-### 1.3.2 cluster check-status
-
-- 检测cluster配置
-- 检测所有host的状态
-
-### 1.3.3 cluster dist-image
-
-### 1.3.4 cluster app-view
-
-### 1.3.5 cluster host-view
-
-
-## 1.4 <span id="host">host子命令</span>
-
-用于管理系统中的计算节点，包括分组、向流水线应用增添新的节点，替换、释放已有计算节点等功能。
-
-### 1.4.1 host check-status
-
-检查一个指定节点的运行状态，输出其ip_addr、uname、port、parameters、group_id、reg_time、status、last_active、comments等信息
-
-### 1.4.2 host get-info
-
-由hostname获取host信息
-
-### 1.4.2 host add-node
-
-将一个或一组节点分配给一个新的应用。
-- 检索目标应用所有非slot-on-head的任务
-- 如有需要，调用 ```host dist-image```，将所需镜像分发到指定节点
-- 对所有```host_vtask_size```属性的module，创建对应的信号量
-- 调用```slot add-group```，在节点上创建对应数量的slot
-
-### 1.4.3 host dist-image
-
-将docker镜像分发到指定节点或节点组
-
-### 1.4.4 host recover
-
-动态申请的计算节点发生故障时，替换用新节点替换。
-
-- 设置原节点所有相关的task状态为-1为-4（确定没有-2、-3状态的task）：down机后，task状态不再变化？
-- 将修改后原节点的所有对应host-bound任务的SLOT状态设置为OFF；
-- 调用host replace替换节点
-- 针对存在HOST-BOUND/SLOT-BOUND任务的节点，启动新节点加载数据模块，恢复新节点的本地数据；
-- 将修改后原节点的所有对应host-bound任务的SLOT状态设置为READY；
-- 将状态为-4的task设置为-1
-
-### 1.4.5 host migrate
-
-按计划替换即将到期的计算节点。
-
-- 在```*_vtask_size```相关属性的module上，通过减少对应信号量，使得该node上task逐步退出；
-- 第一步完成后，调用```host replace```替换节点；(需要定时运行？或者系统检测task全部完成后运行？)
-- 增加```*_vtask_size```对应信号量，恢复新节点上的slot/task的运行；
-
-### 1.4.6 host replace
-
-执行节点替换任务
-
-- 原节点中除hostname外的属性（ip_addr、uname、port、parameters、reg_time、status、last_active、comments）替换为新节点对应属性
-- 修改新节点的node-agent的host属性，指向原节点的hostname；
-- 删除host表的新节点纪录
-
-### 1.4.7 host asign
-
-将已有节点重新分组。
-需要参数：src_group_id, dst_group_id, num_groups, group_size
-- 从一组或多组源节点中，筛选出满足条件的节点
-- 对满足条件的节点，根据输入取出若干个，修改其group_id为dst_group_id，同时将节点重命名为${dst_group_id}-${group_idx}${hostidx}的格式。
-- 当满足条件的节点数量不足时，仅分配整组节点，输出分配节点的具体数量
-- 在src_group_id包含dst_group_id，或指定了参数时，使用新节点填充dst_group_id中group_idx 0~num_groups，使每组均有group_size个节点。否则，group_idx从现有最大值开始递增，共尝试分配num_groups*group_size个节点。
-- group_size为-1时，将所有节点加入dst_group_id,并从0开始重设group_idx。
-
-## 1.5 <span id="slot">slot子命令</span>
-
-### 1.5.1 slot add
-
-### 1.5.2 slot add-group
-
-根据给定的配置参数，在指定节点上为每个module创建对应数量的节点。
-
-### 1.5.3 slot update
-
-
-## 1.6 <span id="app">app子命令</span>
-
-### 1.6.1 app create
-
-解析应用定义文件，并存到数据库中，完成应用创建。
-
-用法：
-```sh
-scalebox app create
+scalebox
+├── run                    启动应用（创建 App + 发送初始消息）
+├── cluster                集群管理
+│   ├── list               列出集群
+│   ├── create             创建集群
+│   ├── show               查看集群详情
+│   ├── set-status         设置集群状态
+│   ├── get-parameter      获取集群参数
+│   ├── allocate           分配集群资源
+│   └── release            释放集群资源
+├── host                   主机管理
+│   ├── list               列出主机
+│   ├── create             添加主机
+│   ├── show               查看主机详情
+│   ├── set-status         设置主机状态
+│   ├── delete             删除主机
+│   └── renew              续期主机
+├── slot                   插槽管理
+│   ├── list               列出插槽
+│   ├── add                添加插槽
+│   ├── remove             删除插槽
+│   └── set-status         设置插槽状态
+├── app                    应用管理
+│   ├── list               列出应用
+│   ├── create             创建应用
+│   ├── show               查看应用详情
+│   ├── set-status         设置应用状态
+│   ├── set-finished       标记应用完成
+│   ├── delete             删除应用
+│   ├── add-remote         添加远程应用链接（跨集群）
+│   └── add-slots          动态添加插槽
+├── module                 模块管理
+│   ├── list               列出模块
+│   └── show               查看模块详情
+├── task                   任务管理
+│   ├── list               列出任务
+│   ├── show               查看任务详情
+│   ├── add                添加任务
+│   ├── delete             删除任务
+│   ├── get-header         获取任务头
+│   ├── set-header         设置任务头
+│   ├── remove-header      删除任务头
+│   └── log                查看任务日志
+├── validate               校验应用定义文件（app.yaml）
+├── semaphore              信号量管理
+│   ├── list               列出信号量
+│   ├── create             创建信号量
+│   ├── get                获取信号量值
+│   ├── increment          增一
+│   ├── decrement          减一
+│   └── add-value          增减 N
+├── semagroup              信号量组操作
+│   ├── max                最大值
+│   ├── min                最小值
+│   ├── increment          最小值加一
+│   ├── decrement          最大值减一
+│   ├── diff-min           与最小值的差
+│   └── diff-max           与最大值的差
+├── variable               共享变量管理
+│   ├── list               列出变量
+│   ├── get                获取变量值
+│   ├── set                设置变量值
+│   └── delete             删除变量
+├── global                 全局变量管理
+│   ├── list               列出全局变量
+│   ├── get                获取值
+│   ├── set                设置值
+│   └── delete             删除
+├── vtask                  虚拟任务管理
+│   ├── list               列出 vtask
+│   ├── list-subtasks      列出子任务
+│   ├── get                查看 vtask 详情
+│   ├── fail               标记 vtask 失败
+│   ├── bind               绑定资源
+│   ├── unbind             解绑资源
+│   ├── add-subtask        添加子任务
+│   ├── get-variable       获取 vtask 作用域变量
+│   ├── set-variable       设置 vtask 作用域变量
+│   ├── create-semaphore   创建 vtask 作用域信号量
+│   ├── get-semaphore      获取 vtask 作用域信号量
+│   ├── add-semaphore-value 增减 vtask 作用域信号量
+│   └── delete-semaphore   删除 vtask 作用域信号量
+├── channel                优先级队列（跨应用通信）
+│   ├── pull               出队
+│   └── push               入队
+├── fs                     文件系统操作
+│   ├── ls                 列出文件
+│   └── stat               查看文件元数据
+├── event                  事件记录
+│   ├── task-add           任务事件
+│   ├── slot-add           插槽事件
+│   └── misc-add           杂项事件
+├── status                 系统整体状态
+└── help                   帮助信息
 ```
 
-### 1.6.2 app run
+## 1.3 cluster 子命令
 
-以命令行方式，启动scalebox应用。（未来代替app create ?）
+### 1.3.1 cluster list
 
-- 环境变量文件：```./scalebox.env```
-- 主模块代码目录：```./code/```
-- 路由模块代码目录：```./mr-code/``` 
+列出所有集群。
 
-#### 单启动消息
-```sh
-export ENV0=v0
-export ENV1=v1
-
-scalebox app run --param-name=param-value start-item
+```bash
+scalebox cluster list
 ```
 
-参数表
-| 参数名         |    参数说明     |  对应环境变量    | 缺省值                                       |
-| ------------- | -------------- | -------------- | ------------------------------------------- |
-| app-name       | app名称       | _APP_NAME       | 
-| cluster       | cluster名      | _CLUSTER       | local                                       |
-| image-name    | 主模块镜像名     | _IMAGE_NAME    | scalebox.net/platform/agent:latest       |
-| code-path     | 主模块代码目录   | _CODE_PATH     | 若当前目录下有./code/，则为./code;否则为空       |
-| slot-regex    | 主模块的slot配置 | _SLOT_REGEX    | 缺省为：h0，在头节点上1个slot                  |
-| mr-image-name | 路由模块镜像名   | _MR_IMAGE_NAME | 若mr_code_path已设置，则设置为agent            |
-| mr-code-path  | 路由模块代码目录 | _MR_CODE_PATH  | 若当前目录下有./mr-code/，则为./mr-code;否则为空 |
-| app-file/f    | 应用定义文件     |                | 若当前目录下有app.yaml，则为app.yaml，否则缺省为空 |
-| env-file/e    | 环境变量文件     |                | 若当前目录下有app.yaml，则为app.yaml，否则缺省为空 |
+### 1.3.2 cluster show
 
-- 若有应用定义文件，则以此创建应用
-- 启动消息start-task
-  - 若有主路由，则启动任务发给主路由
-  - 若无主路由，则启动任务发给首模块
+查看指定集群详情。
 
-- 启动项start-item
-若非json串，则为启动消息start-task；否则start-item中包括前述参数及start-task。json格式定义如下：
-```json
-{
-  "cluster": "my-cluster",
-  "image_name": "my-image",
-  "code_path": "/path/to/code",
-  "slot_regex": "node[0-9]+:2",
-  "mr_image_name": "my-mr-image",
-  "mr_code_path": "/path/to/mr-code",
-  "start_task": "starting task"
-}
-```
-实际应用中，去除json字符串中的无空格、换行等空字符
-
-#### 基于管道的多启动任务
-
-针对多启动消息，可通过管道将多消息按行传递给启动命令。每行的消息体不按前述json格式解析。
-```sh
-echo "start-item\nstart-task1" | scalebox app run --param-name=param-value
+```bash
+scalebox cluster show <cluster-name>
 ```
 
-示例：
-```sh
-# 设定源端、目标端URL
-export SOURCE_URL=/data2/mydata/mwa/tar
-export TARGET_URL=cstu0036@10.100.1.104:65010/work2/cstu0036/mydata/mwa/tar
+### 1.3.3 cluster create
 
-# 单文件传输
-scalebox app run --image-name=scalebox.net/platform/file-copy:latest 1267459328/1267464090_1267464129_ch127.dat.tar.zst
+创建新集群。
 
-# 多文件传输
-cd /data2/mydata/mwa/tar
-find 1267459328 -type f | scalebox app run --image-name=scalebox.net/platform/file-copy:latest --slot-regex=h0:2
+```bash
+scalebox cluster create --name my-cluster --grpc-server 10.0.0.1:50051
 ```
 
-### 1.6.3 app main-router
-  
+### 1.3.4 cluster set-status
 
-### 1.6.4 app list
+设置集群状态。
 
-列出所有应用的基本信息。
+```bash
+scalebox cluster set-status <cluster-name> ON
+```
 
-用法：
-```sh
+### 1.3.5 cluster get-parameter
+
+获取集群参数。
+
+```bash
+scalebox cluster get-parameter <cluster-name> <param-name>
+```
+
+### 1.3.6 cluster allocate / release
+
+动态集群资源的分配和释放。
+
+```bash
+scalebox cluster allocate --cluster my-cluster --num-hosts 4
+scalebox cluster release --cluster my-cluster
+```
+
+## 1.4 host 子命令
+
+主机（计算节点）管理。
+
+### 1.4.1 host list
+
+列出所有主机。
+
+```bash
+scalebox host list
+scalebox host list --cluster my-cluster
+```
+
+### 1.4.2 host show
+
+查看主机详情。
+
+```bash
+scalebox host show <hostname>
+```
+
+### 1.4.3 host create
+
+添加新主机。
+
+```bash
+scalebox host create --hostname n0 --ip-addr 10.0.6.101 --cluster my-cluster
+```
+
+### 1.4.4 host set-status
+
+设置主机状态。
+
+```bash
+scalebox host set-status <hostname> READY
+```
+
+### 1.4.5 host delete / renew
+
+删除主机或续期动态主机。
+
+```bash
+scalebox host delete <hostname>
+scalebox host renew <hostname>
+```
+
+## 1.5 slot 子命令
+
+执行槽（Slot）管理。
+
+### 1.5.1 slot list
+
+列出插槽。
+
+```bash
+scalebox slot list
+scalebox slot list --host <hostname>
+scalebox slot list --module <module-name>
+```
+
+### 1.5.2 slot add
+
+添加插槽。
+
+```bash
+scalebox slot add --module my-module --host n0 --count 4
+```
+
+### 1.5.3 slot remove
+
+删除插槽。
+
+```bash
+scalebox slot remove --module my-module --host n0
+```
+
+### 1.5.4 slot set-status
+
+设置插槽状态。
+
+```bash
+scalebox slot set-status <slot-id> READY
+```
+
+
+## 1.6 app 子命令
+
+### 1.6.1 app list
+
+列出所有应用。
+
+```bash
 scalebox app list
 ```
 
-### 1.6.5 app set-finished
+### 1.6.2 app show
 
-设置应用已完成，修改其状态为'FINISHED'
+查看应用详情。
 
-用法：
-```sh
-scalebox app set-finished --module-id ${module_id}
+```bash
+scalebox app show <app-id>
 ```
 
-### 1.6.6 app add-remote
+### 1.6.3 app create
 
-## 1.7 <span id="module">module子命令</span>
+从定义文件创建应用。
+
+```bash
+scalebox app create --app-file app.yaml --env-file scalebox.env
+```
+
+### 1.6.4 app run
+
+以命令行方式启动应用。环境变量文件缺省为 `./scalebox.env`。
+
+**单启动消息**：
+```bash
+export ENV0=v0
+scalebox run --cluster my-cluster --image-name my-image:latest start-item
+```
+
+**参数表**：
+
+| 参数名 | 对应环境变量 | 缺省值 | 说明 |
+|--------|------------|--------|------|
+| app-name | `_APP_NAME` | — | 应用名称 |
+| cluster | `_CLUSTER` | local | 集群名 |
+| image-name | `_IMAGE_NAME` | scalebox/agent:latest | 主模块镜像 |
+| code-path | `_CODE_PATH` | ./code（若存在） | 主模块代码目录 |
+| slot-regex | `_SLOT_REGEX` | h0 | 主模块 slot 配置 |
+| mr-image-name | `_MR_IMAGE_NAME` | — | 路由模块镜像 |
+| mr-code-path | `_MR_CODE_PATH` | ./mr-code（若存在） | 路由模块代码目录 |
+| app-file / -f | — | app.yaml（若存在） | 应用定义文件 |
+| env-file / -e | — | scalebox.env | 环境变量文件 |
+
+**管道式多启动任务**：
+```bash
+find /data/input -type f | scalebox run --image-name my-image:latest --slot-regex h0:2
+```
+
+### 1.6.5 app set-status / set-finished
+
+```bash
+scalebox app set-status <app-id> RUNNING
+scalebox app set-finished <app-id>
+```
+
+### 1.6.6 app delete
+
+```bash
+scalebox app delete <app-id>
+```
+
+### 1.6.7 app add-remote
+
+添加跨集群应用远程链接。
+
+```bash
+scalebox app add-remote --app-id <local-app-id> --remote-app-id <remote-app-id> --remote-grpc <grpc-addr>
+```
+
+### 1.6.8 app add-slots
+
+动态添加插槽。
+
+```bash
+scalebox app add-slots --app-id <app-id> --module <module-name> --host <hostname> --count 4
+```
+
+## 1.7 module 子命令
 
 ### 1.7.1 module list
 
-### 1.7.2 module info
+列出应用的模块。
 
-## 1.8 <span id="task">task子命令</span>
+```bash
+scalebox module list --app-id <app-id>
+```
 
-### 1.8.1 task add
+### 1.7.2 module show
 
-#### 参数/环境变量
+查看模块详情。
 
-| 参数名         |  环境变量名         |    说明                                 |
-| --------------- | --------------- | --------------------------------------- |
-| app-id          | APP_ID          |                                         |
-| module-id       | MODULE_ID       |                                         |
-| sink-module     | SINK_MODULE     | sink-module name                        |
-| conflict-action | CONFLICT_ACTION | 数据库插入时发生冲突的缺省动作，''/'IGNORE'/'OVERWRITE' |
-| from-module     |                 | module-name                             |
-| remote-server   |                 | grpc server for remote cluster, 格式为{ip_addr}:{port} |
-| task-file       |                 | multiple tasks in file               |
-| ignore-dupkey   |                 | add "repeative":"yes" to headers        |
-| headers         |                 | headers in json                         |
-| header/h        |                 | add one header                          |
-| to-ip           |                 | add "to_ip" to headers (以-h to_ip=$ip_addr代替)   |
-| to-host         |                 | add "to_host" to headers (以-h to_host=$host_name代替) |
-| disable-local-ip |                |                                         |
-| batch-size      |                 | 批量task添加中，指定批次大小。缺省值100。     |
+```bash
+scalebox module show --app-id <app-id> <module-name>
+```
 
+## 1.8 task 子命令
 
-task文件缺省为 ```${WORK_DIR}/sink-tasks.txt```，该文件为多行文本，每行为 消息体+消息头。
+### 1.8.1 task list
 
-task文件每行格式如下：
-| 类型                   |  示例                                        |
-| --------------------- | ----------------------------------------------- |
-| 文本body               | body                                            |
-| json body             | {"hi0":"a","body":"my_body"}                     |
-| 文本body+headers       | body,{"h0":"a","h1":"b"}                        |
-| json-body+headers     | {"hi0":"a","body":"my_body"},{"h0":"a","h1":"b"} |
-| 模块名+文本body         | module-name,body                                            |
-| 模块名+文本body+headers | module-name,body,{"h0":"a","h1":"b"}                        |
+列出任务，支持按模块、状态过滤。
 
-用于控制的task头（header）：
-| header              |  说明                                   |
-| ------------------- | -------------------------------------- |
-| initial_status_code | 缺省为-1,'READY'                        |
-| upsert              | overwrite existed task    （删除）       |
-| conflict-action     | ''/'IGNORE'/'OVERWRITE'                |
-| async-task-creation |                                        |
-| slot_broadcast      |                                        |
-| host_broadcast      |                                        |
+```bash
+scalebox task list --app-id <app-id>
+scalebox task list --app-id <app-id> --status FAILED
+scalebox task list --app-id <app-id> --module <module-name>
+```
 
-### 1.8.2 task get-header
+### 1.8.2 task show
 
-获取task头信息。
+查看任务详情（含 stdout/stderr/body/headers）。
 
-示例：
-```sh
+```bash
+scalebox task show <task-id>
+```
+
+### 1.8.3 task delete
+
+删除任务。
+
+```bash
+scalebox task delete <task-id>
+```
+
+### 1.8.4 task add
+
+添加任务。
+
+**参数/环境变量**：
+
+| 参数名 | 环境变量名 | 说明 |
+|--------|----------|------|
+| app-id | `APP_ID` | 应用 ID |
+| module-id | `MODULE_ID` | 模块 ID |
+| sink-module | `SINK_MODULE` | 下游模块名 |
+| conflict-action | `CONFLICT_ACTION` | 冲突处理：''/'IGNORE'/'OVERWRITE' |
+| from-module | — | 来源模块名 |
+| headers | — | JSON 格式 headers |
+| header / -h | — | 添加单个 header（可重复） |
+| to-ip | — | 设置 to_ip header |
+| to-host | — | 设置 to_host header |
+| batch-size | — | 批量添加批次大小，缺省 100 |
+
+**task 文件格式**（缺省为 `${WORK_DIR}/sink-tasks.txt`，每行一条）：
+
+| 类型 | 示例 |
+|------|------|
+| 文本 body | `body` |
+| JSON body | `{"hi0":"a","body":"my_body"}` |
+| 文本 body + headers | `body,{"h0":"a","h1":"b"}` |
+| JSON body + headers | `{"hi0":"a","body":"my_body"},{"h0":"a","h1":"b"}` |
+| 模块名 + 文本 body | `module-name,body` |
+| 模块名 + 文本 body + headers | `module-name,body,{"h0":"a","h1":"b"}` |
+
+**控制 headers**：
+
+| header | 说明 |
+|--------|------|
+| `initial_status_code` | 初始状态，缺省 -1（READY） |
+| `conflict-action` | ''/'IGNORE'/'OVERWRITE' |
+| `slot_broadcast` | 广播到所有 slot |
+| `host_broadcast` | 广播到所有 host |
+
+### 1.8.5 task get-header / set-header / remove-header
+
+```bash
 scalebox task get-header --task-id 123 from_module
-```
-### 1.8.3 task set-header
-
-设置新的header（若不存在）或覆盖已有header（若存在）。
-
-示例：
-```sh
 scalebox task set-header --task-id 123 my_header value
-```
-
-### 1.8.4 task remove-header
-
-移除已有header。若不存在，则在stderr上打印"my_header not-exists"
-
-示例：
-```sh
 scalebox task remove-header --task-id 123 my_header
 ```
 
-## 1.9 <span id="semaphore">semaphore子命令</span>
+### 1.8.6 task log
 
-- 公共参数：module-id，或app-id
-- 环境变量：MODULE_ID，或APP_ID、SEMAPHORE_AUTO_CREATE
+查看任务执行日志。
+
+```bash
+scalebox task log <task-id>
+```
+
+## 1.9 validate 子命令
+
+校验应用定义文件（app.yaml）的语法和完整性。
+
+```bash
+scalebox validate --app-file=<app-yaml>
+scalebox validate --app-file=app.yaml --env-file=scalebox.env
+```
+
+## 1.10 vtask 子命令
+
+VTask（虚拟任务）是 App 内跨模块的 task 集合，通过头-核心-尾管道实现流控和状态管理。
+
+公共参数：
+- `--app-id`：应用 ID（也可通过 `APP_ID` 环境变量设置）
+
+### 1.9.1 vtask list
+
+列出应用的 vtask 列表。
+
+```bash
+scalebox vtask list --app-id <app-id>
+```
+
+### 1.9.2 vtask list-subtasks
+
+列出指定 vtask 的子任务。
+
+```bash
+scalebox vtask list-subtasks --app-id <app-id> <vtask-id>
+```
+
+### 1.9.3 vtask get
+
+查看 vtask 详情（含子任务计数、信号量名等）。
+
+```bash
+scalebox vtask get <vtask-id>
+```
+
+### 1.9.4 vtask fail
+
+标记 vtask 失败。将自动释放门控信号量和资源信号量，并级联标记未完成子任务。
+
+```bash
+scalebox vtask fail <vtask-id>
+```
+
+### 1.9.5 vtask bind / unbind
+
+绑定/解绑 vtask 的计算资源。
+
+```bash
+scalebox vtask bind --app-id <app-id> --sema-name <sema-name>
+scalebox vtask unbind --app-id <app-id> --sema-name <sema-name>
+```
+
+### 1.9.6 vtask add-subtask
+
+向 vtask 添加子任务。在 agent 内部运行时自动传播 `_vtask_id`、`_vtask_size_sema` 等 header。
+
+```bash
+scalebox vtask add-subtask --app-id <app-id> --module <module-name> --body <task-body>
+```
+
+### 1.9.7 vtask 作用域变量
+
+```bash
+# 获取 vtask 变量
+scalebox vtask get-variable --vtask-id <vtask-id> <var-name>
+
+# 设置 vtask 变量
+scalebox vtask set-variable --vtask-id <vtask-id> <var-name> <value>
+```
+
+### 1.9.8 vtask 作用域信号量
+
+```bash
+# 创建
+scalebox vtask create-semaphore --vtask-id <vtask-id> <sema-name> <initial-value>
+
+# 获取
+scalebox vtask get-semaphore --vtask-id <vtask-id> <sema-name>
+
+# 增减
+scalebox vtask add-semaphore-value --vtask-id <vtask-id> <sema-name> <delta>
+
+# 删除
+scalebox vtask delete-semaphore --vtask-id <vtask-id> <sema-name>
+```
+
+## 1.11 semaphore 子命令
+
+- 公共参数：`--app-id` 或 `--module-id`（也可通过 `APP_ID` / `MODULE_ID` 环境变量）
+- 环境变量：`SEMAPHORE_AUTO_CREATE=yes` 时，信号量不存在则自动创建（初值为 0）。CLI 通过 gRPC metadata `semaphore-auto-create: yes` 传递给 controld
 
 - 信号量命名规则：
-  - 字符集：大小写英文字母[A-Za-z]、数字[0-9]、冒号 :、下划线 _ 、中划线 -
-  - 首字符为字母、下划线
+  - 字符集：`[A-Za-z0-9:_-]`
+  - 首字符为字母或下划线
 
-- 信号量表达式：表示一组信号量的正则表达式
-  - 字符集：信号量字符集，加上 '.*+?^$[]{}()|\'
+- 信号量表达式：表示一组信号量的正则表达式，字符集加上 `.*+?^$[]{}()|\`
 
-### 1.9.1 semaphore create
+### 1.11.1 semaphore list
+
+列出信号量，支持前缀和叶子节点过滤。
+
+```bash
+scalebox semaphore list --app-id <app-id>
+scalebox semaphore list --app-id <app-id> --prefix vtask_size
+scalebox semaphore list --app-id <app-id> --leaf-only
+```
+
+### 1.11.2 semaphore create
 
 - 参数：batch-size：用于批量信号量创建中，指定批次大小，缺省值为100。
 
@@ -440,7 +603,7 @@ scalebox semaphore create --sema-file my-sema-file.txt
 "sema3":n3
 ```
 
-### 1.9.2 semaphore get
+### 1.11.3 semaphore get
 
 #### 获取单个信号量当前值
 ```sh
@@ -477,7 +640,7 @@ code=$?
 - ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
   ```{"sema1":n1,"sema2":n2,"sema3":n3}```
 
-### 1.9.3 semaphore increment
+### 1.11.4 semaphore increment
 
 ####  单个信号量的增一操作
 ```sh
@@ -515,7 +678,7 @@ code=$?
 - ```val```为新的信号量值，如果为多个信号量，返回结果为json map表示的信号量名值对。
   ```{"sema1":n1,"sema2":n2,"sema3":n3}```
 
-### 1.9.4 semaphore decrement
+### 1.11.5 semaphore decrement
 
 #### 单个信号量的减一操作。
 
@@ -530,11 +693,11 @@ code=$?
 
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
-### 1.9.5 semaphore increment-n
+### 1.11.6 semaphore add-value
 
 #### 单个信号量的加n操作。
 ```sh
-val=$(scalebox semaphore increment-n ${sema_name} ${delta_value})
+val=$(scalebox semaphore add-value ${sema_name} ${delta_value})
 code=$?
 ```
 
@@ -545,45 +708,27 @@ code=$?
 用法详见：<a href="#semaphore-increment">semaphore increment</a>
 
 
-### 1.9.7 semaphore global-dist
+### 1.11.7 semaphore delete
 
-(改为global-offset?)
+删除信号量。
 
-- 作用范围：t_host表中group_id不为NULL的所有host
-
-- 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
-
-示例：
 ```sh
-APP_ID=3 scalebox semaphore global-dist task_progress:beam-make:r04.main
+scalebox semaphore delete --app-id ${app_id} ${sema_name}
 ```
 
-### 1.9.8 semaphore group-dist
-
-(改为group-offset?)
-
-- 作用范围：t_host表中group_id相同的host分为一组（为NULL的也是一组）
-
-- 信号量格式：``` task_progress:${mod_name}:${host_name} ```，并且对应主机的group_id不为空。
-
-示例：
-```sh
-APP_ID=3 scalebox semaphore group-dist task_progress:beam-make:r04.main
-```
-
-## 1.10 <span id="semagroup">semagroup子命令</span>
+## 1.12 semagroup 子命令
 
 - 多个信号量组成信号量组，用信号量名前缀、正则表达式标识信号量组
 
 
-#### 1.10.1 semagroup max
+### 1.12.1 semagroup max
 - 信号量组中最大值
 ```sh
 val=$(scalebox semagroup max ${sema_expr})
 code=$?
 ```
 
-#### 1.10.2 semagroup min
+### 1.12.2 semagroup min
 - 信号量组中最小值
 ```sh
 val=$(scalebox semagroup min ${sema_expr})
@@ -592,39 +737,48 @@ code=$?
 - sema_expr为信号量名的正则表达式或前缀
 - 返回值val为整数字符串
 
-#### 1.10.3 semagroup increment
+### 1.12.3 semagroup increment
 - 选取信号量组中最小值，并加一
 
-#### 1.10.4 semagroup decrement
+### 1.12.4 semagroup decrement
 - 选取信号量组中最大值，并减一
 
-#### 1.10.5 semagroup diffmax
+### 1.12.5 semagroup diff-max
 - 信号量组最大值与信号量当前值的差值
 ```sh
-val=$(scalebox semagroup diffmax ${sema_expr})
+val=$(scalebox semagroup diff-max ${sema_expr})
 code=$?
 ```
 - sema_expr为含分组定义的信号量，示例为```(group-prefix):sema-suffix```
 - 返回值val为整数字符串
 
-#### 1.10.6 semagroup diffmin
+### 1.12.6 semagroup diff-min
 - 信号量当前值与信号量组最小值的差值
 ```sh
-val=$(scalebox semagroup diffmin ${sema_expr})
+val=$(scalebox semagroup diff-min ${sema_expr})
 code=$?
 ```
 - sema_expr为含分组定义的信号量，示例为```(group-part:)sema-suffix```
 - 返回值val为整数字符串
 
 
-## 1.11 <span id="variable">variable子命令</span>
+## 1.13 variable 子命令
 
-- 公共参数：module-id，或app-id
-- 环境变量：MODULE_ID，或APP_ID
+- 公共参数：`--app-id` 或 `--module-id`（也可通过 `APP_ID` / `MODULE_ID` 环境变量）
+- 变量名命名：同信号量命名（`[A-Za-z0-9:_-]`，首字符为字母或下划线）
+- 支持 `list`、`get`、`set`、`delete` 操作
 
-- 变量名命名：同信号量命名
+### 1.16.1 variable list
 
-### 1.11.1 variable get
+列出变量，支持前缀和叶子节点过滤。
+
+```bash
+scalebox variable list --app-id <app-id>
+scalebox variable list --app-id <app-id> --prefix my_prefix
+scalebox variable list --app-id <app-id> --leaf-only
+```
+
+### 1.16.2 variable get
 
 #### 获取单个变量当前值
 - 示例：
@@ -652,34 +806,53 @@ code=$?
 - ```val```为新的变量量值，返回结果为json map表示的信号量名值对。
   ```{"var1":"val1","var2":"val2","var3":"val3"}```
 
-### 1.11.2 variable set
+### 1.15.3 variable set
 
 ```sh
 scalebox variable set --app-id ${app_id} ${var_name} ${str_value}
 APP_ID=${app_id} scalebox variable set ${var_name} ${str_value}
-
-scalebox variable set --module-id=${module_id} ${var_name} ${str_value}
-MODULE_ID=${module_id} scalebox variable set ${var_name} ${str_value}
 ```
 
-## 1.12 <span id="global">global子命令</span>
+### 1.14.4 variable delete
 
-全局变量
+```sh
+scalebox variable delete --app-id ${app_id} ${var_name}
+```
 
-### 1.12.1 global get
+## 1.14 global 子命令
+
+全局变量，跨应用共享。
+
+### 1.16.1 global list
+
+列出全局变量，支持前缀和叶子节点过滤。
+
+```bash
+scalebox global list
+scalebox global list --prefix my_prefix
+scalebox global list --leaf-only
+```
+
+### 1.16.2 global get
 
 ```sh
 scalebox global get ${global_name}
 ```
 
-### 1.12.2 global set
+### 1.15.3 global set
 
 ```sh
 scalebox global set ${global_name} ${global_value}
 ```
 
+### 1.14.4 global delete
 
-## 1.13 <span id="channel">channel子命令</span>
+```sh
+scalebox global delete ${global_name}
+```
+
+
+## 1.15 channel 子命令
 
 channel用于跨应用间的通信，是一个有优先级队列。
 
@@ -688,14 +861,14 @@ channel用于跨应用间的通信，是一个有优先级队列。
 
 - 优先队列命名：同信号量命名
 
-### 1.13.1 channel create
+### 1.16.1 channel create
 
 - head-app : app-id
 - tail-app
 
 若不指定，则为当前app
 
-### 1.13.2 channel pull
+### 1.16.2 channel pull
 
 - 获取队列当前值
 - 示例：
@@ -710,7 +883,7 @@ code=$?
   - 2： channel not-found
 - ```val```为新的变量值
 
-### 1.13.3 channel push
+### 1.15.3 channel push
 
 - priority为优先级，浮点数。数值小，优先级高。
   
@@ -723,11 +896,11 @@ MODULE_ID=${module_id} scalebox channel push ${pp_name} ${str_value}
 ```
 
 
-## 1.14 <span id="fs">fs子命令</span>
+## 1.16 fs 子命令
 
 scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在同一个名字空间中。后期可提供mount支持、跨节点迁移等特性。
 
-### 1.14.1 fs ls
+### 1.16.1 fs ls
 
 - 主要参数：
   - include-removed-file
@@ -739,7 +912,7 @@ scalebox-fs以文件系统形式，将分布式计算节点上的文件组织在
 scalebox fs ls ${path_expr}
 ```
 
-### 1.14.2 fs stat
+### 1.16.2 fs stat
 
 查看1个或多个文件的元数据。每个节点上的文件名跟全局文件名一致。
 
@@ -753,13 +926,13 @@ scalebox fs ls ${path_expr}
 scalebox fs stat ${path_expr}
 ```
 
-## 1.15 <span id="status">status</span>
+## 1.17 status
 
 - 系统整体状态：local集群头节点（actuator到local头节点有效）
 - cluster列表：不同状态的host数量
 - app列表：不同状态
 
-## 1.16 <span id="event">event子命令</span>
+## 1.18 event 子命令
 
 支持各类event的add操作。
 
@@ -781,7 +954,7 @@ scalebox event xxxx-add --txt-file "${txt_file}" --json-file "${json_file}" "${t
 则txt、json从文件中读取。
 
 
-### 1.16.1 event task-add
+### 1.18.1 event task-add
 
 通过环境变量TASK_ID或参数 --task-id  指定task-id。
 ```sh
@@ -790,14 +963,14 @@ scalebox event task-add --task-id ${task_id} ${tag_name} ${level_name} ${code} $
 
 ```scalebox event task-add ``` 可简写为 ``` scalebox event add  ```
 
-### 1.16.2 event slot-add
+### 1.18.2 event slot-add
 
 通过环境变量SLOT_ID或参数 --slot-id  指定slot-id。
 ```sh
 scalebox event slot-add --slot-id ${slot_id} ${tag_name} ${level_name} ${code} ${txt} ${json}
 ```
 
-### 1.16.3 event misc-add
+### 1.18.3 event misc-add
 
 ```sh
 scalebox event misc-add ${tag_name} ${level_name} ${code} ${txt} ${json}

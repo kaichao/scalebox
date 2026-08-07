@@ -6,6 +6,12 @@
 欢迎来到Scalebox的文档库!
 ====================================
 
+根据您的使用场景，选择以下学习路径：
+
+- **最终用户（运行应用）**：从"入门教程"开始 → 阅读"使用指南"的核心概念、运行应用、示例应用
+- **应用开发者（开发应用）**：从"编程指南"的编程模型开始 → 应用设计 → 模块开发
+- **系统管理员（管理集群）**：从"使用指南"的安装部署开始 → 集群管理 → 运维管理
+
 .. toctree::
    :maxdepth: 2
    :caption: 入门教程
@@ -13,7 +19,6 @@
 
    started/1_introduction
    started/2_quick_start
-   started/3_next_steps
 
 .. toctree::
    :maxdepth: 2
@@ -26,6 +31,8 @@
    user/4_example_apps
    user/5_operations
    user/6_standard_modules
+   user/7_webui
+   user/8_vscode
 
 .. toctree::
    :maxdepth: 2
@@ -37,9 +44,10 @@
    developer/3_app_design
    developer/4_main_router_status
    developer/5_node_local_compute
-   developer/6_performance_optimization
    developer/7_advanced_features
-   developer/8_cluster_management
+   developer/9_vtask
+   developer/10_cross_cluster
+   developer/11_security
 
 .. toctree::
    :maxdepth: 2
@@ -50,7 +58,6 @@
    appendix/2_parameter_reference
    appendix/3_commandline_tools
    appendix/4_shell_programming
-   appendix/5_best_practices
    appendix/6_exit_code_spec
    appendix/7_software_install
 
@@ -60,7 +67,6 @@
    :hidden:
 
    faq
-   release_notes
    about_us/contributors
    about_us/contact_us
 

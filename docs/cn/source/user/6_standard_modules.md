@@ -47,10 +47,10 @@ COPY ./code /app/bin/
 | target_url |       | "user@remote-ip:remote-port/remote/dir" |
 | keep_source | "yes" | "yes" / "no"，是否保留源端文件/目录 |
 
-### 6.2.2 file-copy模块
+### 6.2.2 file-copy 模块
 用于文件拷贝操作。
 
-#### 使用示例
+#### file-copy 使用示例
 ```yaml
 modules:
   file-copy:
@@ -59,15 +59,15 @@ modules:
       task_dist_mode: SLOT-BOUND
 ```
 
-#### 配置参数
+#### file-copy 配置参数
 - **source_url**: 源文件路径
 - **target_url**: 目标文件路径
 - **keep_source**: 是否保留源文件
 
-### 6.2.3 dir-copy模块
+### 6.2.3 dir-copy 模块
 用于目录拷贝操作。
 
-#### 使用示例
+#### dir-copy 使用示例
 ```yaml
 modules:
   dir-copy:
@@ -79,7 +79,7 @@ modules:
 ### 6.2.4 rsync-copy模块
 基于rsync的高效数据传输模块。
 
-#### 使用示例
+#### rsync-copy 使用示例
 ```yaml
 modules:
   rsync-copy:
@@ -88,7 +88,7 @@ modules:
       task_dist_mode: SLOT-BOUND
 ```
 
-#### 高级参数
+#### rsync-copy 高级参数
 - **rsync_options**: rsync命令行选项
 - **compress**: 是否启用压缩传输
 - **delete**: 是否删除目标端多余文件
@@ -96,7 +96,7 @@ modules:
 ### 6.2.5 ftp-copy模块
 支持FTP协议的数据传输模块。
 
-#### 使用示例
+#### ftp-copy 使用示例
 ```yaml
 modules:
   ftp-copy:
@@ -105,7 +105,7 @@ modules:
       task_dist_mode: SLOT-BOUND
 ```
 
-#### 配置参数
+#### ftp-copy 配置参数
 - **ftp_server**: FTP服务器地址
 - **ftp_user**: FTP用户名
 - **ftp_password**: FTP密码
@@ -116,7 +116,7 @@ modules:
 ### 6.3.1 cron模块
 定时任务模块，支持按计划执行任务。
 
-#### 使用示例
+#### cron 使用示例
 ```yaml
 modules:
   cron:
@@ -126,7 +126,7 @@ modules:
       command: "/app/bin/backup.sh"
 ```
 
-#### 配置参数
+#### cron 配置参数
 - **cron_expression**: Cron表达式（分 时 日 月 周）
 - **command**: 要执行的命令
 - **timezone**: 时区设置（默认UTC）
@@ -134,7 +134,7 @@ modules:
 ### 6.3.2 cluster-head模块
 集群头节点管理模块。
 
-#### 使用示例
+#### cluster-head 使用示例
 ```yaml
 modules:
   cluster-head:
@@ -143,7 +143,7 @@ modules:
       slot_options: slot_on_head
 ```
 
-#### 功能特性
+#### cluster-head 功能特性
 - 集群管理协调
 - 资源调度优化
 - 节点状态监控
@@ -151,7 +151,7 @@ modules:
 ### 6.3.3 node-agent模块
 节点代理模块，运行在计算节点上。
 
-#### 使用示例
+#### node-agent 使用示例
 ```yaml
 modules:
   node-agent:
@@ -160,7 +160,7 @@ modules:
       cluster: ${CLUSTER}
 ```
 
-#### 功能特性
+#### node-agent 功能特性
 - 节点资源管理
 - 任务执行监控
 - 系统状态报告
@@ -168,7 +168,7 @@ modules:
 ### 6.3.4 dir-list模块
 目录列表模块，用于生成待处理文件列表。
 
-#### 使用示例
+#### dir-list 使用示例
 ```yaml
 modules:
   dir-list:
@@ -178,7 +178,7 @@ modules:
       pattern: "*.txt"
 ```
 
-#### 配置参数
+#### dir-list 配置参数
 - **target_dir**: 目标目录路径
 - **pattern**: 文件匹配模式
 - **recursive**: 是否递归扫描子目录

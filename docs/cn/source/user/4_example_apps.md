@@ -4,14 +4,14 @@
 
 第一个scalebox应用，用于验证安装和基本功能。
 
-### 运行示例
+### hello-scalebox 运行示例
 
 ```bash
 cd examples/hello-scalebox
 echo "Scalebox" | scalebox run 
 ```
 
-### 应用特点
+### hello-scalebox 应用特点
 - 简单的消息处理
 - 单模块应用
 - 适合初学者理解基本概念
@@ -20,14 +20,14 @@ echo "Scalebox" | scalebox run
 
 求解[1..max_value]之间的质数数量。主要用于展示scalebox的主要特性。
 
-### 运行示例
+### app-primes 运行示例
 
 ```bash
 cd examples/app-primes
 make run NUM_GROUPS=4 CALC_NODE=local NUM_PARALLEL=2
 ```
 
-### 应用特点
+### app-primes 应用特点
 - 数据并行处理
 - 多模块协作
 - 支持多语言实现（Python、Go、C++等）
@@ -36,14 +36,14 @@ make run NUM_GROUPS=4 CALC_NODE=local NUM_PARALLEL=2
 
 文件拷贝操作是计算过程中常见操作。
 
-### 运行示例
+### app-copy 运行示例
 
 ```bash
 cd examples/app-copy
 scalebox run --source /data/source --target /data/target
 ```
 
-### 应用特点
+### app-copy 应用特点
 - 跨节点数据传输
 - 支持多种传输协议
 - 流水线并行优化
@@ -52,28 +52,28 @@ scalebox run --source /data/source --target /data/target
 
 app-primes的跨集群版本，用多个集群算力求解给定整数区间内质数数量。
 
-### 运行示例
+### remote-primes 运行示例
 
 ```bash
 cd examples/remote-primes
 make run CLUSTER0=cluster0 CLUSTER1=cluster1
 ```
 
-### 应用特点
+### remote-primes 应用特点
 - 跨集群计算
 - 异构集群支持
 - 动态资源分配
 
 ## 4.5 vtask：虚拟任务应用
 
-### 运行示例
+### vtask 运行示例
 
 ```bash
 cd examples/vtask
 scalebox app run --vtasks 100
 ```
 
-### 应用特点
+### vtask 应用特点
 - 虚拟任务管理
 - 批量任务处理
 - 资源优化调度

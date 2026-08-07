@@ -8,8 +8,8 @@
 
 - **操作系统**：Linux (CentOS 7+/Ubuntu 18.04+/Debian 10+)、macOS 10.15+
 - **Docker**：20.10+（推荐使用最新稳定版）
-- **内存**：≥ 4GB
-- **磁盘空间**：≥ 30GB
+- **内存**：≥ 8GB
+- **磁盘空间**：≥ 100GB
 
 ### 2.1.2 Docker安装
 
@@ -67,13 +67,6 @@ scalebox app list
 scalebox task list
 ```
 
-### 2.3.3 查看运行结果
-
-```bash
-# 查看任务执行日志
-scalebox task log <task_id>
-```
-
 ## 2.4 验证安装
 
 ### 2.4.1 健康检查
@@ -87,6 +80,8 @@ scalebox cluster status
 
 成功运行Hello Scalebox后，您可以：
 
-1. **学习核心概念**：阅读用户指南了解App、Module、Task等核心概念
-2. **尝试更多示例**：探索其他示例应用（app-primes、app-copy等）
-3. **开发自定义应用**：参考开发指南，开发自己的Scalebox应用
+1. **学习核心概念**：阅读使用指南了解App、Module、Task、VTask（任务组）、Cluster等核心概念
+2. **尝试更多示例**：探索其他示例应用（app-primes、app-copy、vtask等）
+3. **使用 WebUI**：浏览器打开 `http://localhost:8088` 进入可视化管理界面
+4. **安装 VS Code 插件**：`cd vscode-scalebox && make install`，获得 TreeView + DAG + app.yaml 语法支持
+5. **开发自定义应用**：参考开发指南，开发自己的Scalebox应用

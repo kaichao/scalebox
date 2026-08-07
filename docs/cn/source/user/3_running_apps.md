@@ -18,14 +18,11 @@ Scalebox应用通过YAML配置文件定义。主要包括：
 ### 3.1.3 创建应用
 
 ```bash
-# 使用默认配置文件
+# 使用默认配置文件和参数文件
 scalebox run
 
 # 指定配置文件
 scalebox run --env-file scalebox.env --app-file app.yaml
-
-# 带参数创建
-scalebox run --tag v1 --num-groups 4
 ```
 
 ## 3.2 应用管理
@@ -36,24 +33,18 @@ scalebox run --tag v1 --num-groups 4
 # 列出所有应用
 scalebox app list
 
-# 查看特定应用
-scalebox app show <app-name>
-
 # 查看应用详细信息
-scalebox app describe <app-name>
+scalebox app show --app-id=<app-id>
 ```
 
 ### 3.2.2 应用操作
 
 ```bash
 # 停止应用
-scalebox app stop <app-name>
+scalebox app set-status --app-id=<app-id> --status=<app-status>
 
 # 删除应用
 scalebox app delete <app-name>
-
-# 查看应用日志
-scalebox app logs <app-name>
 ```
 
 ## 3.3 任务管理
@@ -77,12 +68,6 @@ scalebox task list --app-id <app-id> --status FAILED
 # 查看任务详情
 scalebox task show <task-id>
 
-# 查看任务日志
-scalebox task log <task-id>
-
-# 重试失败任务
-scalebox task retry <task-id>
-
 # 删除任务
 scalebox task delete <task-id>
 ```
@@ -96,10 +81,10 @@ scalebox task delete <task-id>
 scalebox cluster status
 
 # 列出集群节点
-scalebox node list
+scalebox host list
 
 # 查看节点详情
-scalebox node show <node-name>
+scalebox host show --host-id=<host-id>
 ```
 
 ### 3.4.2 运行槽管理
@@ -109,7 +94,7 @@ scalebox node show <node-name>
 scalebox slot list
 
 # 查看槽位详情
-scalebox slot show <slot-id>
+scalebox slot show --slot-id=<slot-id>
 ```
 
 ## 3.5 应用监控
@@ -157,7 +142,7 @@ scalebox node metrics <node-name>
 
 ```bash
 # 验证配置
-scalebox validate app.yaml
+scalebox validate --app-file=<app-yaml>
 
 # 测试模块
 scalebox test module <module-name>
@@ -165,3 +150,18 @@ scalebox test module <module-name>
 # 检查系统状态
 scalebox system check
 ```
+
+## 3.7 应用解析与集成
+
+应用通过 `scalebox run` 命令解析并创建：
+
+```bash
+scalebox run --env-file scalebox.env app.yaml
+```
+
+解析过程中模板参数变量的定义优先顺序（从高到低）：
+
+1. 命令行执行的环境变量
+2. 命令行指定的环境变量文件（缺省为 scalebox.env）
+3. 用户级环境变量配置文件：`${HOME}/.scalebox/environments`
+4. 系统级环境变量配置文件：`/etc/scalebox/environments`

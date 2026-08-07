@@ -1,218 +1,152 @@
-# Scalebox - 云原生的流式计算引擎
+# Scalebox — 云原生的流式计算引擎
 
-Scalebox是一种云原生的流式计算引擎，可在分布式、异构计算集群上运行容器化的用户算法，以流水线组织模块层级上大规模并行处理，支持任务级容错。
+Scalebox 是一种云原生的流式计算引擎，可在分布式、异构计算集群上运行容器化的用户算法，以流水线组织模块层级的大规模并行处理，支持任务级容错。与已有大数据处理、并行计算等框架相比，其技术特点特别适用于数据分布、算力分布、算法复杂等应用场景。
 
 ## ✨ 核心特性
 
-- **云原生设计**：所有算法模块容器化封装，通过边车模式嵌入到面向云环境的数据处理流水线；控制消息与数据通道分离，前后模块间以消息总线关联，实现多语言的非侵入式并行编程
+- **云原生设计**：所有算法模块容器化封装，通过边车模式嵌入数据处理流水线；控制消息与数据通道分离，前后模块以消息总线关联，实现多语言非侵入式并行编程。
 
-- **跨集群计算**：归一化处理算法模块和传输模块，通过流水线统一处理集群内/跨集群的数据，屏蔽数据和计算的跨集群差异
+- **虚拟任务（VTask / 任务组）**：在细粒度 Task 之上建立应用级粗粒度计算单元。跨模块 Task 集合内置信号量和共享变量，由 wait-queue → vtask-head → vtask-core → vtask-tail 管道统一管理流控、资源绑定和状态追踪。支持 DEFAULT / HOST-BOUND / GROUP-BOUND 三种模式，覆盖从轻量批处理到多节点协同计算的全场景。
 
-- **任务级容错**：对于硬件故障、软件bug、网络问题、数据异常等原因导致的偶发性出错，基于规则实现自动容错处理
+- **跨集群计算**：归一化处理算法模块和传输模块，通过流水线统一处理集群内/跨集群的数据。t_cluster 全网格复制 + gRPC 代理转发，CLI 始终连接本地 controld，跨集群操作由服务端透明路由。
 
-- **本地计算优化**：以节点本地存储为中心，通过"算子级空间展开 + 本地存储驻留 + 显式数据流编排"，把大量本该发生在节点间互联通信前移到节点内部完成
+- **任务级容错**：对于硬件故障、软件 bug、网络问题、数据异常等偶发性错误，基于退出码规则实现自动重试。细粒度任务级容错，可在不可靠硬件上实现可信数据分析。
 
-- **多级并行化**：
-  - 模块内算法并行（多线程、GPU加速等）
-  - 模块级数据并行（同一模块多个实例处理不同数据）
-  - 模块间流水线并行（不同模块通过流水线方式并行执行）
+- **本地计算优化**：以节点本地存储为中心，通过"算子级空间展开 + 本地存储驻留 + 显式数据流编排"，将节点间通信前移到节点内部完成，显著降低对网络带宽和外部存储的依赖。
 
-- **多语言支持**：支持Python、Go、C++、Java、Shell等多种语言的算法实现
+- **WebUI 管理界面**：REST 网关（:8088），76 个端点覆盖全部管理功能。SPA 前端内嵌单文件部署，提供 Dashboard 统计大盘、App 卡片网格、DAG 拓扑图、Task/VTask 管理、信号量/变量层级树。
+
+- **VS Code 插件**：侧边栏 TreeView（App → Modules/Tasks/VTasks 三级懒加载树）、任务日志 Webview、DAG 力导向图（ECharts）、app.yaml LSP（语法校验/自动补全/悬停提示）。Docker 打包，零本地 Node.js 依赖。
+
+- **安全框架**：JWT 认证 + RBAC 角色体系（admin/viewer/operator/automation）+ gRPC TLS 加密 + 数据库证书认证。Compose 分层可选启用，默认关闭零开销。
+
+- **多级并行化**：模块内算法并行、模块级数据并行、模块间流水线并行。
+
+- **多容器引擎**：Docker（默认）、Singularity/Apptainer、Podman。
 
 ## 🚀 快速开始
 
 ### 1. 环境准备
 
 ```bash
-# 安装 Docker
+# Docker 20.10+
 curl -fsSL https://get.docker.com | sh
 sudo systemctl enable --now docker
-
-# 验证 Docker 安装
 docker --version
-docker run hello-world
 ```
 
-### 2. 获取并运行 Scalebox
+### 2. 启动 Scalebox
 
 ```bash
-# 克隆仓库
 git clone https://github.com/kaichao/scalebox.git
 cd scalebox
 
-# 启动控制平面服务
-cd runtime && make all
+# 生成密钥（可选）
+cd build && bash gen-secrets.sh && cd ..
 
-# 验证服务状态
-docker ps
+# 构建并启动
+make -C build/
+docker compose -f build/compose.yaml up -d
 ```
 
-### 3. 运行 Hello Scalebox 示例
+浏览器打开 `http://localhost:8088` 进入 WebUI。
+
+### 3. 运行示例
 
 ```bash
-# 运行第一个应用
 cd examples/hello-scalebox
-echo "Docker-based_Scalebox" | scalebox run
-
-# 查看应用状态
+echo "Hello Scalebox" | scalebox run
 scalebox app list
-
-# 查看任务执行情况
-scalebox task list
 ```
 
-### 4. 运行分布式计算示例
+### 4. 安装 VS Code 插件
 
 ```bash
-# 运行质数计算应用
-cd examples/app-primes
-make run NUM_GROUPS=4 CALC_NODE=local NUM_PARALLEL=2
-
-# 查看应用日志
-scalebox app logs <app-name>
+cd vscode-scalebox && make install
 ```
 
-## 📊 架构概述
+## 📊 核心概念
 
-### 核心概念
+| 概念 | 英文 | 中文 | 说明 |
+|:---|:---|:---|:---|
+| App | Application | 应用 | 完成特定计算任务的应用程序，包含多个 Module |
+| Module | Module | 模块 | 容器化封装的算法组件，通过级联形成流水线 |
+| Task | Task | 任务 | 基本运行单位，输入数据在 Module 上的执行过程 |
+| VTask | Virtual Task | 任务组 | 跨模块 Task 集合，内置信号量和变量，统一流控和状态管理 |
+| Host | Host | 节点 | 执行计算任务的服务器 |
+| Slot | Slot | 插槽 | 节点上的计算资源切片，Task 调度的基础单位 |
+| Cluster | Cluster | 集群 | 计算资源的逻辑分组，支持跨广域网协同 |
 
-| 概念 | 英文名称 | 中文名称 | 说明 |
-| :--- | :--- | :--- | :--- |
-| 应用程序 | **App** | **应用** | 完成特定计算任务的应用程序，包含多个模块 |
-| 软件单元 | **Module** | **模块** | 构成应用的基本可编程单元，容器化封装的程序代码集合 |
-| 执行实例 | **Task** | **任务** | 基本运行单位，输入数据在具体模块上的执行过程 |
-| 计算节点 | **Host** | **节点** | 执行计算任务的服务器节点 |
-| 资源单元 | **Slot** | **插槽** | 节点上与模块对应的计算资源切片 |
+## 📚 文档
 
-### 系统架构
+### 中文用户文档（[→ 完整目录](docs/cn/source/index.rst)）
 
-```
-┌─────────────────────────────────────────┐
-│           应用层 (Application)           │
-│   ┌─────────┐  ┌─────────┐  ┌─────────┐ │
-│   │   App   │  │   App   │  │   App   │ │
-└───┴─────────┴──┴─────────┴──┴─────────┴─┘
-┌─────────────────────────────────────────┐
-│           模块层 (Module)                │
-│   ┌─────────┐  ┌─────────┐  ┌─────────┐ │
-│   │ Module  │  │ Module  │  │ Module  │ │
-└───┴─────────┴──┴─────────┴──┴─────────┴─┘
-┌─────────────────────────────────────────┐
-│         运行时层 (Runtime)                │
-│  controld │ actuator │ database │ ...   │
-└─────────────────────────────────────────┘
-```
+| 分类 | 文档 | 说明 |
+|------|------|------|
+| 入门 | [Scalebox 简介](docs/cn/source/started/1_introduction.md) | 产品定位、主要特性、核心价值 |
+| 入门 | [快速上手](docs/cn/source/started/2_quick_start.md) | 环境准备、部署运行、验证安装 |
+| 使用 | [安装部署](docs/cn/source/user/1_installation.md) | Docker Compose 单节点 / 多节点集群 |
+| 使用 | [核心概念](docs/cn/source/user/2_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster 详解 |
+| 使用 | [运行应用](docs/cn/source/user/3_running_apps.md) | 创建、管理、监控应用和任务 |
+| 使用 | [示例应用](docs/cn/source/user/4_example_apps.md) | 入门到高级示例 |
+| 使用 | [运维管理](docs/cn/source/user/5_operations.md) | 监控、排错、备份、集群管理 |
+| 使用 | [标准模块](docs/cn/source/user/6_standard_modules.md) | 文件传输、定时任务、目录列表等 |
+| 使用 | [WebUI 指南](docs/cn/source/user/7_webui.md) | REST 网关、页面导航、构建部署 |
+| 使用 | [VS Code 插件](docs/cn/source/user/8_vscode.md) | 安装配置、TreeView、DAG、LSP |
+| 开发 | [编程模型](docs/cn/source/developer/1_programming_model.md) | 两级编程模型、事件驱动架构 |
+| 开发 | [模块开发](docs/cn/source/developer/2_module_development.md) | 模块设计、sidecar 模式、单元测试 |
+| 开发 | [应用设计](docs/cn/source/developer/3_app_design.md) | 设计原则、流水线模式、最佳实践 |
+| 开发 | [主路由与状态](docs/cn/source/developer/4_main_router_status.md) | 信号量/变量/全局变量、VTask 概览 |
+| 开发 | [节点本地计算](docs/cn/source/developer/5_node_local_compute.md) | 存算一体、三阶段模型、性能分析 |
+| 开发 | [高级特性](docs/cn/source/developer/7_advanced_features.md) | 容错、准入控制、超时、slot 自动扩缩 |
+| 开发 | [VTask 设计](docs/cn/source/developer/9_vtask.md) | 概念模型、模块结构、信号量、管道流程 |
+| 开发 | [跨集群架构](docs/cn/source/developer/10_cross_cluster.md) | 数据复制、地址解析、gRPC 代理 |
+| 开发 | [安全框架](docs/cn/source/developer/11_security.md) | JWT + RBAC + TLS、证书管理 |
+| 参考 | [技术规范](docs/cn/source/appendix/1_tech_specifications.md) | app.yaml / module / cluster 定义规范 |
+| 参考 | [参数手册](docs/cn/source/appendix/2_parameter_reference.md) | 全部参数和环境变量 |
+| 参考 | [CLI 命令](docs/cn/source/appendix/3_commandline_tools.md) | 24 个子命令完整参考 |
+| 参考 | [Shell 编程](docs/cn/source/appendix/4_shell_programming.md) | 内置函数、容器目录、文件交换接口 |
+| 参考 | [退出码规范](docs/cn/source/appendix/6_exit_code_spec.md) | 应用退出码约定和调度策略 |
+| 参考 | [FAQ](docs/cn/source/faq.md) | 部署、任务、信号量、WebUI 常见问题 |
 
-### 核心组件
+### 英文设计文档
 
-- **controld**：gRPC-based 控制服务，管理执行器和计算节点
-- **actuator**：启动服务，通过 SSH 或外部调度器在计算节点上启动插槽
-- **database**：PostgreSQL 数据库，存储应用/模块/任务/插槽元数据
-
-## 🎯 应用场景
-
-### 大规模数据的复杂处理
-- **天文计算**：大型天文望远镜观测数据的处理
-- **基因组学和生物信息学**：基因组测序、组装、比对等
-- **高能物理**：粒子对撞机实验数据分析
-
-### 跨集群算力应用
-- 大规模数据传输与处理
-- 分布式计算资源统一调度
-- 跨广域网异构算力集群的统一管理
-
-### 基于容器化的跨平台嵌入式仿真
-- 软件模块标准化封装
-- 多平台、多模块集成测试
-- 全系统仿真
-
-### 大模型训练
-- 原生支持数据并行、流水线并行
-- 支持模型数据按层划分的张量并行
-
-## 📚 详细文档
-
-### 入门教程
-- [Scalebox 简介](docs/cn/source/started/1_introduction.md) - 技术起源、核心概念、主要特性
-- [快速上手](docs/cn/source/started/2_quick_start.md) - 环境准备、部署运行、验证安装
-- [下一步](docs/cn/source/started/3_next_steps.md) - 学习路径和进阶指南
-
-### 使用指南
-- [安装部署](docs/cn/source/user/1_installation.md) - 系统要求、Docker 安装、集群配置
-- [核心概念](docs/cn/source/user/2_core_concepts.md) - App、Module、Task、Slot 详解
-- [运行应用](docs/cn/source/user/3_running_apps.md) - 应用创建、运行、监控和管理
-- [示例应用](docs/cn/source/user/4_example_apps.md) - 各种示例应用详解
-- [标准模块](docs/cn/source/user/6_standard_modules.md) - 文件操作、数据处理、工具模块
-
-### 编程指南
-- [编程模型](docs/cn/source/developer/1_programming_model.md) - 两级编程模型、消息驱动机制
-- [模块开发](docs/cn/source/developer/2_module_development.md) - 模块设计、实现、测试
-- [应用设计](docs/cn/source/developer/3_app_design.md) - 应用架构设计、YAML 配置
-- [性能优化](docs/cn/source/developer/6_performance_optimization.md) - 并行优化、I/O 优化
-- [高级特性](docs/cn/source/developer/7_advanced_features.md) - 容错机制、准入控制
-
-### 附录
-- [技术规格](docs/cn/source/appendix/1_tech_specifications.md) - 应用规范、模块规范
-- [命令行工具](docs/cn/source/appendix/3_commandline_tools.md) - 所有命令行工具详解
-- [最佳实践](docs/cn/source/appendix/5_best_practices.md) - 开发、部署、运维最佳实践
-- [状态码](docs/cn/source/appendix/6_status_codes.md) - 状态码说明和错误处理
+| 文档 | 说明 |
+|------|------|
+| [VTask 设计](docs/vtask-design.md) | VTask 完整设计文档 |
+| [WebUI / VS Code](docs/webui-vscode-plan.md) | WebUI + VS Code 插件架构方案 |
+| [REST API](docs/rest-api-reference.md) | 76 端点完整参考 |
+| [gRPC API](docs/grpc-api.md) | 95 RPC 调用示例 |
+| [安全框架](docs/security.md) | JWT + RBAC + TLS 配置 |
 
 ## 🧪 示例应用
 
-本仓库包含多个应用示例：
-
-- **[hello-scalebox](examples/hello-scalebox/)** - Scalebox 的第一个入门应用
-- **[app-primes](examples/app-primes/)** - 计算区间内质数总数量
-- **[remote-primes](examples/remote-primes/)** - 跨集群质数计算演示
-- **[app-copy](examples/app-copy/)** - 跨集群数据拷贝示例
-- **[cluster-dir-copy](examples/cluster-dir-copy/)** - 集群目录拷贝示例
-
-## 🔧 特性测试
-
-- **[retry_test](tests/retry_test/)** - 容错支持测试
-- **[timeout-gen](tests/timeout-gen/)** - 超时设置测试
-- **[check_test](tests/check_test/)** - 流控管理测试
-- **[task-perspective](tests/task-perspective/)** - 任务透视测试
-- **[cross-cluster-primes](tests/cross-cluster-primes/)** - 跨集群计算测试
+- **[hello-scalebox](examples/hello-scalebox/)** — 第一个入门应用
+- **[app-primes](examples/app-primes/)** — 质数计算，展示数据并行
+- **[app-copy](examples/app-copy/)** — 跨节点数据传输
+- **[remote-primes](examples/remote-primes/)** — 跨集群质数计算
+- **[vtask](examples/vtask/)** — VTask 管道示例（DEFAULT / HOST-BOUND）
 
 ## 🏗️ 标准模块
 
-Scalebox 提供多种标准模块：
+- **dir-list** — 目录列表，生成待处理文件清单
+- **file-copy** — 基于 rsync-over-ssh 的单文件拷贝
+- **dir-copy** — 目录级拷贝
+- **rsync-copy** — 高效 rsync 传输
+- **ftp-copy** — FTP 协议传输
+- **cron** — 定时消息触发
+- **cluster-head** / **node-agent** — 集群节点管理
 
-### 文件操作模块
-- **dir-list** - 目录列表功能
-- **file-copy** - 文件拷贝功能
-- **rsync-copy** - 基于 rsync 的文件传输
-- **ftp-copy** - 基于 FTP 的文件传输
-- **rsyncd** - rsync 服务器模块
+## 🔗 相关软件
 
-### 数据处理模块
-- **data-grouping-2d** - 2D 数据集分组操作
+- [PostgreSQL](https://github.com/postgres/postgres) — 元数据存储
+- [gRPC](https://github.com/grpc/grpc) — 跨组件高效通信协议
+- [Go](https://github.com/golang/go) — 云原生应用开发语言
 
-### 工具模块
-- **cron** - 定时消息发送
-- **actuator** - 密钥生成器
+## 🤝 贡献
 
-## 🤝 贡献指南
-
-非常欢迎你的加入！
-
-1. [提交 Issue](https://github.com/kaichao/scalebox/issues/new) 报告问题或建议新功能
-2. Fork 项目并提交 Pull Request
-3. 参与文档改进、测试用例编写
-4. 分享使用经验和应用案例
+欢迎提交 [Issue](https://github.com/kaichao/scalebox/issues/new) 或 Pull Request。
 
 ## 📄 许可证
 
 [Apache License 2.0](LICENSE) © Kaichao Wu
-
-## 🔗 相关软件
-
-- [Docker](https://www.docker.com/) - 容器化平台
-- [PostgreSQL](https://github.com/postgres/postgres) - Scalebox 后台数据库
-- [gRPC](https://github.com/grpc/grpc) - 不同软件模块间的高效通信协议
-- [Go](https://github.com/golang/go) - 云原生应用的程序语言
-
----
-
-*想要了解更多？请访问 [详细技术文档](docs/cn/source/index.rst) 获取完整信息。*
