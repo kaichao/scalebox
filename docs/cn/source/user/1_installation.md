@@ -32,7 +32,7 @@
 
 |  容器引擎/容器运行时     | 版本号             |  说明     |
 | --------------------- | ----------------- |  ------- |
-| docker-ce             | 20.10<sup>+</sup> |          |
+| docker-ce             | 26.1<sup>+</sup> |          |
 | singularity           | 3.8<sup>+</sup>   |          |
 | podman                | 4.8<sup>+</sup>   | 待测试    |
 | containerd + nerdctl  | 1.6<sup>+</sup>   | 待测试    |
@@ -122,13 +122,13 @@ docker compose -f build/compose.yaml -f build/compose.security.yaml up -d
 | n3  | NODE | 10.0.6.104 |
 
 **HEAD 节点配置**：
-- 安装 Docker 20.10+
+- 安装 Docker 26.1+
 - 克隆代码仓库，执行 `make -C build/` 构建镜像
 - 启动 controld + actuator + database + webui 容器
 - 设置 `/etc/hosts`，包含所有节点的 IP 映射
 
 **计算节点配置**：
-- 安装 Docker 20.10+
+- 安装 Docker 26.1+
 - 设置 HEAD → NODE 的 SSH 免密登录（actuator 通过 SSH 在计算节点启动容器）
 - 设置主机名和 `/etc/hosts`
 

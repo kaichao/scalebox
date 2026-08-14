@@ -7,7 +7,7 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'scalebox'
-copyright = '2024, scalebox'
+copyright = '2026, scalebox'
 author = 'scalebox'
 release = '0.1.0'
 

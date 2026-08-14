@@ -1,5 +1,7 @@
-# 2. Contact Us
+# 3. Contact Us
 
-## email
 
-help@scalebox.dev
+
+## Email
+
+help@scalebox.net

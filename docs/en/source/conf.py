@@ -7,14 +7,20 @@
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
 
 project = 'scalebox'
-copyright = '2024, scalebox'
+copyright = '2026, scalebox'
 author = 'scalebox'
 release = '0.1.0'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['recommonmark','sphinx_markdown_tables','sphinx.ext.autosectionlabel']
+extensions = [
+    # 'recommonmark',
+    'myst_parser',
+    'sphinx_markdown_tables',
+    'sphinxcontrib.mermaid',
+    'sphinx.ext.autosectionlabel'
+]
 
 templates_path = ['_templates']
 exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
