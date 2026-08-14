@@ -6,8 +6,8 @@
 
 ### 2.1.1 系统要求
 
-- **操作系统**：Linux (CentOS 7+/Ubuntu 18.04+/Debian 10+)、macOS 10.15+
-- **Docker**：20.10+（推荐使用最新稳定版）
+- **操作系统**：Linux (CentOS 9+/Ubuntu 24.04+/Debian 13+)、macOS 10.15+
+- **Docker**：26.1+（推荐使用最新稳定版）
 - **内存**：≥ 8GB
 - **磁盘空间**：≥ 100GB
 

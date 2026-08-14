@@ -39,7 +39,7 @@ In production environments, all nodes run 64-bit Linux (CentOS 7/8/9, Debian 12/
 | apptainer             |                   | To be tested |
 | Kata Containers       |                   | To be tested |
 
-- Head node: docker-ce 20.10<sup>+</sup>, Docker Compose v2<sup>+</sup>
+- Head node: docker-ce 26.1<sup>+</sup>, Docker Compose v2<sup>+</sup>
 
 #### Database
 - Head node: postgresql 18<sup>+</sup>, deployed as a container

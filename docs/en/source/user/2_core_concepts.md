@@ -6,15 +6,15 @@ Scalebox applications are organized in layers. The module layer encapsulates alg
 
 ## 2.2 Core Concepts in Detail
 
-| Concept | English | 中文 | Description |
-| :------ | :--------- | :------ | :------------------------------------------------------ |
-| Application | **App**    | **应用** | An application that performs a specific computing task, containing multiple Modules. An App can dynamically acquire the compute resources it needs by invoking resource scheduling systems (such as Slurm). |
-| Software unit | **Module** | **模块** | The basic programmable unit that makes up an App, a collection of program code packaged in a container. Usually an independent algorithm component, or a component for transfer between nodes. Components form data processing pipelines through cascading. |
-| Execution instance | **Task**   | **任务** | The basic execution unit — the process of running input data on a specific Module. |
-| Compute node | **Host**   | **节点** | The server node that executes computing tasks. |
-| Resource unit | **Slot**   | **插槽** | A slice of compute resources on a node corresponding to a Module, the basic unit for fine-grained Task scheduling |
-| Virtual task | **VTask**  | **任务组** | A cross-module collection of Tasks, an application-level coarse-grained compute unit. With built-in semaphores and shared variables, it forms a pipeline of wait-queue, vtask-head, vtask-core, and vtask-tail for unified flow control, resource binding, and state tracking. |
-| Resource collection | **Cluster** | **集群** | A logical grouping of compute resources containing multiple Hosts. Supports single-node clusters, static clusters, dynamic clusters, inline clusters, and other types. Cross-cluster computing is implemented through full-mesh replication of t_cluster + gRPC proxy. |
+| Concept | Name | Description |
+| :------ | :--------- | :------------------------------------------------------ |
+| Application | **App**    | An application that performs a specific computing task, containing multiple Modules. An App can dynamically acquire the compute resources it needs by invoking resource scheduling systems (such as Slurm). |
+| Software unit | **Module** | The basic programmable unit that makes up an App, a collection of program code packaged in a container. Usually an independent algorithm component, or a component for transfer between nodes. Components form data processing pipelines through cascading. |
+| Execution instance | **Task**   | The basic execution unit — the process of running input data on a specific Module. |
+| Compute node | **Host**   | The server node that executes computing tasks. |
+| Resource unit | **Slot**   | A slice of compute resources on a node corresponding to a Module, the basic unit for fine-grained Task scheduling |
+| Virtual task | **VTask**  | A cross-module collection of Tasks, an application-level coarse-grained compute unit. With built-in semaphores and shared variables, it forms a pipeline of wait-queue, vtask-head, vtask-core, and vtask-tail for unified flow control, resource binding, and state tracking. |
+| Resource collection | **Cluster** | A logical grouping of compute resources containing multiple Hosts. Supports single-node clusters, static clusters, dynamic clusters, inline clusters, and other types. Cross-cluster computing is implemented through full-mesh replication of t_cluster + gRPC proxy. |
 
 ## 2.3 Application (App)
 

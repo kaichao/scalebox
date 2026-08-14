@@ -31,7 +31,9 @@ service AppService {
   rpc GetTaskHeader(GetTaskHeaderRequest) returns (GetTaskHeaderResponse);
   rpc SetTaskHeader(SetTaskHeaderRequest) returns (google.protobuf.Empty);
   rpc RemoveTaskHeader(RemoveTaskHeaderRequest) returns (google.protobuf.Empty);
+  rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty);
   rpc RegisterRemoteAppLink(RegisterRemoteAppLinkRequest) returns (RegisterRemoteAppLinkResponse);
+  rpc ValidateApp(ValidateAppRequest) returns (ValidateAppResponse);
   rpc GetVtaskVariable(GetVtaskVariableRequest) returns (GetVtaskVariableResponse);
   rpc SetVtaskVariable(SetVtaskVariableRequest) returns (SetVtaskVariableResponse);
   rpc GetVtaskSemaphore(GetVtaskSemaphoreRequest) returns (GetVtaskSemaphoreResponse);
@@ -60,6 +62,7 @@ message ListTasksResponse {
     int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
     string body = 5; string from_module = 6; string from_ip = 7;
     google.protobuf.Timestamp created_at = 8; google.protobuf.Timestamp finished_at = 9; int32 exit_code = 10;
+    string status_code = 11; string to_host = 12; int64 vtask_id = 13;
   }
   repeated Item items = 1; PageInfo page_info = 2;
 }
@@ -70,6 +73,20 @@ message GetTaskResponse {
   string from_module = 9; string from_ip = 10; int32 exit_code = 11;
   int64 input_bytes = 12; int64 output_bytes = 13; string extras = 14;
   google.protobuf.Timestamp created_at = 15; google.protobuf.Timestamp started_at = 16; google.protobuf.Timestamp finished_at = 17;
+  int64 vtask_id = 18; string to_host = 19; string status_code = 20;
+  repeated TaskExecRecord exec_records = 21;
+}
+
+message TaskExecRecord {
+  int64 id = 1; int64 task_id = 2; int32 exit_code = 3;
+  int64 input_bytes = 4; int64 output_bytes = 5;
+  string stdout = 6; string stderr = 7; string extras = 8;
+  google.protobuf.Timestamp started_at = 9; google.protobuf.Timestamp finished_at = 10;
+  int32 mod_id = 11; int32 slot = 12; int32 status_code = 13;
+  string body = 14; string auxout = 15; string ctxlog = 16;
+  google.protobuf.Timestamp t0 = 17; google.protobuf.Timestamp t1 = 18;
+  google.protobuf.Timestamp t2 = 19; google.protobuf.Timestamp t3 = 20;
+  google.protobuf.Timestamp ts_prepared = 21;
 }
 message GetTaskHeaderRequest { int64 task_id = 1; string name = 2; }
 message GetTaskHeaderResponse { string value = 1; }
@@ -83,7 +100,7 @@ message ListAppsResponse {
   repeated Item items = 1; PageInfo page_info = 2;
 }
 message GetAppRequest { int32 app_id = 1; }
-message GetAppResponse { int32 id = 1; string name = 2; int32 cluster_id = 3; string cluster_name = 8; string status = 4; int32 user_id = 5; string parameters = 6; google.protobuf.Timestamp created_at = 7; }
+message GetAppResponse { int32 id = 1; string name = 2; int32 cluster_id = 3; string cluster_name = 8; string status = 4; int32 user_id = 5; string parameters = 6; google.protobuf.Timestamp created_at = 7; string yaml_text = 9; }
 message CreateAppRequest {
   string yaml_content = 1;
   map<string, string> env_vars = 2;
@@ -169,24 +186,24 @@ message ListVTaskSubtasksRequest { int64 vtask_id = 1; }
 
 message BindVtaskResourceRequest {
   int32 app_id = 1;
-  string module_name = 2;
+  string module_name = 2;  // 可选，不指定时自动查找 vtask_role=head 的模块
 }
 message BindVtaskResourceResponse {
-  string resource = 1;
-  string mode = 2;
+  string resource = 1;     // hostname（HOST-BOUND）/ slot_seq（SLOT-BOUND）/ 空（DEFAULT）
+  string mode = 2;         // 实际使用的 task_dist_mode
 }
 
 message UnbindVtaskResourceRequest {
   int32 app_id = 1;
-  int64 vtask_id = 2;
-  string sema_name = 3;
+  int64 vtask_id = 2;      // 方式一：通过 vtask ID 自动查找 sema
+  string sema_name = 3;    // 方式二：直接指定信号量名（如 :host_vtask_size:vtask-head:n0-0）
 }
 
 message AddVtaskSubtaskRequest {
   int32 app_id = 1;
-  string module = 2;
-  string body = 3;
-  map<string, string> headers = 4;
+  string module = 2;              // 目标模块名
+  string body = 3;                // 任务体
+  map<string, string> headers = 4; // 额外 headers
 }
 message AddVtaskSubtaskResponse {
   int64 task_id = 1;
@@ -197,13 +214,28 @@ message GetVtaskResponse {
   int64 id = 1;
   int32 app_id = 2;
   string body = 3;
-  string status = 4;
-  string module_name = 5;
-  string bound_resource = 6;
-  string sema_name = 7;
+  string status = 4;           // 派生状态
+  string module_name = 5;      // 当前所在模块
+  string bound_resource = 6;   // 绑定的 host/slot
+  string sema_name = 7;        // _vtask_size_sema 值
   int32 subtask_count = 8;
   int32 finished_count = 9;
   google.protobuf.Timestamp created_at = 10;
 }
 
 message FailVtaskRequest { int64 vtask_id = 1; }
+
+// ===== DeleteTask =====
+
+message DeleteTaskRequest { int64 task_id = 1; }
+
+// ===== ValidateApp =====
+
+message ValidateAppRequest { string yaml_content = 1; }
+message ValidateAppResponse {
+  bool valid = 1;
+  string app_name = 2;
+  int32 module_count = 3;
+  repeated string errors = 4;
+  repeated string warnings = 5;
+}

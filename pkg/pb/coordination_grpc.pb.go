@@ -33,7 +33,7 @@ type CoordinationServiceClient interface {
 	SetVariable(ctx context.Context, in *SetVariableRequest, opts ...grpc.CallOption) (*SetVariableResponse, error)
 	DeleteVariable(ctx context.Context, in *DeleteVariableRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	GetGlobal(ctx context.Context, in *GetGlobalRequest, opts ...grpc.CallOption) (*GetGlobalResponse, error)
-	ListGlobals(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListGlobalsResponse, error)
+	ListGlobals(ctx context.Context, in *ListGlobalsRequest, opts ...grpc.CallOption) (*ListGlobalsResponse, error)
 	SetGlobal(ctx context.Context, in *SetGlobalRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteGlobal(ctx context.Context, in *DeleteGlobalRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	// Semagroup
@@ -143,7 +143,7 @@ func (c *coordinationServiceClient) GetGlobal(ctx context.Context, in *GetGlobal
 	return out, nil
 }
 
-func (c *coordinationServiceClient) ListGlobals(ctx context.Context, in *emptypb.Empty, opts ...grpc.CallOption) (*ListGlobalsResponse, error) {
+func (c *coordinationServiceClient) ListGlobals(ctx context.Context, in *ListGlobalsRequest, opts ...grpc.CallOption) (*ListGlobalsResponse, error) {
 	out := new(ListGlobalsResponse)
 	err := c.cc.Invoke(ctx, "/scalebox.CoordinationService/ListGlobals", in, out, opts...)
 	if err != nil {
@@ -238,7 +238,7 @@ type CoordinationServiceServer interface {
 	SetVariable(context.Context, *SetVariableRequest) (*SetVariableResponse, error)
 	DeleteVariable(context.Context, *DeleteVariableRequest) (*emptypb.Empty, error)
 	GetGlobal(context.Context, *GetGlobalRequest) (*GetGlobalResponse, error)
-	ListGlobals(context.Context, *emptypb.Empty) (*ListGlobalsResponse, error)
+	ListGlobals(context.Context, *ListGlobalsRequest) (*ListGlobalsResponse, error)
 	SetGlobal(context.Context, *SetGlobalRequest) (*emptypb.Empty, error)
 	DeleteGlobal(context.Context, *DeleteGlobalRequest) (*emptypb.Empty, error)
 	// Semagroup
@@ -284,7 +284,7 @@ func (UnimplementedCoordinationServiceServer) DeleteVariable(context.Context, *D
 func (UnimplementedCoordinationServiceServer) GetGlobal(context.Context, *GetGlobalRequest) (*GetGlobalResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetGlobal not implemented")
 }
-func (UnimplementedCoordinationServiceServer) ListGlobals(context.Context, *emptypb.Empty) (*ListGlobalsResponse, error) {
+func (UnimplementedCoordinationServiceServer) ListGlobals(context.Context, *ListGlobalsRequest) (*ListGlobalsResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ListGlobals not implemented")
 }
 func (UnimplementedCoordinationServiceServer) SetGlobal(context.Context, *SetGlobalRequest) (*emptypb.Empty, error) {
@@ -504,7 +504,7 @@ func _CoordinationService_GetGlobal_Handler(srv interface{}, ctx context.Context
 }
 
 func _CoordinationService_ListGlobals_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(emptypb.Empty)
+	in := new(ListGlobalsRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -516,7 +516,7 @@ func _CoordinationService_ListGlobals_Handler(srv interface{}, ctx context.Conte
 		FullMethod: "/scalebox.CoordinationService/ListGlobals",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(CoordinationServiceServer).ListGlobals(ctx, req.(*emptypb.Empty))
+		return srv.(CoordinationServiceServer).ListGlobals(ctx, req.(*ListGlobalsRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }

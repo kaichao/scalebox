@@ -24,7 +24,7 @@ service CoordinationService {
   rpc SetVariable(SetVariableRequest) returns (SetVariableResponse);
   rpc DeleteVariable(DeleteVariableRequest) returns (google.protobuf.Empty);
   rpc GetGlobal(GetGlobalRequest) returns (GetGlobalResponse);
-  rpc ListGlobals(google.protobuf.Empty) returns (ListGlobalsResponse);
+  rpc ListGlobals(ListGlobalsRequest) returns (ListGlobalsResponse);
   rpc SetGlobal(SetGlobalRequest) returns (google.protobuf.Empty);
   rpc DeleteGlobal(DeleteGlobalRequest) returns (google.protobuf.Empty);
 
@@ -41,9 +41,9 @@ service CoordinationService {
 
 message GetSemaphoreRequest { int32 app_id = 1; string name = 2; }
 message GetSemaphoreResponse { string name = 1; int32 value = 2; int32 value0 = 3; }
-message ListSemaphoresRequest { int32 app_id = 1; string prefix = 2; bool leaf_only = 3; }
+message ListSemaphoresRequest { int32 app_id = 1; string prefix = 2; bool leaf_only = 3; int64 vtask_id = 4; }
 message ListSemaphoresResponse {
-  message Node { string name = 1; int32 value = 2; int32 value0 = 3; string path = 4; bool is_leaf = 5; int32 child_count = 6; int64 vtask = 7; google.protobuf.Timestamp t = 8; }
+  message Node { string name = 1; int32 value = 2; int32 value0 = 3; bool is_leaf = 5; int32 child_count = 6; int64 vtask = 7; google.protobuf.Timestamp t = 8; int32 id = 9; int32 app = 10; }
   repeated Node nodes = 1;
 }
 message CreateSemaphoreRequest { int32 app_id = 1; string name = 2; int32 value = 3; string conflict_action = 4; }
@@ -56,9 +56,9 @@ message DeleteSemaphoreRequest { int32 app_id = 1; string name = 2; }
 
 message GetVariableRequest { int32 app_id = 1; string name = 2; }
 message GetVariableResponse { string name = 1; string value = 2; }
-message ListVariablesRequest { int32 app_id = 1; string prefix = 2; bool leaf_only = 3; }
+message ListVariablesRequest { int32 app_id = 1; string prefix = 2; bool leaf_only = 3; int64 vtask_id = 4; }
 message ListVariablesResponse {
-  message Node { string name = 1; string value = 2; string path = 3; bool is_leaf = 4; int32 child_count = 5; int64 vtask = 6; google.protobuf.Timestamp t = 7; }
+  message Node { string name = 1; string value = 2; bool is_leaf = 4; int32 child_count = 5; int64 vtask = 6; google.protobuf.Timestamp t = 7; int32 id = 8; int32 app = 9; }
   repeated Node nodes = 1;
 }
 message SetVariableRequest { int32 app_id = 1; string name = 2; string value = 3; }
@@ -70,6 +70,7 @@ message DeleteVariableRequest { int32 app_id = 1; string name = 2; }
 message GetGlobalRequest { string name = 1; }
 message GetGlobalResponse { string name = 1; string value = 2; }
 message KeyValue { string key = 1; string value = 2; google.protobuf.Timestamp t = 3; }
+message ListGlobalsRequest { string prefix = 1; bool leaf_only = 2; }
 message ListGlobalsResponse { repeated KeyValue globals = 1; }
 message SetGlobalRequest { string name = 1; string value = 2; }
 message DeleteGlobalRequest { string name = 1; }

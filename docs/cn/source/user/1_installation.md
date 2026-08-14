@@ -39,7 +39,7 @@
 | apptainer             |                   | 待测试    |
 | Kata Containers       |                   | 待测试    |
 
-- 头节点：docker-ce 20.10<sup>+</sup>，Docker Compose v2<sup>+</sup>
+- 头节点：docker-ce 26.1<sup>+</sup>，Docker Compose v2<sup>+</sup>
 
 #### 数据库
 - 头节点：postgresql 18<sup>+</sup>，以容器化部署

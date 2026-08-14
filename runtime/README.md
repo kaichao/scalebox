@@ -194,7 +194,7 @@ export PDSH_RCMD_TYPE=ssh
 
 ### 3.3 内部计算节点安装
 - 操作系统：CentOS 7以上
-- 容器化引擎：Docker 20.10以上
+- 容器化引擎：Docker 26.1以上
 - 安装dstat、htop、zstd等工具软件，用于性能监控、数据压缩等
 - 
 可选：
@@ -216,7 +216,7 @@ yum install -y htop dstat pv
 ### 3.4 外部计算节点
 - 操作系统：CentOS 7以上
 - 单机容器化引擎：
-  - Docker 20.10以上
+  - DockerCE 26.1以上
   - podman ？版本；
   - singularity 3.8以上
 - k8s集群

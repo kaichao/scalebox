@@ -1,6 +1,6 @@
 # Scalebox — A Cloud-Native Stream Computing Engine
 
-Scalebox is a cloud-native stream computing engine that runs containerized user algorithms on distributed, heterogeneous computing clusters, enabling large-scale parallel processing through pipelines of hierarchical modules with task-level fault tolerance. Compared with existing big data processing and parallel computing frameworks, its technical characteristics are particularly suited to scenarios with distributed data, distributed compute resources, and complex algorithms.
+Scalebox is a cloud-native stream computing engine that runs containerized user algorithms on distributed, heterogeneous computing clusters, enabling large-scale parallel processing through pipelines of hierarchical modules with task-level fault tolerance. Compared with existing big data processing and parallel computing frameworks, its technical characteristics are particularly suited to scenarios with distributed data, scattered compute resources, complex algorithms, and data scales that hit the memory wall.
 
 ## ✨ Key Features
 
@@ -10,7 +10,7 @@ Scalebox is a cloud-native stream computing engine that runs containerized user 
 
 - **Cross-Cluster Computing**: algorithm modules and transfer modules are normalized and processed uniformly through pipelines for intra-cluster and cross-cluster data. Full-mesh replication of t_cluster plus gRPC proxy forwarding; the CLI always connects to the local controld, and cross-cluster operations are transparently routed by the server.
 
-- **Task-Level Fault Tolerance**: automatic retries based on exit-code rules for transient errors caused by hardware failures, software bugs, network issues, or data anomalies. Fine-grained task-level fault tolerance enables trustworthy data analysis on unreliable hardware.
+- **Multi-Level Fault Tolerance**: automatic retries based on exit-code rules for transient errors caused by hardware failures, software bugs, network issues, or data anomalies. Fine-grained task-level fault tolerance enables trustworthy data processing on unreliable hardware; VTask group-level fault tolerance supports consistent task recovery when nodes fail.
 
 - **Node-Local Computing Optimization**: centered on node-local storage, using "operator-level spatial expansion + local storage residency + explicit data-flow orchestration" to move inter-node communication into the node itself, significantly reducing dependence on network bandwidth and external storage.
 
@@ -29,7 +29,7 @@ Scalebox is a cloud-native stream computing engine that runs containerized user 
 ### 1. Prepare the Environment
 
 ```bash
-# Docker 20.10+
+# Docker 26.1+
 curl -fsSL https://get.docker.com | sh
 sudo systemctl enable --now docker
 docker --version

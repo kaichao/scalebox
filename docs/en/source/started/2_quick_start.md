@@ -7,7 +7,7 @@ This chapter guides you through deploying and running your first Scalebox applic
 ### 2.1.1 System Requirements
 
 - **Operating system**: Linux (CentOS 7+/Ubuntu 18.04+/Debian 10+), macOS 10.15+
-- **Docker**: 20.10+ (latest stable version recommended)
+- **Docker**: 26.1+ (latest stable version recommended)
 - **Memory**: ≥ 8GB
 - **Disk space**: ≥ 100GB
 
