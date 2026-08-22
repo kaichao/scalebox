@@ -6,18 +6,21 @@ parameters:
 modules:
   wait-queue:
     arguments:
-      # code_path: ${PWD}/modules/wait-queue/code
+      code_path: ${PWD}/wait-queue
       slot_options: slot_on_head
     parameters:
       # 避免提早分配资源，使得vtask在wait-queue中
       vtask_size: 1
+    environments:
+      - TASK_DIST_MODE=${TASK_DIST_MODE}
 
   vtask-head:
+    arguments:
+      slot_options: reserved_on_exit
     parameters:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
       vtask_size: 2
-      vtask_size_sema_copy: yes
     slots: 
       - ${HEAD_SLOTS}
 

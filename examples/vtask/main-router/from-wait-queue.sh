@@ -10,7 +10,7 @@ if [ "$TASK_DIST_MODE" = "HOST-BOUND" ]; then
     sema_name="host_vtask_size:vtask-head:${to_host}"
     scalebox vtask add-subtask --direct --module=vtask-head \
         --header to_host=$to_host --header _vtask_size_sema=$sema_name $body || {
-        scalebox vtask unbind --sema-name=":${sema_name}"
+        scalebox vtask unbind --sema-name="${sema_name}"
         scalebox semaphore increment vtask_size:wait-queue
         exit 1
     }
@@ -19,7 +19,7 @@ elif [ "$TASK_DIST_MODE" = "SLOT-BOUND" ]; then
     sema_name="slot_vtask_size:vtask-head:${to_slot_index}"
     scalebox vtask add-subtask --direct --module=vtask-head \
         --header to_slot_index=$to_slot_index --header _vtask_size_sema=$sema_name $body || {
-        scalebox vtask unbind --sema-name=":${sema_name}"
+        scalebox vtask unbind --sema-name="${sema_name}"
         scalebox semaphore increment vtask_size:wait-queue
         exit 1
     }
