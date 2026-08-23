@@ -1,0 +1,13 @@
+# wait-queue 标准模块示例（最小 app，仅验证准入与分配行为）
+name: wait-queue.demo
+cluster: ${CLUSTER}
+
+modules:
+  wait-queue:
+    base_image: scalebox.net/platform/wait-queue
+    arguments:
+      slot_options: slot_on_head
+    parameters:
+      vtask_size: 1
+    environments:
+      - VTASK_MODE=${VTASK_MODE}

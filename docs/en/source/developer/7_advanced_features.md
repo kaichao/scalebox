@@ -136,11 +136,11 @@ After subsequent module task processing completes, the vtask counter is automati
   - When vtask processing completes, the counter is incremented through semaphore operations in the corresponding message routing, releasing an empty slot.
 
 
-#### SLOT-BOUND Modules
-- Generates the corresponding semaphore: ```slot_vtask_size:${mod_name}:${slot_id}```, with the initial value being the parameter value.
+#### SLOT-BOUND Modules (GROUP-BOUND vtask)
+- Generates the corresponding semaphore: ```group_vtask_size:${mod_name}:${group_seq}```, with the initial value being the parameter value.
   - mod_name is the first module name
-  - slot_id is the ID of the SLOT
-- The maximum number of vtasks that can run on a compute slot, usually representing the length of the running queue on a compute node group.
+  - group_seq is the group number (the head slot's seq)
+- The maximum number of vtasks that can run on a compute node group, usually representing the length of the running queue on a compute node group.
 
 #### HOST-BOUND Modules
 - Generates the corresponding semaphore: ```host_vtask_size:${mod_name}:${hostname}```, with the initial value being the parameter value.

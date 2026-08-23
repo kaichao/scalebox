@@ -1,4 +1,4 @@
-dirs:=cron dir-list ftp-copy rsync-copy rsyncd data-grouping-2d cluster-file-copy cluster-dir-list
+dirs:=cron dir-list ftp-copy rsync-copy rsyncd data-grouping-2d cluster-file-copy cluster-dir-list wait-queue
 
 build:
 	@for dir in $(dirs); do \

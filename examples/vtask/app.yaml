@@ -5,14 +5,14 @@ parameters:
 
 modules:
   wait-queue:
+    base_image: scalebox.net/platform/wait-queue
     arguments:
-      code_path: ${PWD}/wait-queue
       slot_options: slot_on_head
     parameters:
       # 避免提早分配资源，使得vtask在wait-queue中
       vtask_size: 1
     environments:
-      - TASK_DIST_MODE=${TASK_DIST_MODE}
+      - VTASK_MODE=${VTASK_MODE}
 
   vtask-head:
     arguments:
@@ -46,4 +46,4 @@ modules:
       code_path: ${PWD}/main-router
       slot_options: slot_on_head
     environments:
-      - TASK_DIST_MODE=${TASK_DIST_MODE}
+      - VTASK_MODE=${VTASK_MODE}

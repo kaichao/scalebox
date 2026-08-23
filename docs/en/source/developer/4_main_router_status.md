@@ -154,7 +154,7 @@ task_dist_mode settings
 - vtask semaphore naming patterns:
   - Global: `vtask_size:${mod_name}`
   - Node-level: `host_vtask_size:${mod_name}:${hostname}`
-  - Slot-level: `slot_vtask_size:${mod_name}:${slot_id}`
+  - Group-level (GROUP-BOUND vtask): `group_vtask_size:${mod_name}:${group_seq}`
 
 ## 4.6 Best Practices
 

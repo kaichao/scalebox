@@ -154,7 +154,7 @@ task_dist_mode设置
 - vtask 信号量命名模式：
   - 全局：`vtask_size:${mod_name}`
   - 节点级：`host_vtask_size:${mod_name}:${hostname}`
-  - 槽位级：`slot_vtask_size:${mod_name}:${slot_id}`
+  - 组级（GROUP-BOUND vtask）：`group_vtask_size:${mod_name}:${group_seq}`
 
 ## 4.6 最佳实践
 

@@ -136,11 +136,11 @@
   - vtask处理完成，则在对应消息路由中，通过信号量操作，对计数值加一，释放一个空槽位。
 
 
-#### SLOT-BOUND模块
-- 生成对应信号量：```slot_vtask_size:${mod_name}:${slot_id}```，其初值为参数值。
+#### SLOT-BOUND模块（GROUP-BOUND vtask）
+- 生成对应信号量：```group_vtask_size:${mod_name}:${group_seq}```，其初值为参数值。
   - mod_name为首模块名
-  - slot_id为SLOT的ID
-- 计算槽上最多可运行的vtask数量，通常表示计算节点组上运行队列的长度。
+  - group_seq为组号（head slot 的 seq）
+- 计算节点组上最多可运行的vtask数量，通常表示计算节点组上运行队列的长度。
 
 #### HOST-BOUND模块
 - 生成对应信号量：```host_vtask_size:${mod_name}:${hostname}```，其初值为参数值。

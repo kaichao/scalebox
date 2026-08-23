@@ -38,7 +38,7 @@ Coarse-grained layer (vtask):   cross-module task collection, flow control + sta
 |----|---------|------------|-------------|
 | Resource binding | None | Single node | Node group |
 | wait-queue | No | Yes | Yes |
-| Flow control semaphore | `vtask_size:<mod>` | `host_vtask_size:<mod>:<host>` | `slot_vtask_size:<mod>:<seq>` |
+| Flow control semaphore | `vtask_size:<mod>` | `host_vtask_size:<mod>:<host>` | `group_vtask_size:<mod>:<group>` |
 | vtask-head mode | no task_dist_mode | `HOST-BOUND` | `SLOT-BOUND` |
 | vtask-core mode | no task_dist_mode | `HOST-BOUND` | `HOST-BOUND` |
 | Applicable scenarios | Lightweight batch processing | Exclusive computing on a single node | Multi-node collaborative computing |
@@ -75,7 +75,50 @@ GROUP-BOUND:   task → wait-queue → vtask-head → vtask-core-1 → vtask-cor
 | **vtask** (application layer) | Resource binding form: HOST-BOUND / GROUP-BOUND / DEFAULT | User view: runs on a single node or a node group |
 | **module** (underlying) | Task routing method: HOST-BOUND / SLOT-BOUND / DEFAULT | Framework view: how tasks route to specific slots |
 
-`SLOT-BOUND` is a module-level implementation detail, used only on GROUP-BOUND head modules.
+`SLOT-BOUND` is a module-level implementation detail, used only on GROUP-BOUND head modules; there is no such thing as a "pure SLOT-BOUND vtask".
+
+**Environment variable layering** (one-to-one with the two-level abstraction):
+
+| Variable | Level | Values | Consumers |
+|------|------|------|--------|
+| `VTASK_MODE` | vtask application layer | `DEFAULT` / `HOST-BOUND` / `GROUP-BOUND` | Application scripts (main-router routing, wait-queue standard module) |
+| `TASK_DIST_MODE` | Platform implementation layer | `HOST-BOUND` / `SLOT-BOUND` / empty | Only drives the vtask-head module's `task_dist_mode` platform parameter |
+
+The mapping converges at a single place in the app env file (e.g. `group-bound.env`):
+
+```bash
+VTASK_MODE=GROUP-BOUND
+TASK_DIST_MODE=SLOT-BOUND   # only drives vtask-head's platform parameter, implementation-layer enum
+```
+
+Application authors only touch `VTASK_MODE` at the vtask layer; `SLOT-BOUND` appears only at the implementation layer.
+
+### 9.2.4 Compute Resource Identification
+
+The resource allocated by `vtask bind` is essentially a **placement** — the vtask anchors to a host (HOST-BOUND) or a node group (GROUP-BOUND), after which its tasks are routed via `to_host` / `to_slot` to slots at that location. The platform has no notion of physical capacity (CPU cores, memory); **capacity is configured by the application author via the `vtask_size` parameter** (the number of in-flight vtasks the location can carry simultaneously).
+
+**Resource pool source**: available resources = the expansion of the head module (`vtask_role=head`) slots:
+
+| vtask type | Resource pool | Identifier | Example |
+|-----------|--------|------|------|
+| HOST-BOUND | each host expanded from the head module's `slots` regex (with `status='ON'` in `t_host`) | short hostname (cluster suffix removed) | `n0-0` |
+| GROUP-BOUND | each slot of the head module (slot list length = group count) | group number = the head slot's `seq` | `0` |
+
+Semaphores are created at app creation and re-created on dynamic slot expansion, with initial value = `vtask_size`.
+
+**Identifier system** (semaphore naming is the identifier):
+
+| Type | Semaphore name | Identifier part |
+|------|---------|---------|
+| DEFAULT | `vtask_size:<module>` | none (global) |
+| HOST-BOUND | `host_vtask_size:<module>:<hostname>` | short hostname |
+| GROUP-BOUND | `group_vtask_size:<module>:<group number>` | head slot's seq |
+
+The resource returned by `vtask bind` is the semaphore name suffix; `vtask get` shows `host=n0-0` / `group=2`.
+
+**Node group membership has no platform-level definition**: which nodes belong to a group and how tasks are distributed within it are application business logic (vtask-head script routing + vtask-core deployed HOST-BOUND on the group's nodes). The platform only manages the "group" anchor dimension.
+
+**Resource acquisition and release**: acquisition = `vtask bind` atomic decrement + `_vtask_size_sema` header propagated with the root task; release = `doVTaskFinished` / `FailVtask` increments by that header (`vtask unbind` for error rollback). The number of in-flight vtasks per host/group is ≤ `vtask_size`.
 
 ### 9.2.4 Root Task Identification
 
@@ -119,7 +162,7 @@ modules:
 ```yaml
 modules:
   main-router:   # task add --sink-module=wait-queue $body
-  wait-queue:    # vtask_size: 1 (serialization gate)
+  wait-queue:    # standard module scalebox.net/platform/wait-queue (vtask_size: 1 serialization gate + check.sh admission + run.sh bind)
   vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND
   vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND
   vtask-tail:    # vtask_role: tail
@@ -127,19 +170,19 @@ modules:
 
 **Key script operations**:
 
-| Script | Operation |
-|------|------|
-| `from-wait-queue.sh` | `vtask bind` → `vtask add-subtask --direct` (on failure, unbind + gate increment rollback) |
-| `from-vtask-head.sh` | `vtask add-subtask --module=vtask-core` (async), finally `semaphore increment vtask_size:wait-queue` |
-| `from-vtask-core.sh` | `task add --sink-module=vtask-tail $1` |
-| `from-vtask-tail.sh` | case match `host_vtask_size:*` → `vtask unbind --sema-name=":${sema}"` |
+| Script | Location | Operation |
+|------|------|------|
+| `check.sh` / `run.sh` | wait-queue standard module image | Admission gate (ACTION_CHECK) + `vtask bind` → `vtask add-subtask --direct` (on failure, unbind + gate increment rollback); task terminates at this slot, no author scripting needed |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core` (async), finally `semaphore increment vtask_size:wait-queue` |
+| `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
+| `from-vtask-tail.sh` | main-router/ | no-op (quota restored automatically by controld `doVTaskFinished`) |
 
 ### 9.3.3 GROUP-BOUND
 
 Same structure as HOST-BOUND, with differences:
-- `vtask-head.task_dist_mode: SLOT-BOUND`, bind returns slot_seq
-- Flow control semaphore format `slot_vtask_size`, head slot serves as the node group anchor
-- `from-vtask-head.sh` computes `to_host` from the body (business logic)
+- `vtask-head.task_dist_mode: SLOT-BOUND` (platform-level value), bind returns the group number (i.e., the head slot's seq)
+- Flow control semaphore format `group_vtask_size`, head slot serves as the node group anchor
+- `from-vtask-head.sh` computes `to_host` from the body under the `VTASK_MODE=GROUP-BOUND` branch (business logic)
 
 ### 9.3.4 vtask-core Cascading
 
@@ -171,32 +214,33 @@ Cascading rules:
 |---------|------|------|
 | DEFAULT | `vtask_size:<module>` | `vtask_size:vtask-head` |
 | HOST-BOUND | `host_vtask_size:<module>:<host>` | `host_vtask_size:vtask-head:n0-0` |
-| SLOT-BOUND | `slot_vtask_size:<module>:<seq>` | `slot_vtask_size:vtask-head:2` |
+| SLOT-BOUND (GROUP-BOUND vtask) | `group_vtask_size:<module>:<group>` | `group_vtask_size:vtask-head:2` |
 
-### 9.4.2 Dual Semaphores
+### 9.4.2 Unified Semaphore
 
-Each flow control semaphore has two versions:
+Each flow control semaphore has a single instance (no colon prefix), pre-deducted by `vtask bind` and restored automatically by controld; scripts no longer participate in resource return:
 
-| Version | Prefix | Managed by | Purpose |
-|------|------|--------|------|
-| Flow control version | no prefix | controld automatic | `getVtaskBatchSize` / `updateVTask` / `doVTaskFinished` |
-| Programmable version | `:` prefix | scripts manual | `vtask bind` / `unbind` operations |
+| Manager | Operation | Timing |
+|--------|------|------|
+| wait-queue `check.sh` (ACTION_CHECK) | reads semagroup max; when ≤ 0 returns non-zero → agent stops picking tasks and polls/retries | every agent poll, before `GetTaskList` |
+| `vtask bind` (`BindVtaskResource`) | atomic decrement (semagroup picks the member with max value, returns group number/hostname) | wait-queue serialized admission |
+| controld `updateVTask` | tasks with `_vtask_size_sema` are pre-deducted and skipped at pickup; only bare tasks without the header are deducted as fallback | head slot picks up tasks |
+| controld `doVTaskFinished` / `FailVtask` | increment (located by `_vtask_size_sema`) | vtask-tail completes / vtask fails |
 
-Set `vtask_size_sema_copy: yes` when creating the app; both versions are established simultaneously with the same initial value.
+> The historical dual-semaphore design (flow control version + `:`-prefixed programmable version, `vtask_size_sema_copy: yes`) is deprecated; the `vtask_size_sema_copy` parameter no longer takes effect.
 
 ### 9.4.3 Flow Control Process
 
 ```
-vtask-head task picked up by a slot
-  → updateVTask: semaphore decrement (flow control version)
-  → group aggregation by _vtask_size_sema (supports multi-slot same-group scenarios)
+wait-queue slot polls each round
+  → check.sh: semagroup max ≤ 0 → exit 1, agent stops picking (task never picked up)
+  → max > 0 → pick up task → run.sh (inside the standard module image)
+  → vtask bind: semagroup.Decrement atomic pre-deduction (returns hostname/group number)
+  → vtask-head task picked up: updateVTask skips pre-deducted tasks (bare DEFAULT tasks deducted as fallback)
   → vtask pipeline executes
-  → vtask-tail completes
-  → doVTaskFinished: semaphore increment (flow control version, quota restored)
-  → from-vtask-tail.sh: vtask unbind (programmable version, HOST-BOUND / SLOT-BOUND only)
+  → vtask-tail completes → doVTaskFinished: increment (quota restored)
+  → check.sh next polling round lets the next task through
 ```
-
-> `updateVTask` aggregates decrements grouped by the task's `_vtask_size_sema` header, avoiding inconsistent decrement/increment names in multi-slot scenarios.
 
 ### 9.4.4 Wait Queue Gating
 
@@ -211,10 +255,11 @@ main-router task add
   → agent addSinkTasks: _vtask_* gating (only sink modules with vtask_role≠"" pass)
   → wait-queue task: does not receive _vtask_id / _vtask_size_sema
 
-wait-queue task executes from-wait-queue.sh
+wait-queue task executes the standard module run.sh
   → --direct gRPC creates the vtask-head task
   → vtask_role=head → self-ref vtask=id
-  → _vtask_size_sema explicitly set by the script
+  → _vtask_size_sema explicitly set by run.sh
+  → task terminates at the wait-queue slot (no sink-tasks.txt written, no flow-back)
 
 vtask-head task executes from-vtask-head.sh
   → sink-tasks.txt async creates the vtask-core task
@@ -259,7 +304,7 @@ When `vtask add-subtask` runs inside the agent container, it takes the sink-task
 | Script | Path | Reason |
 |------|------|------|
 | `from-vtask-head.sh` | async (default) | no resource-binding prerequisite, enjoys header auto-propagation |
-| `from-wait-queue.sh` | sync (`--direct`) | bind has already deducted resources; must sense success/failure synchronously, rollback on failure |
+| wait-queue standard module run.sh | sync (`--direct`) | bind has already deducted resources; must sense success/failure synchronously, rollback on failure |
 | Ops manual CLI | sync (gRPC) | no sink-tasks.txt mechanism outside the agent |
 
 ## 9.6 Command Reference
@@ -318,20 +363,20 @@ Execution logic:
 ### 9.6.5 vtask bind / unbind
 
 ```bash
-# Bind (auto-finds the head module, returns to_host or slot_seq)
+# Bind (auto-finds the head module, returns hostname or group number)
 to_host=$(scalebox vtask bind) || exit 1
 
-# Unbind (semaphore name passed by the tail script)
-scalebox vtask unbind --sema-name=":host_vtask_size:vtask-head:n0-0"
+# Unbind (semaphore name passed for error rollback; normal completion is restored by controld)
+scalebox vtask unbind --sema-name="host_vtask_size:vtask-head:n0-0"
 
 # Unbind (ops passes vtask-id; server auto-queries _vtask_size_sema)
 scalebox vtask unbind --vtask-id=42
 ```
 
-| mode | bind returns |
-|------|----------|
+| vtask type | bind returns |
+|-----------|----------|
 | HOST-BOUND | hostname (e.g. `n0-0`) |
-| SLOT-BOUND | slot_seq (e.g. `0`) |
+| GROUP-BOUND | group number (head slot's seq, e.g. `0`) |
 | DEFAULT | empty (no-op) |
 
 ### 9.6.6 vtask add-subtask
@@ -340,10 +385,10 @@ scalebox vtask unbind --vtask-id=42
 # Inside agent (common): async path, _-prefixed headers auto-propagate
 scalebox vtask add-subtask --module=vtask-core --header to_ip=$from_ip $body
 
-# Inside agent, needing synchronous error awareness: add --direct
+# Inside agent, needing synchronous error awareness (wait-queue standard module run.sh): add --direct
 scalebox vtask add-subtask --direct --module=vtask-head \
     --header to_host=$to_host --header _vtask_size_sema=$sema_name $body || {
-    scalebox vtask unbind --sema-name=":${sema_name}"
+    scalebox vtask unbind --sema-name="${sema_name}"
     scalebox semaphore increment vtask_size:wait-queue
     exit 1
 }
@@ -389,7 +434,7 @@ scalebox vtask delete-semaphore --vtask-id <vtask-id> <sema-name>
 | Terminate a single vtask | `vtask fail --vtask-id=N` |
 | Batch termination | `vtask list \| awk ... \| xargs vtask fail` |
 | Pause global flow control | `semaphore decrement vtask_size:<mod> N` |
-| Manually release leaked resources | `vtask unbind --sema-name=":host_vtask_size:..."` |
+| Manually release leaked resources | `vtask unbind --sema-name="host_vtask_size:..."` |
 | Manually return (semaphore name unknown) | `vtask unbind --vtask-id=N` |
 
 ## 9.9 Implementation Index

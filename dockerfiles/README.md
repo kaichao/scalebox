@@ -22,6 +22,9 @@ scalebox应用中常见的公用模块。
 ## cron
 定时消息生成模块，以启动后续模块。消息体一般用当前时间戳来表示。
 
+## wait-queue
+vtask 管道的标准 wait-queue 模块：slot 级准入闸门（check.sh，ACTION_CHECK）+ 资源分配（`vtask bind` + `vtask add-subtask --direct`）。应用作者无需编写脚本，仅在 app.yaml 引用镜像并配置 `TASK_DIST_MODE` / `vtask_size`。详见 [wait-queue/README.md](wait-queue/README.md)。
+
 ## actuator
 支持在标准actuator模块中自动生成自定义的公私钥。
 
