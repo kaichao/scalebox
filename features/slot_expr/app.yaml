@@ -1,0 +1,8 @@
+name: slot_expr.features
+cluster: local
+modules:
+  mod-slot-expr:
+    command: 'docker run -d --network=host -e SEQ=((@seq)) -e MY_PARAM=((@p:my_param)) -e MY_VAR=((@v:my_var)) --rm {{ENVS}} {{VOLUMES}} {{IMAGE}}'
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head

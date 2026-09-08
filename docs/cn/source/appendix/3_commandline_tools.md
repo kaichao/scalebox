@@ -270,6 +270,26 @@ scalebox slot remove --module my-module --host n0
 scalebox slot set-status <slot-id> READY
 ```
 
+### 1.5.5 slot get-parameter
+
+读取插槽参数值（```t_slot.parameters```，jsonb）。
+
+```bash
+scalebox slot get-parameter <parameter> --slot-id <slot-id>
+```
+
+参数未设置时返回空字符串。
+
+### 1.5.6 slot set-parameter
+
+设置插槽参数值（```t_slot.parameters```，jsonb）。值以字符串类型存储。
+
+```bash
+scalebox slot set-parameter <parameter> <value> --slot-id <slot-id>
+```
+
+插槽参数可用于slot启动命令表达式（```((@p:param_name))```），详见《高级特性》§7.7。
+
 
 ## 1.6 app 子命令
 

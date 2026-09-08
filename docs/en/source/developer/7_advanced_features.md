@@ -6,7 +6,7 @@
 - §7.4 Timeout settings (task_max_seconds + timeout wrapper recommendations)
 - §7.5 Timestamp formats (RFC3339Nano / bash / golang examples)
 - §7.6 Cross-cluster apps
-- §7.7 Slot launch command expressions (`((@seq))` / `((@v:var_name))` dynamic evaluation)
+- §7.7 Slot launch command expressions (`((@seq))` / `((@v:var_name))` / `((@p:param_name))` dynamic evaluation)
 - §7.8 gRPC Metadata parameter passing (semaphore-auto-create)
 - §7.9 Slot auto-scaling
 
@@ -244,12 +244,29 @@ In expressions, variable names start with ```@``` and are divided into numeric v
 #### Numeric Variables (slot sequence numbers)
 Each module, for each node, has a sequence number counted from 0, which can be used in slot launch command expressions to use different launch commands for different slot sequence numbers.
 
-Use ```@seq``` to identify the count sequence number
+Use ```@seq``` to identify the count sequence number; ```@i``` is an equivalent form kept for backward compatibility.
 
 #### String Variables (global variables)
-The final slot command is resolved based on global variable values; image name version numbers can be specified
+The final slot command is resolved based on global variable values; image name version numbers can be specified.
 
-Use ```@v:var_name``` to identify string variables
+Use ```@v:var_name``` to identify global string variables, whose values come from the ```t_global``` table and are shared across slots.
+
+#### String Variables (slot parameters)
+The final slot command is resolved based on slot parameter values.
+
+Use ```@p:param_name``` to identify slot parameter string variables, whose values come from ```t_slot.parameters``` (jsonb) and are independent per slot. Slot parameters are managed via the ```scalebox slot set-parameter```/```get-parameter``` commands.
+
+#### Type Determination Rules
+
+Expression evaluation determines the type by the following rules:
+
+1. The expression contains a numeric variable (```@seq```/```@i```) → numeric evaluation. The values substituted for ```@v:```/```@p:``` must be numeric (whitelist validation to prevent command injection); otherwise the expression is skipped and kept as-is.
+2. The expression contains only string variables (```@v:```/```@p:```) → plain text substitution, no arithmetic evaluation.
+3. The expression contains no variables → numeric evaluation.
+
+Examples:
+- ```((@seq + @v:batch_size))```: seq=5, batch_size="100" → numeric evaluation, result ```105```
+- ```((@v:name))```: name="john" → text substitution, result ```john```
 
 ### 7.7.2 Slot Sequence Number Variable Examples
 
@@ -283,14 +300,14 @@ ROCM_COMMAND='docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd 
 
 #### docker multi-GPU configuration command 2
 ```bash
-docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((n%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
+docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((@seq%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
 ```
 
 ### 7.7.3 global Variable Examples
 
 ```yaml
   my-module:
-    base_image: my-image:(($v:pipeline_version))
+    base_image: my-image:((@v:pipeline_version))
 ```
 
 Define the global variable ```pipeline_version``` as ```20260411``` in global; then at launch time, the actual image name is ```my-image:20260411``` 
@@ -298,6 +315,26 @@ Define the global variable ```pipeline_version``` as ```20260411``` in global; t
 ```sh
 scalebox global set pipeline_version 20260411
 ```
+
+### 7.7.4 Slot Parameter Variable Examples
+
+Slot parameters are stored in ```t_slot.parameters``` (jsonb) and are independent per slot. Different slots can hold different parameter values, against which the launch command is dynamically evaluated. Slot parameters are managed via the ```scalebox slot set-parameter```/```get-parameter``` commands.
+
+#### ***App Definition***
+```yaml
+  mod-slot-expr:
+    command: 'docker run -d --network=host -e SEQ=((@seq)) -e MY_PARAM=((@p:my_param)) -e MY_VAR=((@v:my_global)) --rm {{ENVS}} {{VOLUMES}} {{IMAGE}}'
+```
+
+After setting the parameter value for a slot, ```((@p:my_param))``` is substituted with the value at launch time:
+
+```sh
+scalebox slot set-parameter my_param PARAM_VALUE --slot-id 3
+scalebox slot get-parameter my_param --slot-id 3
+# Output: PARAM_VALUE
+```
+
+At slot launch, the actual command for that slot contains ```MY_PARAM=PARAM_VALUE```. Unset parameters (or non-string values in the ```jsonb```) are treated as empty values.
 
 ## 7.8 gRPC Metadata Parameter Passing
 

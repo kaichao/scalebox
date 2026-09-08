@@ -8,6 +8,7 @@ Go SDK for scalebox controld gRPC services.
 |---------|:---:|------|------|
 | `client` | gRPC client setup | — | Connection factory, TLS + JWT config |
 | `common` | Pure Go utilities | — | File I/O, JSON, net helpers |
+| `module` | 模块二进制入口 | — | `Run()` 入口 + header 解析辅助 + JSON 输出，scalebox 模块 main() 的标准骨架 |
 | `pb` | Generated protobuf | — | `protoc` output from `proto/` |
 | `postgres` | Direct DB | — | `*sql.DB` / `*pgxpool.Pool` connections |
 | `task` | **CLI 子进程** | — | `exec.RunReturnAll("scalebox task add ...")`，见下方说明 |

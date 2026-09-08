@@ -6,7 +6,7 @@
 - §7.4 超时设置（task_max_seconds + timeout 封装建议）
 - §7.5 时间戳格式（RFC3339Nano / bash / golang 示例）
 - §7.6 跨集群应用
-- §7.7 Slot 启动命令表达式（`((@seq))` / `((@v:var_name))` 动态求解）
+- §7.7 Slot 启动命令表达式（`((@seq))` / `((@v:var_name))` / `((@p:param_name))` 动态求解）
 - §7.8 gRPC Metadata 传参（semaphore-auto-create）
 - §7.9 Slot 自动扩缩容
 
@@ -244,12 +244,29 @@ fmt.Println(formattedTime)
 #### 数值型变量（slot序号）
 每个模块，针对每个节点，有一个从0计数的序号，可用于slot启动命令表达式，实现对不同slot序号用不同的启动命令。
 
-用 ```@seq```标识计数序号
+用 ```@seq```标识计数序号；```@i```为向后兼容的等价写法。
 
 #### 字符串变量（global变量）
-按全局变量值，解析最终slot命令，可指定镜像名版本号
+按全局变量值，解析最终slot命令，可指定镜像名版本号。
 
-用 ```@v:var_name```标识字符串变量
+用 ```@v:var_name```标识全局字符串变量，变量值来自```t_global```表，跨slot共享。
+
+#### 字符串变量（slot参数）
+按slot参数值，解析最终slot命令。
+
+用 ```@p:param_name```标识slot参数字符串变量，参数值来自```t_slot.parameters```（jsonb），每个slot独立。slot参数通过```scalebox slot set-parameter```/```get-parameter```命令操作。
+
+#### 类型判定规则
+
+表达式求值按以下规则判定类型：
+
+1. 表达式含数值变量（```@seq```/```@i```）→ 数值求值。```@v:```/```@p:```替换后的值必须是数字（白名单校验，防命令注入），否则报错跳过，表达式原样保留。
+2. 表达式仅含字符串变量（```@v:```/```@p:```）→ 纯文本替换，不进行数值运算。
+3. 表达式不含变量 → 数值求值。
+
+示例：
+- ```((@seq + @v:batch_size))```：seq=5、batch_size="100" → 数值求值，结果为```105```
+- ```((@v:name))```：name="john" → 文本替换，结果为```john```
 
 ### 7.7.2 slot序号变量示例
 
@@ -283,14 +300,14 @@ ROCM_COMMAND='docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd 
 
 #### docker多GPU配置命令2
 ```bash
-docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((n%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
+docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((@seq%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
 ```
 
 ### 7.7.3 global变量示例
 
 ```yaml
   my-module:
-    base_image: my-image:(($v:pipeline_version))
+    base_image: my-image:((@v:pipeline_version))
 ```
 
 在global中定义全局变量 ```pipeline_version```为```20260411```，则在启动时，实际镜像名为```my-image:20260411``` 
@@ -298,6 +315,26 @@ docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/
 ```sh
 scalebox global set pipeline_version 20260411
 ```
+
+### 7.7.4 slot参数变量示例
+
+slot参数存储于```t_slot.parameters```（jsonb），每个slot独立。不同slot可设置不同的参数值，slot启动命令据此动态求解。slot参数通过```scalebox slot set-parameter```/```get-parameter```命令操作。
+
+#### ***应用定义***
+```yaml
+  mod-slot-expr:
+    command: 'docker run -d --network=host -e SEQ=((@seq)) -e MY_PARAM=((@p:my_param)) -e MY_VAR=((@v:my_global)) --rm {{ENVS}} {{VOLUMES}} {{IMAGE}}'
+```
+
+为slot设置参数值后，启动时```((@p:my_param))```被替换为参数值：
+
+```sh
+scalebox slot set-parameter my_param PARAM_VALUE --slot-id 3
+scalebox slot get-parameter my_param --slot-id 3
+# 输出：PARAM_VALUE
+```
+
+slot启动时，该slot的实际命令中```MY_PARAM=PARAM_VALUE```。未设置的参数（或```jsonb```中非字符串类型的值）按空值处理。
 
 ## 7.8 gRPC Metadata 传参
 

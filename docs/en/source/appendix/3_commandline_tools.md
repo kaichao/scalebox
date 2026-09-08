@@ -270,6 +270,26 @@ Set slot status.
 scalebox slot set-status <slot-id> READY
 ```
 
+### 1.5.5 slot get-parameter
+
+Read a slot parameter value (```t_slot.parameters```, jsonb).
+
+```bash
+scalebox slot get-parameter <parameter> --slot-id <slot-id>
+```
+
+Returns an empty string when the parameter is not set.
+
+### 1.5.6 slot set-parameter
+
+Set a slot parameter value (```t_slot.parameters```, jsonb). The value is stored as a string.
+
+```bash
+scalebox slot set-parameter <parameter> <value> --slot-id <slot-id>
+```
+
+Slot parameters can be used in slot launch command expressions (```((@p:param_name))```); see "Advanced Features" §7.7.
+
 
 ## 1.6 app Subcommands
 

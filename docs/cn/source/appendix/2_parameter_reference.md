@@ -60,6 +60,7 @@
 | slot_recoverable     | 'yes'，支持将出错后已退出的slot从'ERROR'设置为'READY'，以支持slot级重试 (以slot_max_retries替换？,TIMED-OUT/GREEDY分别处理)  |
 | slot_max_retries     | slot状态从'TIMED-OUT'设置为'READY'的重试次数(?)          |
 | slot_timeout_minutes | 若slot未正常启动，则一直处于'STARTING'状态。设置以分钟计的timeout，到期后将状态转换为'TIMEOUT'。缺省值为15分钟。对于不允许重复启动的slot实例（用GPU等），可设置较大值。 |
+| slot_max_tasks | slot生命周期策略参数：设置slot退出前累计执行的task数上限（成败都算），达到后slot优雅退出，退出后slot置READY，新task到来时由actuator重启新容器；缺省值0表示不限；PLAT_ALWAYS_RUNNING=yes的slot忽略此参数 |
 | task_global_timeout_scale | 若外部原因（slot异常退出等）导致task一直处于运行状态（状态码-3）。通过全局超时设置，恢复task状态码为123。该值为相对task_max_seconds的倍数，缺省值为2.0。全局退出设定返回码123。 拟改为task_timeout_scale_factor ？|
 | router_index | 多主路由实例的应用中，指定当前module发给第n个主路由。缺省值为0，通常设置值>0，以指定特定main-router实例  |
 | pod_id               | 标识本module属于pod管理，若消息来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）  |
@@ -74,19 +75,22 @@
 
 ### 2.1.4 task-headers标准参数表
 
-| 参数名称          | 含义                                            |
-| ---------------- | ----------------------------------------------- |
-| to_ip            | 当前task的待处理主机ip                             |
-| to_host          | 当前task的待处理主机名(t_host主键)                  |
-| from_ip          | 生成task的主机ip                                 |
-| from_ip_last     | 若from_module为主路由，主机ip                     |
-| from_host        | 生成task的主机名(t_host主键)                      |
-| from_module      | 生成task的模块名                                 |
-| from_module_last | 若from_module为主路由，主路由之前的from_module     |
-| from_cluster     | 跨集群应用的上一集群名                             |
-| to_slot          | SLOT-BOUND模块中当前task的待处理slot_id           |
-| to_slot_index    | 以本机seq表示的slot_id                           |
-| repeatable       | 缺省task在指定时间内不可重复分发，缺省值可通过module的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
+| 参数名称          | 写入方           | 含义                                            |
+| ---------------- | --------------- | ----------------------------------------------- |
+| to_ip            | 调用方          | 当前task的待处理主机ip                             |
+| to_host          | 调用方          | 当前task的待处理主机名(t_host主键)                  |
+| from_ip          | 系统自动        | 生成task的主机ip                                 |
+| from_ip_last     | 系统自动        | 若from_module为主路由，主机ip                     |
+| from_host        | 系统自动        | 生成task的主机名(t_host主键)                      |
+| from_module      | 系统自动        | 生成task的模块名                                 |
+| from_module_last | 系统自动        | 若from_module为主路由，主路由之前的from_module     |
+| from_cluster     | 系统自动        | 跨集群应用的上一集群名                             |
+| to_slot          | 调用方          | SLOT-BOUND模块中当前task的待处理slot_id           |
+| to_slot_index    | 调用方          | 以本机seq表示的slot_id                           |
+| repeatable       | 调用方          | 缺省task在指定时间内不可重复分发，缺省值可通过module的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
+| action           | 调用方          | 模块action路由（tape-mgr/tape-io类模块用）          |
+| conflict_action  | 调用方          | 任务冲突处理策略（task add的--conflict-action参数）  |
+| slot_last_task   | 调用方          | 值为'yes'时声明本task是当前slot的最后一个task：agent执行完该task后退出（处理完当前已拉取批次），不处理后续task。退出后slot置READY，新task到来时由actuator重启新容器。PLAT_ALWAYS_RUNNING=yes的slot忽略此标记 |
 
 其中，from_ip、from_module、from_module_last等，由系统自动生成。
 
