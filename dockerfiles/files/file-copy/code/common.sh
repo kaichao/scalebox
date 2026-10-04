@@ -9,6 +9,9 @@ ensure_local_dir() {
     mkdir -p "$dir"
     local code=$?
     [[ $code -ne 0 ]] && echo "[ERROR] mkdir in local dir, dir_name:${dir}, error_code:${code}" >&2 && exit $code
+    # 显式 return 0：上一行在成功时为假，会把函数返回码留成 1，
+    # 调用方在 set -e 下会静默退出
+    return 0
 }
 
 # 通过 SSH 创建远程目录，失败时退出
@@ -18,6 +21,7 @@ ensure_remote_dir() {
     eval "$ssh_cmd mkdir -p $remote_dir"
     local code=$?
     [[ $code -ne 0 ]] && echo "[ERROR] mkdir in remote dir, dir_name:${remote_dir}, error_code:${code}" >&2 && exit $code
+    return 0
 }
 
 # keep_source=no 时清理源端文件

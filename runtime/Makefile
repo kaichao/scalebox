@@ -101,7 +101,7 @@ auto-keygen-actuator:
 
 get-pubkey:
 	@ cid=`docker create scalebox.net/platform/actuator` \
-	&& docker cp $$cid:/root/.ssh/id_rsa.pub ${PWD} \
+	&& docker cp $$cid:/root/.ssh/id_ed25519.pub ${PWD} \
 	&& docker rm -v $$cid
 
 update-pubkey: auto-keygen-actuator get-pubkey
@@ -111,5 +111,5 @@ prepare: get-pubkey
 	@ chmod 700 ~/.ssh
 	@ echo "export PATH=/usr/local/bin:/usr/local/sbin:\$$PATH" >> ~/.bashrc
 	@ # setup passwordless ssh from actuator to node
-	@ cat id_rsa.pub >> ~/.ssh/authorized_keys
+	@ cat id_ed25519.pub >> ~/.ssh/authorized_keys
 	@ chmod 600 ~/.ssh/authorized_keys

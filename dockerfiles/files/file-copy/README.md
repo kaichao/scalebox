@@ -127,6 +127,24 @@ TARGET_URL=root@10.0.6.101/tmp/etc \
 scalebox run --image-name scalebox.net/platform/file-copy:latest
 ```
 
+### 4.4 local to local
+
+同容器内跨挂载点搬运（如：共享挂载 → 节点本地根）。
+
+```sh
+echo '1115381072/1115381072_1115382688_combined.tar' | \
+SOURCE_URL=/cluster_data_root/mwa/tar \
+TARGET_URL=/dev/shm/cache \
+scalebox run --image-name scalebox.net/platform/file-copy:latest
+```
+
+- `SOURCE_URL`：源目录，**容器内可访问路径**——`/tmp`、`/dev/shm`、`/cluster_data_root`、
+  `/local_data_root` 前缀原样通过；其余绝对路径按主机路径映射到 `/local_data_root` 之下；
+- `TARGET_URL`：**主机路径**，容器内目标目录 = `/local_data_root${TARGET_URL}`
+  （如 `/dev/shm/cache` → 节点本地 tmpfs；`/data/*` 例外，原样使用）——与 SSH → LOCAL 一致；
+- 文件按任务 body 的相对路径落盘（`rsync -R`，必要时自动建子目录），目标目录自动创建；
+- `KEEP_SOURCE=no` 时删除源文件（仅删除传输成功的）。
+
 ## 五、输出文件
 
 模块运行后会在 `WORK_DIR` 下生成以下文件追踪记录：
@@ -137,6 +155,7 @@ scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 | 传输模式 | 说明 |
 | -------- | ---- |
+| LOCAL → LOCAL | 同容器跨挂载点搬运，本地读取的源文件 |
 | LOCAL → SSH | 本地文件经 SSH 发往远程 |
 | LOCAL → RSYNC_OVER_SSH | 本地文件经 rsync over SSH 发往远程 |
 | LOCAL → RSYNC | 本地文件经原生 rsync 发往远程 |
@@ -147,6 +166,7 @@ scalebox run --image-name scalebox.net/platform/file-copy:latest
 
 | 传输模式 | 说明 |
 | -------- | ---- |
+| LOCAL → LOCAL | 同容器跨挂载点搬运，本地写入的目标文件 |
 | SSH → LOCAL | 从远程经 SSH 拉取文件到本地 |
 | RSYNC_OVER_SSH → LOCAL | 从远程经 rsync over SSH 拉取文件到本地 |
 | RSYNC → LOCAL | 从远程经原生 rsync 拉取文件到本地 |

@@ -6,9 +6,39 @@
 # 依赖库: /usr/local/lib/scalebox/
 
 # ===== LOCAL -> LOCAL =====
+# 同容器内跨挂载点搬运（如：共享挂载 → 节点本地根）。
+# 路径约定：target_url 按"主机路径"解释，容器内目标目录 = /local_data_root${target_url}
+# （/data/* 例外，原样使用）——与 SSH -> LOCAL 一致；
+# 源目录用 path::host_path 归一（/tmp、/dev/shm、/cluster_data_root、/local_data_root
+# 前缀原样，其余绝对路径按主机路径映射到 /local_data_root 之下）。
 transfer_LOCAL_LOCAL() {
-    echo "[ERROR] both source_mode and target_mode are local" >> ${WORK_DIR}/auxout.txt
-    exit 31
+    local src_dir=$(path::host_path "${source_url}")
+    local dest_dir
+    if [[ $target_url == /data/* ]]; then
+        dest_dir="${target_url%/}"
+    else
+        dest_dir="/local_data_root${target_url%/}"
+    fi
+    ensure_local_dir "$dest_dir"
+
+    if [ "$keep_source" = "no" ]; then
+        # rsync 仅删除传输成功的源文件（同 LOCAL -> RSYNC）
+        rsync_args=" --remove-source-files ${rsync_args} "
+    fi
+
+    local cmd="cd ${src_dir} && rsync -Rut ${rsync_args} $1 ${dest_dir}/"
+    echo "cmd=$cmd" >> ${WORK_DIR}/auxout.txt
+    # 注意：run.sh 带 set -e，这里不能用 "eval; code=$?" 后接 "[[ $code -ne 0 ]] && ..."——
+    # eval 失败即触发 errexit，错误信息写不进 auxout.txt（既有模式同此）
+    local code=0
+    eval "$cmd" || code=$?
+    if [[ $code -ne 0 ]]; then
+        echo "[ERROR] cp file from local to local, cmd=$cmd, error_code:$code" >> ${WORK_DIR}/auxout.txt
+        exit $code
+    fi
+
+    echo "${src_dir}/$1" >> "${WORK_DIR}/input-files.txt"
+    echo "${dest_dir}/$1" >> "${WORK_DIR}/output-files.txt"
 }
 
 # ===== LOCAL -> SSH =====

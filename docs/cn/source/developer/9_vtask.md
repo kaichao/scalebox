@@ -246,6 +246,41 @@ wait-queue slot 每轮 poll
 
 wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh` 末尾手动 increment 放行下一个 vtask。
 
+### 9.4.5 vtask 生命周期中的信号量变化
+
+管道涉及两类信号量，生命周期与归还责任不同：
+
+| 类型 | 信号量 | 作用 | 归还责任 |
+|------|--------|------|---------|
+| 资源容量 | `host_vtask_size:<head>:<host>` / `group_vtask_size:<head>:<组>` | 该 host/组在制 vtask 数 ≤ `vtask_size` | **controld 自动**（tail 完成 / fail）|
+| gate 锁 | `vtask_size:<wait-queue>` | wait-queue 段串行化（同一时刻只有一个 vtask 在执行 bind）| **主路由 from-vtask-head 解锁**；失败回滚在 run.sh；`vtask fail` 兜底 |
+
+生命周期各阶段的变化：
+
+| 阶段 | 触发点 | 资源容量 | gate 锁 |
+|------|--------|---------|---------|
+| 领取 | controld 领取 wait-queue 的裸任务（无 `_vtask_size_sema`）| — | **−1**（`updateVTask` 兜底扣）|
+| 准入 | wait-queue `check.sh`（ACTION_CHECK）| semagroup max ≤ 0 → 停领 | —（不检查 gate）|
+| bind | wait-queue run.sh `vtask bind` | **−1**（原子预扣，返回 host/组号）| — |
+| 建链回滚 | run.sh `vtask add-subtask --direct` 失败 | **+1**（`vtask unbind`）| **+1**（run.sh increment，放行）|
+| vtask-head 运行 | 主路由 `from-vtask-head` | —（已预扣，head 领取时跳过）| **+1**（解锁，放行下一个 vtask）|
+| vtask 管道运行 | core 各阶段 | — | — |
+| 完成 | controld `doVTaskFinished`（tail 完成）| **+1**（按 tail task 的 `_vtask_size_sema` 自动加回）| — |
+| 失败 | `FailVtask` / `vtask fail` | **+1**（释放资源）| **+1**（释放门控）|
+
+要点：
+
+- gate 锁的实际 gate 点是 controld `getVtaskBatchSize`：无 `vtask_role` 的模块（如
+  wait-queue，DEFAULT 分发）每轮领取数 = min(`vtask_size:<mod>` 当前值, TaskBatchSize)，
+  值为 0 时停领——与 check.sh（查 host/group 容量）是两个独立闸门；
+- gate 的**扣减**由平台做（controld 领取裸任务时），**解锁**由主路由
+  `from-vtask-head` 做（`scalebox semaphore increment vtask_size:<wait-queue>`，见
+  `examples/vtask/main-router/from-vtask-head.sh`；Go 版 `semaphore.AddValue(name, 1, appID)`）
+  ——vtask-head 任务运行即放行下一个 vtask；
+- 应用作者无需编写 wait-queue 相关脚本（标准模块承担），但**主路由需在
+  from-vtask-head 中包含 gate 解锁一行**；漏做时 wait-queue 段停领，兜底：
+  `vtask fail` 释放门控、人工 `semaphore increment` 补偿。
+
 ## 9.5 管道流程
 
 ### 9.5.1 header 传播
