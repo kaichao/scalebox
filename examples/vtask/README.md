@@ -74,7 +74,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**：vtask 锚�
 main-router → default.sh（入口路由）
   │
   ├─ DEFAULT: 直连 vtask-head
-  └─ HOST-BOUND / GROUP-BOUND: 进入 wait-queue
+  └─ HOST-BOUND / GROUP-BOUND: 进入 wait-queue（显式转发 _vtask_attr_* 应用属性）
                                   │
                                   ▼
                             wait-queue（标准模块镜像，准入控制 + 资源分配）
@@ -84,6 +84,7 @@ main-router → default.sh（入口路由）
                               run.sh（镜像内置，无需作者编写）:
                                 ① vtask bind（原子化绑定资源）
                                 ② vtask add-subtask --direct（gRPC 直连，需同步感知错误）
+                                   （_vtask_attr_* 应用属性随此调用转发进 vtask 范围）
                                 ③ 失败时 vtask unbind 回滚
                                 ④ task 在本 slot 终结，不回流 main-router
                                   │
@@ -459,6 +460,45 @@ done
 
 `to_slot_index` 路由到对应 head slot（节点组锚点），controld 自动转换为 `to_slot`。每个节点组维护独立的流控信号量（`group_vtask_size:vtask-head:<组号>`）。
 
+### 4. 应用属性（`_vtask_attr_<name>`）
+
+`_vtask_attr_<name>` 前缀的 task header 为应用自定义属性（契约见 `docs/cn/source/appendix/2_parameter_reference.md` 的 task-headers 表）：平台只运输、不解释。它随任务进入 wait-queue，由标准模块 run.sh 原样转发给 vtask-head，之后沿 `_` 前缀规则在 vtask 管道各模块间自动传播——vtask 内任意模块都可用 `scalebox::task_header "$2" _vtask_attr_<name>` 读取（见 `from-vtask-tail.sh` 中的打印示例）。
+
+```bash
+# 创建 app（HOST-BOUND）
+app_id=$(cat host-tasks.txt | scalebox run -e host-bound.env | grep -o '"app_id":[0-9]*' | cut -d: -f2)
+
+# ① 直接向 wait-queue 投递（属性显式带上，最简路径）
+echo "test-body-0" | scalebox task add --app-id=$app_id --sink-module=wait-queue \
+    --header _vtask_attr_demo_attr_0=demo-value-0
+
+# ② 入口 task 经 main-router（不带 --sink-module 即投到入口模块），
+#    属性由 default.sh 显式转发给 wait-queue
+echo "test-body-1" | scalebox task add --app-id=$app_id \
+    --header _vtask_attr_demo_attr_1=demo-value-1
+```
+
+观察（tail task 会把属性打印到 stdout）：
+
+```bash
+scalebox vtask list-subtasks --vtask-id=<vtask_id>   # 找到 tail task id
+scalebox task show <tail-task-id>
+# Headers:     {"_vtask_attr_demo_attr":"demo-value",...,"_vtask_id":"..."}
+# ── stdout ──
+# [vtask-tail] _vtask_attr_demo_attr=demo-value
+```
+
+为什么 wait-queue 这一跳必须显式转发：wait-queue 没有 `vtask_role`，agent `addSinkTasks` 的 router 分支对 `_` 前缀的自动继承只放行给有 vtask_role 的 sink 模块（`cmd/agent/sink_tasks.go`），因此属性必须由生产方显式写入 wait-queue 任务（路径 ① 的 `--header`，或路径 ② 中 default.sh 的显式转发）。进入 vtask-head 之后不再有此问题：head→core 是非路由模块（自动继承全部 `_`），core→main-router→tail 这一跳 sink 是 vtask-tail（有 vtask_role），`_vtask_*` 前缀自动放行。
+
+DEFAULT 模式（`scalebox.env`）不经 wait-queue，sink 直接是 vtask-head（`vtask_role=head`），属性由 agent 自动继承，投递入口 task 时带上即可：
+
+```bash
+app_id=$(cat default-tasks.txt | scalebox run -e scalebox.env | grep -o '"app_id":[0-9]*' | cut -d: -f2)
+echo "test-body" | scalebox task add --app-id=$app_id --header _vtask_attr_demo_attr=demo-value
+```
+
+`_vtask_size_sema` / `_vtask_id` 不属于应用属性、标准模块不会继承：前者用本次 `vtask bind` 的新值，后者由服务端自指为新 vtask。
+
 ## 常见问题
 
 | 现象 | 原因 | 解决 |
@@ -476,9 +516,9 @@ done
 |------|------|------|
 | `check.sh` / `run.sh` | 标准模块镜像 `scalebox.net/platform/wait-queue` | 准入闸门（ACTION_CHECK）+ bind 资源 + add-subtask `--direct`（失败时 unbind 回滚），作者无需编写 |
 | `run.sh` | main-router/ | 总入口，按 `from_module` 分发到对应脚本（wait-queue 回流空操作，未知 from_module 丢弃） |
-| `default.sh` | main-router/ | 入口路由（仅 from_module 为空的入口 task）：DEFAULT→vtask-head，其他→wait-queue |
+| `default.sh` | main-router/ | 入口路由（仅 from_module 为空的入口 task）：DEFAULT→vtask-head，其他→wait-queue；HOST-BOUND/GROUP-BOUND 显式转发 `_vtask_attr_*` 应用属性（wait-queue 无 vtask_role，agent 的自动继承被门控拦下） |
 | `from-vtask-head.sh` | main-router/ | add-subtask（异步路径，`_` 前缀自动传播）+ gate 释放 |
 | `from-vtask-core.sh` | main-router/ | 实际计算（示例中仅转发到 vtask-tail） |
-| `from-vtask-tail.sh` | main-router/ | 空操作（资源由 controld `doVTaskFinished` 自动归还） |
+| `from-vtask-tail.sh` | main-router/ | 读取并打印 `_vtask_attr_*` 应用属性（示意 vtask 范围内的可见性）；资源由 controld `doVTaskFinished` 自动归还 |
 
 相对于旧版的主要变更：wait-queue 封装为标准模块（`check.sh` 准入闸门 + `run.sh` bind 逻辑进镜像，task 在 wait-queue slot 终结不回流）、统一信号量（`semagroup max/decrement` → `vtask bind`、`semaphore increment` → `vtask unbind` 仅错误回滚）、tail 不再 unbind（controld `doVTaskFinished` 自动归还）、取消 `vtask_size_sema_copy` 副本信号量、GROUP-BOUND 术语统一（`group_vtask_size` 信号量前缀，平台层 `task_dist_mode=SLOT-BOUND` 保持不变）。

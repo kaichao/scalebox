@@ -91,13 +91,14 @@
 | action           | 调用方          | 模块action路由（tape-mgr/tape-io类模块用）          |
 | conflict_action  | 调用方          | 任务冲突处理策略（task add的--conflict-action参数）  |
 | slot_last_task   | 调用方          | 值为'yes'时声明本task是当前slot的最后一个task：agent执行完该task后退出（处理完当前已拉取批次），不处理后续task。退出后slot置READY，新task到来时由actuator重启新容器。PLAT_ALWAYS_RUNNING=yes的slot忽略此标记 |
+| _vtask_attr_${name} | 调用方（应用）   | 应用自定义属性，vtask范围内可见：随任务进入wait-queue后由标准模块原样转发给vtask-head，并沿vtask管道向下游模块自动传播。平台只运输、不解释内容；${name}由应用定义，平台保留该子命名空间 |
 
 其中，from_ip、from_module、from_module_last等，由系统自动生成。
 
 - 针对HOST-BOUND的模块，需在代码中设定to_host；或通过模块的pod_id相等来设定。
 - 针对SLOT-BOUND的模块，需在代码中设定to_slot
 
-task-header可自定义参数，其中 ```_```开头的参数表示标准传递参数；```_vtask_```开头的参数为vtask参数，由系统维护。
+task-header可自定义参数，其中 ```_```开头的参数表示标准传递参数；```_vtask_```开头的参数为vtask参数，由系统维护；```_vtask_attr_```子命名空间保留给应用，用于声明vtask范围内可见的自定义属性（平台只运输、不解释内容）。
 
 ## 2.2 资源配置参数表
 

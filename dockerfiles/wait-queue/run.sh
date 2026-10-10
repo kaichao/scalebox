@@ -8,16 +8,37 @@
 #   VTASK_MODE       vtask 类型：HOST-BOUND / GROUP-BOUND（缺省 HOST-BOUND）
 #   HEAD_MODULE      vtask-head 模块名（缺省 vtask-head）
 #   PLAT_MODULE_NAME 当前模块名（agent 注入，用于 gate 信号量）
+#
+# 入参：$1 = task body，$2 = task headers（JSON，agent 注入）
+# 转发规则：`_vtask_attr_*` 前缀的 header 为应用属性，原样转发给 vtask-head
+#（平台只运输、不解释）；其余 `_vtask_*` 不继承——_vtask_id 由服务端自指，
+# _vtask_size_sema 用本次 bind 的新值。
+
+source /usr/local/lib/scalebox/functions.sh
 
 body=$1
 head_module=${HEAD_MODULE:-vtask-head}
 module_name=${PLAT_MODULE_NAME:-wait-queue}
+
+# 收集应用属性（_vtask_attr_*），随 add-subtask 转发进 vtask 范围
+headers_json=${2:-}
+declare -A task_headers
+if [ -n "${headers_json}" ] && [ "${headers_json}" != "{}" ]; then
+    scalebox::json_parse "${headers_json}" task_headers
+fi
+attr_headers=()
+for k in "${!task_headers[@]}"; do
+    if [[ "$k" == _vtask_attr_* ]]; then
+        attr_headers+=(--header "$k=${task_headers[$k]}")
+    fi
+done
 
 if [ "$VTASK_MODE" = "GROUP-BOUND" ]; then
     # GROUP-BOUND vtask：bind 返回组号（head slot 的 seq）
     group_seq=$(scalebox vtask bind) || exit 1
     sema_name="group_vtask_size:${head_module}:${group_seq}"
     scalebox vtask add-subtask --direct --module=$head_module \
+        "${attr_headers[@]}" \
         --header to_slot_index=$group_seq --header _vtask_size_sema=$sema_name $body || {
         scalebox vtask unbind --sema-name="${sema_name}"
         scalebox semaphore increment vtask_size:${module_name}
@@ -28,6 +49,7 @@ else
     to_host=$(scalebox vtask bind) || exit 1
     sema_name="host_vtask_size:${head_module}:${to_host}"
     scalebox vtask add-subtask --direct --module=$head_module \
+        "${attr_headers[@]}" \
         --header to_host=$to_host --header _vtask_size_sema=$sema_name $body || {
         # 回滚已扣减的资源，并放行下一个 vtask
         scalebox vtask unbind --sema-name="${sema_name}"
