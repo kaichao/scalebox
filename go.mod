@@ -1,10 +1,10 @@
 module github.com/kaichao/scalebox
 
-go 1.25.2
+go 1.27.2
 
 require (
 	github.com/jackc/pgx/v5 v5.9.2
-	github.com/kaichao/gopkg v0.0.0-20260721094408-a4ee0bbe5798
+	github.com/kaichao/gopkg v0.0.0-20261012083629-65d495988268
 	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/sirupsen/logrus v1.9.4
 	github.com/stretchr/testify v1.11.1
