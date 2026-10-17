@@ -1,0 +1,15 @@
+name: agent-interface-files.features
+cluster: local
+
+parameters:
+  main_router: mr-module
+
+modules:
+  mr-module:
+    arguments:
+      code_path: ${PWD}/mr-code
+      slot_options: slot_on_head
+  my-module:
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head

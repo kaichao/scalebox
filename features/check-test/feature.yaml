@@ -1,14 +1,14 @@
-name: check_test.features
+name: check-test.features
 cluster: ${CLUSTER}
 
 modules:
   check_test:
     parameters:
-      slot_on_head: yes
       start_task: ANY
     arguments:
       code_path: ${PWD}/code
+      slot_options: slot_on_head
       dir_quota_gb: ${DIR_QUOTA_GB}
-      space_free_gb: ${SPACE_FREE_GB}
+      free_space_gb: ${FREE_SPACE_GB}
     environments:
       - ACTION_CHECK=${ACTION_CHECK}

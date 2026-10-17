@@ -1,4 +1,4 @@
-name: node_progress_gap.features
+name: node-progress-gap.features
 cluster: ${CLUSTER}
 
 modules:

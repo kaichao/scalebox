@@ -1,60 +1,44 @@
-# tests(特性测试)
+# features（特性测试）
 
-scalebox平台的关键特性测试。
+每个目录一个平台特性，三合一：面向 AI agent 的说明（`README.md`）、最小可跑应用（`feature.yaml`）、可判定的集成测试（`test.sh`，阶段 3 提供）。
 
-## 容错支持：[retry_test](./retry_test/)
-在模板定义文件的job定义中，设置
-```
-parameters:
-  retry_rules: "['1','2:3']"
-```
-表示：若task的返回错误码为1，自动重做1次；若task的返回错误码为2，自动重做3次。
+## 约定
 
-## 超时设置：[timeout-gen](./timeout-gen/)
-在模板定义文件的job定义中，设置
-```
-arguments:
-  task_timeout_seconds:	10
-```
-表示，task的最大运行时间为10秒，若超过10秒，则该task退出，返回timeout错误码。
+- 目录名：小写连字符（kebab-case），如 `task-batch-size`；单词目录直接用小写（如 `pod`）。
+- `README.md`：按 [`_template/README.md`](./_template/) 的模板编写，中文。
+- `feature.yaml`：与 `app.yaml` 同 schema；用 `scalebox run --app-file=feature.yaml` **显式**加载（`scalebox run` 的缺省探测只找 `app.yaml`）。
+- `test.sh`：一键建 app → 跑 → 断言 → 清理，返回 0/非 0（阶段 3 补齐）。
+- 索引一致性由 `./check-index.sh` 校验；新增/删除 feature 后运行。
 
-## 流控管理：[check_test](./check_test/)
+## 索引
 
-流控管理通过设置容器的环境变量ACTION_CHECK（缺省值为:/app/bin/check.sh）来实现。若ACTION_CHECK返回值非0，则该容器将跳过server端消息获取，从而不能进行后续处理流程。
+| feature | 覆盖特性 | 状态 |
+|---|---|---|
+| [agent-interface-files](./agent-interface-files/) | 模块与 agent 的 8 类接口文件 | README 已套模板；测试待阶段 3 |
+| [check-test](./check-test/) | `free_space_gb` / `dir_quota_gb` / `ACTION_CHECK` | 已修正参数名与 slot 选项写法 |
+| [env-lifecycle](./env-lifecycle/) | app 快照 / 未定义变量 / non-tty stdin | 阶段 2 新建 |
+| [headers-propagation](./headers-propagation/) | `_` 前缀传播 / `_vtask_attr_*` | 阶段 2 新建 |
+| [node-progress-gap](./node-progress-gap/) | HOST-BOUND 节点进度差 | README 已套模板 |
+| [pod](./pod/) | `pod_id` 节点本地计算 | README 已套模板 |
+| [retry-test](./retry-test/) | `retry_rules` 退出码重试 | 新增 README |
+| [side-car](./side-car/) | `ACTION_RUN/SETUP/TEARDOWN/CHECK` | README 已套模板 |
+| [slot-expr](./slot-expr/) | slot 启动表达式 | README 已套模板 |
+| [task-batch-size](./task-batch-size/) | `task_batch_size` 批量领取 | README 已套模板 |
+| [task-identity](./task-identity/) | `uniq_task` / 112 / `conflict-action` / `repeatable` | 阶段 2 新建 |
+| [timeout](./timeout/) | `task_max_seconds` 超时 | README 已套模板 |
 
-## 任务透视：[task-perspective](./task-perspective/)
+## 规划中（未建目录）
 
-用户应用程序与平台交互，通过以下3个文件实现
-- /work/timestamps.txt：纪录用户程序分段的时间戳，可以纪录task运行数据库中。格式如下：
-```
-2008-03-19T18:35:03-08:00
-2009-11-05T17:50:20.154+08:00
-2010-11-05T17:50:20.154918+08:00
-2011-11-05T17:50:20.154918780+08:00
-2012-11-17T08:52:21,963572856+08:00
-```
+来自 `docs/feature-inventory.md` §5：
 
-- /work/user-file.txt：用户自身产生的关于运行过程的数据文件，无格式限制，直接记录在task运行数据库中
-- /work/task-exec.json：用户运行过程的各类统计数据、状态数据，需纪录到task运行数据库中。其示例格式如下：
+| feature | 覆盖特性 |
+|---|---|
+| sink-tasks | 回流格式 / `last_from_module` / 与 vtask 的区别（部分已并入 agent-interface-files） |
+| vtask-flow-control | wait-queue / bind / gate / fail |
+| check-flow-control | 空间闸门挂载位置与死锁（可并入 check-test） |
 
-```json
-{
-    "statusCode":"<status_code>",
-	  "inputBytes":"<input_bytes>",
-	  "outputBytes":"<output_bytes>",
-    "userText":"user-defined text\nHello scalebox in message-${m}",
-    "timestamps":["2018-03-19T18:35:03-08:00","2019-11-05T17:50:20.154+08:00","2020-11-05T17:50:20.154918+08:00","2021-11-05T17:50:20.154918780+08:00","2022-11-17T08:52:21,963572856+08:00"],
-    "sinkJob":"task-perspective",
-    "messageBody":"1"
-}
-```
+## 校验
 
-## 基于singularity的质数计算：[hello-scalebox-singularity](./hello-scalebox-singularity/)
-singularity是scalebox支持的docker之外的一种容器引擎，支持用docker的镜像库中的镜像。
-
-可设置command参数，使用singularity容器引擎来运行容器。
-
-```
-  hello-scalebox:
-    command: singularity run {{ENVS}} {{VOLUMES}} docker://{{IMAGE}}
+```sh
+./check-index.sh
 ```

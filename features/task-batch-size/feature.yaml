@@ -1,4 +1,4 @@
-name: task_batch_size.features
+name: task-batch-size.features
 cluster: ${CLUSTER}
 
 modules:

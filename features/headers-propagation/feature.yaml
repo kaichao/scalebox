@@ -1,0 +1,12 @@
+name: headers-propagation.features
+cluster: local
+
+modules:
+  producer:
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head
+  consumer:
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head

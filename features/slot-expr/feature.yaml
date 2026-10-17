@@ -1,4 +1,4 @@
-name: slot_expr.features
+name: slot-expr.features
 cluster: local
 modules:
   mod-slot-expr:

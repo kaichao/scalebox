@@ -1,0 +1,13 @@
+name: env-lifecycle.features
+cluster: local
+
+modules:
+  env-lifecycle:
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head
+    parameters:
+      start_task: 0
+    environments:
+      - DEMO_VALUE=${DEMO_VALUE}
+      - LITERAL_DEMO=${LITERAL_DEMO}
