@@ -3,6 +3,7 @@ cluster: local
 
 modules:
   timeout:
+    base_image: scalebox.net/platform/agent:latest
     arguments:
       code_path: ${PWD}/code
       task_max_seconds:	${TIMEOUT_SECONDS}

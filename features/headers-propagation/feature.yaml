@@ -3,10 +3,12 @@ cluster: local
 
 modules:
   producer:
+    base_image: scalebox.net/platform/agent:latest
     arguments:
       code_path: ${PWD}/code
       slot_options: slot_on_head
   consumer:
+    base_image: scalebox.net/platform/agent:latest
     arguments:
       code_path: ${PWD}/code
       slot_options: slot_on_head

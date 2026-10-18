@@ -31,7 +31,7 @@
 ./test.sh
 ```
 
-预期：PASS；断言点：<断言什么>。
+按 [`lib/testkit.sh`](../lib/testkit.sh) 的契约编写：`tk_init` → `tk_run_app` → `tk_wait_tasks` → 断言。预期：PASS；断言点：<断言什么>。
 
 ## 源码指针
 

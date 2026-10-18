@@ -26,6 +26,7 @@
 - **wait-queue 跳丢失**：入口任务经 router 进入 wait-queue 时，必须显式带上 `_vtask_attr_*`。
 - **手写 `_vtask_id`**：会让 vtask 树指向错误的根；只读不写。
 - **`_` 头与同名环境变量**：模块取值时 header 优先（见 `timeout` / side-car 相关条目）。
+- **`scalebox::*` 需要先 source**：脚本开头写 `source /usr/local/lib/scalebox/functions.sh`，否则报 `command not found`、取值为空。
 
 ## 最小例子
 

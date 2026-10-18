@@ -6,10 +6,12 @@ parameters:
 
 modules:
   mr-module:
+    base_image: scalebox.net/platform/agent:latest
     arguments:
       code_path: ${PWD}/mr-code
       slot_options: slot_on_head
   my-module:
+    base_image: scalebox.net/platform/agent:latest
     arguments:
       code_path: ${PWD}/code
       slot_options: slot_on_head

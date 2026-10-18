@@ -6,10 +6,10 @@ cd "$(dirname "$0")"
 
 errors=0
 
-# 实际 feature 目录（排除 _ 开头的模板/辅助目录）
+# 实际 feature 目录（排除 _ 开头的模板/辅助目录与 lib）
 actual=$(for d in */; do
     d=${d%/}
-    case "$d" in _*) continue ;; esac
+    case "$d" in _*|lib) continue ;; esac
     echo "$d"
 done | sort)
 
@@ -48,6 +48,9 @@ for name in $actual; do
     else
         echo "ERROR: $name/feature.yaml missing"
         errors=$((errors + 1))
+    fi
+    if [ -f "./$name/test.sh" ] && [ ! -x "./$name/test.sh" ]; then
+        echo "WARN: $name/test.sh is not executable"
     fi
 done
 

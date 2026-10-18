@@ -3,6 +3,7 @@ cluster: ${CLUSTER}
 
 modules:
   node-progress-gap:
+    base_image: scalebox.net/platform/agent:latest
     parameters:
       task_dist_mode: HOST-BOUND
       node_progress_gap: '{"n-[01]":2,"n":3}'

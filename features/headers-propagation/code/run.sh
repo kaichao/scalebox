@@ -1,5 +1,7 @@
 #!/bin/bash
 # $1 = task body, $2 = headers JSON
+source /usr/local/lib/scalebox/functions.sh
+
 case "${PLAT_MODULE_NAME}" in
     producer)
         # 非路由模块写 sink：_ 前缀 header 由 agent 自动继承

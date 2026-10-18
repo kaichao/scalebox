@@ -3,6 +3,7 @@ cluster: ${CLUSTER}
 
 modules:
   check_test:
+    base_image: scalebox.net/platform/agent:latest
     parameters:
       start_task: ANY
     arguments:
