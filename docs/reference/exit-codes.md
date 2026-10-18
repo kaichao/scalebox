@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `internal/task/status_code.go` (Go 常量) + 运行时约定 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@f479520 (2026-10-16) -->
+<!-- source: go-scalebox@d343cc1 (2026-10-18) -->
 
 
 # 退出码与任务状态码

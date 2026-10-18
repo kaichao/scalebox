@@ -2,6 +2,8 @@
 
 每个目录一个平台特性，三合一：面向 AI agent 的说明（`README.md`）、最小可跑应用（`feature.yaml`）、可判定的集成测试（`test.sh`，首批已提供，其余待补）。
 
+> agent 入口见仓库根 [`AGENTS.md`](../AGENTS.md)；卡链排查见 [`docs/agents/20-diagnosis.md`](../docs/agents/20-diagnosis.md)。
+
 ## 约定
 
 - 目录名：小写连字符（kebab-case），如 `task-batch-size`；单词目录直接用小写（如 `pod`）。

@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Scalebox is a cloud-native stream computing engine designed for distributed, heterogeneous computing clusters. It enables containerized single-machine user algorithms to run on pipeline-organized modular hierarchical large-scale parallel processing with task-level fault tolerance.
 
+> **AI agent 入口**：见 [`AGENTS.md`](./AGENTS.md)；卡链诊断见 [`docs/agents/20-diagnosis.md`](./docs/agents/20-diagnosis.md)。本文件保留开发工作流；面向 agent 的规则以 AGENTS.md 与 docs/agents/ 为准。
+
 ## Development Workflow
 
 ### Quick Start

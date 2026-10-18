@@ -20,7 +20,7 @@
 12. 两套信号量 API 不可混用：`vtask.*` 与 `semaphore.*` 各自配套。
 13. `_` 前缀 header 自动传播，但只对 `vtask_role≠""` 的 sink 模块放行；wait-queue 一跳需显式转发。
 14. 任务级 `free_space_gb` + 组原子性 = 死锁：空间闸门挂批入口。
-15. `slots` 条目是主机正则，不是逗号列表；写错则 slot 全不建、链卡死。
+15. `slots` 条目是主机正则，匹配 hostname 第一段（短名，如 `h0`）；不是逗号列表，也不要写 FQDN；写错则 slot 全不建、链卡死。
 16. 节点池必须 ON 且 ssh 可达：Slurm 重命名或僵尸 ON 会静默卡死。
 17. 容器可见路径只有 `/tmp`、`/dev/shm`、`/cluster_data_root`、`/local_data_root`、`/app/bin`。
 18. 状态码：-1 等待（含被闸门拦）、-3 执行中、0 完成、>0 失败。
@@ -177,14 +177,14 @@
 
 ## 4. 节点、数据与容器
 
-### INV-15 `slots` 是主机正则
+### INV-15 `slots` 是主机正则（匹配短名）
 
-- **现象**：`NODES` 写成 `host1,host2`，计算侧 slot 全不建，链卡在 wait-queue。
-- **规则**：`slots` 条目按主机正则解析（如 `n0-[01]`），不是逗号列表；需要多节点时用正则或字符类。
-- **为什么**：`expandRegexHostList` 对每个条目做正则展开；逗号串匹配不到任何 host。
-- **反例/后果**：`host_vtask_size` 缺失；wait-queue 卡 READY；controld 反复报 `GetSemagroupMax: no rows`。
+- **现象**：`NODES` 写成 `host1,host2`，或把完整 hostname `h0.local` 写进 `slots`，计算侧 slot 全不建，链卡在 wait-queue/READY。
+- **规则**：`slots` 条目按主机正则解析（如 `n0-[01]`），不是逗号列表；匹配对象是 **hostname 第一段（短名）**，如 `h0.local` 要写 `h0`，不要写 FQDN。需要多节点时用正则或字符类。
+- **为什么**：`expandRegexHostList` 用 `split_part(hostname,'.',1)` 取短名后做正则匹配；逗号串或 FQDN 匹配不到任何 host。
+- **反例/后果**：`host_vtask_size` 缺失；`t_slot` 0 行、任务停在 READY；wait-queue 卡住；controld 反复报 `GetSemagroupMax: no rows`。
 - **源码指针**：`cmd/controld/grpc/app_slots.go`（`expandRegexHostList`）。
-- **置信度**：单项目来源（app-fxcorr）。
+- **置信度**：源码 + 阶段 5 实测（`slots: h0.local` 不建 slot，改 `h0` 后正常）。
 - **适用范围**：所有 `slots` 配置。
 
 ### INV-16 节点池必须 ON 且可达

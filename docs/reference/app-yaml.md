@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `cmd/webui/frontend/src/schema/app-schema.json` (JSON Schema) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@f479520 (2026-10-16) -->
+<!-- source: go-scalebox@d343cc1 (2026-10-18) -->
 
 
 # App YAML 参考
@@ -42,7 +42,7 @@
 | `comment` | `string` | 否 | — | 备注说明 |
 | `volumes` | array<`string`> | 否 | — | 挂载卷列表 |
 | `environments` | array<`string`> | 否 | — | 环境变量列表 |
-| `slots` | array<`string`> | 否 | — | Slot 列表（支持正则，如 ["h0", "n0-[01]"]） |
+| `slots` | array<`string`> | 否 | — | Slot 列表（支持正则；匹配 hostname 第一段，如 h0、n0-[01]） |
 | `sink_modules` | array<`string`> | 否 | — | 下游模块集合（VTask 管道路由，DAG 边来源） |
 | `sink_vmodules` | array<`string`> | 否 | — | 下游虚拟模块集合 |
 | `arguments` | object（任意键值） | 否 | — | 容器启动参数（module-arguments 参数表） |

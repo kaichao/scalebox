@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `scalebox <command> --help` (Cobra) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@f479520 (2026-10-16) -->
+<!-- source: go-scalebox@d343cc1 (2026-10-18) -->
 
 
 # Scalebox CLI 参考

@@ -8,7 +8,7 @@
 |---|---|---|---|---|
 | `pod_id` | `module.parameters` | 字符串 | 空 | 同一 pod 的模块使用相同值 |
 | `task_dist_mode` | `module.parameters` | `HOST-BOUND` | `DEFAULT` | 该特性只对 HOST-BOUND 生效 |
-| `slots` | `module.slots` | slot 正则列表 | — | 模块部署的节点 |
+| `slots` | `module.slots` | slot 正则列表 | — | 模块部署的节点；匹配 hostname 第一段（如 `h0`），不要写 FQDN |
 
 ## 行为与不变式
 
@@ -21,6 +21,7 @@
 - **只对 HOST-BOUND 生效**：SLOT-BOUND / DEFAULT 模块不会因 `pod_id` 改变路由。
 - **两侧 `pod_id` 必须相同**：来源模块没设或值不同，不会自动推导 `to_host`。
 - **主路由中转**：跨主路由时 `from_module` 是主路由，必须依赖 `last_from_*`；不要把主路由的 `pod_id` 设成与算法模块相同。
+- **`slots` 写 FQDN 不建 slot**：平台用 `split_part(hostname,'.',1)` 取短名匹配；`h0.local` 匹配不到，写 `h0`。
 - 节点本地计算还依赖本地根与数据映射配置；只配 `pod_id` 不等于完整的本地计算模式。
 
 ## 最小例子
@@ -52,7 +53,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # test.sh 待补；先用下面的手工命令
 # 当前手工：
 echo 4 | scalebox run --app-file=feature.yaml
 ```
