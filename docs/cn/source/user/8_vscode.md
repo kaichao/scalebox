@@ -150,4 +150,4 @@ vscode-scalebox/
 │       └── appYaml.ts    # app.yaml 校验/补全/悬停
 ```
 
-> 完整设计文档见 :doc:`WebUI / VS Code 设计方案 <../../go-scalebox/docs/webui-vscode-plan>`（英文）。
+> 完整设计文档见 go-scalebox 仓库 `docs/webui-vscode-plan.md`（英文）。

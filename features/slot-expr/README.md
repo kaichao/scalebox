@@ -43,6 +43,19 @@ modules:
 
 `code/run.sh` 打印三个变量的值，用于确认求值结果。
 
+## 多 GPU 示例
+
+```text
+# singularity：每个 slot 一张卡
+singularity exec --rocm --env ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}} goagent
+
+# docker：每个 slot 一张卡
+docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video -e ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}}
+
+# docker：双卡按 seq 分组
+docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((@seq%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
+```
+
 ## 测试
 
 ```sh

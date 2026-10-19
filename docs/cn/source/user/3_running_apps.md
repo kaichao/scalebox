@@ -1,167 +1,60 @@
-# 3. 运行应用
+# 3. 运行与管理应用
 
-## 3.1 应用创建与运行
+本章按“建应用 → 投任务 → 查状态 → 清理”走一遍。完整命令、usage 与 flags 见
+[CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。
 
-### 3.1.1 应用定义文件
-
-Scalebox应用通过YAML配置文件定义。主要包括：
-
-- **应用名称**：唯一标识符，支持变量替换
-- **集群配置**：目标集群名称
-- **模块定义**：包含的模块及其配置
-- **参数设置**：运行时参数
-
-### 3.1.2 应用参数文件
-
-应用参数通过环境变量文件定义，支持变量替换。
-
-### 3.1.3 创建应用
+## 3.1 创建应用
 
 ```bash
-# 使用默认配置文件和参数文件
-scalebox run
+# 用 app.yaml 创建并启动
+scalebox run --app-file app.yaml --env-file scalebox.env
 
-# 指定配置文件
-scalebox run --env-file scalebox.env --app-file app.yaml
+# 只打印生成的 YAML，不创建应用
+scalebox run --app-file app.yaml --print-yaml
 ```
 
-## 3.2 应用管理
+`run` 的主要参数（`--app-cluster`、`--image-name`、`--code-path`、`--slot-regex` 等）见
+[appendix/3 §1.3.1](../appendix/3_commandline_tools.md)。字段定义见
+[app-yaml](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)。
+环境变量文件与模板变量的优先级见 [appendix/1 §1.2](../appendix/1_tech_specifications.md) 和
+[appendix/3 §1.1](../appendix/3_commandline_tools.md)。
 
-### 3.2.1 查看应用状态
+## 3.2 投递任务
 
 ```bash
-# 列出所有应用
+# 从 stdin 读取 body，指定下游模块与 header
+echo "body" | scalebox task add --app-id N --sink-module consumer -H _demo=hello
+
+# 从任务文件读取，每行一条
+scalebox task add --app-id N --task-file tasks.txt
+```
+
+任务文件格式、控制 header 与 `--conflict-action` 见
+[appendix/3 §1.3.2](../appendix/3_commandline_tools.md)。
+
+## 3.3 查看状态
+
+```bash
 scalebox app list
-
-# 查看应用详细信息
-scalebox app show --app-id=<app-id>
+scalebox module list --app-id N
+scalebox slot list --module-id M
+scalebox task list --app-id N
+scalebox task show T
 ```
 
-### 3.2.2 应用操作
+`task show` 输出 stdout/stderr、body、headers 与 `status_code`。任务卡住或失败时，按
+[卡链与失败诊断](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md) 排查。
+
+## 3.4 停止与清理
 
 ```bash
-# 停止应用
-scalebox app set-status --app-id=<app-id> --status=<app-status>
-
-# 删除应用
-scalebox app delete <app-name>
+scalebox app delete --app-id N
 ```
 
-## 3.3 任务管理
+`app delete` 只删除数据库记录，不停止本地 slot 容器；容器清理方式见诊断文档的“清理现场”一节。
 
-### 3.3.1 查看任务状态
+## 3.5 完整命令参考
 
-若不指定app-id，则缺省值为最新的app-id
-```bash
-# 列出应用的任务
-scalebox task list --app-id <app-id>
-
-# 按状态过滤任务
-scalebox task list --app-id <app-id> --status READY
-scalebox task list --app-id <app-id> --status COMPLETED
-scalebox task list --app-id <app-id> --status FAILED
-```
-
-### 3.3.2 任务操作
-
-```bash
-# 查看任务详情
-scalebox task show <task-id>
-
-# 删除任务
-scalebox task delete <task-id>
-```
-
-## 3.4 集群管理
-
-### 3.4.1 查看集群状态
-
-```bash
-# 查看集群状态
-scalebox cluster status
-
-# 列出集群节点
-scalebox host list
-
-# 查看节点详情
-scalebox host show --host-id=<host-id>
-```
-
-### 3.4.2 运行槽管理
-
-```bash
-# 列出槽位
-scalebox slot list
-
-# 查看槽位详情
-scalebox slot show --slot-id=<slot-id>
-```
-
-## 3.5 应用监控
-
-### 3.5.1 状态监控
-
-```bash
-# 实时监控应用状态
-scalebox app status <app-name> --watch
-
-# 监控任务执行
-scalebox task monitor --app <app-name>
-```
-
-### 3.5.2 性能指标
-
-```bash
-# 查看应用性能
-scalebox app metrics <app-name>
-
-# 查看节点资源使用
-scalebox node metrics <node-name>
-```
-
-## 3.6 故障排查
-
-### 3.6.1 常见问题
-
-1. **应用创建失败**
-   - 检查配置文件格式
-   - 验证参数设置
-   - 查看错误日志
-
-2. **任务执行失败**
-   - 检查任务日志
-   - 验证模块镜像
-   - 检查资源可用性
-
-3. **集群连接问题**
-   - 验证网络连通性
-   - 检查服务状态
-   - 验证认证配置
-
-### 3.6.2 调试工具
-
-```bash
-# 验证配置
-scalebox validate --app-file=<app-yaml>
-
-# 测试模块
-scalebox test module <module-name>
-
-# 检查系统状态
-scalebox system check
-```
-
-## 3.7 应用解析与集成
-
-应用通过 `scalebox run` 命令解析并创建：
-
-```bash
-scalebox run --env-file scalebox.env app.yaml
-```
-
-解析过程中模板参数变量的定义优先顺序（从高到低）：
-
-1. 命令行执行的环境变量
-2. 命令行指定的环境变量文件（缺省为 scalebox.env）
-3. 用户级环境变量配置文件：`${HOME}/.scalebox/environments`
-4. 系统级环境变量配置文件：`/etc/scalebox/environments`
+- [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)
+- [app.yaml 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)
+- [参数语义](../appendix/2_parameter_reference.md)

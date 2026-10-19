@@ -61,5 +61,5 @@ scalebox task add --app-id=$APP_ID --header to_host=n-10.inline 10c
 
 ## 相关文档
 
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.1.3
+- 参数表：`docs/reference/app-yaml.md`（`module.parameters` 的 `node_progress_gap`）
 - Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.2.4

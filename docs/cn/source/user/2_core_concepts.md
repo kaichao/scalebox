@@ -94,7 +94,7 @@ VTask 是 Scalebox 在细粒度 Task 之上建立的应用级粗粒度计算单�
 | HOST-BOUND | 单节点 | task → wait-queue → vtask-head → vtask-core → vtask-tail | 单节点独占计算 |
 | GROUP-BOUND | 节点组 | task → wait-queue → vtask-head → vtask-core-1 → vtask-core-2 → ... → vtask-tail | 多节点协同计算 |
 
-> 详细设计见 :doc:`VTask 虚拟任务 <../developer/9_vtask>`。
+> 详细设计见 {doc}`VTask 虚拟任务 <../developer/9_vtask>`。
 
 ## 2.9 集群详解
 
@@ -114,7 +114,7 @@ Scalebox 支持跨广域网异构算力集群的统一调度：
 - CLI 始终连接本地 controld，跨集群操作由服务端 gRPC 代理转发
 - 通过 `RegisterRemoteAppLink` 建立跨集群 App 引用，`t_app_rlink` + `t_module_rvlink` 管理模块级联路由
 
-> 详细设计见 :doc:`跨集群架构 <../developer/10_cross_cluster>`。
+> 详细设计见 {doc}`跨集群架构 <../developer/10_cross_cluster>`。
 
 ## 2.10 并行化方式
 

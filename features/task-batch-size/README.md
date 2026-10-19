@@ -56,6 +56,6 @@ for i in {0..9}; do printf "%03d\n" $i; done | scalebox run --app-file=feature.y
 
 ## 相关文档
 
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.1.3
+- 参数表：`docs/reference/app-yaml.md`（`module.parameters` 的 `task_batch_size`）
 - Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.3（任务排序/批量相关）
 - 实战：app-fxcorr v9 流水线（`TASK_BATCH_SIZE=8` 定案，见其 `CLAUDE.md`）

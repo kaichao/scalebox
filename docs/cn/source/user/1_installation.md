@@ -134,7 +134,7 @@ docker compose -f build/compose.yaml -f build/compose.security.yaml up -d
 
 **集群存储（可选）**：
 - 安装 glusterfs 客户端，挂载共享存储卷
-- 详见 :doc:`附录 7 - 基础软件安装 <../appendix/7_software_install>`
+- 详见 {doc}`附录 7 - 基础软件安装 <../appendix/7_software_install>`
 
 ## 1.3 配置说明
 
@@ -159,7 +159,7 @@ docker compose -f build/compose.yaml -f build/compose.security.yaml up -d
 | `GRPC_TLS_ENABLED` | gRPC TLS 加密 |
 | `AUTH_TOKEN` | JWT 认证令牌 |
 
-安全配置详见 :doc:`安全框架文档 <../../go-scalebox/docs/security>`（英文）。
+安全配置详见 go-scalebox 仓库 `docs/security.md`（英文）。
 
 ## 1.4 验证安装
 

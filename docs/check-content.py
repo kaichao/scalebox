@@ -69,6 +69,7 @@ def covered(command, reference):
 
 
 def parse_appendix2_params(path):
+    """Return the schema-uncovered parameters kept in appendix/2 §2.1.3."""
     params = set()
     section = ""
     for line in read(path).splitlines():
@@ -76,10 +77,8 @@ def parse_appendix2_params(path):
         if match:
             section = match.group(1)
             continue
-        if section not in {"2.1.1", "2.1.2", "2.1.3"}:
+        if section != "2.1.3":
             continue
-        for token in PARAM_RE.findall(line):
-            params.add(token)
         row = TABLE_ROW_RE.match(line)
         if row:
             cells = [cell.strip() for cell in row.group(1).split("|")]
@@ -147,7 +146,7 @@ def main():
     missing_codes = sorted(sphinx_codes - ref_codes)
 
     print_section("CLI commands (appendix/3 vs reference/cli.md)", len(sphinx_cli), missing_cli)
-    print_section("Parameters (appendix/2 2.1.1-2.1.3 vs reference/app-yaml.md)",
+    print_section("Schema-uncovered parameters (appendix/2 2.1.3 vs reference/app-yaml.md)",
                   len(sphinx_params), missing_params)
     print_section("Status codes (appendix/6 vs reference/exit-codes.md)",
                   len(sphinx_codes), missing_codes)

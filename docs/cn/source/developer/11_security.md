@@ -203,4 +203,4 @@ scalebox-sec jwt sign --sub 1 --role admin --ttl 720h
 scalebox-sec jwt verify --token <token>
 ```
 
-> 完整文档见 [scalebox-security](https://github.com/kaichao/scalebox-security/blob/main/docs/README.md) 和 :doc:`安全管理（英文） <../../go-scalebox/docs/security>`。
+> 完整文档见 [scalebox-security](https://github.com/kaichao/scalebox-security/blob/main/docs/README.md) 和 go-scalebox 仓库 `docs/security.md`（英文）。

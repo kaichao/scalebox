@@ -227,6 +227,7 @@ Usage:
 |---|---|
 | `allocate` | Allocate dynamic hosts for a cluster |
 | `create` | Create a cluster from YAML file |
+| `get-parameter` | Get a cluster parameter |
 | `init-local` | Initialize the local cluster (run on the head node's physical machine, not in a container) |
 | `list` | List all clusters |
 | `release` | Release dynamic hosts back to the scheduler |
@@ -290,6 +291,28 @@ Usage:
 |---|---|---|
 | `--admin-app` | `int` | Admin app ID (for dynamic clusters) |
 | `-h, --help` | `—` | help for create |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `--cluster` | `string` | Cluster name |
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox cluster get-parameter`
+
+Get a cluster parameter
+
+```text
+Usage:
+  scalebox cluster get-parameter <parameter> [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for get-parameter |
 
 **Global Flags**
 
@@ -1382,7 +1405,9 @@ Usage:
 |---|---|
 | `add` | Add READY slots for hosts matching a regex pattern |
 | `delete` | Remove slots for hosts matching a regex pattern |
+| `get-parameter` | Get a single slot parameter |
 | `list` | List all slots for a specific module |
+| `set-parameter` | Set a single slot parameter |
 | `set-status` | Manually set a slot's status |
 | `show` | Show detailed information for a single slot |
 | `status` | Show slot status summary for a module |
@@ -1445,6 +1470,28 @@ Usage:
 |---|---|---|
 | `-e, --env-file` | `string` | Environment variables file |
 
+## `scalebox slot get-parameter`
+
+Get a single slot parameter
+
+```text
+Usage:
+  scalebox slot get-parameter <parameter> [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for get-parameter |
+| `--slot-id` | `int` | slot-id |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
 ## `scalebox slot list`
 
 List all slots for a specific module
@@ -1461,6 +1508,28 @@ Usage:
 | `-h, --help` | `—` | help for list |
 | `--module-id` | `int` | module-id |
 | `--no-head` | `—` | skip header lines |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox slot set-parameter`
+
+Set a single slot parameter
+
+```text
+Usage:
+  scalebox slot set-parameter <parameter> <value> [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for set-parameter |
+| `--slot-id` | `int` | slot-id |
 
 **Global Flags**
 
@@ -1580,6 +1649,7 @@ Usage:
 | `get` | Get task details |
 | `get-header` | Get a task header |
 | `list` | List tasks |
+| `remove-header` | Remove a task header |
 | `set-header` | Set a task header |
 | `show` | Show task details |
 
@@ -1707,6 +1777,27 @@ Usage:
 | `--limit` | `int` | max items (default 10) |
 | `--module-id` | `int` |  |
 | `--no-head` | `—` | skip header lines |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox task remove-header`
+
+Remove a task header
+
+```text
+Usage:
+  scalebox task remove-header [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for remove-header |
 
 **Global Flags**
 
@@ -1934,6 +2025,7 @@ Usage:
 
 | 命令 | 说明 |
 |---|---|
+| `add-semaphore-value` | Add value to vtask semaphore |
 | `add-subtask` | Add a subtask to an existing vtask |
 | `bind` | Bind a vtask to a compute resource group |
 | `create-semaphore` | Create a vtask semaphore |
@@ -1961,6 +2053,29 @@ Usage:
 | Flag | 类型 | 说明 |
 |---|---|---|
 | `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox vtask add-semaphore-value`
+
+Add value to vtask semaphore
+
+```text
+Usage:
+  scalebox vtask add-semaphore-value [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for add-semaphore-value |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `--app-id` | `int` |  |
+| `-e, --env-file` | `string` | Environment variables file |
+| `--vtask-id` | `int` | vtask ID |
 
 ## `scalebox vtask add-subtask`
 

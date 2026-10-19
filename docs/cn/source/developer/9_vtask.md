@@ -1,5 +1,7 @@
 # 9. VTask 虚拟任务
 
+> 本章讲 vtask 设计与操作语义；完整命令 flags 见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。
+
 **VTask**（Virtual Task）是 Scalebox 在细粒度 task 之上建立的应用级粗粒度计算单元。一个 vtask 是跨模块的 task 集合，内置信号量（semaphore）和共享变量（variable），由 wait-queue（可选）、vtask-head、一个或多个级联 vtask-core、vtask-tail 组成管道，统一管理流控、资源绑定、状态追踪和全链路上下文传播。
 
 ## 9.1 为什么需要 VTask
@@ -344,14 +346,16 @@ from-vtask-tail.sh → unbind（仅 HOST-BOUND / SLOT-BOUND）
 
 ## 9.6 命令参考
 
+> 完整命令、usage 与 flags 见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。本节只保留 vtask 特有的操作语义。
+
 ### 9.6.1 三层操作体系
 
 ```
 Layer 1: 基础资源操作（全局作用域）
-  semaphore create / get / increment / decrement / list / delete
-  semagroup min / max / diffmin / diffmax / increment / decrement
-  variable get / set / delete / list
-  global get / set / delete / list
+  semaphore create / get / increment / decrement / ls / delete
+  semagroup min / max / diff-min / diff-max / increment / decrement
+  variable get / set / delete / ls
+  global get / set / delete / ls
 
 Layer 2: vtask 作用域资源操作
   vtask get-variable / set-variable
@@ -363,32 +367,16 @@ Layer 3: vtask 高级操作
 
 ### 9.6.2 vtask list / list-subtasks
 
-```bash
-# 列出应用所有 vtask（含派生状态和子任务计数）
-scalebox vtask list --app-id=77
-
-# 列出 vtask 的子任务
-scalebox vtask list-subtasks --vtask-id=1964
-```
+`vtask list` 输出派生状态与子任务计数；`vtask list-subtasks` 列出指定 vtask 的子任务。
 
 ### 9.6.3 vtask get
 
-```bash
-scalebox vtask get --vtask-id=42
-# ID:        42
-# App ID:    5
-# Status:    RUNNING (2/3 finished)
-# Sema:      host_vtask_size:vtask-head:n0-0
-# Subtasks:  3 total, 2 finished
-```
+输出 `ID`、`App ID`、`Status`（含完成子任务数）、`Sema`（绑定信号量名）、`Subtasks`（总数/完成数）。
 
 ### 9.6.4 vtask fail
 
-```bash
-scalebox vtask fail --vtask-id=42
-```
+`scalebox vtask fail --vtask-id=<id>` 强制终止 vtask，并执行：
 
-执行逻辑：
 1. 原子化 `UPDATE status_code='1' WHERE id=$1 AND status_code IN ('-1','-2','-3')`
 2. `RowsAffected==0` → 已结束，返回 user_msg
 3. 释放 wait-queue 门控信号量
@@ -397,16 +385,9 @@ scalebox vtask fail --vtask-id=42
 
 ### 9.6.5 vtask bind / unbind
 
-```bash
-# 绑定（自动查找 head 模块，返回 hostname 或组号）
-to_host=$(scalebox vtask bind) || exit 1
-
-# 解绑（错误回滚时传信号量名；正常完成由 controld 自动加回）
-scalebox vtask unbind --sema-name="host_vtask_size:vtask-head:n0-0"
-
-# 解绑（运维传 vtask-id，服务端自动查 _vtask_size_sema）
-scalebox vtask unbind --vtask-id=42
-```
+- `vtask bind` 自动查找 head 模块，返回计算资源标识。
+- `vtask unbind --sema-name=...`：错误回滚时传信号量名；正常完成由 controld 自动加回。
+- `vtask unbind --vtask-id=...`：运维手工，服务端自动查 `_vtask_size_sema`。
 
 | vtask 类型 | bind 返回 |
 |-----------|----------|
@@ -437,17 +418,10 @@ scalebox vtask add-subtask --app-id=10 --module=vtask-core \
 
 ### 9.6.7 vtask 作用域变量/信号量
 
-```bash
-# vtask 作用域变量
-scalebox vtask get-variable --vtask-id <vtask-id> <var-name>
-scalebox vtask set-variable --vtask-id <vtask-id> <var-name> <value>
+作用域资源以 `vtask-id` 为作用域：
 
-# vtask 作用域信号量
-scalebox vtask create-semaphore --vtask-id <vtask-id> <sema-name> <initial-value>
-scalebox vtask get-semaphore --vtask-id <vtask-id> <sema-name>
-scalebox vtask add-semaphore-value --vtask-id <vtask-id> <sema-name> <delta>
-scalebox vtask delete-semaphore --vtask-id <vtask-id> <sema-name>
-```
+- 变量：`vtask get-variable` / `set-variable`
+- 信号量：`vtask create-semaphore` / `get-semaphore` / `add-semaphore-value` / `delete-semaphore`
 
 ## 9.7 并发安全
 
@@ -485,4 +459,4 @@ scalebox vtask delete-semaphore --vtask-id <vtask-id> <sema-name>
 | SDK | `pkg/vtask/` | Go 封装 |
 | 示例 | `examples/vtask/main-router/` | 5 个脚本 |
 
-> 测试详情和已知限制见 :doc:`VTask 设计审查 <../../go-scalebox/docs/vtask-review>`（英文）。
+> 测试详情和已知限制见 go-scalebox 仓库 `docs/vtask-review.md`（英文）。

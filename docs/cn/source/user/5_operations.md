@@ -20,13 +20,11 @@ scalebox cluster status
 ### 5.1.2 资源使用监控
 
 ```bash
-# 查看节点资源
-scalebox host metrics
+# 查看节点清单
+scalebox host list
 
-# 查看存储使用
+# 查看磁盘与容器资源
 docker system df
-
-# 查看容器资源使用
 docker stats
 ```
 
@@ -43,12 +41,9 @@ docker stats
 
 ### 5.2.2 任务执行问题
 
-**问题现象**：任务一直处于READY状态
-
-**解决方案**：
-1. 检查actuator日志：`docker logs actuator`
-2. 检查slot状态：`scalebox slot list`
-3. 重新启动actuator：`docker compose restart actuator`
+任务一直处于 READY、slot 不建或任务不动，按
+[卡链与失败诊断](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md)
+的“任务 READY 不动”“slot 全是 0 行”等小节排查。平台侧的数据库与服务检查见 §5.2.1、§5.2.3。
 
 ### 5.2.3 网络问题
 
@@ -174,15 +169,9 @@ docker compose restart
 3. 验证配置有效性
 4. 重启服务
 
-## 5.8 常见问题速查
+## 5.8 常见问题
 
-| 问题现象 | 可能原因 | 解决方案 |
-| -------- | -------- | -------- |
-| 数据库连接失败 | 数据库未启动 | 等待数据库启动完成 |
-| 任务无法执行 | Slot不足 | 增加计算节点或槽位 |
-| 网络连接失败 | 防火墙阻止 | 开放相应端口 |
-| 磁盘空间不足 | 日志或数据积累 | 清理不必要的文件 |
-| 内存不足 | 并行度过高 | 降低并行度或增加内存 |
+见 [FAQ](../faq.md)。
 
 ## 5.9 集群管理
 

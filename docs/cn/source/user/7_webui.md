@@ -137,7 +137,7 @@ Dockerfile 三阶段：
 
 ## 7.6 REST API
 
-全部 76 个 REST 端点（前缀 `/api/v1`），详见 :doc:`REST API 参考 <../../go-scalebox/docs/rest-api-reference>`（英文）。
+全部 76 个 REST 端点（前缀 `/api/v1`），详见 go-scalebox 仓库 `docs/rest-api-reference.md`（英文）。
 
 端点分组：
 

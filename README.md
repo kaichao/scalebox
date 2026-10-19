@@ -41,12 +41,8 @@ docker --version
 git clone https://github.com/kaichao/scalebox.git
 cd scalebox
 
-# Generate secrets (optional)
-cd build && bash gen-secrets.sh && cd ..
-
 # Build and start
-make -C build/
-docker compose -f build/compose.yaml up -d
+make -C runtime all
 ```
 
 Open `http://localhost:8088` in your browser to access the WebUI.
@@ -109,21 +105,14 @@ cd vscode-scalebox && make install
 | Reference | [Exit Code Specification](docs/cn/source/appendix/6_exit_code_spec.md) | App exit code conventions and scheduling policies |
 | Reference | [FAQ](docs/cn/source/faq.md) | Common questions on deployment, tasks, semaphores, and WebUI |
 
-### English Design Documents
+### Design Documents
 
-| Document | Description |
-|------|------|
-| [VTask Design](docs/vtask-design.md) | Complete VTask design document |
-| [WebUI / VS Code](docs/webui-vscode-plan.md) | WebUI + VS Code extension architecture plan |
-| [REST API](docs/rest-api-reference.md) | Complete reference of 76 endpoints |
-| [gRPC API](docs/grpc-api.md) | 95 RPC call examples |
-| [Security Framework](docs/security.md) | JWT + RBAC + TLS configuration |
+Design documents live in the go-scalebox repository under `docs/`.
 
 ## 🧪 Example Apps
 
 - **[hello-scalebox](examples/hello-scalebox/)** — the first introductory app
 - **[app-primes](examples/app-primes/)** — prime number calculation, demonstrating data parallelism
-- **[app-copy](examples/app-copy/)** — cross-node data transfer
 - **[remote-primes](examples/remote-primes/)** — cross-cluster prime number calculation
 - **[vtask](examples/vtask/)** — VTask pipeline examples (DEFAULT / HOST-BOUND)
 

@@ -1,5 +1,7 @@
 # 7. 高级编程特性
 
+> 本章讲机制；具体操作步骤见 [features/](https://github.com/kaichao/scalebox/tree/dev/features)。
+
 - §7.1 容错机制（任务级/平台级/跨模块容错 + 分级策略）
 - §7.2 准入控制（存储容量/计数/同步/自定义流控）
 - §7.3 任务运行排序（sort_tag / group_regex / group_index）
@@ -45,17 +47,9 @@
 
 
 ### 7.1.1 模块级容错
-- 设置module的参数retry_rules。
-按照算法代码对于非逻辑错的错误，设置主脚本不同的错误码。按返回错误码，在模块定义中设置自动重试，从而实现自动重试。
 
-在Module定义中，设置```retry_rules```实现以上功能。
-
-```
-    retry_rules: "['91','92:3']"
-```
-在以上设置中，若返回码为91，则重试1次；若返回码为92，则重试3次。
-
-返回码是模块运行的结果代码，模块运行出错的返回码就是错误码。
+按算法对非逻辑错的分类设置退出码，在 module 的 `retry_rules` 中按退出码配置重试次数。格式、示例与测试见
+[retry-test](https://github.com/kaichao/scalebox/blob/dev/features/retry-test/README.md)。
 
 ### 7.1.2 平台级故障及恢复
 
@@ -117,43 +111,11 @@
 
 #### 7.2.2.2 目录分区最少空余空间
 
-- 标准流控属性：space_free_gb，通过限制目录所在存储分区的最小空余空间实现流控
+- 标准流控属性：free_space_gb，通过限制目录所在存储分区的最小空余空间实现流控
 
-### 7.2.3 vtask计数准入控制
+### 7.2.3 vtask 计数准入控制
 
-- 标准流控属性```vtask_size```
-  - 理解为可运行task的最大数量
-  - 若基于vtask框架，在vtask-head模块中，计数器减一，在vtask-tail模块中，计数器加一
-  - 若在独立模块中，计数器减一。需在主路由中，手工完成计数器加一操作。
-
-启用vtask的模块，在task启动时将计数器自动减一，若计数器值<=0，则计数流控生效，新task不能运行。从实现上看，vtask机制设置了等待队列长度。
-
-后续模块的任务处理完成后，在主路由中自动恢复vtask计数器。也可对计数器手工操作，实现启停。
-
-- 处理过程
-  - 在模块入口处，检查信号量计数器值，若<=0，表示无运行槽位，准入控制不通过；
-  - 主路由对该计数值自动减一，占用一个运行槽位。该操作自动完成，不需要编程控制；
-  - vtask处理完成，则在对应消息路由中，通过信号量操作，对计数值加一，释放一个空槽位。
-
-
-#### SLOT-BOUND模块（GROUP-BOUND vtask）
-- 生成对应信号量：```group_vtask_size:${mod_name}:${group_seq}```，其初值为参数值。
-  - mod_name为首模块名
-  - group_seq为组号（head slot 的 seq）
-- 计算节点组上最多可运行的vtask数量，通常表示计算节点组上运行队列的长度。
-
-#### HOST-BOUND模块
-- 生成对应信号量：```host_vtask_size:${mod_name}:${hostname}```，其初值为参数值。
-  - mod_name为首模块名
-  - hostname为t_host表中的hostname
-- 计算节点上最多可运行的vtask数量，表示节点上运行队列的长度。
-
-#### 缺省类型模块
-- 生成对应信号量：```vtask_size:${mod_name}```，其初值为参数值。
-  - mod_name为首模块名
-- 全局范围内最多可运行的vtask数量，表示节点上运行队列的长度。
-
-
+标准流控属性 `vtask_size`：vtask-head 启动时计数器减一，vtask-tail（或主路由）完成后加一；计数器 <= 0 时新 vtask 不能运行。按 `task_dist_mode` 生成三种信号量：`vtask_size:<mod>`、`host_vtask_size:<mod>:<host>`、`group_vtask_size:<mod>:<组号>`。命名与生命周期见 [VTask §9.4](9_vtask.md)。
 
 ### 7.2.4 节点组并行同步准入控制
 - 标准流控属性```node_progress_gap```
@@ -205,136 +167,81 @@ timeout ${TASK_TIMEOUT_SECONDS}s run.py $*
 ```
 
 
-## 7.4 task-perspective
+## 7.5 时间戳格式
 
-- scalebox标准时间格式
-```2023-10-24T18:00:00.123456+0800```
+scalebox 标准时间格式为 `2023-10-24T18:00:00.123456+0800`；`timestamps.txt` 支持的完整格式、注释与 label 规则见
+[agent-interface-files](https://github.com/kaichao/scalebox/blob/dev/features/agent-interface-files/README.md)。
 
-- bash生成当前时间 
-```sh
-date +"%Y-%m-%dT%H:%M:%S.%6N%z"
-```
-
-- golang生成当前时间 
-```go
-formattedTime := time.Now().Format("2006-01-02T15:04:05.999999")
-fmt.Println(formattedTime)
-```
-
-- python生成当前时间 
-```python
-
-```
-
-
-## 7.5 git应用代码库
+生成示例：bash `date +"%Y-%m-%dT%H:%M:%S.%6N%z"`；Go `time.Now().Format("2006-01-02T15:04:05.999999")`。
 
 ## 7.6 跨集群应用
 
-## 7.7 slot启动命令表达式
+见 [跨集群](10_cross_cluster.md)。
 
-支持 `(( ))` 定界符的表达式，在slot启动时，再按外部环境，动态求解表达式，得到最终的启动命令。适用于以下场景：
-- 单节点多GPU卡，需通过不同命令启动不同GPU卡对应的slot
-- 在准入控制规则中，需以slot序号为变量，精准定义存储容量上限，保证资源充分利用。
+## 7.7 Slot 启动命令表达式
+
+支持 `(( ))` 定界符的表达式；slot 启动时按外部环境动态求解。适用于单节点多 GPU、按 slot 序号设置准入参数等场景。
 
 ### 7.7.1 变量类型
 
-表达式中，变量名用```@```开头，分为数值型变量、字符串变量。
+表达式中的变量名以 `@` 开头：
 
-#### 数值型变量（slot序号）
-每个模块，针对每个节点，有一个从0计数的序号，可用于slot启动命令表达式，实现对不同slot序号用不同的启动命令。
+- 数值型：`@seq` 为 slot 序号（从 0 计数）；`@i` 是向后兼容的等价写法。
+- 全局字符串：`@v:var_name`，值来自 `t_global`，跨 slot 共享。
+- slot 参数：`@p:param_name`，值来自 `t_slot.parameters`（jsonb），每个 slot 独立；通过 `scalebox slot set-parameter` / `get-parameter` 操作。
 
-用 ```@seq```标识计数序号；```@i```为向后兼容的等价写法。
+类型判定：
 
-#### 字符串变量（global变量）
-按全局变量值，解析最终slot命令，可指定镜像名版本号。
+1. 表达式含 `@seq`/`@i` → 数值求值；`@v:`/`@p:` 替换后的值必须是数字（白名单校验），否则报错并保留原表达式。
+2. 只含 `@v:`/`@p:` → 纯文本替换，不做数值运算。
+3. 不含变量 → 数值求值。
 
-用 ```@v:var_name```标识全局字符串变量，变量值来自```t_global```表，跨slot共享。
+示例：`((@seq + @v:batch_size))`，seq=5、batch_size="100" → `105`；`((@v:name))`，name="john" → `john`。
 
-#### 字符串变量（slot参数）
-按slot参数值，解析最终slot命令。
+### 7.7.2 slot 序号示例
 
-用 ```@p:param_name```标识slot参数字符串变量，参数值来自```t_slot.parameters```（jsonb），每个slot独立。slot参数通过```scalebox slot set-parameter```/```get-parameter```命令操作。
-
-#### 类型判定规则
-
-表达式求值按以下规则判定类型：
-
-1. 表达式含数值变量（```@seq```/```@i```）→ 数值求值。```@v:```/```@p:```替换后的值必须是数字（白名单校验，防命令注入），否则报错跳过，表达式原样保留。
-2. 表达式仅含字符串变量（```@v:```/```@p:```）→ 纯文本替换，不进行数值运算。
-3. 表达式不含变量 → 数值求值。
-
-示例：
-- ```((@seq + @v:batch_size))```：seq=5、batch_size="100" → 数值求值，结果为```105```
-- ```((@v:name))```：name="john" → 文本替换，结果为```john```
-
-### 7.7.2 slot序号变量示例
-
-单个计算节点可配置多个GPU加速卡。通常为每个GPU配置独立的slot，模块算法不需针对多GPU卡做并行优化，这样配置通常也更具高运行效率。
-在这种场景下，不同GPU需要用不同的slot启动命令。
-slot启动命令支持参数化配置。
-
-
-#### ***应用定义***
 ```yaml
-  beam-make:
-    command: ${ROCM_COMMAND}
-    arguments:
-      free_space_gb: '{"${LOCAL_SHMDIR}":${BEAM_MAKE_FREE_GB}}'
+beam-make:
+  command: ${ROCM_COMMAND}
+  arguments:
+    free_space_gb: '{"${LOCAL_SHMDIR}":${BEAM_MAKE_FREE_GB}}'
 ```
-#### ***准入控制参数定义***
+
 ```bash
 LOCAL_SHMDIR=/dev/shm/scalebox/mydata
 BEAM_MAKE_FREE_GB='((@seq*5+11))'
-
-```
-#### singularity多GPU配置命令
-```bash
 ROCM_COMMAND='singularity exec --rocm --env ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}} goagent'
 ```
 
-#### docker多GPU配置命令1
-```bash
-ROCM_COMMAND='docker run -d --rm --network host --tmpfs=/work --device=/dev/kfd --device=/dev/dri --security-opt seccomp=unconfined --group-add video -e ROCR_VISIBLE_DEVICES=((@seq)) {{ENVS}} {{VOLUMES}} {{IMAGE}}'
-```
+docker 形式把启动命令换成 `docker run ... --device ...`；双 GPU 按 `@seq%2` 绑定设备的示例见
+[slot-expr](https://github.com/kaichao/scalebox/blob/dev/features/slot-expr/README.md)。
 
-#### docker多GPU配置命令2
-```bash
-docker run -d --rm --network=host --tmpfs=/work --device=/dev/kfd --device=/dev/dri/card((@seq%2)) --device=/dev/dri/renderD((@seq%2+128)) --security-opt seccomp=unconfined --group-add video --cap-add=SYS_PTRACE {{ENVS}} {{VOLUMES}} {{IMAGE}}
-```
-
-### 7.7.3 global变量示例
+### 7.7.3 global 变量示例
 
 ```yaml
-  my-module:
-    base_image: my-image:((@v:pipeline_version))
+my-module:
+  base_image: my-image:((@v:pipeline_version))
 ```
-
-在global中定义全局变量 ```pipeline_version```为```20260411```，则在启动时，实际镜像名为```my-image:20260411``` 
 
 ```sh
 scalebox global set pipeline_version 20260411
 ```
 
-### 7.7.4 slot参数变量示例
+### 7.7.4 slot 参数示例
 
-slot参数存储于```t_slot.parameters```（jsonb），每个slot独立。不同slot可设置不同的参数值，slot启动命令据此动态求解。slot参数通过```scalebox slot set-parameter```/```get-parameter```命令操作。
+slot 参数存于 `t_slot.parameters`（jsonb），每个 slot 独立：
 
-#### ***应用定义***
 ```yaml
-  mod-slot-expr:
-    command: 'docker run -d --network=host -e SEQ=((@seq)) -e MY_PARAM=((@p:my_param)) -e MY_VAR=((@v:my_global)) --rm {{ENVS}} {{VOLUMES}} {{IMAGE}}'
+mod-slot-expr:
+  command: 'docker run -d --network=host -e MY_PARAM=((@p:my_param)) -e MY_VAR=((@v:my_global)) --rm {{ENVS}} {{VOLUMES}} {{IMAGE}}'
 ```
-
-为slot设置参数值后，启动时```((@p:my_param))```被替换为参数值：
 
 ```sh
 scalebox slot set-parameter my_param PARAM_VALUE --slot-id 3
 scalebox slot get-parameter my_param --slot-id 3
-# 输出：PARAM_VALUE
 ```
 
-slot启动时，该slot的实际命令中```MY_PARAM=PARAM_VALUE```。未设置的参数（或```jsonb```中非字符串类型的值）按空值处理。
+未设置的参数（或 jsonb 中非字符串值）按空值处理。
 
 ## 7.8 gRPC Metadata 传参
 
@@ -460,8 +367,8 @@ Slot 自动扩缩容根据资源使用情况自动调整任务执行槽数量，
 
 | 主题 | 文档 | 说明 |
 |------|------|------|
-| VTask 任务组 | :doc:`9_vtask` | 完整的概念模型、模块结构、信号量机制、管道流程、CLI 命令参考 |
-| 跨集群架构 | :doc:`10_cross_cluster` | 数据复制模型、地址解析、gRPC 代理转发、Task 跨集群路由 |
-| 安全框架 | :doc:`11_security` | JWT + RBAC + TLS、证书管理、Automation Token 轮换 |
-| WebUI 使用 | :doc:`WebUI 指南 <../user/7_webui>` | REST 网关、导航结构、构建部署 |
-| VS Code 插件 | :doc:`VS Code 插件 <../user/8_vscode>` | TreeView、DAG、LSP、安装配置 |
+| VTask 任务组 | {doc}`9_vtask` | 完整的概念模型、模块结构、信号量机制、管道流程、CLI 命令参考 |
+| 跨集群架构 | {doc}`10_cross_cluster` | 数据复制模型、地址解析、gRPC 代理转发、Task 跨集群路由 |
+| 安全框架 | {doc}`11_security` | JWT + RBAC + TLS、证书管理、Automation Token 轮换 |
+| WebUI 使用 | {doc}`WebUI 指南 <../user/7_webui>` | REST 网关、导航结构、构建部署 |
+| VS Code 插件 | {doc}`VS Code 插件 <../user/8_vscode>` | TreeView、DAG、LSP、安装配置 |

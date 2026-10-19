@@ -64,4 +64,4 @@ scalebox run --app-file=feature.yaml
 
 - Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.4
 - 退出码：`docs/cn/source/appendix/6_exit_code_spec.md`（124/123）
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.1.2–2.1.3
+- 参数表：`docs/reference/app-yaml.md`（`module.arguments` 的 `task_max_seconds`）

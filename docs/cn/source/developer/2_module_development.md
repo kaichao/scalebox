@@ -1,5 +1,7 @@
 # 2. 模块开发
 
+> 本章讲模块设计；接口文件格式见 [features/agent-interface-files](https://github.com/kaichao/scalebox/blob/dev/features/agent-interface-files/README.md)。
+
 ## 2.1 模块设计原则
 
 ### 2.1.1 无状态设计
@@ -55,103 +57,20 @@ task-body为任务标识，在模块中具有唯一性：
 
 ### 2.3.2 算法运行run.sh
 
-
 #### agent接口文件
 
-用户程序运行结束后，agent对用户程序的运行结果做后处理，文件路径在```${WORK_DIR}```之下，主要通过以下文件交换信息：
+`run.sh` 是模块的 `ACTION_RUN`：读取任务输入，调用算法，并把执行结果写到 `${WORK_DIR}` 下的接口文件。agent 在任务结束后采集这些文件并落库。
 
-| 文件名             | 文件说明                                   |
-| ----------------- | ----------------------------------------- |
-| task-exec.yaml    | 任务运行结果主文件，以yaml形式纪录用户程序运行结果 |
-| extra-attrs.yaml  | 运行附加属性文件，以jsonb类型存放在extras字段中。 |
-| sink-tasks.txt    | 后续任务列表文件，每行一个任务 |
-| timestamps.txt    | 自定义时间戳文件，常用于调试程序、测试程序性能，纪录在extras->>'timestamps' |
-| input-files.txt   | 输入文件（目录）列表（绝对路径），用于统计输入文件字节数 |
-| output-files.txt  | 输出文件（目录）列表（绝对路径），用于统计输出文件字节数 |
-| network-files.txt | 网络读写的文件（目录）列表（绝对路径），用于统计网络读写和对应文件读写的字节数 |
-| removed-files.txt | 待删除文件（目录）列表（绝对路径），待完成读写量统计后删除 |
-| cleanup-files.txt | 退出前的bash清除命令（removed-files.txt仅删除本地文件）(待实现)|
-| auxout.txt        | 辅助输出文件，纪录用户关注输出信息 |
+| 类别 | 文件 |
+|---|---|
+| 执行结果与元数据 | `task-exec.yaml`、`extra-attrs.yaml`、`auxout.txt` |
+| 时间戳 | `timestamps.txt` |
+| I/O 计量 | `input-files.txt`、`output-files.txt`、`network-files.txt`、`removed-files.txt` |
+| 下游任务 | `sink-tasks.txt` |
+| 未实现 | `cleanup-files.txt` |
 
-#### sink-tasks.txt文件格式
-
-| 序号 | 名称 | 示例 |
-| --- | ------------------------------ | ---------------------------------------------- |
-| 1   | text-body                      | body1                                          |
-| 2   | json-body                      | {"bh0":"a","body":"body2"}                     |
-| 3   | text-body + headers            | body3,{"h0":"a","h1":"b"}                      |
-| 4   | json-body + headers            | {"bh0":"a","body":"body4"},{"h0":"a","h1":"b"} |
-| 5   | sink-mod + text-body           | sink-mod0,body5                                |
-| 6   | sink-mod + text-body + headers | sink_mod1,body6,{"h0":"a","h1":"b"}            |
-| 7   | sink-mod + json-body + headers | sink-mod2,{"bh0":"a","body":"body7"},{"h0":"a","h1":"b"} |
-
-其中，格式1-4的sink-module由环境变量SINK_MODULE确定。
-
-#### timestamps.txt文件格式
-- 每行为一条记录
-- 纪录第一个字符为```#```，为注释行
-- 每行格式：```<timestamp>[,<label>]```，label为可选项
-
-- timestamp的格式
-
-| name        | format                              |
-| ----------- | ----------------------------------- |
-| RFC3339Nano | 2006-01-02T15:04:05.999999999Z07:00 |
-| RFC3339     | 2006-01-02T15:04:05Z07:00           |
-|             | 2006-01-02T15:04:05.999999999       |
-|             | 2006-01-02T15:04:05                 |
-|             | 2006-01-02 15:04:05.999999999       |
-|             | 2006-01-02 15:04:05                 |
-
-#### input-files.txt/output-files.txt文件格式及处理
-- 每行为一条记录
-- 应用程序输出的每行格式：```<path-item>[,<bytes>]```
-- 客户端处理完格式：```<path-item>,<bytes>```
-- 合并后纪录在数据库字段```extra->>'iobytes'```中，以下每项都是数字型的字节数
-  - global_input
-  - global_output
-  - tmpfs_input
-  - tmpfs_output
-  - local_input
-  - local_output
-  - input_bytes
-  - output_bytes
-
-其中，
-- global通过cluster的data_root或app的global_directories属性来确定全局目录
-- tmpfs是以/dev/shm为前缀来确定
-- local则是除global/tmpfs之外的部分
-- input_bytes/output_bytes则是总计量
-
-以上纪录可通过视图```v_task_iobytes```查看。
-
-#### network-files.txt文件格式及处理
-- 每行为一条记录
-- 应用程序输出的每行格式：```<from_to>,<remote_host>,(<local_path>|<local_bytes>),<remote_path>[,<remote_bytes>]```
-  - from_to：为输入/输出方向，from表示从外部读取，to表示写到外部节点
-  - remote_host：表示主机名或IP地址，在服务端入库前统一转换为主机名
-  - local_path：表示文件名或目录名，在客户端需转换为字节数
-  - local_bytes：本地路径项的字节数
-  - remote_path：
-  - remote_bytes：如果不设置，则等于local_bytes
-- 客户端处理完的格式：```<from_host>,<to_host>,<net_bytes>,<io_host>,<io_path>,<io_bytes>```
-  - from_host：起始host
-  - to_host：目标host
-  - net_bytes：网络传输的字节数，如果是local_path，本地计算为bytes
-  - io_host：对应原始记录中的remote_host
-  - io_path：对应原始记录中的remote_path
-  - io_bytes：对应原始记录中的remote_bytes
-- 合并后纪录在数据库字段```extra->>'network_io'```中
-  - 纪录格式为数组类型，每行格式：
-    - ```<from_host>,<to_host>,<net_bytes>,<io_host>,<io_type>,<io_bytes>```
-  - from_host：
-  - to_host：
-  - net_bytes：
-  - io_host：网络传输另一端的主机名
-  - io_type：取以下值，```global_input/global_output/local_input/local_output/tmpfs_input/tmpfs_output```，在入库前通过io_path确定io_type
-
-以上纪录可通过视图```v_task_network_io```查看。
-
+完整字段、7 种 `sink-tasks.txt` 格式、时间戳格式、I/O 落库字段与视图、坑和最小例子，统一见
+[agent-interface-files](https://github.com/kaichao/scalebox/blob/dev/features/agent-interface-files/README.md)。
 
 ## 2.4 模块的镜像封装
 

@@ -88,7 +88,7 @@ Scalebox采用事件驱动的编程模型：
 
 ## 1.3 核心概念
 
-App、Module、Task、Slot、Host、Cluster 等核心概念的详细定义，见 :doc:`使用指南 - 核心概念 <../user/2_core_concepts>`。
+App、Module、Task、Slot、Host、Cluster 等核心概念的详细定义，见 {doc}`使用指南 - 核心概念 <../user/2_core_concepts>`。
 
 ## 1.4 设计原理
 

@@ -56,7 +56,7 @@ Scalebox应用程序由多个容器化封装的软件模块组成：
 
 ## 3.4 应用程序定义
 
-完整的应用模板文件（app.yaml）和参数文件（scalebox.env）定义规范，见 :doc:`技术规范参考 <../appendix/1_tech_specifications>`。
+完整的应用模板文件（app.yaml）和参数文件（scalebox.env）定义规范，见 {doc}`技术规范参考 <../appendix/1_tech_specifications>`。
 
 ## 3.5 应用设计模式
 

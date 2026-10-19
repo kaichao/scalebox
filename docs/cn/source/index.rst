@@ -8,9 +8,15 @@
 
 根据您的使用场景，选择以下学习路径：
 
-- **最终用户（运行应用）**：从"入门教程"开始 → 阅读"使用指南"的核心概念、运行应用、示例应用
-- **应用开发者（开发应用）**：从"编程指南"的编程模型开始 → 应用设计 → 模块开发
-- **系统管理员（管理集群）**：从"使用指南"的安装部署开始 → 集群管理 → 运维管理
+- **应用开发者**：:doc:`入门教程 <started/1_introduction>` → :doc:`核心概念 <user/2_core_concepts>` → :doc:`运行与管理应用 <user/3_running_apps>` → :doc:`应用设计 <developer/3_app_design>` → :doc:`模块开发 <developer/2_module_development>`
+- **部署与运维**：:doc:`安装部署 <user/1_installation>` → :doc:`运维管理 <user/5_operations>` → :doc:`FAQ <faq>`
+- **平台贡献者**：:doc:`设计与原理 <developer/1_programming_model>` → :doc:`平台实现说明 <developer/4_main_router_status>`
+
+**开发者与 AI 参考（仓库直读）**
+
+- `AGENTS.md <https://github.com/kaichao/scalebox/blob/dev/AGENTS.md>`_
+- `features/ <https://github.com/kaichao/scalebox/tree/dev/features>`_
+- `docs/reference/ <https://github.com/kaichao/scalebox/tree/dev/docs/reference>`_
 
 .. toctree::
    :maxdepth: 2
@@ -19,53 +25,60 @@
 
    started/1_introduction
    started/2_quick_start
+   started/3_first_app
 
 .. toctree::
    :maxdepth: 2
-   :caption: 使用指南
+   :caption: 应用开发
    :hidden:
 
-   user/1_installation
    user/2_core_concepts
    user/3_running_apps
+   developer/3_app_design
+   developer/2_module_development
    user/4_example_apps
-   user/5_operations
    user/6_standard_modules
    user/7_webui
    user/8_vscode
 
 .. toctree::
    :maxdepth: 2
-   :caption: 编程指南
+   :caption: 部署与运维
+   :hidden:
+
+   user/1_installation
+   user/5_operations
+
+.. toctree::
+   :maxdepth: 2
+   :caption: 设计与原理
    :hidden:
 
    developer/1_programming_model
-   developer/2_module_development
-   developer/3_app_design
-   developer/4_main_router_status
-   developer/5_node_local_compute
-   developer/7_advanced_features
    developer/9_vtask
+   developer/5_node_local_compute
    developer/10_cross_cluster
    developer/11_security
+   developer/7_advanced_features
 
 .. toctree::
    :maxdepth: 2
-   :caption: 附录
+   :caption: 参考
    :hidden:
 
-   appendix/1_tech_specifications
    appendix/2_parameter_reference
-   appendix/3_commandline_tools
-   appendix/4_shell_programming
    appendix/6_exit_code_spec
-   appendix/7_software_install
+   appendix/1_tech_specifications
+   appendix/3_commandline_tools
 
 .. toctree::
    :maxdepth: 2
-   :caption: 其他
+   :caption: 附录与其他
    :hidden:
 
+   appendix/4_shell_programming
+   appendix/7_software_install
+   developer/4_main_router_status
    faq
    about_us/contributors
    about_us/contact_us

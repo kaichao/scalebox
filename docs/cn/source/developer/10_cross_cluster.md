@@ -138,4 +138,4 @@ CLI 始终连本地 controld，`clusterName` 作为 `AddTaskList` 路由参数�
 | `remote_grpc_server` | 远端可访问的 gRPC 地址（供跨集群拨号使用） |
 | `data_root` | 集群数据根目录 |
 
-> 详细设计见 :doc:`CLI gRPC 连接架构 <../../go-scalebox/docs/cli-grpc-architecture>`（英文）。
+> 详细设计见 go-scalebox 仓库 `docs/cli-grpc-architecture.md`（英文）。

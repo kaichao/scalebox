@@ -12,7 +12,7 @@ Scalebox 涉及的网络端口：
 **服务端（Docker Compose）**：
 
 ```yaml
-# build/compose.yaml
+# runtime/compose.yaml
 services:
   controld:
     ports:
@@ -46,8 +46,8 @@ sleep 10
 docker exec database psql -U scalebox -c "\l"
 
 # 重新创建数据库卷
-docker compose -f build/compose.yaml down -v
-docker compose -f build/compose.yaml up -d
+docker compose -f runtime/compose.yaml down -v
+docker compose -f runtime/compose.yaml up -d
 ```
 
 ### 1.3 gRPC 连接失败
@@ -60,7 +60,7 @@ docker compose -f build/compose.yaml up -d
 echo $GRPC_SERVER
 
 # 检查 controld 服务状态
-docker compose -f build/compose.yaml ps controld
+docker compose -f runtime/compose.yaml ps controld
 
 # 验证 gRPC 连通性
 grpcurl -plaintext localhost:50051 list
@@ -70,51 +70,30 @@ grpcurl -plaintext localhost:50051 list
 
 ### 2.1 任务一直处于 READY 状态
 
-**原因**：Slot 不足，无可用执行槽。
-
-**解决**：
-```bash
-# 检查 slot 状态
-scalebox slot list
-scalebox slot list --host <hostname>
-
-# 增加 slot
-scalebox slot add --module <module-name> --host <hostname> --count 4
-
-# 检查 actuator 日志
-docker logs actuator
-```
+见 [卡链与失败诊断](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md) 的“任务 READY 不动”和“slot 全是 0 行”。
 
 ### 2.2 任务执行失败（exit code != 0）
 
-**排查步骤**：
-1. 查看任务日志：`scalebox task log <task-id>`
-2. 检查模块镜像是否存在：`docker images | grep <image-name>`
-3. 检查节点资源：`scalebox host show <hostname>`
-4. 查看退出码含义（参见 :doc:`附录 6 - 退出码规范 <appendix/6_exit_code_spec>`）
+先用 `scalebox task show <task-id>` 查看 stdout/stderr 与 `status_code`；退出码含义见
+[退出码规范](appendix/6_exit_code_spec.md)。任务不动或下游不出现，按
+[卡链与失败诊断](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md) 排查。
 
 ### 2.3 批量任务重复创建
 
-始终使用 `--conflict-action IGNORE` 避免重复。或设置 header `repeatable: yes` 允许重复分发。
+相同 `(mod, from, host, vtask, body)` 重复投递会触发 uniq_task/112；用 `--conflict-action IGNORE` 或 header `repeatable: yes`。见
+[task-identity](https://github.com/kaichao/scalebox/blob/dev/features/task-identity/README.md)。
 
 ## 3. 信号量与流控
 
 ### 3.1 信号量不存在错误
 
-```bash
-# 方式一：启用自动创建
-SEMAPHORE_AUTO_CREATE=yes scalebox semaphore get my_sema
-
-# 方式二：手动创建
-scalebox semaphore create --app-id <app-id> my_sema 0
-```
+设置 `SEMAPHORE_AUTO_CREATE=yes` 自动创建（初值 0），或显式创建信号量。命令与返回码见
+[appendix/3 §1.3.3](appendix/3_commandline_tools.md)。
 
 ### 3.2 信号量值异常（不收敛）
 
-检查流控版和可编程版是否匹配：
-- 流控版（无前缀）由 controld 自动维护
-- 可编程版（`:` 前缀）由脚本操作
-- 参见 :doc:`VTask 信号量机制 <developer/9_vtask>` §9.4
+检查流控版（无前缀，controld 维护）与可编程版（`:` 前缀，脚本操作）是否匹配。见
+[VTask §9.4](developer/9_vtask.md)。
 
 ## 4. WebUI
 
@@ -122,7 +101,7 @@ scalebox semaphore create --app-id <app-id> my_sema 0
 
 ```bash
 # 检查 WebUI 服务
-docker compose -f build/compose.yaml ps webui
+docker compose -f runtime/compose.yaml ps webui
 
 # 检查端口
 curl http://localhost:8088/api/v1/stats/system
@@ -168,14 +147,14 @@ LOG_LEVEL=error scalebox task list
 
 ```bash
 # 所有服务
-docker compose -f build/compose.yaml logs > scalebox.log
+docker compose -f runtime/compose.yaml logs > scalebox.log
 
 # 按服务
-docker compose -f build/compose.yaml logs controld
-docker compose -f build/compose.yaml logs actuator
+docker compose -f runtime/compose.yaml logs controld
+docker compose -f runtime/compose.yaml logs actuator
 
 # 按时间
-docker compose -f build/compose.yaml logs --since "2026-01-01"
+docker compose -f runtime/compose.yaml logs --since "2026-01-01"
 ```
 
 ### 6.3 gRPC 错误信息解读

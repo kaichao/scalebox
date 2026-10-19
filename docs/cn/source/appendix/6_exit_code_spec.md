@@ -1,5 +1,7 @@
 # 6. 应用模块退出码规范
 
+> 本章讲应用模块退出码规范；平台任务状态码见 [reference/exit-codes.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/exit-codes.md)。
+
 ## 6.1 设计目标
 
 本规范定义应用模块在通用计算框架中运行时的退出码约定，用于：
@@ -132,24 +134,10 @@
 - 系统兼容：遵循 Unix exit code 约定
 
 
-## 6.11 Status Code Table
+## 6.11 平台状态码
 
-- code range(16-bit): [-32768..32767]
-
-| Code      | Number  | Description |
-| --------- | ------- | ----------- |
-| app_code  | 0~255   |             |
-| OK        | 0       |             |
-| READY     | -1      |             |
-| QUEUED    | -2      | FROM 'READY' to 'RUNNING' |
-| RUNNING   | -3      |             |
-| INITIAL   | -9      | Initial Status (used by dynamic scheduling) |
-| ERROR     | -32~-63 |             |
-
-- task status_code : for task scheduling
-- task_exec status_code : task-exec history recording
-- ssh / docker status_code (in actuator)
-
+任务调度状态码（`-9`/`-3`/`-2`/`-1`、`0`、`111`/`112`/`125`、`123`/`124`）与 0–255 分区见
+[退出码与任务状态码](https://github.com/kaichao/scalebox/blob/dev/docs/reference/exit-codes.md)。
 
 ## REF
 
@@ -185,16 +173,6 @@
 | ExInvalidExit |    128  |  |
 | ExSignals |     129~165  |  |
 | ExOutOfRange |      255  |  |
-
-### Additional Scalebox Sub-Task Status Code
-| Code        | Number      | Description |
-| ----------- | ----------- | ----------- |
-| ExUserDef |   32~63  |  |
-| ExUserDef |   192~223  |  |
-| ExTimeOut   |   224   |  |
-| ExCoreDump   |  225    |  |
-| ExNotRunnable   |  225    | run program not exists |
-| ExExecNotExists   |  225    | run program not runnable |
 
 ## Exit Status Code in actuator
 ### Docker run Exit Status
