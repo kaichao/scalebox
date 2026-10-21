@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `cmd/webui/frontend/src/schema/app-schema.json` (JSON Schema) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@67c994e (2026-10-21) -->
+<!-- source: go-scalebox@233a3c4 (2026-10-21) -->
 
 
 # App YAML 参考
@@ -76,8 +76,10 @@
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |---|---|---|---|---|
 | `priority` | `string` | 否 | — | 优先级（暂未使用）（deprecated） |
-| `key_group_regex` | `string` | 否 | — | 从消息中提取分组的正则表达式 |
-| `key_group_index` | `string` | 否 | — | 分组排序的编号 |
+| `group_regex` | `string` | 否 | — | 从消息中提取分组的正则表达式 |
+| `group_index` | `string` | 否 | — | 分组排序的编号 |
+| `key_group_regex` | `string` | 否 | — | 已改名：group_regex（兼容保留）（deprecated） |
+| `key_group_index` | `string` | 否 | — | 已改名：group_index（兼容保留）（deprecated） |
 | `task_dist_mode` | `string` | 否 | — | task 分发模式 取值：`HOST-BOUND`, `SLOT-BOUND`, `DEFAULT` |
 | `start_task` | `string` | 否 | — | 给定初始消息；若为 'FILE:{filename}'，则将文件中每一行作为一个初始消息 |
 | `initial_task_status` | `string` | 否 | — | task 的初始状态 取值：`READY`, `INITIAL` |

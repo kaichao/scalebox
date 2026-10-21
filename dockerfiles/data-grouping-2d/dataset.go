@@ -66,7 +66,7 @@ func (dataset *DataSet) parseEntity(s string) *Entity {
 	var kg0, kg1, kg2 string
 	ss := regex.FindStringSubmatch(s)
 	if len(idx) == 0 {
-		// no key_group_index
+		// no group_index
 		if len(ss) > 1 {
 			kg0 = ss[1]
 		}

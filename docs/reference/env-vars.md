@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from Go 源码中的 `os.Getenv` / `os.LookupEnv` / `getEnvString` 读取点 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@67c994e (2026-10-21) -->
+<!-- source: go-scalebox@233a3c4 (2026-10-21) -->
 
 
 # 环境变量参考（平台读取点）

@@ -81,7 +81,7 @@
 
 | 特性/参数 | 现有测试 | 现有文档 | 实战记录 | 缺口 | 去向 |
 |---|---|---|---|---|---|
-| `key_group_regex` / `key_group_index` | 无 | appendix/2（"改名为 group_regex?"） | app-fxcorr（分组） | 中 | reference（源码核实用名） |
+| `group_regex` / `group_index`（旧名 `key_group_*` 兼容） | 无 | reference/app-yaml.md | app-fxcorr、app-mwa（分组） | 低 | reference（2026-10-21 已核实并改名） |
 | `task_dist_mode`（HOST-BOUND/SLOT-BOUND/DEFAULT） | features/pod、examples/vtask、app-mwa | appendix/2、developer/9 | 多应用 | 高 | feature + invariant |
 | `start_task` | retry_test、timeout、examples | appendix/2 | 待补 | 低 | feature 统一 |
 | `initial_task_status` / `initial_slot_status` | 无 | appendix/2 | 待补 | 低 | reference |
@@ -242,7 +242,6 @@
 
 **未确认**
 - `local_ip_index`（"暂未使用？"）
-- `key_group_regex` / `key_group_index`（"改名?"）
 - `task_global_timeout_scale`（"拟改名?"）
 - `vtask_size_sema_copy`（已废弃）
 
@@ -421,7 +420,7 @@
 | 3 | 应用启动与状态 | `start_task` 是创建时注入的首条消息；`initial_status: RUNNING` 免手工放行；运行中可 `app set-status` | app-base/app.yaml、app/README.md | reference | 补充 |
 | 4 | 路由模块参数 | 路由用 `task_dist_mode: SLOT-BOUND` + `task_batch_size` 批量取消息；`router_index` 指定第几个主路由实例 | app/app.yaml | reference | 补充 |
 | 5 | `slot_group` | `{模块: 数量}` 声明新增节点时自动创建的 slot 数，扩容不必逐台维护 `slots` | app/app.yaml | reference | 补充 |
-| 6 | `pod_id` / `key_group_regex` | `pod_id` 让同源 task 走 HOST-BOUND 本地计算；`key_group_regex` 从 body 提取分组键，共同决定落点 | app/app.yaml | reference | 补充 |
+| 6 | `pod_id` / `group_regex` | `pod_id` 让同源 task 走 HOST-BOUND 本地计算；`group_regex` 从 body 提取分组键，共同决定落点 | app/app.yaml | reference | 补充 |
 
 ### C.2 vtask 流水线
 

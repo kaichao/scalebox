@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `proto/*.proto` by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@67c994e (2026-10-21) -->
+<!-- source: go-scalebox@233a3c4 (2026-10-21) -->
 
 
 # gRPC / Proto 参考
