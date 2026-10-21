@@ -8,8 +8,11 @@ modules:
     parameters:
       task_dist_mode: HOST-BOUND
       pod_id: my_pod
-    slots: 
+    slots:
       - n0-[01]
+    # 默认 run.sh 按 SINK_MODULE 回流；回流到 router 后由它投给 mod-2
+    sink_modules:
+      - router
   mod-2:
     base_image: scalebox.net/platform/agent:latest
     parameters:

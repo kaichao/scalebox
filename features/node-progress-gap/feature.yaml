@@ -6,7 +6,8 @@ modules:
     base_image: scalebox.net/platform/agent:latest
     parameters:
       task_dist_mode: HOST-BOUND
-      node_progress_gap: '{"n-[01]":2,"n":3}'
-    slots: 
-      - n-[01][01]
+      # 键是短主机名的正则前缀：n0 匹配 n0-0/n0-1，n1 匹配 n1-0/n1-1
+      node_progress_gap: '{"n0":2,"n1":3}'
+    slots:
+      - n[01]-[01]
   

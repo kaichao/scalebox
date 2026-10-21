@@ -1,0 +1,13 @@
+# 测试用变体：去掉 ((@p:...))。
+# 当前平台在 slot 没有任何 parameters 时不会替换 @p: 表达式（expr.Evaluate 的
+# len(slotParams)>0 分支），而 slot 参数只能在 slot 创建后设置 —— 含 @p: 的
+# 启动命令会导致 slot SSHFAILED。@p: 的手工验证见 README「测试」。
+name: slot-expr.features
+cluster: local
+modules:
+  mod-slot-expr:
+    base_image: scalebox.net/platform/agent:latest
+    command: 'docker run -d --network=host -e SEQ=((@seq)) -e MY_VAR=((@v:my_var)) --rm {{ENVS}} {{VOLUMES}} {{IMAGE}}'
+    arguments:
+      code_path: ${PWD}/code
+      slot_options: slot_on_head

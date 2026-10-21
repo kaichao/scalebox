@@ -47,7 +47,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # 慢测：等 pgcron（每 5 分钟）重置任务，通常 2–5 分钟
 # 当前手工：
 scalebox run --app-file=feature.yaml
 # 等待 pgcron 周期后查看：

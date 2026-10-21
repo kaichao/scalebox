@@ -51,7 +51,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # 两次建 app：先设不可能满足的阈值（停领），再取消阈值（放行）
 # 当前手工：
 DIR_QUOTA_GB='{"/data/ssd/tmp":22}' FREE_SPACE_GB='{"/data/ssd/tmp":1000}' \
   ACTION_CHECK=/app/bin/mycheck.sh scalebox run --app-file=feature.yaml

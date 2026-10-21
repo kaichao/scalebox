@@ -11,7 +11,7 @@ scalebox module list --app-id N           # 模块与 module-id
 scalebox slot status --module-id M        # 该模块 slot 汇总
 scalebox slot list --module-id M          # slot 明细（host/seq/status）
 scalebox task list --app-id N             # 任务与 status_code
-scalebox task show --task-id T            # 单任务详情（含 stdout/stderr）
+scalebox task show T                      # 单任务详情（位置参数，含 stdout/stderr）
 ```
 
 数据库兜底（CLI 版本过旧或需要精确查询时）：

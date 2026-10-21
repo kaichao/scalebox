@@ -34,6 +34,7 @@ fi
 total=0
 pass=0
 fail=0
+skip=0
 failed=""
 start_all=$SECONDS
 
@@ -55,6 +56,9 @@ for t in */test.sh; do
     if [ "$rc" -eq 0 ]; then
         pass=$((pass + 1))
         printf 'PASS %s (%ss)\n' "$name" "$dur"
+    elif [ "$rc" -eq 77 ]; then
+        skip=$((skip + 1))
+        printf 'SKIP %s (%ss)\n' "$name" "$dur"
     else
         fail=$((fail + 1))
         failed="$failed $name"
@@ -68,6 +72,7 @@ if [ "$total" -eq 0 ]; then
     exit 1
 fi
 printf '%d/%d passed' "$pass" "$total"
+[ "$skip" -gt 0 ] && printf '; skipped:%d' "$skip"
 [ -n "$failed" ] && printf '; failed:%s' "$failed"
 printf ' (%ss)\n' "$((SECONDS - start_all))"
 

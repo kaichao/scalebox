@@ -46,7 +46,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh
 # 当前手工：
 APP_ID=$(scalebox run --app-file=feature.yaml | ...)
 # 第一次：成功

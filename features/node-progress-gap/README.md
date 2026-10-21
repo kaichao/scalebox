@@ -44,11 +44,13 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # 需要 inline 多节点控制面；不可达时 SKIP（退出码 77）
+# 基线验证：任务全绿 + 每个节点一个 node_progress 信号量。
+# 领取时的 gap 限制是动态行为（依赖持续任务供给），暂不自动断言。
 # 当前手工（tasks.txt 提供初始任务）：
 cat tasks.txt | scalebox run --app-file=feature.yaml
-scalebox task add --app-id=$APP_ID --header to_host=n-00.inline 00e
-scalebox task add --app-id=$APP_ID --header to_host=n-10.inline 10c
+scalebox task add --app-id=$APP_ID --header to_host=n0-0.inline 00e
+scalebox task add --app-id=$APP_ID --header to_host=n1-0.inline 10c
 ```
 
 预期：快节点 `n-0x` 最多领先慢节点 2 个 task；`semagroup list` 中可见 `node_progress:<module>:<host>` 的值差不超过 gap。

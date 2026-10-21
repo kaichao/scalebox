@@ -15,3 +15,6 @@ modules:
     arguments:
       code_path: ${PWD}/code
       slot_options: slot_on_head
+    # sink-tasks.txt 前 4 种格式省略模块名，依赖 SINK_MODULE
+    sink_modules:
+      - mr-module

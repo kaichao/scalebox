@@ -74,7 +74,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # 9 个任务：入口 → my-module → 7 条 sink 格式
 # 当前手工：
 echo start-task | scalebox run --app-file=feature.yaml
 # 观察 my-module 的 t_task_exec：extras.timestamps、input_bytes/output_bytes、auxout、sink 任务

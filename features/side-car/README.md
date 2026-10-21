@@ -52,7 +52,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # 定制 ACTION_RUN，断言 run-custom.sh 被调用
 # 当前手工：缺省脚本
 echo 0 | scalebox run --app-file=feature.yaml
 

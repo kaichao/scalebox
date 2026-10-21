@@ -45,7 +45,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh
 # 当前手工：
 scalebox run --app-file=feature.yaml
 # 查看 t_task_exec.status_code / stderr：

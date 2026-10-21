@@ -8,3 +8,6 @@ modules:
       slot_options: slot_on_head
     parameters:
       task_batch_size: '${TASK_BATCH_SIZE}'
+    environments:
+      # 测试用：agent 输出 "GetTaskList(), len of tasks=N"，可验证单次领取条数
+      - LOG_LEVEL=trace

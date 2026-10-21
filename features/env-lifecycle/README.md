@@ -49,7 +49,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh
 # 当前手工：
 DEMO_VALUE=hello scalebox run --env-file=scalebox.env --app-file=feature.yaml
 # 查看模块 stdout：DEMO_VALUE=hello；LITERAL_DEMO 应为字面量 ${LITERAL_DEMO}

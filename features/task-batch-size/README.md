@@ -40,13 +40,15 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh   # 从 slot 容器日志的 "GetTaskList(), len of tasks=N" 验证单次领取 > 1
 # 当前手工：
 export TASK_BATCH_SIZE=3
 for i in {0..9}; do printf "%03d\n" $i; done | scalebox run --app-file=feature.yaml
 ```
 
-预期：10 个任务形成约 4 个 `t_task_exec` 记录（3+3+3+1）；任务本身全部完成。
+预期：单次领取最多 3 条；10 个任务全部完成。
+注意：每个 task 仍各有一条 `t_task_exec` 记录（批量只减少取任务调用次数），
+不能用 exec 条数判断批量是否生效；feature.yaml 已设 `LOG_LEVEL=trace` 供日志验证。
 
 ## 源码指针
 

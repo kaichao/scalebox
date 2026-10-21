@@ -18,6 +18,9 @@
 #   SCALEBOX_TEST_POLL               轮询间隔秒数（默认 2）
 #   SCALEBOX_TEST_KEEP=1             保留 app 与容器，不清理
 #   SCALEBOX_TEST_CLEAN_CONTAINERS=0 不停止 slot 容器（只删 app 记录）
+#   SCALEBOX_FEATURE_FILE            要加载的 app 文件（默认 feature.yaml）
+#
+# 跳过：test.sh 调用 tk_skip 时以退出码 77 结束，run-tests.sh 记为 SKIP、不计失败。
 
 TK_DB_CONTAINER=${SCALEBOX_DB_CONTAINER:-database}
 TK_DB_USER=${SCALEBOX_DB_USER:-scalebox}
@@ -26,6 +29,12 @@ TK_DB_NAME=${SCALEBOX_DB_NAME:-scalebox}
 tk_fail() {
     echo "FAIL [$TK_NAME] $*" >&2
     exit 1
+}
+
+# 前置条件不满足（如需要多节点集群）时跳过：退出码 77，run-tests.sh 记为 SKIP。
+tk_skip() {
+    echo "SKIP [$TK_NAME] $*" >&2
+    exit 77
 }
 
 # 执行 SQL，psql 以 -tA 输出（无表头、无对齐）。
@@ -49,7 +58,8 @@ tk_init() {
     TK_LOG_DIR="${TMPDIR:-/tmp}/scalebox-feature-tests/${TK_NAME}.$$"
     mkdir -p "$TK_LOG_DIR"
 
-    [ -f feature.yaml ] || tk_fail "当前目录没有 feature.yaml"
+    TK_FEATURE_FILE=${SCALEBOX_FEATURE_FILE:-feature.yaml}
+    [ -f "$TK_FEATURE_FILE" ] || tk_fail "当前目录没有 $TK_FEATURE_FILE"
     command -v "$TK_CLI" >/dev/null 2>&1 || \
         tk_fail "找不到 $TK_CLI；请在控制面所在机器运行，或用 SCALEBOX_CLI 指定"
 
@@ -65,9 +75,9 @@ tk_init() {
 tk_run_app() {
     local env_file=${1:-} out rc
     if [ -n "$env_file" ]; then
-        out=$("$TK_CLI" run --env-file="$env_file" --app-file=feature.yaml 2>&1)
+        out=$("$TK_CLI" run --env-file="$env_file" --app-file="$TK_FEATURE_FILE" 2>&1)
     else
-        out=$("$TK_CLI" run --app-file=feature.yaml 2>&1)
+        out=$("$TK_CLI" run --app-file="$TK_FEATURE_FILE" 2>&1)
     fi
     rc=$?
     printf '%s\n' "$out" > "$TK_LOG_DIR/run.log"

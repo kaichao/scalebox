@@ -49,7 +49,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # 阶段 3 提供
+./test.sh
 # 当前手工：
 APP_ID=$(scalebox run --app-file=feature.yaml | ...)
 echo "hello" | scalebox task add --app-id=$APP_ID --sink-module=producer --header _demo=hello

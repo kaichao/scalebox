@@ -53,7 +53,7 @@ modules:
 ## 测试
 
 ```sh
-./test.sh   # test.sh 待补；先用下面的手工命令
+./test.sh   # 需要 inline 多节点控制面；不可达时 SKIP（退出码 77）
 # 当前手工：
 echo 4 | scalebox run --app-file=feature.yaml
 ```

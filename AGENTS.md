@@ -17,8 +17,12 @@
 
 | 要做的事 | 先读 |
 |---|---|
+| **先建立全局图** | [`docs/agents/00-model.md`](./docs/agents/00-model.md)（心智模型）、[`glossary.md`](./docs/agents/glossary.md)（术语） |
+| **按步骤做一件事** | [`docs/agents/recipes/`](./docs/agents/recipes/README.md)：建 app / 加模块 / 流控 / vtask / 多节点 / 排障 / 验收 |
 | 从零写一个 app.yaml | [`docs/reference/app-yaml.md`](./docs/reference/app-yaml.md)、[`examples/hello-scalebox`](./examples/hello-scalebox/) |
 | 查 CLI 命令与 flags | [`docs/reference/cli.md`](./docs/reference/cli.md) |
+| 模块怎么跑起来（挂载/注入/路由） | [`docs/reference/module.md`](./docs/reference/module.md) |
+| task header / 信号量 / 变量 / 环境变量 / RPC | [`docs/reference/`](./docs/reference/)（`task-headers.md`、`semaphore-variable.md`、`env-vars.md`、`rpc.md`） |
 | 写模块脚本、接口文件（sink/task-exec） | [`features/agent-interface-files/README.md`](./features/agent-interface-files/README.md) |
 | 任务回流 / `_` header 传播 | [`features/headers-propagation/README.md`](./features/headers-propagation/README.md) |
 | 任务身份 / 重复投递 112 | [`features/task-identity/README.md`](./features/task-identity/README.md) |
@@ -52,7 +56,7 @@ scalebox app list
 scalebox module list --app-id N              # 取 module-id
 scalebox slot list --module-id M            # 查 slot
 scalebox task list --app-id N               # 查任务
-scalebox task show --task-id T              # 查单任务（含 stdout/stderr）
+scalebox task show T                        # 查单任务（位置参数，含 stdout/stderr）
 scalebox app delete --app-id N              # 删 app（不自动停本地容器）
 ```
 
@@ -62,4 +66,10 @@ scalebox app delete --app-id N              # 删 app（不自动停本地容器
 
 ## 生成物
 
-`docs/reference/*.md` 由 go-scalebox 的 `scripts/gen-reference/` 生成，**不要手改**；源码变化后重新生成并提交 diff。语义说明写在本页、`docs/agents/` 或 `features/`，不要写进生成器。
+`docs/reference/` 分两类：
+
+- **生成物**（`cli.md`、`app-yaml.md`、`exit-codes.md`、`rpc.md`、`env-vars.md`）：由 go-scalebox 的
+  `scripts/gen-reference/` 生成，**不要手改**；源码变化后重新生成并提交 diff。
+- **手写参考**（`task-headers.md`、`module.md`、`semaphore-variable.md`）：结构以源码为准，修改时对照源码。
+
+语义说明写在本页、`docs/agents/` 或 `features/`，不要写进生成器。

@@ -22,30 +22,11 @@
 
 ### 2.1.4 task-headers标准参数表
 
-| 参数名称          | 写入方           | 含义                                            |
-| ---------------- | --------------- | ----------------------------------------------- |
-| to_ip            | 调用方          | 当前task的待处理主机ip                             |
-| to_host          | 调用方          | 当前task的待处理主机名(t_host主键)                  |
-| from_ip          | 系统自动        | 生成task的主机ip                                 |
-| from_ip_last     | 系统自动        | 若from_module为主路由，主机ip                     |
-| from_host        | 系统自动        | 生成task的主机名(t_host主键)                      |
-| from_module      | 系统自动        | 生成task的模块名                                 |
-| from_module_last | 系统自动        | 若from_module为主路由，主路由之前的from_module     |
-| from_cluster     | 系统自动        | 跨集群应用的上一集群名                             |
-| to_slot          | 调用方          | SLOT-BOUND模块中当前task的待处理slot_id           |
-| to_slot_index    | 调用方          | 以本机seq表示的slot_id                           |
-| repeatable       | 调用方          | 缺省task在指定时间内不可重复分发，缺省值可通过module的task_cache_expired_minutes参数定制；在retry操作、特定场景下，需支持消息的重复分发，则设为该参数'yes'|
-| action           | 调用方          | 模块action路由（tape-mgr/tape-io类模块用）          |
-| conflict_action  | 调用方          | 任务冲突处理策略（task add的--conflict-action参数）  |
-| slot_last_task   | 调用方          | 值为'yes'时声明本task是当前slot的最后一个task：agent执行完该task后退出（处理完当前已拉取批次），不处理后续task。退出后slot置READY，新task到来时由actuator重启新容器。PLAT_ALWAYS_RUNNING=yes的slot忽略此标记 |
-| _vtask_attr_${name} | 调用方（应用）   | 应用自定义属性，vtask范围内可见：随任务进入wait-queue后由标准模块原样转发给vtask-head，并沿vtask管道向下游模块自动传播。平台只运输、不解释内容；${name}由应用定义，平台保留该子命名空间 |
+task header 的名称、写入方、传播规则与转义以
+[`reference/task-headers.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md) 为唯一信源；本节只保留两条落点约定：
 
-其中，from_ip、from_module、from_module_last等，由系统自动生成。
-
-- 针对HOST-BOUND的模块，需在代码中设定to_host；或通过模块的pod_id相等来设定。
-- 针对SLOT-BOUND的模块，需在代码中设定to_slot
-
-task-header可自定义参数，其中 ```_```开头的参数表示标准传递参数；```_vtask_```开头的参数为vtask参数，由系统维护；```_vtask_attr_```子命名空间保留给应用，用于声明vtask范围内可见的自定义属性（平台只运输、不解释内容）。
+- 针对 HOST-BOUND 的模块，需在代码中设定 `to_host`；或通过模块的 `pod_id` 相等来设定。
+- 针对 SLOT-BOUND 的模块，需在代码中设定 `to_slot`。
 
 ## 2.2 资源配置参数表
 
