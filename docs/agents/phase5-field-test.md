@@ -18,7 +18,7 @@
 | # | 卡点 | 级别 | 修复 |
 |---|---|---|---|
 | A1 | 仓库没有 agent 入口页；README 是英文平台介绍，不知道从 features 还是 reference 开始 | 高 | 新增根 `AGENTS.md`（心智模型 + 导航表 + 铁律 + 常用命令） |
-| A2 | `base_image` 必填，但测试部署没有默认 `platform/base:latest`；reference 只列字段，不说明该用哪个镜像 | 中 | `AGENTS.md` 增补“测试部署用 `platform/agent:latest`”；`features/README.md` 已有约定 |
+| A2 | `base_image` 必填，但测试部署没有默认基础镜像；reference 只列字段，不说明该用哪个镜像 | 中 | `AGENTS.md` 增补“测试部署用 `platform/agent:latest`”；`features/README.md` 已有约定 |
 | A3 | 入口任务如何投递（`task add` 从 stdin 读 body、`--sink-module`、`-H`）只在 feature README 的例子里；CLI reference 只有 flags | 中 | `AGENTS.md` 常用命令补完整示例 |
 | A4 | 查任务结果需要知道用 `task list` / `task show`（含 stdout）；没有“如何确认成功”的入口 | 中 | `AGENTS.md` 常用命令列出；诊断文档给出 60 秒检查顺序 |
 | A5 | `scalebox app delete` 只删数据库记录，不停止本地 slot 容器（实测容器仍在） | 高 | `docs/agents/20-diagnosis.md` 增加清理节；`AGENTS.md` 命令旁括注 |
@@ -70,4 +70,4 @@
 - `scalebox app show` 不显示 slot/task 摘要；agent 需组合 `module list`/`slot list`/`task list`。
 - 根 `README.md` Quick Start 仍用 `build/` 路径（阶段 0 已知，阶段 6 统一修）。
 - 未提供 `test.sh` 的 feature README 仍保留“阶段 3 提供”的占位注释（本次只修 pod；其余随阶段 6 或后续测试补齐）。
-- 测试部署没有默认 `platform/base:latest`，属于部署镜像问题，已在文档中说明替代镜像。
+- 测试部署没有默认基础镜像，属于部署镜像问题，已在文档中说明替代镜像。

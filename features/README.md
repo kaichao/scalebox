@@ -10,7 +10,7 @@
 - `README.md`：按 [`_template/README.md`](./_template/) 的模板编写，中文。
 - `feature.yaml`：与 `app.yaml` 同 schema；用 `scalebox run --app-file=feature.yaml` **显式**加载（`scalebox run` 的缺省探测只找 `app.yaml`）。
 - `test.sh`：一键建 app → 跑 → 断言 → 清理，返回 0/非 0；公共函数见 [`lib/testkit.sh`](./lib/testkit.sh)，用 [`run-tests.sh`](./run-tests.sh) 批量运行。
-- `feature.yaml` 的模块显式写 `base_image: scalebox.net/platform/agent:latest`；测试部署通常没有默认的 `scalebox.net/platform/base:latest`。
+- `feature.yaml` 的模块显式写 `base_image: scalebox.net/platform/agent:latest`；测试部署通常没有默认基础镜像。
 - 索引一致性由 `./check-index.sh` 校验；新增/删除 feature 后运行。
 
 ## 索引

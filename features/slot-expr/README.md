@@ -25,10 +25,11 @@ slot 参数用 `scalebox slot set-parameter` 设置；全局变量用 `scalebox 
 
 - **`@seq` 是节点内序号**：需要全局唯一标识时不要直接用它。
 - **表达式只求值一次**：运行中改变全局变量不会影响已启动的 slot。
-- **`@p:` 在 slot 无参数时不被替换**（平台缺陷）：`cmd/controld/slot/expr/expr.go` 的
-  `Evaluate` 只在 `len(slotParams) > 0` 时处理 `@p:`；而 slot 参数只能在 slot 创建后设置，
-  因此含 `@p:` 的启动命令会让 slot `SSHFAILED`（`bash: syntax error near unexpected token '('`）。
-  修复方向：去掉该条件（nil map 读取安全，未设置即按空值替换）。测试用 `feature-test.yaml` 规避。
+- **`@p:` 在 slot 无参数时不被替换**（平台缺陷，已在 go-scalebox 修复）：旧实现只在
+  `len(slotParams) > 0` 时处理 `@p:`；slot 参数只能在 slot 创建后设置，因此含 `@p:` 的启动
+  命令会让 slot `SSHFAILED`（`bash: syntax error near unexpected token '('`）。修复已去掉
+  该条件并补单测（空 map/nil 按空值替换）。**重建 controld 镜像后**即可把
+  `feature-test.yaml` 删掉、`test.sh` 改回 `feature.yaml` 并断言 `MY_PARAM=` 为空。
 - **命令里要加引号**：表达式可能展开出空格或特殊字符时才需要；数值表达式按求值结果替换。
 - **调试用 `--print-yaml`**：`scalebox run --print-yaml` 可先看模板展开结果（注意表达式是 slot 启动时才求值，print 阶段可能仍是原样）。
 

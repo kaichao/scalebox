@@ -60,7 +60,7 @@ scalebox task show T                        # 查单任务（位置参数，含 
 scalebox app delete --app-id N              # 删 app（不自动停本地容器）
 ```
 
-测试部署通常没有默认的 `scalebox.net/platform/base:latest`；feature 用
+测试部署通常没有默认基础镜像；feature 统一用
 `base_image: scalebox.net/platform/agent:latest`。`features/` 的 `test.sh` 封装了
 建 app → 等任务 → 断言 → 清理的完整生命周期，可当作最小范例读。
 
