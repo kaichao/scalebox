@@ -1,7 +1,7 @@
 # Scalebox 平台不变式（第一批）
 
 > 面向 AI agent 与平台开发者。开发或修改 scalebox 应用前先通读 TL;DR；命中相关条目时读正文。
-> 来源：`app-fxcorr` 38 条 + `app-mwa` 29 条实战实证（完整清单见 `docs/feature-inventory.md` 附录 A/C），按 `_template-invariant.md` 模板蒸馏。
+> 来源：`app-fxcorr` 38 条 + `app-mwa` 35 条实战实证（完整清单见 `docs/feature-inventory.md` 附录 A/C），按 `_template-invariant.md` 模板蒸馏。
 > 置信度：**已交叉验证** = 两个应用或应用+官方文档同时出现；**单项目来源** = 仅一个应用/一次实验实证。
 
 ## TL;DR（20 条）

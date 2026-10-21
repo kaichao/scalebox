@@ -2,6 +2,7 @@
 
 > 唯一信源：流控原语的事实——存储、作用域、API、命名规范、生命周期。设计动机与
 > vtask 管道原理见 Sphinx `developer/9_vtask` 与 go-scalebox `docs/vtask-design.md`。
+> 最后校验：2026-10-21，对照 go-scalebox@09cd5a3。
 
 ## 1. 三类存储与两个作用域
 
@@ -20,9 +21,14 @@
 - `t_semaphore(name, value, value0, app, vtask)`：`value` 当前值，`value0` 创建时的初始值；
   `vtask IS NULL` 表示 app 全局作用域。
 - `t_variable(name, value, app, vtask)`：`vtask IS NULL` 表示 app 全局。
-- `t_global(name, value)`：进程无关的全局键值，不按 app 隔离。
+- `t_global(name, value, t, ext)`：进程无关的全局键值，不按 app 隔离。
 
-唯一约束分别是 `(name, app, vtask)` / `(name, app)` / `(name)`。
+约束：
+- `t_semaphore`：`uniq_semaphore UNIQUE NULLS NOT DISTINCT (name, vtask, app)`；
+- `t_variable`：`uniq_var UNIQUE NULLS NOT DISTINCT (name, vtask, app)` **与**
+  `UNIQUE (name, app)` 并存——后者更严格，因此**变量名在 app 内唯一**，vtask 变量不能与
+  同 app 的其他 vtask/全局变量重名；
+- `t_global`：`name` 为主键。
 
 ## 3. 信号量 API
 
@@ -30,7 +36,7 @@
 
 | 命令 | 语义 |
 |---|---|
-| `semaphore create <name> <value>` | 创建；`CONFLICT_ACTION` 环境变量控制冲突：`OVERWRITE` 覆盖、`IGNORE` 跳过、缺省报错 |
+| `semaphore create <name> <value>` | 创建；冲突行为由 **controld 进程**的环境变量 `CONFLICT_ACTION` 控制：`OVERWRITE` 覆盖、`IGNORE` 跳过、缺省报错。注意：当前 `createOn` 的 `ON CONFLICT (name, app)` 与实际唯一约束 `(name, vtask, app)` 不匹配，`OVERWRITE`/`IGNORE` 预计直接报 constraint 错（源码待修） |
 | `semaphore get <name>` | 读当前值 |
 | `semaphore increment <name>` / `decrement <name>` | 值 ±1 |
 | `semaphore add-value <name> <delta>` | 原子加 delta，输出新值 |
@@ -40,6 +46,9 @@
 ### semagroup（组操作）
 
 组 = 名字匹配同一表达式（前缀或正则）的一组信号量（用于 `host_vtask_size:*`、`group_vtask_size:*`）。
+表达式首字符不是正则元字符时自动加 `^`（前缀匹配）；`diff-min`/`diff-max` 使用
+`(group-prefix)name` 形式，`(group-prefix)` 会展开为 `^<prefix>.*`。组内选择按
+`value DESC, name` 取最大成员（`semagroup.decrement` 即如此选）。
 
 | 命令 | 语义 |
 |---|---|
@@ -56,8 +65,11 @@
 ### AddValue 语义细节
 
 - 原子执行 `UPDATE ... SET value = value + delta RETURNING value`，**返回新值**；
-  返回 0 的那一次被视为"归零者"（INV-08 的触发点）。
-- 目标不存在时：`autoCreate` 为真则按 `delta` 创建并返回 0；否则报 `semaphore not found`。
+  信号量已存在时，返回 0 的那一次被视为"归零者"（INV-08 的触发点）。
+- 目标不存在时：`autoCreate` 为真则按 `delta` 创建（新值 = delta）并**返回 0**；
+  否则报 `semaphore not found`。autoCreate 由调用方设置 `SEMAPHORE_AUTO_CREATE=yes`
+  （CLI 透传为 gRPC metadata `semaphore-auto-create: yes`；controld 进程环境变量同样生效）。
+- 注意 autoCreate 的"返回 0"与归零者的"返回 0"不可区分——依赖归零判断的计数器应先 `create`。
 
 ## 4. 流控信号量命名
 
@@ -77,12 +89,13 @@ wait-queue 的串行化 gate 用 `vtask_size:wait-queue`（值通常为 1）。
 | 预扣 | `vtask bind`（服务端 `BindVtaskResource`） | 对组原子 decrement，返回 hostname/组号，写入 `_vtask_size_sema` |
 | 领取 | controld `updateVTask` | 已预扣的 task 跳过扣减；DEFAULT 裸任务兜底扣减 |
 | 归还 | controld `doVTaskFinished` | vtask-tail 完成时按 `_vtask_size_sema` increment |
-| 失败归还 | `vtask fail` / `FailVtask` | 按 root task 的 `_vtask_size_sema` increment |
+| 失败归还 | `vtask fail` / `FailVtask` | 对 root task 的 `_vtask_size_sema` increment，**并**释放所有 gate 信号量（app 内 `vtask_size>0` 且无 `vtask_role` 的模块 → `vtask_size:<name>`）；随后级联把未完成子任务置失败 |
 
 约定：
 - **脚本不要重复归还**（`vtask unbind` 只用于错误回滚，INV-11）。
 - **vtask-head 必须对 `vtask_size:wait-queue` 加 1**（INV-10），否则后续 vtask 进不来。
-- 信号量值在 `[0, vtask_size]` 内；为负说明有脚本重复扣减。
+- 正常稳态下信号量值在 `[0, vtask_size]` 内；为负说明有脚本重复扣减，或 bind 绕过了
+  wait-queue 的准入（`semagroup.decrement` 本身不设下限）。
 
 ## 6. 变量
 

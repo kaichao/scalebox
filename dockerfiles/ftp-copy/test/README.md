@@ -4,12 +4,12 @@
 
 ```sh
 
-SOURCE_URL=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs TARGET_URL=/tmp/genbank DIR_NAME=. REGEX_FILTER=^.+\.txt\$ scalebox app create
+SOURCE_URL=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs TARGET_URL=/tmp/genbank DIR_NAME=. REGEX_FILTER=^.+\.txt\$ scalebox run
 
-SOURCE_URL= TARGET_URL=/tmp/genbank DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs%. REGEX_FILTER=^.+\.txt\$ scalebox app create
+SOURCE_URL= TARGET_URL=/tmp/genbank DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank/docs%. REGEX_FILTER=^.+\.txt\$ scalebox run
 
 
-FILE_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank~docs/FTv11.1.txt~/tmp scalebox app create
+FILE_NAME=ftp://ftp.ncbi.nlm.nih.gov/genbank~docs/FTv11.1.txt~/tmp scalebox run
 
 ```
 

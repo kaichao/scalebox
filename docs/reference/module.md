@@ -3,10 +3,11 @@
 > 唯一信源：`app.yaml` 中 `modules.<name>` 这一条**怎么跑起来**——启动命令、挂载、注入的环境变量、
 > 路由与落点。字段清单与类型见 [`app-yaml.md`](./app-yaml.md)（生成物）；模块与 agent 的
 > 接口文件（stdin/stdout/exit code/sink-tasks）见 [`features/agent-interface-files`](../../features/agent-interface-files/README.md)。
+> 最后校验：2026-10-21，对照 go-scalebox@09cd5a3。
 
 ## 1. 条目结构
 
-必填只有 `base_image`；其余按用途分四组：
+没有严格必填字段：`base_image` 省略时缺省为 `scalebox.net/platform/agent`。字段按用途分组：
 
 | 组 | 字段 | 作用 |
 |---|---|---|
@@ -30,8 +31,10 @@
 模板变量：`{{ENVS}}`（`-e K='V'` 序列）、`{{VOLUMES}}`（`-v 宿主:容器`）、`{{IMAGE}}`。
 
 - 自定义 `command` 时，`MODULE_ID` 的注入依赖命令里含 `GRPC_SERVER`（平台把 `-e GRPC_SERVER`
-  替换为 `-e MODULE_ID=N -e GRPC_SERVER`）；写自定义命令必须保留该变量。
+  替换为 `-e MODULE_ID=N -e GRPC_SERVER`；singularity 替换 `--env GRPC_SERVER`）；
+  写自定义命令必须保留该变量。
 - `slot_options` 含 `tmpfs_workdir` 且非 singularity 时，命令追加 `--tmpfs /work`。
+- `reserved_on_exit` 也可写在 `arguments.reserved_on_exit: yes`（与写在 `slot_options` 中等价）。
 - 容器入口是 agent（`entrypoint.sh` → `goagent`）；agent 以 `/bin/bash -c "<ACTION_RUN> <body> <headers>"`
   执行任务，`ACTION_RUN` 等由 `environments` 或镜像预设。
 
@@ -45,7 +48,8 @@
 | `/tmp`、`/dev/shm` | 同名宿主路径 | `disable_tmp_mapping`；singularity 不挂 |
 | `volumes` 的容器路径 | `volumes` 的宿主路径 | 相对路径会拼到 `data_root` 下 |
 
-`volumes` 写法 `宿主:容器`，例如 `shared/raw:/data:ro` → `<data_root>/shared/raw`。
+`volumes` 写法固定为两段 `宿主:容器`，例如 `shared/raw:/data` → `<data_root>/shared/raw`。
+**不支持第三段挂载选项**（`:ro` 等；写成三段会被整条忽略）。
 
 ## 4. 环境变量注入
 
@@ -56,8 +60,11 @@
    `MODULE_ID`（命令模板注入）、`APP_ID`/`SLOT_ID`（agent 注入）；
 3. `arguments` 映射：`task_max_seconds` → `PLAT_TASK_MAX_SECONDS`、`task_min_seconds` →
    `PLAT_TASK_MIN_SECONDS`、`poll_interval_seconds` → `PLAT_POLL_INTERVAL_SECONDS`、
-   `max_idle_polls` → `PLAT_MAX_IDLE_POLLS`、`heartbeat_seconds` → `PLAT_HEARTBEAT_SECONDS`；
+   `max_idle_polls` → `PLAT_MAX_IDLE_POLLS`、`heartbeat_seconds` → `PLAT_HEARTBEAT_SECONDS`、
+   `output_text_size` → `PLAT_OUTPUT_TEXT_SIZE`、`text_trunc_mode` → `PLAT_TEXT_TRUNC_MODE`；
    `dir_quota_gb` → `PLAT_DIR_QUOTA_GB`、`free_space_gb` → `PLAT_FREE_SPACE_GB`（后两者以 hex 编码传入）；
+   模块 `parameters` 含 `vtask_size` 或 `node_progress_gap` 时另注入 `PLAT_SRV_THROTTLE=yes`；
+   app 参数 `default_idle_polls` 在模块未显式配置 `max_idle_polls` 时作为其缺省；
 4. `environments` 列表（`K=V`，最后覆盖）。
 
 **空值不注入**：合成后值为空串的变量会被删除。需要"变量存在但为空"时不能依赖它。
@@ -67,7 +74,11 @@
 
 - `sink_modules`：声明的下游模块名列表（DAG 边来源）；容器内 `SINK_MODULE` 取**第一个**。
 - `main_router` 模块（`app.parameters.main_router`）未声明 `sink_modules` 时，`SINK_MODULE`
-  回退为 app.yaml 中第一个非 router 模块；其他模块未声明时为空串。
+  回退为 app.yaml 中第一个非 router 模块。
+- 其他模块未声明 `sink_modules` 时，`SINK_MODULE` 回退为 **main_router 模块名**；
+  没有 main_router 时为空串。
+- 模块名支持一个 `[...]` 展开（如 `calc-[12]` → `calc-1`、`calc-2` 两个模块条目）。
+  方括号内按字符逐一展开，**`[a-z]` 会展开为 `a`、`-`、`z`**，不是区间；不支持 `{}` 语法。
 - 算法模块成功执行后写 `${WORK_DIR}/sink-tasks.txt` 回流；路由模块默认转发规则见
   `docs/agents/10-invariants.md` INV-05。
 - `parameters.vtask_role`（`head` / `core` / `tail`）把模块接入 vtask 管道，并决定
@@ -75,9 +86,15 @@
 
 ## 6. 落点与分发
 
-- `slots`：主机正则列表，匹配 hostname 第一段（短名）；写错则 slot 全不建（INV-15）。
-- `parameters.task_dist_mode`：`DEFAULT` / `HOST-BOUND` / `SLOT-BOUND`，决定任务是否要求
-  `to_host` / `to_slot`。
+- `slots`：主机正则列表，匹配 hostname 第一段（短名），只取 `status='ON'` 的主机；
+  写错则 slot 全不建（INV-15）。条目语法：
+  - `host_regex`：每台匹配主机建 1 个 slot（seq=0）；
+  - `host_regex:N`：每台主机建 N 个 slot（seq=0…N-1）；
+  - `host_regex:N:group_regex`：GROUP slots，按组名分配（组名为单个字母时直接作为组前缀）；
+  - 正则不含元字符时自动按前缀匹配（追加 `.*`）。
+  - `slot_options` 含 `slot_on_head` 时忽略 `slots`，只在集群 HEAD 节点建 1 个 slot（seq=0）。
+- `parameters.task_dist_mode`：`DEFAULT` / `HOST-BOUND` / `SLOT-BOUND`（保存时空值归一化为
+  `DEFAULT`），决定任务是否要求 `to_host` / `to_slot`。
 - `slot_options`：`always_running`、`reserved_on_exit`、`tmpfs_workdir`、`disable_local_mapping`、
   `disable_data_mapping`、`disable_tmp_mapping`、`slot_on_head`（调试用）。
 - `slot_max_tasks`（`parameters`，schema 未覆盖）：slot 生命周期内累计执行任务数上限，达到后
@@ -87,14 +104,13 @@
 
 | 参数（`arguments`） | 语义 |
 |---|---|
-| `task_max_seconds` | 单任务超时，超时中断，任务返回 124；全局超时由 pgcron 恢复为 123 |
-| `task_min_seconds` | 单任务最小合理耗时；连续低于阈值判定 slot 异常（GREEDY）并退出 |
+| `task_max_seconds` | 单任务超时，缺省 0（不超时）；超时中断，任务返回 124。全局兜底：status=-3 且超过 `task_max_seconds × task_global_timeout_scale`（模块参数，缺省 2.0）的任务由 pgcron（每 15 分钟）置为 123 |
+| `task_min_seconds` | 单任务最小合理耗时，缺省 0；连续低于阈值判定 slot 异常（GREEDY）并退出 |
 | `poll_interval_seconds` | slot 轮询新任务的间隔，缺省 6 秒 |
-| `max_idle_polls` | 空闲轮询上限，超过后 slot 退出；缺省 100（约 10 分钟） |
+| `max_idle_polls` | 空闲轮询上限，超过后 slot 退出；缺省 100（约 10 分钟）；app 参数 `default_idle_polls` 可提供缺省 |
 | `heartbeat_seconds` | 心跳间隔，缺省 60；非正整数禁用 |
-| `output_text_size` | 执行记录里 stdout/stderr/auxout 的最大字节数，缺省 65535 |
-| `text_trunc_mode` | `HEAD`（保留末尾）/ `TAIL` |
-| `timezone_mode` | `HOST` / `UTC` / `NONE` |
+| `output_text_size` | 执行记录里 stdout/stderr/auxout 的最大字节数，缺省 65535，最小 255 |
+| `text_trunc_mode` | `TAIL` = 保留文本开头（截掉尾部）；其他或空 = 保留文本末尾（截掉开头），即缺省等价于 `HEAD` |
 | `dir_quota_gb` | 目录配额闸门，格式 `'{"/dir":10}'`；挂批入口，不挂任务级（INV-14） |
 | `free_space_gb` | 磁盘保留空间闸门，格式同上；同上 |
 
@@ -102,7 +118,7 @@
 
 | 类型 | 识别 | 接口要点 |
 |---|---|---|
-| 算法模块 | 普通 `base_image` + `ACTION_RUN` | 读 stdin body；成功写 `sink-tasks.txt` |
+| 算法模块 | 普通 `base_image` + `ACTION_RUN` | 从 `argv[1]` 读 body、`argv[2]` 读 headers JSON；成功写 `sink-tasks.txt` |
 | 路由模块 | `app.parameters.main_router` 指定 | 按 `from_module` / header 分派，不写业务回流 |
-| wait-queue | `parameters.vtask_role` 缺失但参与 vtask 管道 | 标准镜像：准入、bind、转发 `_vtask_attr_*` |
+| wait-queue | 引用标准 wait-queue 镜像；无 `vtask_role` | `ACTION_CHECK` 做准入、`run.sh` 做 bind 并直投 vtask-head；转发 `_vtask_attr_*` |
 | 传输模块 | `file-copy` / `rsync-copy` 等 | 按 body 描述收发文件；见 `features/` |

@@ -3,19 +3,18 @@
 ## 1. hello-scalebox
 scalebox的入门应用，展示基于消息触发的基本应用。具体操作步骤如下：
 
-- 构建应用模块的容器镜像
-```bash
-cd examples/hello-scalebox
-make build
-```
-- 创建应用
+- 本目录没有独立镜像：模块脚本 `code/run.sh` 由缺省的
+  `scalebox.net/platform/agent:latest` 镜像执行（需要 singularity 镜像时见目录内
+  `singularity.md`）。
+- 创建并运行应用（本目录没有 `app.yaml`，`scalebox run` 按命令行参数生成应用模板；
+  任务 body 经 stdin 传给初始模块）
 ```sh
-app create
+cd examples/hello-scalebox
+echo "hello" | scalebox run
 ```
 - 查看应用状态：
 ```bash
-$ app list
-
+scalebox app list
 ```
 
 
@@ -27,14 +26,13 @@ $ app list
 cd examples/app-primes
 make build
 ```
-- 创建应用
+- 创建并运行应用（目录内有 `app.yaml`，`scalebox run` 自动加载；输入为区间上限）
 ```sh
-app create
+echo 1000 | scalebox run
 ```
 - 查看应用状态：
 ```bash
-$ app list
-
+scalebox app list
 ```
 
 
@@ -43,6 +41,7 @@ $ app list
 
 scalebox的基本模块支持基于rsync、rsync-over-ssh、ftp等的文件拷贝。
 
-app-copy应用则展示利用基本模块实现数据传输的例子。
+可运行示例见 `dockerfiles/files/app-dir-copy/`（`app.yaml` + `scalebox run`），
+各传输模块的用法见 `dockerfiles/files/*/README.md`。
 
 

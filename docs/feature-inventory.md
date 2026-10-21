@@ -192,21 +192,29 @@
 | 手工测试用例集 | `docs/manual-test-plan.md` | 可转 feature 测试的错误路径清单 | 中 | feature |
 | 调试（pprof） | `docs/debug.md` | profile 启停命令与端点 | 低 | reference |
 
-## 3. features 现状
+## 3. features 现状（2026-10-21 更新）
 
-| 目录 | README | feature 配置 | 一键测试 | 覆盖特性 | 主要问题 |
+12 个 feature 目录全部具备 README（按模板）、`feature.yaml`、`test.sh`；测试机 `ssh fxcorr`
+连续两轮 10/12 PASS、2 SKIP（多节点环境）、0 FAIL。
+
+| 目录 | README | feature 配置 | 一键测试 | 覆盖特性 | 备注 |
 |---|---|---|---|---|---|
-| `agent-interface-files` | 有（简略，多小节空白） | 无 app.yaml | 无 | 接口文件 | 配置缺失、无断言 |
-| `check_test` | 有 | app.yaml | 无（有 setup/check/teardown 脚本） | `dir_quota_gb` / `space_free_gb` | 参数名错误、无断言 |
-| `node_progress_gap` | 有（简略） | app.yaml | 无（手工命令） | `node_progress_gap` | 命令过时（`scalebox app run`） |
-| `pod` | 有（一句话） | app.yaml | 无 | `pod_id` | 说明过少 |
-| `retry_test` | 无 | app.yaml | 无 | `retry_rules` | 缺 README |
-| `side-car` | 有 | app.yaml | 无 | `ACTION_*` 四脚本 | 无断言 |
-| `slot_expr` | 有（质量好） | app.yaml | 无 | slot 表达式 | 无 test.sh |
-| `task_batch_size` | 有（三行） | app.yaml | 无 | `task_batch_size` | 缺行为说明与断言 |
-| `timeout` | 有（一行） | app.yaml | 无 | `task_max_seconds` | 缺说明与断言 |
+| `agent-interface-files` | 有 | `feature.yaml` | `test.sh` ✓ | 8 类接口文件 + sink 7 种格式 | 9 个任务的端到端断言 |
+| `check-test` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | `free_space_gb` / `dir_quota_gb` / `ACTION_CHECK` | 两次建 app：停领 → 放行 |
+| `env-lifecycle` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | 快照 / 未定义变量 / APP_ID | — |
+| `headers-propagation` | 有 | `feature.yaml` | `test.sh` ✓ | `_` 前缀 header | — |
+| `node-progress-gap` | 有 | `feature.yaml` + `tasks.txt` | `test.sh` ✓ | `node_progress_gap` 信号量 | 需 inline 多节点，否则 SKIP |
+| `pod` | 有 | `feature.yaml` | `test.sh` ✓ | `pod_id` 同节点路由 | 需 inline 多节点，否则 SKIP |
+| `retry-test` | 有 | `feature.yaml` | `test.sh` ✓ | `retry_rules` | 慢测：等 pgcron（5 分钟周期） |
+| `side-car` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | `ACTION_RUN/SETUP/TEARDOWN/CHECK` | 断言定制 ACTION_RUN |
+| `slot-expr` | 有 | `feature.yaml` + `feature-test.yaml` | `test.sh` ✓ | `@seq` / `@v:` / `@p:` | `@p:` 在 slot 无参数时的平台缺陷已修（go-scalebox），镜像重建后可去掉变体文件 |
+| `task-batch-size` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | `task_batch_size` | 从容器日志验证单次领取 3 条 |
+| `task-identity` | 有 | `feature.yaml` | `test.sh` ✓ | `uniq_task` / 112 / `conflict_action` | — |
+| `timeout` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | `task_max_seconds`（124） | — |
 
 ## 4. 缺口分级汇总（初步）
+
+> 阶段 0 的分级结论，保留作优先级依据；各项的当前落地状态见 §3 与 `docs/agents/`、`docs/reference/`、`features/`。
 
 **高（优先做）**
 - `_` 前缀 header 传播规则（invariant）
@@ -254,7 +262,7 @@
 
 ## 6. 待确认
 
-- 哪些参数实际已废弃（`vtask_size_sema_copy`、`slot_recoverable` 等）——由平台开发者确认。
+- 哪些参数实际已废弃（`slot_recoverable` 等）——由平台开发者确认；`vtask_size_sema_copy` 已确认由 app-mwa 于 2026-09 退役（见附录 C #33）。
 - `features/` 是否允许引用需要真实节点的资源（多节点 feature 的 CI 前提）。
 - 第一批 feature 的优先级是否按 §5 执行。
 - 设计文档的过时项（RPC 计数、状态名、WebUI 技术栈等）是否在本轮一并修正，还是留到 reference 生成时以源码为准重写。
@@ -400,9 +408,9 @@
 | user/6_standard_modules.md | side-car、timeout |
 | faq.md | check_test |
 
-## 附录 C app-mwa 实战实证清单（29 条，阶段 2 蒸馏输入）
+## 附录 C app-mwa 实战实证清单（35 条：阶段 2 蒸馏输入 + 2026-10 增量）
 
-来源：`/Users/kaichao/WORK/workspace/apps/app-mwa/pipelines/beam-form`（`CLAUDE.md`、`Design.md`、`app/`、`modules/*/README.md`、`docs/upgrade-impact-analysis.md`）。
+来源：`/Users/kaichao/WORK/workspace/apps/app-mwa/pipelines/beam-form`（`CLAUDE.md`、`Design.md`、`app/`、`modules/*/README.md`、`docs/upgrade-impact-analysis.md`）；C.7 增量来自提交 `7e55008`、`f89a621`、`91ba83e`、`ae71311` 与 `pkg/module` 源码核对。
 
 ### C.1 路由与应用装配
 
@@ -462,4 +470,17 @@
 | 27 | 节点被 drain 的假 RUNNING | Slurm drain/down 后任务仍停在 RUNNING(-3) 不自动失败；>60 节点出错率上升，120 节点时 >1/4 任务超时，需人工重置 | app-base/README.md §三 | reference | 新增 |
 | 28 | 单模块测试 | `scalebox app run --image-name --code-path --slot-regex` 起测试应用，再 `task add --sink-module next -h k=v`；`reserved_on_exit` 保留容器排查 | modules/pull-unpack/README.md | docs | 补充 |
 | 29 | 应用内重启清单 | 节点 renew 清临时空间 → 重置 slot → `node_progress` 归零 → 扣减已完成部分 → 重置首次加载信号量 → 清共享临时目录 | app/README.md | docs | 新增（recipe 候选） |
+
+### C.7 平台标准化改造增量（2026-09 / 2026-10）
+
+本轮从 app-mwa 的标准化改造提交与 `pkg/module` 源码核对得到、C.1–C.6 未覆盖的条目。
+
+| # | 机制 | 规则/实证 | 来源 | 去向 | 备注 |
+|---|---|---|---|---|---|
+| 30 | `pkg/module` 统一模块入口 | `module.Run(handlers, "from_module")` 接管参数校验、header 解析、按 header 分派与退出码；模块 `main` 只剩 handlers 表 + `initApp`。`module.InitLogging()` 需早于 `initApp()`，且幂等（`Run` 内部再调一次无害） | app/router/main.go；`scalebox/pkg/module/module.go`（`Run`） | reference | C1 补充；`module.md` 待补「Go 模块入口」一节 |
+| 31 | 模块入口退出码契约 | `0` OK；`1` 参数不足 **或 handler 返回未包装的普通 error**；`2` headers JSON 解析失败（`ExitBadHeaders`）；`4` 无匹配 handler。handler 返回 `*errors.TracedError` 时用其 Code | `scalebox/pkg/module/module.go:20-23,58-96` | reference | 新增；注意与任务状态码 `2=StatusCodeInvalidArgs` 同名不同源；普通 error 会被压成 1，掩盖原因，应 `errors.WrapE(err, code, ...)` |
+| 32 | 标准 wait-queue 接管 vtask 生命周期 | 直接用镜像 `scalebox.net/platform/wait-queue`（`VTASK_MODE` 驱动准入/bind 模式，`vtask_size: 1` 串行）；`run.sh` 内做 `vtask bind` + `add-subtask --direct`。路由端 `fromWaitQueue` / `fromVtaskTail` 必须空实现，本地 `check.sh` 不再需要 | app/app.yaml；app/router/wait_queue.go | invariant | 补充 C8 |
+| 33 | vtask 应用属性与退役的双信号量 | 应用自定义数据用 `_vtask_cube_name` 等 `_` 头随 sink 链传播；`slot_vtask_size` / `:slot_vtask_size` 双信号量与 `vtask_size_sema_copy` 已退役 | app/router/beam_make.go；upgrade-impact-analysis §3 | reference | 新增；关闭 §6 的 `vtask_size_sema_copy` 待确认 |
+| 34 | 路由端不释放 vtask 资源 | vtask-tail 只递减业务计数器；资源由 controld `doVTaskFinished` 按 `_vtask_size_sema` 自动归还，脚本再调 `UnbindResource` 会多归还（额度虚增） | app/router/vtask_tail.go | invariant | 补充 C10 |
+| 35 | env 文件分层（应用约定） | `scalebox.env` 只放空基线（每个被引用变量都定义，防 `${VAR}` 字面量透传），站点 env（`p419*.env`、`dcu*.env`）覆盖；不靠 shell 变量跨站点 | pipelines/main/scalebox.env、p419.env | 应用仓 | 项目约定，不进平台；与 INV-02 互为表里 |
 

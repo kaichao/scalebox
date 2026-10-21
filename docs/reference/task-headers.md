@@ -2,6 +2,7 @@
 
 > 唯一信源：task header 的名称、写入方、传播规则、转义都以本页为准。
 > 语义说明（何时设、坑）在 `features/` 与 `docs/agents/`；字段类型见 `reference/app-yaml.md`。
+> 最后校验：2026-10-21，对照 go-scalebox@09cd5a3。
 
 ## 1. 定义
 
@@ -19,14 +20,16 @@ agent 以 `/bin/bash -c` 启动模块：
 <ACTION_RUN> <body> <headers-json>
 ```
 
-- `argv[1]`：task body。body 形如 JSON 时，其中 `,`、`(`、`)`、`"` 由 agent 转义后再经 bash 还原。
+- `argv[1]`：task body。body 中的 `"` 总是转义为 `\"`；body 匹配 JSON 形态
+  （`{".+":.+,...}`）时，`,`、`(`、`)` 另作转义。经 bash 词法还原后到达模块。
 - `argv[2]`：紧凑 JSON（空格已去），整体用单引号包裹；空 headers 时为 `{}`。
-- 同时注入环境变量：`FROM_MODULE`、`FROM_IP`（存在时）、`TASK_ID`，以及平台环境变量（见 `reference/env-vars.md`）。
+- 同时注入环境变量：`TASK_ID`（总是）；`FROM_MODULE`、`FROM_IP`（仅当 headers 含
+  非空 `from_module` 时）；以及平台环境变量（见 `reference/env-vars.md`）。
 
 ### 取值
 
 bash 模块先 `source /usr/local/lib/scalebox/functions.sh`，再用 `scalebox::task_header <name>`：
-**先查 `argv[2]` 的 JSON，再回退同名环境变量**（INV-20）。
+**先查 `argv[2]` 的 JSON，再回退同名环境变量**（名字转大写后查找，INV-20）。
 
 ### 值约定（列表）
 
@@ -44,12 +47,14 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | 名称 | 含义 | 备注 |
 |---|---|---|
 | `to_host` | 目标主机名（`t_host` 主键） | HOST-BOUND 模块用；也可由 `pod_id` 相等自动推导 |
-| `to_ip` | 目标主机 IPv4 | controld 将其转换为 `to_host` |
-| `to_slot` | 目标 slot 的 id | SLOT-BOUND 模块用 |
+| `to_ip` | 目标主机 IPv4 | controld 转换为 `to_host`（自动补 `.<cluster>` 后缀） |
+| `to_slot` | 目标 slot 的 id | SLOT-BOUND 模块用；未给时可由 main-router 的 router_index 推导 |
 | `to_slot_index` | 目标 slot 的 seq | 仅头节点有效；controld 转换为 `to_slot` |
 | `repeatable` | `yes` = 允许重复分发 | 绕过调度去重窗口；重跑、重放场景用 |
-| `conflict_action` | 任务冲突处理策略 | `task add --conflict-action`；agent 也会从 `CONFLICT_ACTION` 环境变量映射 |
-| `action` | 模块 action 路由 | `tape-mgr` / `tape-io` 类模块用 |
+| `conflict_action` | 任务冲突处理策略 | `OVERWRITE` 转换为 `repeatable=yes` 后删除本 header；其他值无效果。`task add --conflict-action`；agent 也会从 `CONFLICT_ACTION` 环境变量映射 |
+| `slot_broadcast` | `yes` = 向模块的每个 slot 各投一条任务 | controld 展开为多条 `to_slot` 任务 |
+| `host_broadcast` | `yes` = 向模块的每个 host 各投一条任务 | controld 展开为多条 `to_host` 任务 |
+| `action` | 应用自定义动作名 | 平台只运输、不解释；语义由模块（如 tape 类）自行约定 |
 | `slot_last_task` | `yes` = 本任务是本 slot 的最后一个任务 | agent 执行完当前批次后退出；`PLAT_ALWAYS_RUNNING=yes` 的 slot 忽略 |
 | `_vtask_attr_<name>` | 应用自定义 vtask 属性 | 平台只运输、不解释；`<name>` 由应用定义 |
 | 其他任意名字 | 应用自定义 | 不以 `_` 开头；是否**自动**传播见 §4 |
@@ -63,8 +68,8 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `last_from_module` | agent（router 中转时） | 主路由之前的真实上游模块 |
 | `last_from_ip` | agent（router 中转时） | 主路由之前的真实上游 IP |
 | `from_cluster` | CLI（跨集群投递时） | 上一集群名 |
-| `task_id` | controld | 本任务自身的 id |
-| `_vtask_id` | controld | 任务所属 vtask id；`0`/空表示不属于 vtask |
+| `task_id` | controld | 本任务自身的 id；仅当模块参数 `task_id_in_headers: yes`（缺省 `no`）时写入 |
+| `_vtask_id` | controld | 任务所属 vtask id（= vtask-head 任务的 id）；`vtask_role: head` 且非 main-router 的任务创建时写入；`0`/空表示不属于 vtask |
 | `_vtask_size_sema` | controld | vtask 额度信号量名；只对 `parameters.vtask_role` 非空的模块注入 |
 
 `from_cluster` 仅在跨集群投递（`--remote-cluster`）且本机有 `CLUSTER` 环境变量时写入。
@@ -78,7 +83,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | 场景 | 哪些 header 自动带到下游 |
 |---|---|
 | 普通模块（非 router） | 所有 `_` 开头 header |
-| 模块是 main-router | 只有 `_vtask_*`，且仅当下游模块 `vtask_role` 非空 |
+| 模块是 main-router | 只有 `_vtask_*`，且逐条按下游 sink 模块的 `vtask_role` 是否非空门控 |
 
 - **wait-queue 一跳**：wait-queue 没有 `vtask_role`，`_vtask_attr_*` 不会自动继承；
   需要由 wait-queue 标准模块显式转发（标准镜像已实现）。
@@ -94,7 +99,8 @@ json.Marshal(headers) → 单引号整体包裹（' 用 '\''）→ bash 词法�
   marshal 出的 `\"` 被 bash 吃掉，模块收到损坏 JSON（`invalid character 's' in string escape code`）。
   现实现单引号包裹，任意字符串值无损传输。
 - 回归测试：go-scalebox `cmd/agent/escape_test.go`（round-trip 穷举）。
-- body 的转义是另一条路径（`doExternalRun`）：body 含空格/单引号时仍可能被 bash 分词拆散，避免在 body 里放这类字符。
+- body 的转义是另一条路径（`doExternalRun`）：`"` 无条件转义为 `\"`；匹配 JSON 形态时
+  另转义 `,`、`(`、`)`。body 含空格/单引号时仍可能被 bash 分词拆散，避免在 body 里放这类字符。
 
 ## 6. 与旧文档的关系
 

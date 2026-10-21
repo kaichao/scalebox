@@ -13,4 +13,4 @@ clean:
 	docker rmi $(IMAGE_NAME)
 
 run:
-	scalebox app create
+	scalebox run --app-file=app.yaml

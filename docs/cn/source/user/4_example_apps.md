@@ -24,7 +24,8 @@ echo "Scalebox" | scalebox run
 
 ```bash
 cd examples/app-primes
-make run NUM_GROUPS=4 CALC_NODE=local NUM_PARALLEL=2
+export NUM_GROUPS=4 CALC_NODE=local NUM_PARALLEL=2
+echo 1000 | scalebox run
 ```
 
 ### app-primes 应用特点
@@ -38,10 +39,9 @@ make run NUM_GROUPS=4 CALC_NODE=local NUM_PARALLEL=2
 
 ### app-copy 运行示例
 
-```bash
-cd examples/app-copy
-scalebox run --source /data/source --target /data/target
-```
+仓库中没有独立的 `examples/app-copy` 目录；文件拷贝由标准模块 `file-copy` /
+`dir-copy` 提供，可运行示例见 `dockerfiles/files/app-dir-copy/`（`app.yaml` +
+`scalebox run`），模块参数见 `dockerfiles/files/file-copy/README.md`。
 
 ### app-copy 应用特点
 - 跨节点数据传输
@@ -56,8 +56,11 @@ app-primes的跨集群版本，用多个集群算力求解给定整数区间内�
 
 ```bash
 cd examples/remote-primes
-make run CLUSTER0=cluster0 CLUSTER1=cluster1
+scalebox cluster create cluster0.yaml    # cluster1/cluster2 同理
+scalebox run --app-file main.yaml
 ```
+
+远端子应用（`calc.yaml --main-app-id`）与投递步骤见 `examples/remote-primes/README.md` §3。
 
 ### remote-primes 应用特点
 - 跨集群计算
@@ -70,7 +73,7 @@ make run CLUSTER0=cluster0 CLUSTER1=cluster1
 
 ```bash
 cd examples/vtask
-scalebox app run --vtasks 100
+cat default-tasks.txt | scalebox run -e scalebox.env
 ```
 
 ### vtask 应用特点

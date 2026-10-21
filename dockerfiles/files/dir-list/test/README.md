@@ -9,20 +9,20 @@
 ```
 
 ```sh
-PREFIX_URL=/ DIR_NAME=etc/postfix REGEX_FILTER=^.*cf\$ scalebox app create
+PREFIX_URL=/ DIR_NAME=etc/postfix REGEX_FILTER=^.*cf\$ scalebox run
 
-PREFIX_URL=/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ scalebox app create
+PREFIX_URL=/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ scalebox run
 
-PREFIX_URL=/etc/postfix DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox app create
+PREFIX_URL=/etc/postfix DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox run
 
 ```
 
 - dir-entry
 
 ```sh
-PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER= scalebox app create
+PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER= scalebox run
 
-PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' scalebox app create
+PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' scalebox run
 ```
 
 ## 2. rsync-over-ssh
@@ -34,21 +34,21 @@ PREFIX_URL=/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' sc
 ```
 
 ```sh
-PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/postfix REGEX_FILTER=^.*cf\$ scalebox app create
+PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/postfix REGEX_FILTER=^.*cf\$ scalebox run
 
-PREFIX_URL=scalebox@10.255.128.1/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ scalebox app create
-PREFIX_URL=scalebox@10.255.128.1:22/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ scalebox app create
+PREFIX_URL=scalebox@10.255.128.1/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ scalebox run
+PREFIX_URL=scalebox@10.255.128.1:22/etc DIR_NAME=postfix REGEX_FILTER=^.*cf\$ scalebox run
 
-PREFIX_URL=scalebox@10.255.128.1/etc/postfix DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox app create
+PREFIX_URL=scalebox@10.255.128.1/etc/postfix DIR_NAME=. REGEX_FILTER=^.*cf\$ scalebox run
 
 ```
 
 - dir-entry
 
 ```sh
-PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER= scalebox app create
+PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER= scalebox run
 
-PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' scalebox app create
+PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REGEX_FILTER='^.+\.d' scalebox run
 ```
 
 ## 3. rsync-native
@@ -62,12 +62,12 @@ PREFIX_URL=scalebox@10.255.128.1/ DIR_NAME=etc/NetworkManager ENTRY_TYPE=DIR REG
 - anonymous
 ```sh
 # ncbi data
-PREFIX_URL=rsync://ftp.ncbi.nlm.nih.gov/1000genomes/ftp DIR_NAME=. scalebox app create
+PREFIX_URL=rsync://ftp.ncbi.nlm.nih.gov/1000genomes/ftp DIR_NAME=. scalebox run
 ```
 
 - non-anonymous
 ```sh
-PREFIX_URL=rsync://fast@fast.cstcloud.cn/doi/10.1038/s41586-021-03878-5 DIR_NAME=20191021 scalebox app create
+PREFIX_URL=rsync://fast@fast.cstcloud.cn/doi/10.1038/s41586-021-03878-5 DIR_NAME=20191021 scalebox run
 ```
 
 ## 4. ftp(?)
@@ -80,18 +80,18 @@ PREFIX_URL=rsync://fast@fast.cstcloud.cn/doi/10.1038/s41586-021-03878-5 DIR_NAME
 
 - anonymous ftp
 ```sh
-PREFIX_URL=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/2008_12 DIR_NAME=. scalebox app create
-DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/2008_12~. REGEX_FILTER=^.*gz\$ scalebox app create
+PREFIX_URL=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/2008_12 DIR_NAME=. scalebox run
+DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release/2008_12~. REGEX_FILTER=^.*gz\$ scalebox run
 
-DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release~2008_12 scalebox app create
+DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/1000genomes/ftp/release~2008_12 scalebox run
 
-DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/~1000genomes/ftp/release/2008_12 scalebox app create
+DIR_NAME=ftp://ftp.ncbi.nlm.nih.gov/~1000genomes/ftp/release/2008_12 scalebox run
 
 ```
 
 - non-anonymous ftp
 ```sh
-PREFIX_URL=ftp://<ftp-user>:<ftp-pass>@<ftp-host>/<ftp-path> DIR_NAME=. scalebox app create
+PREFIX_URL=ftp://<ftp-user>:<ftp-pass>@<ftp-host>/<ftp-path> DIR_NAME=. scalebox run
 ```
 
 ## 5. 2D-dataset(removed)
@@ -99,6 +99,6 @@ PREFIX_URL=ftp://<ftp-user>:<ftp-pass>@<ftp-host>/<ftp-path> DIR_NAME=. scalebox
 DIR_NAME=/raidz/fast-fz/ZD2022_1_1~Dec+4120_03_03/20221102 \
 REGEX_2D_DATASET='^(.+%)?([^/]+/[^/]+)/.+M([0-9]+)_([0-9]+).+$' \
 INDEX_2D_DATASET='2,3,4' \
-scalebox app create
+scalebox run
 
 ```
