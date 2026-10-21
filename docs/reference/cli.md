@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `scalebox <command> --help` (Cobra) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@58c0306 (2026-10-19) -->
+<!-- source: go-scalebox@67c994e (2026-10-21) -->
 
 
 # Scalebox CLI 参考
@@ -62,7 +62,7 @@ Usage:
 | `get-router` | Get app router |
 | `list` | List apps |
 | `set-status` | Set app status. Use FINISHED with optional result text (written to t_app.ext). |
-| `show` | Show app details |
+| `show` | Show app details with module/slot/task summary |
 
 **Flags**
 
@@ -192,7 +192,7 @@ Usage:
 
 ## `scalebox app show`
 
-Show app details
+Show app details with module/slot/task summary
 
 ```text
 Usage:

@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `proto/*.proto` by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@58c0306 (2026-10-19) -->
+<!-- source: go-scalebox@67c994e (2026-10-21) -->
 
 
 # gRPC / Proto 参考
@@ -11,7 +11,7 @@
 
 | 文件 | package | 服务 | 消息 | 枚举 |
 |---|---|---|---|---|
-| `app.proto` | `scalebox` | 1 | 83 | 0 |
+| `app.proto` | `scalebox` | 1 | 82 | 0 |
 | `control.proto` | `scalebox` | 1 | 12 | 3 |
 | `coordination.proto` | `scalebox` | 1 | 40 | 0 |
 | `dashboard.proto` | `scalebox` | 1 | 12 | 0 |
@@ -63,9 +63,9 @@
 | `FailVtask` | `FailVtaskRequest` | `google.protobuf.Empty` |  |
 | `GetVtaskSharedBodyModuleStats` | `GetVtaskSharedBodyModuleStatsRequest` | `GetVtaskSharedBodyModuleStatsResponse` |  |
 | `ListVtaskSharedBodyTaskMatrix` | `ListVtaskSharedBodyTaskMatrixRequest` | `ListVtaskSharedBodyTaskMatrixResponse` |  |
-| `GetVtaskSharedBodyTaskDetail` | `GetVtaskSharedBodyTaskDetailRequest` | `GetVtaskSharedBodyTaskDetailResponse` |  |
 | `ListVtaskSharedBodyEntries` | `ListVtaskSharedBodyEntriesRequest` | `ListVtaskSharedBodyEntriesResponse` |  |
 | `RetryVtaskSharedBodyTask` | `RetryVtaskSharedBodyTaskRequest` | `RetryVtaskSharedBodyTaskResponse` |  |
+| `LookupVtaskIdBySharedBody` | `LookupVtaskIdBySharedBodyRequest` | `LookupVtaskIdBySharedBodyResponse` |  |
 
 ### 消息
 
@@ -349,14 +349,6 @@
 | `ListVtaskSharedBodyTaskMatrixResponse` | `page_info` | `PageInfo` | 2 |  |
 | `ListVtaskSharedBodyTaskMatrixResponse.Row` | `body` | `string` | 1 |  |
 | `ListVtaskSharedBodyTaskMatrixResponse.Row` | `modules` | `map<string, VtaskSharedBodyTaskFields>` | 2 | key = 模块名 |
-| `GetVtaskSharedBodyTaskDetailRequest` | `vtask_id` | `int64` | 1 |  |
-| `GetVtaskSharedBodyTaskDetailRequest` | `body` | `string` | 2 |  |
-| `GetVtaskSharedBodyTaskDetailRequest` | `modules` | `string (repeated)` | 3 |  |
-| `GetVtaskSharedBodyTaskDetailRequest` | `fields` | `string (repeated)` | 4 |  |
-| `GetVtaskSharedBodyTaskDetailResponse` | `body` | `string` | 1 |  |
-| `GetVtaskSharedBodyTaskDetailResponse` | `items` | `Item (repeated)` | 2 |  |
-| `GetVtaskSharedBodyTaskDetailResponse.Item` | `module_name` | `string` | 1 |  |
-| `GetVtaskSharedBodyTaskDetailResponse.Item` | `fields` | `VtaskSharedBodyTaskFields` | 2 |  |
 | `ListVtaskSharedBodyEntriesRequest` | `vtask_id` | `int64` | 1 |  |
 | `ListVtaskSharedBodyEntriesRequest` | `prefix` | `string` | 2 |  |
 | `ListVtaskSharedBodyEntriesRequest` | `modules` | `string (repeated)` | 3 | 空 = 全部模块 |
@@ -371,10 +363,17 @@
 | `ListVtaskSharedBodyEntriesResponse.Item` | `begin_time` | `google.protobuf.Timestamp` | 4 | dir：MIN(begin_time) |
 | `ListVtaskSharedBodyEntriesResponse.Item` | `end_time` | `google.protobuf.Timestamp` | 5 | dir：MAX(end_time) |
 | `ListVtaskSharedBodyEntriesResponse.Item` | `modules` | `map<string, VtaskSharedBodyTaskFields>` | 6 | file：各模块字段集 |
+| `ListVtaskSharedBodyEntriesResponse.Item` | `body` | `string` | 7 | file：原始 t.body（管道入口）；dir 为空 |
 | `RetryVtaskSharedBodyTaskRequest` | `vtask_id` | `int64` | 1 |  |
 | `RetryVtaskSharedBodyTaskRequest` | `body` | `string` | 2 |  |
 | `RetryVtaskSharedBodyTaskResponse` | `task_id` | `int64` | 1 |  |
 | `RetryVtaskSharedBodyTaskResponse` | `deleted` | `int64` | 2 |  |
+| `LookupVtaskIdBySharedBodyRequest` | `app_id` | `int32` | 1 |  |
+| `LookupVtaskIdBySharedBodyRequest` | `module` | `string` | 2 |  |
+| `LookupVtaskIdBySharedBodyRequest` | `body` | `string` | 3 | 输入 body，可为 JSON 文本；服务端归一化 |
+| `LookupVtaskIdBySharedBodyResponse` | `vtask_id` | `int64` | 1 |  |
+| `LookupVtaskIdBySharedBodyResponse` | `task_id` | `int64` | 2 |  |
+| `LookupVtaskIdBySharedBodyResponse` | `body` | `string` | 3 | 命中的原始 t.body |
 | `DeleteTaskRequest` | `task_id` | `int64` | 1 |  |
 | `ValidateAppRequest` | `yaml_content` | `string` | 1 |  |
 | `ValidateAppResponse` | `valid` | `bool` | 1 |  |

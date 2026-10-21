@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from Go 源码中的 `os.Getenv` / `os.LookupEnv` / `getEnvString` 读取点 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@58c0306 (2026-10-19) -->
+<!-- source: go-scalebox@67c994e (2026-10-21) -->
 
 
 # 环境变量参考（平台读取点）
@@ -124,7 +124,7 @@
 | `CONFLICT_ACTION` |  | `internal/semaphore/create.go:24`, `internal/semaphore/create.go:194` |
 | `DATABASE_URL` |  | `internal/postgres/init.go:23` |
 | `GRPC_MAX_RETRY_ATTEMPTS` |  | `internal/grpc/init.go:13` |
-| `GRPC_SERVER` |  | `internal/grpc/grpc.go:243`, `internal/postgres/init.go:88` |
+| `GRPC_SERVER` |  | `internal/grpc/grpc.go:270`, `internal/postgres/init.go:88` |
 | `GRPC_TLS_CA_FILE` |  | `internal/grpc/grpc.go:90` |
 | `GRPC_TLS_ENABLED` |  | `internal/grpc/grpc.go:89` |
 | `LOCAL_ADDR` |  | `internal/postgres/init.go:91` |

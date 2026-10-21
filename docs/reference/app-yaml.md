@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `cmd/webui/frontend/src/schema/app-schema.json` (JSON Schema) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@58c0306 (2026-10-19) -->
+<!-- source: go-scalebox@67c994e (2026-10-21) -->
 
 
 # App YAML 参考
