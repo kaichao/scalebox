@@ -40,10 +40,11 @@ VTask 在 task 之上叠加跨模块状态管理：
 |----|---------|------------|-------------|
 | 资源绑定 | 无 | 单节点 | 节点组 |
 | wait-queue | 无 | 有 | 有 |
-| 流控信号量 | `vtask_size:<mod>` | `host_vtask_size:<mod>:<host>` | `group_vtask_size:<mod>:<组号>` |
 | vtask-head 模式 | 不设 task_dist_mode | `HOST-BOUND` | `SLOT-BOUND` |
 | vtask-core 模式 | 不设 task_dist_mode | `HOST-BOUND` | `HOST-BOUND` |
 | 适用场景 | 轻量批处理 | 单节点独占计算 | 多节点协同计算 |
+
+三种类型的流控信号量命名见 §9.2.4 的标识体系。
 
 **管道结构**（`vtask-core` 可级联多个阶段）：
 
@@ -120,7 +121,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**——vtask �
 
 **节点组的成员没有平台级定义**：组内包含哪些节点、组内如何分发，是应用业务逻辑（vtask-head 脚本路由 + vtask-core 以 HOST-BOUND 部署在组内节点上）。平台只管理"组"这个锚点维度。
 
-**资源占用与释放**：占用 = `vtask bind` 原子扣减信号量 + `_vtask_size_sema` header 随 root task 传播；释放 = `doVTaskFinished` / `FailVtask` 按 header increment 加回（错误回滚用 `vtask unbind`）。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
+**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_size_sema` 随 root task 传播；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §9.4.5。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
 
 ### 9.2.4 根 task 标识
 
@@ -212,22 +213,14 @@ modules:
 
 ### 9.4.1 命名规范
 
-| 分发模式 | 格式 | 示例 |
-|---------|------|------|
-| DEFAULT | `vtask_size:<module>` | `vtask_size:vtask-head` |
-| HOST-BOUND | `host_vtask_size:<module>:<host>` | `host_vtask_size:vtask-head:n0-0` |
-| SLOT-BOUND（GROUP-BOUND vtask） | `group_vtask_size:<module>:<组号>` | `group_vtask_size:vtask-head:2` |
+三种分发模式的信号量命名、作用域与生命周期见
+[`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §4–§5；
+本章不重复事实表。vtask 相关的关键点是：资源容量信号量与 gate 锁是两类不同生命周期的信号量（§9.4.5）。
 
 ### 9.4.2 统一信号量
 
-每个流控信号量只有一套（无冒号前缀），由 `vtask bind` 预扣、controld 自动加回，脚本不再参与资源归还：
-
-| 管理者 | 操作 | 时机 |
-|--------|------|------|
-| wait-queue `check.sh`（ACTION_CHECK） | 读 semagroup max，≤ 0 时返回非 0 → agent 停领 task 并轮询重试 | agent 每轮 poll、`GetTaskList` 之前 |
-| `vtask bind`（`BindVtaskResource`） | 原子 decrement（semagroup 选值最大成员，返回组号/hostname） | wait-queue 串行准入时 |
-| controld `updateVTask` | 带 `_vtask_size_sema` 的 task 已预扣，领取时跳过；仅无 header 裸任务兜底扣减 | head slot 拾取 task 时 |
-| controld `doVTaskFinished` / `FailVtask` | increment（按 `_vtask_size_sema` 定位） | vtask-tail 完成 / vtask 失败时 |
+每个流控信号量只有一套（无冒号前缀），由 `vtask bind` 预扣、controld 自动加回，脚本不再参与资源归还；
+各环节的扣减/归还者见 reference §5。
 
 > 历史版本的双信号量（流控版 + `:` 前缀可编程版，`vtask_size_sema_copy: yes`）已废弃，`vtask_size_sema_copy` 参数不再生效。
 
@@ -286,6 +279,10 @@ wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh`
 ## 9.5 管道流程
 
 ### 9.5.1 header 传播
+
+header 的名称、写入方与 `_` 前缀传播规则见
+[`reference/task-headers.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md) §4；
+下图只标 vtask 链路上的关键节点。
 
 ```
 main-router task add
@@ -375,13 +372,14 @@ Layer 3: vtask 高级操作
 
 ### 9.6.4 vtask fail
 
-`scalebox vtask fail --vtask-id=<id>` 强制终止 vtask，并执行：
+`scalebox vtask fail --vtask-id=<id>` 强制终止 vtask：
 
-1. 原子化 `UPDATE status_code='1' WHERE id=$1 AND status_code IN ('-1','-2','-3')`
-2. `RowsAffected==0` → 已结束，返回 user_msg
-3. 释放 wait-queue 门控信号量
-4. 释放资源信号量（`semaphore increment :<sema_name>`）
-5. 级联标记未完成子任务
+- 原子置失败（仅 `-1/-2/-3` 可 fail；已结束的 vtask 返回 user_msg）；
+- 释放 gate 信号量与资源信号量；
+- 级联把未完成子任务置失败。
+
+释放的信号量集合与顺序见
+[`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §5。
 
 ### 9.6.5 vtask bind / unbind
 

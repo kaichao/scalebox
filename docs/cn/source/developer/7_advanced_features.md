@@ -53,24 +53,25 @@
 
 ### 7.1.2 平台级故障及恢复
 
-- slot启动运行出错，但运行task时很快出错，导致task运行时间短，单位时间内可完成多个task；
-- module的max_tasks_per_minutes参数（取值>=3），在超出该参数时，将对应slot设置为'ERROR'，以免干扰其他task的正常等待；
-- 再结合retry_rules，即可在有大量slot运行错的情况下，停止有问题的slot运行；
-- 最后，可以再通过手工恢复。
+- slot 启动后运行 task 很快出错（任务耗时异常短），单位时间内可完成多个失败的 task；
+- module 的 `task_min_seconds` 参数：**连续两个**失败任务耗时低于该阈值时，slot 被置为
+  `GREEDY` 并退出，以免干扰其他 task 的正常等待；
+- 再结合 `retry_rules`，即可在大量 slot 运行错的情况下停止有问题的 slot；
+- 最后通过手工恢复（`scalebox slot set-status` 等）。
 
 ### 7.1.3 跨模块容错
 
-- 基于vtask
-- 在任务中增加用于管理的任务头，实现基于vtask的管理（删除？）
-- 清理vtask中设计的task、semaphore、variable等
+跨模块的容错以 vtask 为单位：head/core/tail 通过 `_vtask_id` 关联，失败时由
+`vtask fail` 级联终止并释放资源。重试优先在 task 级完成；无法在 task 级恢复的
+（如节点退出）只能整 vtask 重跑，靠 vtask 层的幂等性保证结果一致。
 
+容错分级：
 
-容错分级
-- task级：基于退出码的重试机制。vtask内的task重试，需要调整vtask状态。尽可能在task级恢复。
-- slot级：
-- vtask级：节点本地计算模式下，保证最终的幂等性。vtask层保持强一致性。
-  - vtask内的task，重试，需要调整vtask状态
-  - 部分出错（节点退出），只能在vtask级恢复。
+- **task 级**：基于退出码的重试；vtask 内的 task 重试需同步 vtask 状态。尽可能在
+  task 级恢复。
+- **slot 级**：`task_min_seconds`（GREEDY）与 slot 相关参数剔除故障 slot。
+- **vtask 级**：节点本地计算模式下保证最终幂等性，vtask 层保持强一致性；部分出错
+  （如节点退出）只能在 vtask 级恢复。
 
 
 ## 7.2 准入控制机制
@@ -107,23 +108,27 @@
 （Storage Capacity Admission Control）
 #### 7.2.2.1 目录最大占用空间流控
 
-- 标准属性名：dir_quota_gb，通过限制目录的最大占用存储空间来实现流控。
+- 标准属性名：`dir_quota_gb`，通过限制目录的最大占用存储空间来实现流控；取值格式与挂载位置见
+  [`reference/module.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/module.md) §7。
 
 #### 7.2.2.2 目录分区最少空余空间
 
-- 标准流控属性：free_space_gb，通过限制目录所在存储分区的最小空余空间实现流控
+- 标准流控属性：`free_space_gb`，通过限制目录所在存储分区的最小空余空间实现流控；取值格式同上。
 
 ### 7.2.3 vtask 计数准入控制
 
-标准流控属性 `vtask_size`：vtask-head 启动时计数器减一，vtask-tail（或主路由）完成后加一；计数器 <= 0 时新 vtask 不能运行。按 `task_dist_mode` 生成三种信号量：`vtask_size:<mod>`、`host_vtask_size:<mod>:<host>`、`group_vtask_size:<mod>:<组号>`。命名与生命周期见 [VTask §9.4](9_vtask.md)。
+标准流控属性 `vtask_size`：vtask-head 启动时计数器减一，vtask-tail（或主路由）完成后加一；计数器 <= 0 时新 vtask 不能运行。按 `task_dist_mode` 生成三种信号量（`vtask_size:<mod>` / `host_vtask_size:<mod>:<host>` / `group_vtask_size:<mod>:<组号>`）；命名、作用域与生命周期见
+[`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §4–§5，vtask 管道中的用法见 [VTask §9.4](9_vtask.md)。
 
 ### 7.2.4 节点组并行同步准入控制
-- 标准流控属性```node_progress_gap```
-  - 按节点的进度计数器，基于同步信号量实现
-  - node_progress_diff：当前节点进度与最慢进度的差值作为控制变量
 
-- 主路由中，按task处理进度，修改对应信号量；
-- 业务模块基于信号量计数值，实现同步流控；
+标准流控属性 `node_progress_gap`（格式 `{"节点前缀":最大差值,...}`）：平台为每个
+目标节点维护 `node_progress:<module>:<host>` 信号量，每完成一个 task 加一。slot 在
+领取任务前用 `semagroup` 的 `DiffMin`（当前节点进度 − 组内最慢节点进度）与配置差值
+比较，超出时减少本批领取数——快节点自动等慢节点。
+
+主路由/模块按任务处理进度更新信号量，业务模块基于计数值实现同步流控。示例见
+`features/node-progress-gap/README.md`。
 
 
 
@@ -145,8 +150,11 @@ task运行排序是scalebox应用运行的重要基础。
   消息头中sort_tag，是用于消息排序的专用标签，具有最高高优先级，通常由main-router设置
 
 ### 7.3.2 任务分组号
-- group_regex：正则表达式，从任务体中提取相关分组字符串。
-- group_index：正则表达式对应的分组编号。
+
+- `group_regex`：正则表达式，从任务体中提取分组字符串（旧名 `key_group_regex` 兼容）。
+- `group_index`：正则表达式对应的分组编号（旧名 `key_group_index` 兼容）。
+
+字段定义见 [`reference/app-yaml.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md) 的 `module.parameters`。
 
 ### 7.3.3 任务处理顺序
 
@@ -158,7 +166,8 @@ task运行排序是scalebox应用运行的重要基础。
 
 由于代码的bug、数据错误等原因，可能导致算法模块进入死循环，一直占用slot运行，无法正常退出。
 
-超时设置可以解决以上问题。通过设置module的```task_max_seconds```参数，在超出该时限后，该任务（task）会退出运行，返回错误码 124.
+超时设置可以解决以上问题。通过设置 module 的 `task_max_seconds` 参数，在超出该时限后，该任务（task）会退出运行，返回错误码 124。参数语义与全局兜底（`task_global_timeout_scale` → 123）见
+[`reference/module.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/module.md) §7。
 
 在封装脚本调用算法代码时，建议也在封装脚本中加入timeout的相关设置。若无此设置，外层脚本timeout，内层脚本还会运行结束，导致不确定的结果。
 若算法代码名为run.py，则封装代码中对应部分可写成：
@@ -251,50 +260,18 @@ scalebox slot get-parameter my_param --slot-id 3
 
 | metadata key | 值 | 用途 |
 |-------------|------|------|
-| `semaphore-auto-create` | `yes` | 信号量不存在时自动创建（初值为 0） |
+| `semaphore-auto-create` | `yes` | 信号量不存在时自动创建 |
 
-**CLI 端**（`metadata.AppendToOutgoingContext`）：
-
-```go
-func semaContext() context.Context {
-    if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
-        return metadata.AppendToOutgoingContext(
-            context.Background(), "semaphore-auto-create", "yes")
-    }
-    return context.Background()
-}
-```
-
-**Server 端**（`metadata.FromIncomingContext`）：
-
-```go
-func getSemaphoreAutoCreate(ctx context.Context) bool {
-    if os.Getenv("SEMAPHORE_AUTO_CREATE") == "yes" {
-        return true
-    }
-    md, ok := metadata.FromIncomingContext(ctx)
-    if !ok { return false }
-    for _, v := range md.Get("semaphore-auto-create") {
-        if v == "yes" { return true }
-    }
-    return false
-}
-```
+CLI 读取环境变量 `SEMAPHORE_AUTO_CREATE=yes` 后，通过
+`metadata.AppendToOutgoingContext` 透传给 controld；controld 同时接受该环境变量与
+metadata。autoCreate 的创建规则与返回值语义见
+[`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §3。
 
 ### 7.8.2 使用方式
 
 ```bash
 # 设置环境变量后，CLI 自动通过 metadata 传给 controld
 SEMAPHORE_AUTO_CREATE=yes scalebox semaphore get my_sema
-```
-
-### 7.8.3 Semaphore 函数签名
-
-```go
-// autoCreate 参数替代 os.Getenv("SEMAPHORE_AUTO_CREATE")
-// Server 端通过 gRPC metadata 获取，controld task 包直接传 true
-func GetValue(name string, appID int, autoCreate bool) (int, error)
-func AddValue(name string, delta int, appID int, autoCreate bool) (int, error)
 ```
 
 ## 7.9 Slot 自动扩缩容
@@ -312,19 +289,21 @@ Slot 自动扩缩容根据资源使用情况自动调整任务执行槽数量，
 
 ### 7.9.3 配置参数
 
-在模块参数中设置以下关键配置项：
+在模块参数（`parameters`）中设置；未显式配置的项取默认值：
 
-```json
-{
-  "autoscaling.enabled": "true",
-  "autoscaling.min_slots": "1",
-  "autoscaling.max_slots": "10",
-  "autoscaling.scale_up_threshold": "0.8",
-  "autoscaling.scale_down_threshold": "0.3",
-  "autoscaling.scale_up_step": "2",
-  "autoscaling.scale_down_step": "1"
-}
-```
+| 参数 | 默认值 | 说明 |
+|---|---:|---|
+| `autoscaling.enabled` | `false` | 是否启用（`true` / `yes`） |
+| `autoscaling.min_slots` | 1 | 最小 slot 数 |
+| `autoscaling.max_slots` | 10 | 最大 slot 数 |
+| `autoscaling.scale_up_threshold` | 0.8 | 使用率高于此值扩容 |
+| `autoscaling.scale_down_threshold` | 0.3 | 使用率低于此值缩容 |
+| `autoscaling.scale_up_step` | 2 | 单次扩容步长 |
+| `autoscaling.scale_down_step` | 1 | 单次缩容步长 |
+| `autoscaling.capacity_threshold` | 0.8 | 当前 slot 数低于最大可用容量的此比例时扩容 |
+| `autoscaling.scale_up_cooldown_seconds` | 300 | 两次扩容之间的冷却时间 |
+| `autoscaling.scale_down_cooldown_seconds` | 600 | 两次缩容之间的冷却时间 |
+| `autoscaling.check_interval_seconds` | 60 | 资源检查间隔 |
 
 ### 7.9.4 扩缩容策略
 
