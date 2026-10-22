@@ -13,7 +13,7 @@
 | 平台规则、红线、坑（为什么 + 违反后果） | [`10-invariants.md`](./10-invariants.md) | 按 [`_template-invariant.md`](./_template-invariant.md) 手写 |
 | 可跑的最小特性（配置 + 行为 + 测试） | `features/<kebab-name>/` | 按 [`_template/README.md`](../../features/_template/README.md) + `feature.yaml` + `test.sh` |
 | 结构性事实（命令、字段、状态码、header、环境变量、RPC） | [`docs/reference/`](../reference/) | 生成物改生成器；手写参考对照源码 |
-| 设计原理、架构、跨模块机制 | go-scalebox `docs/` 或 Sphinx `developer/` | 平台开发者 |
+| 设计原理、架构、跨模块机制 | go-scalebox `docs/` 或 Sphinx `design/` | 平台开发者 |
 | 应用业务约定（目录布局、数据格式、业务命名） | 应用仓的 `AGENTS.md` / `docs/` | 应用作者 |
 | 单点、未验证、只在一个应用出现 | 应用仓，标注"未交叉验证" | 先不进 invariant |
 

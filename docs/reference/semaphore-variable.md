@@ -1,7 +1,7 @@
 # 信号量与变量参考
 
 > 唯一信源：流控原语的事实——存储、作用域、API、命名规范、生命周期。设计动机与
-> vtask 管道原理见 Sphinx `developer/9_vtask` 与 go-scalebox `docs/vtask-design.md`。
+> vtask 管道原理见 Sphinx `design/3_vtask` 与 go-scalebox `docs/vtask-design.md`。
 > 最后校验：2026-10-21，对照 go-scalebox@09cd5a3。
 
 ## 1. 三类存储与两个作用域

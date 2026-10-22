@@ -11,7 +11,7 @@
 | 任务 | Task | 模块的一次执行：`body` + headers + `status_code` | `10-invariants.md` INV-04/06 |
 | 节点 | Host | 执行计算的物理节点；须 `status=ON` 且 ssh 可达 | `10-invariants.md` INV-16 |
 | 运行槽 | Slot | 节点上与某模块对应的资源切片；容器在其内循环领任务 | `00-model.md` §1 |
-| 集群 | Cluster | Host 的逻辑分组（单节点/静态/动态/内联） | `user/2_core_concepts`（Sphinx） |
+| 集群 | Cluster | Host 的逻辑分组（单节点/静态/动态/内联） | `application/1_core_concepts`（Sphinx） |
 | 虚拟任务 | VTask | 跨模块的 Task 集合，用于批/组级流控与资源绑定 | `10-invariants.md` INV-09…14 |
 
 ## 运行时组件
@@ -24,7 +24,7 @@
 | 节点代理 | `agent` | 领任务、起容器、收集结果、写回流 |
 | Web 界面 | `webui` | 浏览器操作入口；生成 `app-schema.json` 的宿主 |
 | 集群管理应用 | `cluster-admin` | 与 HPC 调度系统交互的资源申请应用（系统级 app） |
-| 主路由 | `main_router` | 应用内的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作；不是平台控制面（详见 `user/2_core_concepts`） |
+| 主路由 | `main_router` | 应用内的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作；不是平台控制面（详见 `application/1_core_concepts`） |
 | 等待队列 | wait-queue | vtask 标准模块：准入、`bind`、预扣额度 |
 
 ## 任务与接口
@@ -55,8 +55,8 @@
 | 中文 | 英文 / 标识符 | 含义 | 详见 |
 |---|---|---|---|
 | 主机绑定 | HOST-BOUND | vtask 绑定到单节点；需要 `to_host` 或 `pod_id` | `features/pod` |
-| 组绑定 | GROUP-BOUND | vtask 绑定到节点组；组内 slot 协同 | `user/2_core_concepts`（Sphinx） |
-| 槽绑定 | SLOT-BOUND | 任务指定 `to_slot` 落点 | `appendix/2 §2.1.4` |
+| 组绑定 | GROUP-BOUND | vtask 绑定到节点组；组内 slot 协同 | `application/1_core_concepts`（Sphinx） |
+| 槽绑定 | SLOT-BOUND | 任务指定 `to_slot` 落点 | `reference/2_parameter_reference §2.1.4` |
 | 节点本地计算 | `pod_id` | 同一 pod 的模块落在同一节点 | `features/pod` |
 | 头节点槽 | `slot_on_head` | 在头节点建一个 slot，便于单节点调试 | `reference/app-yaml.md` |
 
@@ -66,7 +66,7 @@
 |---|---|---|---|
 | 基础镜像 | `base_image` | 模块容器的默认镜像；测试部署常用 `scalebox.net/platform/agent:latest` | `reference/app-yaml.md` |
 | 代码挂载 | `code_path` | 把模块代码挂到容器 `/app/bin` | `reference/app-yaml.md` |
-| 工作目录 | `WORK_DIR` | 模块的本地工作目录，缺省 `/work` | `appendix/2 §2.3`（Sphinx） |
+| 工作目录 | `WORK_DIR` | 模块的本地工作目录，缺省 `/work` | `reference/2_parameter_reference §2.3`（Sphinx） |
 | 数据根 | `data_root` | 集群数据根，容器内 `/cluster_data_root` | `reference/app-yaml.md` |
 | 变量文件 | `--env-file` / `scalebox.env` | 建 app 时的变量来源；未定义变量保留字面量 | INV-02 |
 | 脚本动作 | `ACTION_RUN` / `SETUP` / `TEARDOWN` / `CHECK` | sidecar 启动/收尾/准入脚本路径 | `features/side-car` |

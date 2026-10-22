@@ -50,7 +50,7 @@
 
 ### module.arguments 已知键
 
-> arguments 允许扩展键（additionalProperties: true）；完整参数表见 Sphinx appendix/2。
+> arguments 允许扩展键（additionalProperties: true）；完整参数表见 Sphinx reference/2_parameter_reference。
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |---|---|---|---|---|
@@ -71,7 +71,7 @@
 
 ### module.parameters 已知键
 
-> parameters 允许扩展键（additionalProperties: true）；完整参数表见 Sphinx appendix/2。
+> parameters 允许扩展键（additionalProperties: true）；完整参数表见 Sphinx reference/2_parameter_reference。
 
 | 字段 | 类型 | 必填 | 默认值 | 说明 |
 |---|---|---|---|---|

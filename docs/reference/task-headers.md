@@ -104,5 +104,5 @@ json.Marshal(headers) → 单引号整体包裹（' 用 '\''）→ bash 词法�
 
 ## 6. 与旧文档的关系
 
-本页替代 Sphinx `appendix/2 §2.1.4` 的 task-headers 表（该节已改为指针）。旧表里的
+本页替代 Sphinx `reference/2_parameter_reference §2.1.4` 的 task-headers 表（该节已改为指针）。旧表里的
 `from_host`、`from_module_last`、`from_ip_last` 在当前源码中不存在对应写入点，未收录。

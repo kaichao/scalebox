@@ -1,5 +1,7 @@
 # 阶段 6 — Sphinx 简化执行记录
 
+> **历史记录（2026-10-18）**：文中的页面路径与编号为当时状态；现行结构见 `docs/cn/source/index.rst`。
+
 日期：2026-10-18。范围：`docs/cn/source/`（中文站；英文站留到 6b）。
 目标：Sphinx 只保留原理、设计、教程、规范；操作细节指向 `features/`、`docs/reference/`、`docs/agents/`；无重复内容，链接可用。
 

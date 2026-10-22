@@ -1,7 +1,7 @@
 # recipe — vtask（建任务组管道）
 
 > 用于：一批任务需要整体流控、绑定到单节点/节点组、或需要 `vtask get` 看整体进度。
-> 原理见 Sphinx `developer/9_vtask`；信号量与命令事实见 [`reference/semaphore-variable.md`](../../reference/semaphore-variable.md)。
+> 原理见 Sphinx `design/3_vtask`；信号量与命令事实见 [`reference/semaphore-variable.md`](../../reference/semaphore-variable.md)。
 > 可直接复制的完整示例：`examples/vtask/`。
 
 ## 前置

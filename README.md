@@ -79,31 +79,35 @@ cd vscode-scalebox && make install
 
 | Category | Document | Description |
 |------|------|------|
-| Getting Started | [Introduction to Scalebox](docs/cn/source/started/1_introduction.md) | Product positioning, key features, core value |
-| Getting Started | [Quick Start](docs/cn/source/started/2_quick_start.md) | Environment preparation, deployment, installation verification |
-| User Guide | [Installation](docs/cn/source/deployment/1_installation.md) | Docker Compose single-node / multi-node clusters |
-| User Guide | [Core Concepts](docs/cn/source/application/1_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster in detail |
-| User Guide | [Running Apps](docs/cn/source/application/2_running_apps.md) | Creating, managing, and monitoring apps and tasks |
-| User Guide | [Example Apps](docs/cn/source/application/5_example_apps.md) | From entry-level to advanced examples |
-| User Guide | [Operations](docs/cn/source/deployment/2_operations.md) | Monitoring, troubleshooting, backup, cluster management |
-| User Guide | [Standard Modules](docs/cn/source/application/6_standard_modules.md) | File transfer, scheduled tasks, directory listing, etc. |
-| User Guide | [WebUI Guide](docs/cn/source/application/7_webui.md) | REST gateway, page navigation, build and deployment |
-| User Guide | [VS Code Extension](docs/cn/source/application/8_vscode.md) | Installation and configuration, TreeView, DAG, LSP |
-| Developer Guide | [Programming Model](docs/cn/source/design/1_programming_model.md) | Two-level programming model, event-driven architecture |
-| Developer Guide | [Module Development](docs/cn/source/application/4_module_development.md) | Module design, sidecar pattern, unit testing |
-| Developer Guide | [App Design](docs/cn/source/application/3_app_design.md) | Design principles, pipeline patterns, best practices |
-| Developer Guide | [Main Router & Status](docs/cn/source/design/2_main_router_status.md) | Semaphores/variables/global variables, VTask overview |
-| Developer Guide | [Node-Local Computing](docs/cn/source/design/4_node_local_compute.md) | Computing-storage integration, three-stage model, performance analysis |
-| Developer Guide | [Advanced Features](docs/cn/source/design/7_advanced_features.md) | Fault tolerance, admission control, timeouts, slot auto-scaling |
-| Developer Guide | [VTask Design](docs/cn/source/design/3_vtask.md) | Conceptual model, module structure, semaphores, pipeline flow |
-| Developer Guide | [Cross-Cluster Architecture](docs/cn/source/design/5_cross_cluster.md) | Data replication, address resolution, gRPC proxy |
-| Developer Guide | [Security Framework](docs/cn/source/design/6_security.md) | JWT + RBAC + TLS, certificate management |
-| Reference | [Technical Specifications](docs/cn/source/reference/1_tech_specifications.md) | app.yaml / module / cluster definition specifications |
-| Reference | [Parameter Reference](docs/cn/source/reference/2_parameter_reference.md) | All parameters and environment variables |
-| Reference | [CLI Commands](docs/cn/source/reference/3_commandline_tools.md) | Complete reference of 24 subcommands |
-| Reference | [Shell Programming](docs/cn/source/appendix/1_shell_programming.md) | Built-in functions, container directories, file exchange interfaces |
-| Reference | [Exit Code Specification](docs/cn/source/reference/4_exit_code_spec.md) | App exit code conventions and scheduling policies |
-| Reference | [FAQ](docs/cn/source/appendix/3_faq.md) | Common questions on deployment, tasks, semaphores, and WebUI |
+| 1. Getting Started | [Introduction to Scalebox](docs/cn/source/started/1_introduction.md) | Product positioning, key features, core value |
+| 1. Getting Started | [Quick Start](docs/cn/source/started/2_quick_start.md) | Environment preparation, deployment, installation verification |
+| 1. Getting Started | [First App](docs/cn/source/started/3_first_app.md) | Build app.yaml and run.sh, then create and run the first app |
+| 2. Application Development | [Core Concepts](docs/cn/source/application/1_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster in detail |
+| 2. Application Development | [Running Apps](docs/cn/source/application/2_running_apps.md) | Creating, managing, and monitoring apps and tasks |
+| 2. Application Development | [App Design](docs/cn/source/application/3_app_design.md) | Design principles, pipeline patterns, best practices |
+| 2. Application Development | [Module Development](docs/cn/source/application/4_module_development.md) | Module design, sidecar pattern, unit testing |
+| 2. Application Development | [Example Apps](docs/cn/source/application/5_example_apps.md) | From entry-level to advanced examples |
+| 2. Application Development | [Standard Modules](docs/cn/source/application/6_standard_modules.md) | File transfer, scheduled tasks, directory listing, etc. |
+| 2. Application Development | [WebUI Guide](docs/cn/source/application/7_webui.md) | REST gateway, page navigation, build and deployment |
+| 2. Application Development | [VS Code Extension](docs/cn/source/application/8_vscode.md) | Installation and configuration, TreeView, DAG, LSP |
+| 3. Deployment & Operations | [Installation](docs/cn/source/deployment/1_installation.md) | Docker Compose single-node / multi-node clusters |
+| 3. Deployment & Operations | [Operations](docs/cn/source/deployment/2_operations.md) | Monitoring, troubleshooting, backup, cluster management |
+| 4. Design & Principles | [Programming Model](docs/cn/source/design/1_programming_model.md) | Two-level programming model, event-driven architecture |
+| 4. Design & Principles | [Main Router & Status](docs/cn/source/design/2_main_router_status.md) | Semaphores/variables/global variables, VTask overview |
+| 4. Design & Principles | [VTask Design](docs/cn/source/design/3_vtask.md) | Conceptual model, module structure, semaphores, pipeline flow |
+| 4. Design & Principles | [Node-Local Computing](docs/cn/source/design/4_node_local_compute.md) | Computing-storage integration, three-stage model, performance analysis |
+| 4. Design & Principles | [Cross-Cluster Architecture](docs/cn/source/design/5_cross_cluster.md) | Data replication, address resolution, gRPC proxy |
+| 4. Design & Principles | [Security Framework](docs/cn/source/design/6_security.md) | JWT + RBAC + TLS, certificate management |
+| 4. Design & Principles | [Advanced Features](docs/cn/source/design/7_advanced_features.md) | Fault tolerance, admission control, timeouts, slot auto-scaling |
+| 5. Reference | [Technical Specifications](docs/cn/source/reference/1_tech_specifications.md) | app.yaml / module / cluster definition specifications |
+| 5. Reference | [Parameter Reference](docs/cn/source/reference/2_parameter_reference.md) | All parameters and environment variables |
+| 5. Reference | [CLI Commands](docs/cn/source/reference/3_commandline_tools.md) | Complete reference of 24 subcommands |
+| 5. Reference | [Exit Code Specification](docs/cn/source/reference/4_exit_code_spec.md) | App exit code conventions and scheduling policies |
+| 6. Appendix & Others | [Shell Programming](docs/cn/source/appendix/1_shell_programming.md) | Built-in functions, container directories, file exchange interfaces |
+| 6. Appendix & Others | [Software Installation](docs/cn/source/appendix/2_software_install.md) | Docker, GlusterFS, and base software setup |
+| 6. Appendix & Others | [FAQ](docs/cn/source/appendix/3_faq.md) | Common questions on deployment, tasks, semaphores, and WebUI |
+| 6. Appendix & Others | [Contributors](docs/cn/source/appendix/4_contributors.md) | Current team, partners, and historical contributors |
+| 6. Appendix & Others | [Contact Us](docs/cn/source/appendix/5_contact_us.md) | Email contact |
 
 ### Design Documents
 
