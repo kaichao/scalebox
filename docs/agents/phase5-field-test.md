@@ -71,3 +71,25 @@
 - 根 `README.md` Quick Start 仍用 `build/` 路径（阶段 0 已知，阶段 6 统一修）。
 - 未提供 `test.sh` 的 feature README 仍保留“阶段 3 提供”的占位注释（本次只修 pod；其余随阶段 6 或后续测试补齐）。
 - 测试部署没有默认基础镜像，属于部署镜像问题，已在文档中说明替代镜像。
+
+## 第二轮：四任务实测（2026-10-22，bio / h0）
+
+环境：`ssh bio`（h0，local 集群 `h0.local`；inline 集群 `n0-0`/`n0-1`/`n1-0`/`n1-1`）。
+CLI `/root/bin/scalebox`，镜像 `scalebox.net/platform/agent:latest`。只使用仓库资料
+（`AGENTS.md`、`recipes/`、`reference/`、`features/`）操作。
+
+| 任务 | 内容 | 结果 |
+|---|---|---|
+| A 新建应用 | 两模块链 `hello-router → worker1 → router`（双模块均 `slot_on_head`） | PASS：3/3 任务全绿 |
+| B 加模块 | 增加 `worker2`，router 把 `processed:*` 转给它 | PASS：4/4 任务全绿 |
+| C 配流控 | 入口模块 `dir_quota_gb` 1 GB；目录放 1.5 GB 文件 → 停领，删除后放行 | PASS：任务保持 `-1` 且 fail=0；删除后约 12 s 全链完成 |
+| D 调试卡链 | `slots: h0.local`（FQDN）→ 0 slot；按 `20-diagnosis.md` 改短名 | PASS：改 `h0` 后 slot ON，任务成功 |
+
+**卡点**：
+
+| # | 卡点 | 级别 | 修复 |
+|---|---|---|---|
+| C1 | 加模块重建后，`task list` 首次看到下游任务 READY；实际是新 slot 处于 STARTING（约 10 s），文档未说明启动窗口 | 低 | `recipes/add-module.md` 判据补一句 |
+| C2 | `scalebox run < /dev/null` 输出 `No standard input detected`（info 日志），易误判为错误 | 低 | `recipes/new-app.md` 步骤 2 补说明 |
+
+任务 A/D 是对 phase5 修复（`AGENTS.md`、`20-diagnosis.md`、INV-15）的复跑确认，无新卡点。

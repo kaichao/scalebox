@@ -48,6 +48,9 @@ scalebox run --app-file=app.yaml < /dev/null
 # {"app_id":<app_id>}
 ```
 
+输出里可能有一条 `No standard input detected`（info 级）：它只表示 stdin 为空、没有
+额外初始任务，不是错误。
+
 3. 投一个任务并查结果：
 
 ```bash

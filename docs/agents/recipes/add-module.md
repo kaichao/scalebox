@@ -66,6 +66,9 @@ scalebox task list --app-id <new_app_id>
 - 下游模块的 slot 已建（`scalebox slot status --module-id <stage2_mod_id>`）。
 - `_` 前缀 header 按预期到达下游（`task show` 的 `headers`）。
 
+刚重建 app 时，新模块的 slot 会有数秒 `STARTING`（实测约 10 s），期间下游任务保持
+READY 属于正常；超过约 1 分钟仍 READY 再按失败表排查。
+
 ## 失败下一步
 
 | 现象 | 下一步 |

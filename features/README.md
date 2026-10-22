@@ -21,8 +21,8 @@
 | [check-test](./check-test/) | `free_space_gb` / `dir_quota_gb` / `ACTION_CHECK` | `test.sh` ✓ |
 | [env-lifecycle](./env-lifecycle/) | app 快照 / 未定义变量 / non-tty stdin | `test.sh` ✓ |
 | [headers-propagation](./headers-propagation/) | `_` 前缀传播 / `_vtask_attr_*` | `test.sh` ✓ |
-| [node-progress-gap](./node-progress-gap/) | HOST-BOUND 节点进度差 | `test.sh` ✓（需多节点控制面，否则 SKIP） |
-| [pod](./pod/) | `pod_id` 节点本地计算 | `test.sh` ✓（需多节点控制面，否则 SKIP） |
+| [node-progress-gap](./node-progress-gap/) | HOST-BOUND 节点进度差 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
+| [pod](./pod/) | `pod_id` 节点本地计算 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
 | [retry-test](./retry-test/) | `retry_rules` 退出码重试 | `test.sh` ✓（慢测：pgcron 5 分钟周期） |
 | [side-car](./side-car/) | `ACTION_RUN/SETUP/TEARDOWN/CHECK` | `test.sh` ✓ |
 | [slot-expr](./slot-expr/) | slot 启动表达式 | `test.sh` ✓（`@p:` 受限，见 README 坑） |
@@ -50,8 +50,16 @@
 ```
 
 **SKIP**：前置条件不满足时（如需要多节点控制面而当前只有 local 集群），`test.sh` 调用
-`tk_skip` 以 77 退出，汇总显示 `SKIP`，不计失败。当前会 SKIP 的是 `pod` 与
-`node-progress-gap`（要求 inline 集群控制面可达）。
+`tk_skip` 以 77 退出，汇总显示 `SKIP`，不计失败。`pod` 与 `node-progress-gap` 要求
+inline 集群控制面可达：单机 local 环境会 SKIP；在有 inline 多节点的测试机（如 bio / h0，
+节点 `n0-0`、`n0-1`、`n1-0`、`n1-1`）上已实跑 PASS（2026-10-22）。
+
+补跑命令：
+
+```sh
+ssh bio 'export PATH=/root/bin:$PATH; bash /root/scalebox/features/pod/test.sh'
+ssh bio 'export PATH=/root/bin:$PATH; bash /root/scalebox/features/node-progress-gap/test.sh'
+```
 
 **自定义 app 文件**：`SCALEBOX_FEATURE_FILE=feature-test.yaml ./test.sh` 可加载同目录下的
 变体文件（`slot-expr` 用它规避 `@p:` 的平台限制）。

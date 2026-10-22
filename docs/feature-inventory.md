@@ -192,10 +192,11 @@
 | 手工测试用例集 | `docs/manual-test-plan.md` | 可转 feature 测试的错误路径清单 | 中 | feature |
 | 调试（pprof） | `docs/debug.md` | profile 启停命令与端点 | 低 | reference |
 
-## 3. features 现状（2026-10-21 更新）
+## 3. features 现状（2026-10-22 更新）
 
-12 个 feature 目录全部具备 README（按模板）、`feature.yaml`、`test.sh`；测试机 `ssh fxcorr`
-连续两轮 10/12 PASS、2 SKIP（多节点环境）、0 FAIL。
+12 个 feature 目录全部具备 README（按模板）、`feature.yaml`、`test.sh`。`ssh fxcorr`
+（local 集群）连续两轮 10/12 PASS、2 SKIP、0 FAIL；2026-10-22 在 `ssh bio`
+（inline 多节点：`n0-0`/`n0-1`/`n1-0`/`n1-1`）补跑两个 SKIP 项，均 PASS——12/12 已全部实跑覆盖。
 
 | 目录 | README | feature 配置 | 一键测试 | 覆盖特性 | 备注 |
 |---|---|---|---|---|---|
@@ -203,8 +204,8 @@
 | `check-test` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | `free_space_gb` / `dir_quota_gb` / `ACTION_CHECK` | 两次建 app：停领 → 放行 |
 | `env-lifecycle` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | 快照 / 未定义变量 / APP_ID | — |
 | `headers-propagation` | 有 | `feature.yaml` | `test.sh` ✓ | `_` 前缀 header | — |
-| `node-progress-gap` | 有 | `feature.yaml` + `tasks.txt` | `test.sh` ✓ | `node_progress_gap` 信号量 | 需 inline 多节点，否则 SKIP |
-| `pod` | 有 | `feature.yaml` | `test.sh` ✓ | `pod_id` 同节点路由 | 需 inline 多节点，否则 SKIP |
+| `node-progress-gap` | 有 | `feature.yaml` + `tasks.txt` | `test.sh` ✓ | `node_progress_gap` 信号量 | 需 inline 多节点；bio 实跑 PASS |
+| `pod` | 有 | `feature.yaml` | `test.sh` ✓ | `pod_id` 同节点路由 | 需 inline 多节点；bio 实跑 PASS |
 | `retry-test` | 有 | `feature.yaml` | `test.sh` ✓ | `retry_rules` | 慢测：等 pgcron（5 分钟周期） |
 | `side-car` | 有 | `feature.yaml` + `scalebox.env` | `test.sh` ✓ | `ACTION_RUN/SETUP/TEARDOWN/CHECK` | 断言定制 ACTION_RUN |
 | `slot-expr` | 有 | `feature.yaml` + `feature-test.yaml` | `test.sh` ✓ | `@seq` / `@v:` / `@p:` | `@p:` 在 slot 无参数时的平台缺陷已修（go-scalebox），镜像重建后可去掉变体文件 |
