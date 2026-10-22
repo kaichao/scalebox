@@ -12,7 +12,7 @@ Scalebox 中文文档
 
 - **应用开发者**：:doc:`入门教程 <started/1_introduction>` → :doc:`核心概念 <user/2_core_concepts>` → :doc:`运行与管理应用 <user/3_running_apps>` → :doc:`应用设计 <developer/3_app_design>` → :doc:`模块开发 <developer/2_module_development>`
 - **部署与运维**：:doc:`安装部署 <user/1_installation>` → :doc:`运维管理 <user/5_operations>` → :doc:`FAQ <faq>`
-- **平台贡献者 / 深入原理**：:doc:`编程模型 <developer/1_programming_model>` → :doc:`主路由与应用状态：实现与优化 <developer/4_main_router_status>` → :doc:`VTask 虚拟任务 <developer/9_vtask>` → :doc:`节点本地计算 <developer/5_node_local_compute>` → :doc:`跨集群架构 <developer/10_cross_cluster>` → :doc:`安全框架 <developer/11_security>` → :doc:`高级编程特性 <developer/7_advanced_features>`
+- **平台贡献者 / 深入原理**：:doc:`编程模型 <developer/1_programming_model>` → :doc:`主路由与应用状态 <developer/4_main_router_status>` → :doc:`VTask 虚拟任务 <developer/9_vtask>` → :doc:`节点本地计算 <developer/5_node_local_compute>` → :doc:`跨集群架构 <developer/10_cross_cluster>` → :doc:`安全框架 <developer/11_security>` → :doc:`高级编程特性 <developer/7_advanced_features>`
 
 **开发者与 AI 参考（仓库直读）**
 
@@ -25,7 +25,7 @@ Scalebox 中文文档
 
 .. toctree::
    :maxdepth: 2
-   :caption: 入门教程
+   :caption: 一、入门教程
    :hidden:
 
    started/1_introduction
@@ -34,7 +34,7 @@ Scalebox 中文文档
 
 .. toctree::
    :maxdepth: 2
-   :caption: 应用开发
+   :caption: 二、应用开发
    :hidden:
 
    user/2_core_concepts
@@ -48,7 +48,7 @@ Scalebox 中文文档
 
 .. toctree::
    :maxdepth: 2
-   :caption: 部署与运维
+   :caption: 三、部署与运维
    :hidden:
 
    user/1_installation
@@ -56,7 +56,7 @@ Scalebox 中文文档
 
 .. toctree::
    :maxdepth: 2
-   :caption: 设计与原理
+   :caption: 四、设计与原理
    :hidden:
 
    developer/1_programming_model
@@ -69,7 +69,7 @@ Scalebox 中文文档
 
 .. toctree::
    :maxdepth: 2
-   :caption: 参考
+   :caption: 五、参考
    :hidden:
 
    appendix/1_tech_specifications
@@ -79,7 +79,7 @@ Scalebox 中文文档
 
 .. toctree::
    :maxdepth: 2
-   :caption: 附录与其他
+   :caption: 六、附录与其他
    :hidden:
 
    appendix/4_shell_programming

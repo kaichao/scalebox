@@ -1,8 +1,8 @@
-# 5. 运维管理
+# 2. 运维管理
 
-## 5.1 系统监控
+## 2.1 系统监控
 
-### 5.1.1 服务状态监控
+### 2.1.1 服务状态监控
 
 ```bash
 # 检查服务状态
@@ -17,7 +17,7 @@ docker compose logs database
 scalebox cluster status
 ```
 
-### 5.1.2 资源使用监控
+### 2.1.2 资源使用监控
 
 ```bash
 # 查看节点清单
@@ -28,9 +28,9 @@ docker system df
 docker stats
 ```
 
-## 5.2 故障排查
+## 2.2 故障排查
 
-### 5.2.1 数据库问题
+### 2.2.1 数据库问题
 
 **问题现象**：数据库连接失败
 
@@ -39,13 +39,13 @@ docker stats
 2. 手动检查数据库：`docker exec database psql -U scalebox -c "\l"`
 3. 重新创建数据库卷：`docker compose down -v && docker compose up -d`
 
-### 5.2.2 任务执行问题
+### 2.2.2 任务执行问题
 
 任务一直处于 READY、slot 不建或任务不动，按
 [卡链与失败诊断](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md)
-的“任务 READY 不动”“slot 全是 0 行”等小节排查。平台侧的数据库与服务检查见 §5.2.1、§5.2.3。
+的“任务 READY 不动”“slot 全是 0 行”等小节排查。平台侧的数据库与服务检查见 §2.2.1、§2.2.3。
 
-### 5.2.3 网络问题
+### 2.2.3 网络问题
 
 **问题现象**：节点间通信失败
 
@@ -54,9 +54,9 @@ docker stats
 2. 检查端口开放：`netstat -tlnp | grep 50051`
 3. 检查防火墙：`ufw status`
 
-## 5.3 性能优化
+## 2.3 性能优化
 
-### 5.3.1 系统参数调优
+### 2.3.1 系统参数调优
 
 ```bash
 # 调整Docker参数
@@ -67,7 +67,7 @@ sysctl -w vm.max_map_count=262144
 sysctl -w fs.file-max=100000
 ```
 
-### 5.3.2 应用性能优化
+### 2.3.2 应用性能优化
 
 1. **合理设置并行度**
    - 根据数据量设置模块并行度
@@ -81,9 +81,9 @@ sysctl -w fs.file-max=100000
    - 合理设置批量大小
    - 平衡延迟和吞吐量
 
-## 5.4 备份与恢复
+## 2.4 备份与恢复
 
-### 5.4.1 数据库备份
+### 2.4.1 数据库备份
 
 ```bash
 # 备份数据库
@@ -93,7 +93,7 @@ docker exec database pg_dump -U scalebox scalebox > backup.sql
 docker exec -i database psql -U scalebox scalebox < backup.sql
 ```
 
-### 5.4.2 配置备份
+### 2.4.2 配置备份
 
 ```bash
 # 备份配置文件
@@ -103,9 +103,9 @@ tar -czf scalebox-config.tar.gz examples/ dockerfiles/ runtime/
 tar -xzf scalebox-config.tar.gz
 ```
 
-## 5.5 安全维护
+## 2.5 安全维护
 
-### 5.5.1 访问控制
+### 2.5.1 访问控制
 
 ```bash
 # 更新密钥
@@ -115,7 +115,7 @@ cd runtime && make update-pubkey
 docker exec database psql -U scalebox -c "ALTER USER scalebox WITH PASSWORD 'newpassword';"
 ```
 
-### 5.5.2 安全更新
+### 2.5.2 安全更新
 
 ```bash
 # 更新容器镜像
@@ -125,9 +125,9 @@ cd runtime && make pull-all
 docker compose down && docker compose up -d
 ```
 
-## 5.6 日志管理
+## 2.6 日志管理
 
-### 5.6.1 日志收集
+### 2.6.1 日志收集
 
 ```bash
 # 收集所有服务日志
@@ -137,7 +137,7 @@ docker compose logs > scalebox.log
 docker compose logs --since "2024-01-01" --until "2024-01-02"
 ```
 
-### 5.6.2 日志分析
+### 2.6.2 日志分析
 
 ```bash
 # 查找错误日志
@@ -147,9 +147,9 @@ grep -i error scalebox.log
 grep "task completed" scalebox.log | awk '{print $NF}' | sort -n
 ```
 
-## 5.7 系统升级
+## 2.7 系统升级
 
-### 5.7.1 版本升级
+### 2.7.1 版本升级
 
 ```bash
 # 拉取新版本
@@ -162,20 +162,20 @@ make pull-all
 docker compose restart
 ```
 
-### 5.7.2 配置迁移
+### 2.7.2 配置迁移
 
 1. 备份当前配置
 2. 更新配置文件
 3. 验证配置有效性
 4. 重启服务
 
-## 5.8 常见问题
+## 2.8 常见问题
 
 见 [FAQ](../faq.md)。
 
-## 5.9 集群管理
+## 2.9 集群管理
 
-### 5.9.1 集群分类
+### 2.9.1 集群分类
 
 | 集群名 | 主要用途 | 说明 |
 | ------ | -------- | ---- |
@@ -184,13 +184,13 @@ docker compose restart
 | 动态集群（Dynamic Cluster） | 弹性计算 | 管理节点包括1个或多个头节点，计算节点由外部调度器动态分配 |
 | 内联集群（Inline Cluster） | 混合模式 | 包括1个或多个头节点、若干个计算节点，节点通常是动态申请的 |
 
-### 5.9.2 多集群协同计算
+### 2.9.2 多集群协同计算
 
 - 计算资源管理：支持静态定义和动态申请两种方式
 - 部署集群管理应用 cluster-admin，支持集群节点的动态扩容
 - 通过 node-agent 实现计算节点的系统管理和动态监控
 
-### 5.9.3 集群架构
+### 2.9.3 集群架构
 
 ```
                           +-----------------------+

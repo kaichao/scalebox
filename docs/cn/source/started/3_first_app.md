@@ -107,7 +107,7 @@ scalebox app delete --app-id 1
 
 - [核心概念](../user/2_core_concepts.md)：基本概念、编程原语、计算逻辑 / 应用状态 / 主路由 / VTask。
 - [运行与管理应用](../user/3_running_apps.md)：投递、查看、清理的完整流程。
-- [主路由与应用状态：实现与优化](../developer/4_main_router_status.md)：并行逻辑如何落地。
+- [主路由与应用状态](../developer/4_main_router_status.md)：并行逻辑如何落地。
 - [app.yaml 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)
 - [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)
 - [features/](https://github.com/kaichao/scalebox/tree/dev/features)：可执行的最小特性与测试。

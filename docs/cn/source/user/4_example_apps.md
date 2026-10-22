@@ -1,6 +1,6 @@
-# 4. 示例应用
+# 5. 示例应用
 
-## 4.1 hello-scalebox：入门级应用
+## 5.1 hello-scalebox：入门级应用
 
 第一个scalebox应用，用于验证安装和基本功能。
 
@@ -16,7 +16,7 @@ echo "Scalebox" | scalebox run
 - 单模块应用，没有主路由；主路由在多模块协作时出现
 - 适合初学者理解基本概念
 
-## 4.2 app-primes：计算密集型应用
+## 5.2 app-primes：计算密集型应用
 
 求解[1..max_value]之间的质数数量。主要用于展示scalebox的主要特性。
 
@@ -33,7 +33,7 @@ echo 1000 | scalebox run
 - 多模块协作
 - 支持多语言实现（Python、Go、C++等）
 
-## 4.3 app-copy：数据传输应用
+## 5.3 app-copy：数据传输应用
 
 文件拷贝操作是计算过程中常见操作。
 
@@ -48,7 +48,7 @@ echo 1000 | scalebox run
 - 支持多种传输协议
 - 流水线并行优化
 
-## 4.4 remote-primes：跨集群应用
+## 5.4 remote-primes：跨集群应用
 
 app-primes的跨集群版本，用多个集群算力求解给定整数区间内质数数量。
 
@@ -67,7 +67,7 @@ scalebox run --app-file main.yaml
 - 异构集群支持
 - 动态资源分配
 
-## 4.5 vtask：虚拟任务应用
+## 5.5 vtask：虚拟任务应用
 
 ### vtask 运行示例
 
@@ -81,6 +81,6 @@ cat default-tasks.txt | scalebox run -e scalebox.env
 - 批量任务处理
 - 资源优化调度
 
-## 4.6 设计模式与最佳实践
+## 5.6 设计模式与最佳实践
 
 示例只展示“怎么跑”；应用设计模式（简单流水线、多级流水线、并行流水线、混合并行、跨集群）与最佳实践（模块划分、数据流设计、性能优化、可维护性、容错设计）见 {doc}`应用设计 <../developer/3_app_design>` §3.5/§3.6。

@@ -1,8 +1,8 @@
-# 10. 跨集群架构
+# 5. 跨集群架构
 
 Scalebox 支持跨广域网异构算力集群的统一调度和协同计算。通过全网格数据复制和 gRPC 代理转发，CLI 始终只连本地 controld，跨集群操作由服务端透明路由。
 
-## 10.1 核心原则
+## 5.1 核心原则
 
 ```
 CLI ──(始终)──▶ 本地 controld ──(gRPC 代理)──▶ 远端 controld
@@ -13,7 +13,7 @@ CLI ──(始终)──▶ 本地 controld ──(gRPC 代理)──▶ 远端 
 - `t_cluster` 表在所有集群数据库间全网格复制（`name='local'` 标识本地集群），保证所有 controld 都能查到任意集群的 `grpc_server`
 - 跨物理集群的信息共享使用 `queue`；同一物理集群内跨应用共享使用 `global`
 
-## 10.2 数据复制模型
+## 5.2 数据复制模型
 
 | 表 | 复制策略 | 说明 |
 |----|:---:|------|
@@ -22,9 +22,9 @@ CLI ──(始终)──▶ 本地 controld ──(gRPC 代理)──▶ 远端 
 | `t_app_rlink` | 级联创建 | 跨集群 App 引用（原 `t_app_remote_link`） |
 | `t_module_rvlink` | 级联创建 | 跨集群模块虚拟链接（原 `t_module_remote_vlink`） |
 
-## 10.3 跨集群 App 创建
+## 5.3 跨集群 App 创建
 
-### 10.3.1 流程
+### 5.3.1 流程
 
 ```
 CLI: scalebox run（含 app.yaml，cluster 字段指向远端）
@@ -45,7 +45,7 @@ CLI: scalebox run（含 app.yaml，cluster 字段指向远端）
   └── 本地 → 本地创建（原逻辑）
 ```
 
-### 10.3.2 CreateApp 关键参数
+### 5.3.2 CreateApp 关键参数
 
 ```go
 type CreateAppRequest struct {
@@ -56,22 +56,22 @@ type CreateAppRequest struct {
 }
 ```
 
-### 10.3.3 RegisterRemoteAppLink
+### 5.3.3 RegisterRemoteAppLink
 
 `CreateApp` 完成后，controld 自动调用 `RegisterRemoteAppLink` 在所有集群间建立引用条目。引用条目包含：
 - 本地 App ID ↔ 远端 App ID 映射
 - 跨集群 sink-module 路由信息（`t_module_rvlink`）
 
-## 10.4 地址解析
+## 5.4 地址解析
 
-### 10.4.1 两步解析
+### 5.4.1 两步解析
 
 | 步骤 | 函数 | 用途 | 查询字段 |
 |------|------|------|---------|
 | 身份比较 | `resolveGrpcServer` | 判断目标是否远端（`isRemoteCluster`） | `grpc_server` |
 | 实际拨号 | `resolveReachableAddr` | 建立 gRPC 连接 | `grpc_server` + `remote_grpc_server` |
 
-### 10.4.2 拨号决策
+### 5.4.2 拨号决策
 
 ```
 目标集群 grpc_server ?= 'local' 行 grpc_server
@@ -86,9 +86,9 @@ type CreateAppRequest struct {
 - `remote_grpc_server` 的语义：专门给其他集群连接本集群使用的地址（公网 IP 或跨网段 IP）
 - `registerCrossCluster` 中的 `MainGrpcServer` 会被反查集群名后重解析（因为该函数运行在新 app 所在集群，需要从自身网络视角连主集群）
 
-## 10.5 跨集群 Task 路由
+## 5.5 跨集群 Task 路由
 
-### 10.5.1 task add
+### 5.5.1 task add
 
 ```
 CLI → 本地 controld → doAddRemoteTaskList()
@@ -106,11 +106,11 @@ CLI → 本地 controld → doAddRemoteTaskList()
 - **sinkModule 原样传递**：不做任何填充或替换
 - 远端通过 `grpc_server` 比较判断本地/远端，递归代理
 
-### 10.5.2 run 的 stdin start tasks
+### 5.5.2 run 的 stdin start tasks
 
 CLI 始终连本地 controld，`clusterName` 作为 `AddTaskList` 路由参数传入。
 
-## 10.6 各命令连接目标
+## 5.6 各命令连接目标
 
 | 命令域 | 连接目标 |
 |--------|---------|
@@ -124,7 +124,7 @@ CLI 始终连本地 controld，`clusterName` 作为 `AddTaskList` 路由参数�
 | semaphore / semagroup / variable / global | 本地 controld |
 | queue | 目标集群数据库/controld（`--cluster` 选择远端，本地 controld 代理转发） |
 
-## 10.7 GRPC_SERVER 解析优先级
+## 5.7 GRPC_SERVER 解析优先级
 
 ```
 1. 环境变量 GRPC_SERVER（用户显式设置，最高优先级）
@@ -132,7 +132,7 @@ CLI 始终连本地 controld，`clusterName` 作为 `AddTaskList` 路由参数�
 3. 回退：127.0.0.1:50051
 ```
 
-## 10.8 t_cluster.parameters 关键字段
+## 5.8 t_cluster.parameters 关键字段
 
 | 字段 | 说明 |
 |------|------|

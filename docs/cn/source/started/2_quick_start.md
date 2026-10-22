@@ -85,4 +85,4 @@ scalebox cluster status
 3. **使用 WebUI**：浏览器打开 `http://localhost:8088` 进入可视化管理界面
 4. **安装 VS Code 插件**：`cd vscode-scalebox && make install`，获得 TreeView + DAG + app.yaml 语法支持
 5. **开发自定义应用**：参考开发指南，开发自己的Scalebox应用
-6. **理解主路由与状态**：阅读{doc}`主路由与应用状态：实现与优化 <../developer/4_main_router_status>`，了解并行逻辑如何落地
+6. **理解主路由与状态**：阅读{doc}`主路由与应用状态 <../developer/4_main_router_status>`，了解并行逻辑如何落地

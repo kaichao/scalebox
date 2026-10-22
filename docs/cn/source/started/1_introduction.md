@@ -43,7 +43,7 @@ Scalebox以容器化封装算法并提供可编程控制，支持在分布式、
 
 主路由如果只做最简单的任务分发，Scalebox 就退化为一个常见的工作流引擎；主路由的价值在于执行动态并行逻辑、管理应用状态、组织跨模块协作。
 
-概念定义见 {doc}`核心概念 <../user/2_core_concepts>`；主路由实现见 {doc}`主路由与应用状态：实现与优化 <../developer/4_main_router_status>`。
+概念定义见 {doc}`核心概念 <../user/2_core_concepts>`；主路由实现见 {doc}`主路由与应用状态 <../developer/4_main_router_status>`。
 
 
 ## 1.2 Scalebox主要特性
@@ -61,7 +61,7 @@ Scalebox以容器化封装算法并提供可编程控制，支持在分布式、
 以节点本地存储为中心，减少对全局存储的依赖，通过数据本地化提升I/O效率。
 
 ### 1.2.5 高并行效率
-支持多级并行化：模块内算法并行、模块级数据并行、模块间流水线并行。分类见 {doc}`核心概念 §2.11 <../user/2_core_concepts>`，详细策略见 {doc}`编程模型 §1.7 <../developer/1_programming_model>`。
+支持多级并行化：模块内算法并行、模块级数据并行、模块间流水线并行。分类见 {doc}`核心概念 §1.11 <../user/2_core_concepts>`，详细策略见 {doc}`编程模型 §1.7 <../developer/1_programming_model>`。
 
 ### 1.2.6 虚拟任务（VTask / 任务组）
 跨模块 Task 集合，内置信号量和共享变量，通过 head→core→tail 管道统一管理流控、资源绑定和状态追踪。支持 DEFAULT / HOST-BOUND / GROUP-BOUND 三种模式。

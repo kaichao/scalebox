@@ -1,8 +1,8 @@
-# 11. 安全框架
+# 6. 安全框架
 
 Scalebox 安全框架提供认证（Authentication）和授权（Authorization）能力，通过 JWT + RBAC + TLS 实现 gRPC 通道安全。安全默认关闭（`SECURITY_ENABLED=false`），启用后无性能损耗外的额外运行时开销。
 
-## 11.1 通信安全矩阵
+## 6.1 通信安全矩阵
 
 | | controld | database | agent | actuator | CLI |
 |---|:---:|:---:|:---:|:---:|:---:|
@@ -24,15 +24,15 @@ Scalebox 安全框架提供认证（Authentication）和授权（Authorization�
 
 所有证书 + JWT 密钥由 `gen-secrets.sh` 统一生成，同一内部 CA 签发。
 
-## 11.2 安全边界
+## 6.2 安全边界
 
 - **Actuator SSH**：Ed25519 免密 SSH 登录计算节点，属基础设施层安全
 - **数据库直连**：绕过 gRPC 直接访问数据库的操作不受 RBAC 控制
 - **RBAC 仅覆盖 gRPC 通道**：认证与授权在 gRPC 拦截器层生效
 
-## 11.3 启用方式
+## 6.3 启用方式
 
-### 11.3.1 环境变量
+### 6.3.1 环境变量
 
 | 变量 | 说明 | 默认值 |
 |------|------|--------|
@@ -44,7 +44,7 @@ Scalebox 安全框架提供认证（Authentication）和授权（Authorization�
 | `AUTH_TOKEN` | JWT 认证令牌 | — |
 | `SCALEBOX_CERTS_DIR` | 证书目录（设置后启用 DB 证书认证） | — |
 
-### 11.3.2 Compose 分层
+### 6.3.2 Compose 分层
 
 | 文件 | 功能 |
 |------|------|
@@ -64,7 +64,7 @@ docker compose \
   up -d
 ```
 
-## 11.4 证书生成
+## 6.4 证书生成
 
 ```bash
 cd build
@@ -92,7 +92,7 @@ export SCALEBOX_CERTS_DIR=./secrets/shared
 scalebox cluster list
 ```
 
-## 11.5 Agent 镜像内置凭证
+## 6.5 Agent 镜像内置凭证
 
 通过 `make copy-secrets` 拷贝到 agent 镜像：
 
@@ -105,7 +105,7 @@ scalebox cluster list
 
 controld 服务端证书通过 volume 挂载（见 `compose.tls.yaml`），不打包进镜像。
 
-## 11.6 Automation Token
+## 6.6 Automation Token
 
 agent / actuator 通过 `t_global.automation_token` 自动获取 JWT token：
 
@@ -144,9 +144,9 @@ docker exec database psql -U scalebox -d scalebox \
       VALUES ('<jti>', <user_id>, now() + interval '30 days')"
 ```
 
-## 11.7 RBAC 角色体系
+## 6.7 RBAC 角色体系
 
-### 11.7.1 系统层角色
+### 6.7.1 系统层角色
 
 | 角色 | 权限 | 职责 |
 |------|------|------|
@@ -155,12 +155,12 @@ docker exec database psql -U scalebox -d scalebox \
 | `operator` | cluster read、host read/update | 基础设施运维 |
 | `automation` | cluster/slot/task/app/event 的 read/update/create/execute | agent/actuator 内部 |
 
-### 11.7.2 应用层权限（DAC）
+### 6.7.2 应用层权限（DAC）
 
 - **创建者自动获得管理权**：创建 app 的用户（`t_app.user_id`）拥有该 app 下全部操作权限
 - **成员授权**：通过 `t_app_member(app_id, user_id, role)` 授予只读权限（`role='viewer'`）
 
-### 11.7.3 细粒度 Scope
+### 6.7.3 细粒度 Scope
 
 `t_role_binding.scope`（JSONB 数组）限定角色作用域。为 NULL 时全局生效：
 
@@ -169,7 +169,7 @@ docker exec database psql -U scalebox -d scalebox \
 [{"type":"cluster","id":"cluster-a"},{"type":"cluster","id":"cluster-b"}]
 ```
 
-### 11.7.4 资源与操作
+### 6.7.4 资源与操作
 
 | 资源 | 覆盖子资源 | 操作 |
 |------|-----------|------|
@@ -177,7 +177,7 @@ docker exec database psql -U scalebox -d scalebox \
 | `app` | module、task | read、create、update、delete、start、stop |
 | `user` | — | read、create、update、delete |
 
-## 11.8 CLI 管理命令
+## 6.8 CLI 管理命令
 
 安全管理通过 `scalebox-sec` CLI（独立项目 [scalebox-security](https://github.com/kaichao/scalebox-security)）：
 

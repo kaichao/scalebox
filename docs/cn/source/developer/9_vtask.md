@@ -1,16 +1,16 @@
-# 9. VTask 虚拟任务
+# 3. VTask 虚拟任务
 
 > 本章讲 vtask 设计与操作语义；完整命令 flags 见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。
 
 **VTask**（Virtual Task）是 Scalebox 在细粒度 task 之上建立的应用级粗粒度计算单元。一个 vtask 是跨模块的 task 集合，内置信号量（semaphore）和共享变量（variable），由 wait-queue（可选）、vtask-head、一个或多个级联 vtask-core、vtask-tail 组成管道，统一管理流控、资源绑定、状态追踪和全链路上下文传播。
 
-## 9.1 为什么需要 VTask
+## 3.1 为什么需要 VTask
 
 VTask 是对计算逻辑中跨模块协作部分（并行逻辑）及其状态的粗粒度封装。它不封装算法逻辑；算法仍在各模块内。它也不是独立调度器：调度由平台与主路由完成。全局变量是同一物理集群内跨应用配置，不属于 vtask 作用域；vtask 主要使用 vtask 作用域的信号量/变量和资源信号量。
 
-概念定义见 {doc}`核心概念 §2.6 <../user/2_core_concepts>`；实现与优化见 {doc}`主路由与应用状态：实现与优化 <4_main_router_status>`。
+概念定义见 {doc}`核心概念 §1.6 <../user/2_core_concepts>`；实现与优化见 {doc}`主路由与应用状态 <4_main_router_status>`。
 
-### 9.1.1 task 模型的局限
+### 3.1.1 task 模型的局限
 
 Scalebox 的基础模型是 module → slot → task。每个 task 是一次独立的执行单元，在细粒度调度层面工作良好，但在应用层面有三个缺口：
 
@@ -18,7 +18,7 @@ Scalebox 的基础模型是 module → slot → task。每个 task 是一次独�
 2. **无法回答应用级问题**："某个计算任务执行到哪了"、"一共多少子任务、完成多少"、"失败了该释放哪些资源"
 3. **缺少资源隔离**：不同计算任务在同一节点上执行时无资源预留机制
 
-### 9.1.2 VTask 的解决方案
+### 3.1.2 VTask 的解决方案
 
 VTask 在 task 之上叠加跨模块状态管理：
 
@@ -36,9 +36,9 @@ VTask 在 task 之上叠加跨模块状态管理：
 | 资源绑定 | bind/unbind 预留/归还计算节点 | 声明式管理，复用而非硬编码 |
 | 上下文透传 | `_` 前缀 header 全链路自动传播 | 中间模块零代码感知上下文来源 |
 
-## 9.2 概念模型
+## 3.2 概念模型
 
-### 9.2.1 三种类型
+### 3.2.1 三种类型
 
 | | DEFAULT | HOST-BOUND | GROUP-BOUND |
 |----|---------|------------|-------------|
@@ -48,7 +48,7 @@ VTask 在 task 之上叠加跨模块状态管理：
 | vtask-core 模式 | 不设 task_dist_mode | `HOST-BOUND` | `HOST-BOUND` |
 | 适用场景 | 轻量批处理 | 单节点独占计算 | 多节点协同计算 |
 
-三种类型的流控信号量命名见 §9.2.4 的标识体系。
+三种类型的流控信号量命名见 §3.2.4 的标识体系。
 
 **管道结构**（`vtask-core` 可级联多个阶段）：
 
@@ -58,7 +58,7 @@ HOST-BOUND:    task → wait-queue → vtask-head → vtask-core → vtask-tail
 GROUP-BOUND:   task → wait-queue → vtask-head → vtask-core-1 → vtask-core-2 → ... → vtask-tail
 ```
 
-### 9.2.2 能力矩阵
+### 3.2.2 能力矩阵
 
 | 能力 | DEFAULT | HOST-BOUND | GROUP-BOUND |
 |------|:--:|:--:|:--:|
@@ -75,7 +75,7 @@ GROUP-BOUND:   task → wait-queue → vtask-head → vtask-core-1 → vtask-cor
 | HOST-BOUND | 性能模式 | 单节点 GPU 推理、大规模数据变换 |
 | GROUP-BOUND | 规模模式 | 多通道波束合成、多节点协同数据分析 |
 
-### 9.2.3 两层抽象
+### 3.2.3 两层抽象
 
 | 层级 | 概念 | 关注点 |
 |------|------|--------|
@@ -100,7 +100,7 @@ TASK_DIST_MODE=SLOT-BOUND   # 仅驱动 vtask-head 的平台参数，实现层�
 
 应用作者在 vtask 层只接触 `VTASK_MODE`，`SLOT-BOUND` 仅在实现层出现。
 
-### 9.2.4 计算资源标识
+### 3.2.4 计算资源标识
 
 vtask bind 分配的资源本质是**计算位置（placement）**——vtask 锚定到某台主机（HOST-BOUND）或某个节点组（GROUP-BOUND），之后 task 通过 `to_host` / `to_slot` 路由到该位置上的 slot 执行。平台不感知物理容量（CPU 核数、内存量），**容量由应用作者通过 `vtask_size` 参数配置**（该位置同时承载的在制 vtask 数）。
 
@@ -125,9 +125,9 @@ vtask bind 分配的资源本质是**计算位置（placement）**——vtask �
 
 **节点组的成员没有平台级定义**：组内包含哪些节点、组内如何分发，是应用业务逻辑（vtask-head 脚本路由 + vtask-core 以 HOST-BOUND 部署在组内节点上）。平台只管理"组"这个锚点维度。
 
-**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_size_sema` 随 root task 传播；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §9.4.5。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
+**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_size_sema` 随 root task 传播；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §3.4.5。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
 
-### 9.2.5 根 task 标识
+### 3.2.5 根 task 标识
 
 `vtask_role=head` 模块的 task 为 vtask 根。controld 创建 head 模块 task 时自动建立自引用：
 
@@ -139,7 +139,7 @@ WHERE id = $1
 
 `ListVTasks` 查询条件为 `WHERE vtask = id`。
 
-### 9.2.6 状态派生
+### 3.2.6 状态派生
 
 vtask 状态由根 task 的 `status_code` + 子任务完成比例派生：
 
@@ -152,9 +152,9 @@ vtask 状态由根 task 的 `status_code` + 子任务完成比例派生：
 | `0` | 全部完成 | FINISHED（Y tasks） |
 | `1` | — | FAILED（exit=N） |
 
-## 9.3 模块结构
+## 3.3 模块结构
 
-### 9.3.1 DEFAULT（4 模块）
+### 3.3.1 DEFAULT（4 模块）
 
 ```yaml
 modules:
@@ -164,7 +164,7 @@ modules:
   vtask-tail:    # vtask_role: tail（无 unbind）
 ```
 
-### 9.3.2 HOST-BOUND（5 模块）
+### 3.3.2 HOST-BOUND（5 模块）
 
 ```yaml
 modules:
@@ -184,14 +184,14 @@ modules:
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | 空操作（额度由 controld `doVTaskFinished` 自动归还） |
 
-### 9.3.3 GROUP-BOUND
+### 3.3.3 GROUP-BOUND
 
 与 HOST-BOUND 结构相同，差异：
 - `vtask-head.task_dist_mode: SLOT-BOUND`（平台实现值），bind 返回组号（即 head slot 的 seq）
 - 流控信号量格式 `group_vtask_size`，head slot 作为节点组锚点
 - `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支计算 `to_host`（业务逻辑）
 
-### 9.3.4 vtask-core 级联
+### 3.3.4 vtask-core 级联
 
 `vtask-core` 可包含多个计算阶段：
 
@@ -213,22 +213,22 @@ modules:
 - `_` 前缀 header（`_vtask_id`、`_vtask_size_sema`）沿 core 链自动传播
 - 每个 core 模块独立配置 slot 数量、`task_dist_mode` 和镜像
 
-## 9.4 信号量机制
+## 3.4 信号量机制
 
-### 9.4.1 命名规范
+### 3.4.1 命名规范
 
 三种分发模式的信号量命名、作用域与生命周期见
 [`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §4–§5；
-本章不重复事实表。vtask 相关的关键点是：资源容量信号量与 gate 锁是两类不同生命周期的信号量（§9.4.5）。
+本章不重复事实表。vtask 相关的关键点是：资源容量信号量与 gate 锁是两类不同生命周期的信号量（§3.4.5）。
 
-### 9.4.2 统一信号量
+### 3.4.2 统一信号量
 
 每个流控信号量只有一套（无冒号前缀），由 `vtask bind` 预扣、controld 自动加回，脚本不再参与资源归还；
 各环节的扣减/归还者见 reference §5。
 
 > 历史版本的双信号量（流控版 + `:` 前缀可编程版，`vtask_size_sema_copy: yes`）已废弃，`vtask_size_sema_copy` 参数不再生效。
 
-### 9.4.3 流控流程
+### 3.4.3 流控流程
 
 ```
 wait-queue slot 每轮 poll
@@ -241,13 +241,13 @@ wait-queue slot 每轮 poll
   → check.sh 下一轮轮询放行
 ```
 
-### 9.4.4 等待队列门控
+### 3.4.4 等待队列门控
 
 wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh` 末尾手动 increment 放行下一个 vtask。
 
-### 9.4.5 vtask 生命周期中的信号量变化
+### 3.4.5 vtask 生命周期中的信号量变化
 
-> 本小节面向平台贡献者/高级开发者；普通应用开发者可先读 §9.4.3 流控流程。
+> 本小节面向平台贡献者/高级开发者；普通应用开发者可先读 §3.4.3 流控流程。
 
 管道涉及两类信号量，生命周期与归还责任不同：
 
@@ -282,9 +282,9 @@ wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh`
   from-vtask-head 中包含 gate 解锁一行**；漏做时 wait-queue 段停领，兜底：
   `vtask fail` 释放门控、人工 `semaphore increment` 补偿。
 
-## 9.5 管道流程
+## 3.5 管道流程
 
-### 9.5.1 header 传播
+### 3.5.1 header 传播
 
 header 的名称、写入方与 `_` 前缀传播规则见
 [`reference/task-headers.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md) §4；
@@ -312,7 +312,7 @@ vtask-tail 完成
   → from-vtask-tail.sh: 读取 _vtask_size_sema → unbind 可编程版
 ```
 
-### 9.5.2 生命周期
+### 3.5.2 生命周期
 
 ```
 task 创建 → ON CONFLICT 防重
@@ -328,7 +328,7 @@ tail 完成 → doVTaskFinished → semaphore increment
 from-vtask-tail.sh → unbind（仅 HOST-BOUND / SLOT-BOUND）
 ```
 
-### 9.5.3 add-subtask 双路径
+### 3.5.3 add-subtask 双路径
 
 `vtask add-subtask` 在 agent 容器内运行时，默认走 sink-tasks.txt 异步路径，加 `--direct` 切换到 gRPC 同步路径：
 
@@ -347,11 +347,11 @@ from-vtask-tail.sh → unbind（仅 HOST-BOUND / SLOT-BOUND）
 | wait-queue 标准模块 run.sh | 同步（`--direct`） | bind 已扣除资源，须同步感知成败，失败时回滚 |
 | 运维手工 CLI | 同步（gRPC） | agent 外无 sink-tasks.txt 机制 |
 
-## 9.6 命令参考
+## 3.6 命令参考
 
 > 完整命令、usage 与 flags 见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。本节只保留 vtask 特有的操作语义。
 
-### 9.6.1 三层操作体系
+### 3.6.1 三层操作体系
 
 ```
 Layer 1: 基础资源操作（全局作用域）
@@ -368,15 +368,15 @@ Layer 3: vtask 高级操作
   vtask bind / unbind / add-subtask / get / fail / list / list-subtasks
 ```
 
-### 9.6.2 vtask list / list-subtasks
+### 3.6.2 vtask list / list-subtasks
 
 `vtask list` 输出派生状态与子任务计数；`vtask list-subtasks` 列出指定 vtask 的子任务。
 
-### 9.6.3 vtask get
+### 3.6.3 vtask get
 
 输出 `ID`、`App ID`、`Status`（含完成子任务数）、`Sema`（绑定信号量名）、`Subtasks`（总数/完成数）。
 
-### 9.6.4 vtask fail
+### 3.6.4 vtask fail
 
 `scalebox vtask fail --vtask-id=<id>` 强制终止 vtask：
 
@@ -387,7 +387,7 @@ Layer 3: vtask 高级操作
 释放的信号量集合与顺序见
 [`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §5。
 
-### 9.6.5 vtask bind / unbind
+### 3.6.5 vtask bind / unbind
 
 - `vtask bind` 自动查找 head 模块，返回计算资源标识。
 - `vtask unbind --sema-name=...`：错误回滚时传信号量名；正常完成由 controld 自动加回。
@@ -399,7 +399,7 @@ Layer 3: vtask 高级操作
 | GROUP-BOUND | 组号（head slot 的 seq，如 `0`） |
 | DEFAULT | 空（no-op） |
 
-### 9.6.6 vtask add-subtask
+### 3.6.6 vtask add-subtask
 
 ```bash
 # Agent 内（常见）：异步路径，_ 前缀 header 自动传播
@@ -420,14 +420,14 @@ scalebox vtask add-subtask --app-id=10 --module=vtask-core \
 
 自动注入：`from_module`（`PLAT_MODULE_NAME` env）、`from_ip`（本机 IPv4）。调用方显式传入时不覆盖。
 
-### 9.6.7 vtask 作用域变量/信号量
+### 3.6.7 vtask 作用域变量/信号量
 
 作用域资源以 `vtask-id` 为作用域：
 
 - 变量：`vtask get-variable` / `set-variable`
 - 信号量：`vtask create-semaphore` / `get-semaphore` / `add-semaphore-value` / `delete-semaphore`
 
-## 9.7 并发安全
+## 3.7 并发安全
 
 | 机制 | 防护场景 |
 |------|---------|
@@ -437,7 +437,7 @@ scalebox vtask add-subtask --app-id=10 --module=vtask-core \
 | asyncbatch（10ms/50ms） | 信号量批量写入不逐条竞争 |
 | `vtask_size=1`（wait-queue） | bind 操作串行化 |
 
-## 9.8 运维场景速查
+## 3.8 运维场景速查
 
 | 场景 | 命令 |
 |------|------|
@@ -450,7 +450,7 @@ scalebox vtask add-subtask --app-id=10 --module=vtask-core \
 | 手工释放泄漏资源 | `vtask unbind --sema-name="host_vtask_size:..."` |
 | 手工归还（不知信号量名） | `vtask unbind --vtask-id=N` |
 
-## 9.9 实现索引
+## 3.9 实现索引
 
 > 本节是平台实现索引，面向平台贡献者；普通应用开发者可跳过。
 

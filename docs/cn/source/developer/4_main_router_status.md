@@ -1,11 +1,11 @@
-# 4. 主路由与应用状态：实现与优化
+# 2. 主路由与应用状态
 
-> 本章讲实现与优化；概念定义见 {doc}`核心概念 <../user/2_core_concepts>` §2.5。
+> 本章讲实现与优化；概念定义见 {doc}`核心概念 <../user/2_core_concepts>` §1.5。
 > 读者：应用开发者、平台贡献者；普通用户可先读核心概念。
 
-## 4.1 定位与实现形态
+## 2.1 定位与实现形态
 
-### 4.1.1 主路由是应用控制面
+### 2.1.1 主路由是应用控制面
 
 主路由模块（main-router）是应用中的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作。它运行形态上是应用中的一个模块（容器/脚本），功能上是应用控制面。
 
@@ -21,9 +21,9 @@
 3. **分发任务**：把任务发往算法模块或基础模块，并携带必要的任务头。
 4. **组织协作**：把多个模块串成完整计算过程，直到应用级目标完成。
 
-概念定义、边界与常见误解见 {doc}`核心概念 <../user/2_core_concepts>` §2.5。
+概念定义、边界与常见误解见 {doc}`核心概念 <../user/2_core_concepts>` §1.5。
 
-### 4.1.2 原则上单实例与多实例
+### 2.1.2 原则上单实例与多实例
 
 **默认：单实例**。主路由逻辑串行，避免并发写应用状态；串行协调只处理粗粒度控制消息，数据搬运与计算在模块内并行完成，因此通常不会成为性能瓶颈。
 
@@ -44,7 +44,7 @@
 
 字段定义见 [app-yaml.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md) 的 `module.parameters`。
 
-### 4.1.3 实现语言与消息入口
+### 2.1.3 实现语言与消息入口
 
 主路由可用 bash、Go、Python 等语言实现。常见形态：
 
@@ -55,7 +55,7 @@
 
 接口文件格式见 [agent-interface-files](https://github.com/kaichao/scalebox/blob/dev/features/agent-interface-files/README.md)；命令见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。
 
-### 4.1.4 为什么不是工作流引擎
+### 2.1.4 为什么不是工作流引擎
 
 如果主路由只做最简单的任务分发，Scalebox 就退化为一个常见的工作流引擎。工作流引擎通常按静态 DAG 调度任务，不负责应用级状态、跨模块协作、准入控制与节点本地计算。
 
@@ -67,9 +67,9 @@
 
 这三点把“任务分发”提升为“计算过程的持续管理”。
 
-## 4.2 并行逻辑的实现
+## 2.2 并行逻辑的实现
 
-### 4.2.1 app.yaml 拓扑
+### 2.2.1 app.yaml 拓扑
 
 `app.yaml` 定义并行逻辑的静态骨架：
 
@@ -82,7 +82,7 @@
 
 字段定义见 {doc}`技术规范 <../appendix/1_tech_specifications>` 与 [app-yaml.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)；应用设计方法见 {doc}`应用设计 <3_app_design>`。
 
-### 4.2.2 主路由脚本
+### 2.2.2 主路由脚本
 
 主路由脚本实现动态并行逻辑：
 
@@ -105,7 +105,7 @@ scalebox global set my_config value
 
 批量处理是主路由效率的关键：一次读取多条任务、批量生成后续任务、批量更新信号量，减少数据库往返。实现细节见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 与 {doc}`VTask 虚拟任务 <9_vtask>`。
 
-### 4.2.3 任务头与任务体
+### 2.2.3 任务头与任务体
 
 - **task body**：任务输入数据，通常是待处理文件名、URI 或控制消息。
 - **task headers**：任务元数据与控制字段；主路由用它携带路由信息与状态。
@@ -122,9 +122,9 @@ scalebox global set my_config value
 
 字段与传播规则见 [task-headers.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md)。
 
-## 4.3 应用状态的实现
+## 2.3 应用状态的实现
 
-### 4.3.1 信号量
+### 2.3.1 信号量
 
 信号量是应用或 vtask 作用域的计数器，用于流控、准入、进度同步。常见命名如 `vtask_size:<module>`、`node_progress:<module>:<host>`。
 
@@ -151,9 +151,9 @@ scalebox semagroup increment <expr>
 scalebox semagroup decrement <expr>
 ```
 
-作用域、存储与生命周期见 [semaphore-variable.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md)；vtask 中的用法见 {doc}`VTask §9.4 <9_vtask>`。
+作用域、存储与生命周期见 [semaphore-variable.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md)；vtask 中的用法见 {doc}`VTask §3.4 <9_vtask>`。
 
-### 4.3.2 共享变量
+### 2.3.2 共享变量
 
 共享变量是应用或 vtask 作用域的字符串状态，适合保存阶段、游标、配置等跨任务/跨模块信息。
 
@@ -173,7 +173,7 @@ scalebox vtask set-variable <name> <value> --vtask-id N
 
 **header 与 variable 的分工**：header 随任务传播，适合一次性参数；variable 存在数据库中，适合跨任务、跨模块共享的状态。
 
-### 4.3.3 全局变量
+### 2.3.3 全局变量
 
 全局变量（global）用于**同一物理集群内多个应用之间**共享信息/配置。它存放在 `t_global`，不按 app 隔离。
 
@@ -187,10 +187,10 @@ scalebox global ls
 边界：
 
 - 不属于 vtask 作用域；vtask 使用自己的信号量/变量。
-- 不跨物理集群；跨物理集群使用 `queue`（见 §4.3.5）。
+- 不跨物理集群；跨物理集群使用 `queue`（见 §2.3.5）。
 - 适合跨应用共享配置、指向信息等；不适合业务数据。
 
-### 4.3.4 读写者与批量操作
+### 2.3.4 读写者与批量操作
 
 信号量/变量的读写者分三层：
 
@@ -201,12 +201,12 @@ scalebox global ls
 批量操作：
 
 - 主路由一次读取多条任务（`task_batch_size`），批量生成后续任务，批量增减信号量。
-- vtask 的信号量写入使用 asyncbatch（10ms/50ms）降低逐条竞争（见 {doc}`VTask §9.7 <9_vtask>`）。
+- vtask 的信号量写入使用 asyncbatch（10ms/50ms）降低逐条竞争（见 {doc}`VTask §3.7 <9_vtask>`）。
 - 批量大小要平衡延迟与吞吐；不要因流控联动影响并行效率。
 
-**多实例并发**：默认单实例；多实例时由程序员保证同一状态不被多个实例并发写，平台不提供跨实例的自动互斥（见 §4.1.2）。
+**多实例并发**：默认单实例；多实例时由程序员保证同一状态不被多个实例并发写，平台不提供跨实例的自动互斥（见 §2.1.2）。
 
-### 4.3.5 跨集群通信：queue
+### 2.3.5 跨集群通信：queue
 
 `queue` 是跨物理集群的管理面消息队列，用于跨集群应用通信：
 
@@ -221,11 +221,11 @@ scalebox global ls
 - 不是应用内状态存储；跨集群信息共享用它，应用内状态用 semaphore/variable。
 - `global` 只在同一物理集群内跨应用；跨物理集群用 `queue`。
 
-命令与连接目标见 {doc}`跨集群架构 §10.6 <10_cross_cluster>` 和 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 的 `scalebox queue` 章节。
+命令与连接目标见 {doc}`跨集群架构 §5.6 <10_cross_cluster>` 和 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 的 `scalebox queue` 章节。
 
-## 4.4 状态迁移
+## 2.4 状态迁移
 
-### 4.4.1 任务头状态传递
+### 2.4.1 任务头状态传递
 
 主路由通过任务头把状态传给算法模块，模块再把 `_` 前缀 header 带回主路由：
 
@@ -239,7 +239,7 @@ scalebox global ls
 
 传播规则见 [task-headers.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md)。
 
-### 4.4.2 vtask 状态保持
+### 2.4.2 vtask 状态保持
 
 vtask 是对并行逻辑及其状态的粗粒度封装，把跨模块 task 串成一条计算链。它跨越输入加载、计算、结果回写的整个过程，基于计数做流控，分为全局计数、分组计数、节点计数等类型。
 
@@ -254,9 +254,9 @@ vtask 是对并行逻辑及其状态的粗粒度封装，把跨模块 task 串�
 
 完整设计见 {doc}`VTask 虚拟任务 <9_vtask>`。
 
-## 4.5 性能与优化
+## 2.5 性能与优化
 
-### 4.5.1 减少消息数量
+### 2.5.1 减少消息数量
 
 主路由是全系统集中模块；路由相关的输入任务越少，批量处理越有效：
 
@@ -264,7 +264,7 @@ vtask 是对并行逻辑及其状态的粗粒度封装，把跨模块 task 串�
 - 把同一阶段的多条数据合并成一条控制消息，由算法模块内部分发。
 - 减少全系统的信号量数量，优先使用粗粒度信号量。
 
-### 4.5.2 粗粒度信号量
+### 2.5.2 粗粒度信号量
 
 信号量越细，管理数据规模越大、数据库往返越多。建议：
 
@@ -272,14 +272,14 @@ vtask 是对并行逻辑及其状态的粗粒度封装，把跨模块 task 串�
 - 相关的计数器用 `semagroup` 统一操作。
 - 只在需要精确准入/进度时引入细粒度计数。
 
-### 4.5.3 批量处理
+### 2.5.3 批量处理
 
 - 主路由一次读取多条任务（`task_batch_size`，缺省 1），批量生成后续任务。
 - 批量增减信号量/变量，减少数据库操作次数。
 - 批量大小要平衡延迟与吞吐；过大的批次会增加单次处理时间与内存占用。
 - 避免因与流控联动影响并行效率；把流控检查放在批量处理的边界。
 
-## 4.6 状态变量命名规范
+## 2.6 状态变量命名规范
 
 信号量、共享变量、全局变量使用同一命名规则：
 
@@ -294,7 +294,7 @@ vtask 信号量命名模式：
 
 命名与作用域的完整规则见 [semaphore-variable.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md)。
 
-## 4.7 主路由实现最佳实践
+## 2.7 主路由实现最佳实践
 
 - **应用分解**：主路由是集中模块，减少路由消息数量，有利于批量处理信号量与消息发送。
 - **状态设计**：header 用于一次性参数；variable 用于跨任务状态；global 用于同集群跨应用；queue 用于跨集群通信。
