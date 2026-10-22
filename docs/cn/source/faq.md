@@ -1,4 +1,4 @@
-# 1. 常见问题（FAQ）
+# 常见问题（FAQ）
 
 ## 1. 部署与连接
 
@@ -88,7 +88,7 @@ grpcurl -plaintext localhost:50051 list
 ### 3.1 信号量不存在错误
 
 设置 `SEMAPHORE_AUTO_CREATE=yes` 自动创建（初值 0），或显式创建信号量。命令与返回码见
-[appendix/3 §1.3.3](appendix/3_commandline_tools.md)。
+[appendix/3 §3.3.3](appendix/3_commandline_tools.md)。
 
 ### 3.2 信号量值异常（不收敛）
 

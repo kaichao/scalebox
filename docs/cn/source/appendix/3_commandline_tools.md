@@ -3,7 +3,7 @@
 > 本章只保留命令行的使用约定与语义补充。完整的命令、usage 与 flags 见
 > [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)（由 `scalebox --help` 生成）。
 
-## 1.1 命令行选项与环境变量
+## 3.1 命令行选项与环境变量
 
 | 选项 | 缺省值 | 描述 |
 |---|---|---|
@@ -23,7 +23,7 @@
 - `p419_48nodes.env`
 - `p419.env`
 
-## 1.2 常用任务示例
+## 3.2 常用任务示例
 
 ### 启动应用
 
@@ -72,9 +72,9 @@ scalebox app delete --app-id N
 `scalebox queue` 提供跨集群应用通信：`ls`、`peek`、`pull`、`push`、`purge`。
 参数与优先级规则见 CLI 参考的 `scalebox queue` 章节。
 
-## 1.3 语义补充
+## 3.3 语义补充
 
-### 1.3.1 `scalebox run` 参数
+### 3.3.1 `scalebox run` 参数
 
 | 参数 | 说明 |
 |---|---|
@@ -94,7 +94,7 @@ scalebox app delete --app-id N
 CLI 内部使用 `MY_APP_NAME`、`MY_APP_CLUSTER`、`MY_IMAGE_NAME`、`MY_CODE_PATH`、
 `MY_SLOT_REGEX`、`MY_MR_IMAGE_NAME`、`MY_MR_CODE_PATH` 等环境变量；一般直接使用上述 flags。
 
-### 1.3.2 `task add` 输入格式与控制 header
+### 3.3.2 `task add` 输入格式与控制 header
 
 主要 flags：
 
@@ -133,7 +133,7 @@ CLI 内部使用 `MY_APP_NAME`、`MY_APP_CLUSTER`、`MY_IMAGE_NAME`、`MY_CODE_P
 `_` 前缀的 header 会沿下游模块自动传播；`_vtask_attr_*` 是 vtask 范围内的应用自定义属性。
 详见 [headers-propagation](https://github.com/kaichao/scalebox/blob/dev/features/headers-propagation/README.md)。
 
-### 1.3.3 信号量
+### 3.3.3 信号量
 
 - 公共参数：`--app-id` 或 `--module-id`（也可用 `APP_ID` / `MODULE_ID` 环境变量）。
 - 自动创建：设置 `SEMAPHORE_AUTO_CREATE=yes` 时，信号量不存在则以初值 0 创建；CLI 通过 gRPC metadata `semaphore-auto-create: yes` 传给 controld。
@@ -158,7 +158,7 @@ scalebox semaphore delete <name>
 `2` 信号量不存在。表达式匹配多个信号量时，输出为 JSON map：
 `{"sema1":n1,"sema2":n2}`。
 
-### 1.3.4 信号量组
+### 3.3.4 信号量组
 
 `semagroup` 以信号量名前缀或正则标识一组信号量：
 
@@ -173,7 +173,7 @@ scalebox semaphore delete <name>
 
 返回值与退出码约定同 `semaphore`。
 
-### 1.3.5 变量
+### 3.3.5 变量
 
 - 公共参数：`--app-id` 或 `--module-id`。
 - 命名：同信号量（`[A-Za-z0-9:_-]`，首字符为字母或下划线）。
@@ -189,14 +189,14 @@ scalebox variable delete <name>
 `get` 的退出码：`0` 成功，`1` 数据库错误，`2` 变量不存在。表达式匹配多个变量时，
 输出为 JSON map：`{"var1":"val1","var2":"val2"}`。
 
-### 1.3.6 其他约定
+### 3.3.6 其他约定
 
 - `global` 变量跨应用共享；`variable` 属于应用或模块。两者都用 `ls` / `get` / `set` / `delete`。
 - `cluster init-local` 必须在 local 集群头节点的物理机上执行，不能在容器内执行。
 - 旧命令名已更新：`global list`→`global ls`、`semaphore list`→`semaphore ls`、`slot remove`→`slot delete`、`variable list`→`variable ls`、`host create`→`host new`。
 - 旧 `channel` 已由 `scalebox queue` 取代；系统整体状态请用 `cluster status`、`host status`、`slot status`。
 
-## 1.4 完整命令参考
+## 3.4 完整命令参考
 
 - [docs/reference/cli.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)
 - 由 `scalebox <command> --help` 递归生成；当前覆盖 97 个命令。

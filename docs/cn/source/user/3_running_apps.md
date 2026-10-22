@@ -3,6 +3,8 @@
 本章按“建应用 → 投任务 → 查状态 → 清理”走一遍。完整命令、usage 与 flags 见
 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)。
 
+应用、模块、主路由与应用状态的概念见 [核心概念](2_core_concepts.md)；本章只讲操作。
+
 ## 3.1 创建应用
 
 ```bash
@@ -14,10 +16,10 @@ scalebox run --app-file app.yaml --print-yaml
 ```
 
 `run` 的主要参数（`--app-cluster`、`--image-name`、`--code-path`、`--slot-regex` 等）见
-[appendix/3 §1.3.1](../appendix/3_commandline_tools.md)。字段定义见
+[appendix/3 §3.3.1](../appendix/3_commandline_tools.md)。字段定义见
 [app-yaml](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)。
 环境变量文件与模板变量的优先级见 [appendix/1 §1.2](../appendix/1_tech_specifications.md) 和
-[appendix/3 §1.1](../appendix/3_commandline_tools.md)。
+[appendix/3 §3.1](../appendix/3_commandline_tools.md)。
 
 ## 3.2 投递任务
 
@@ -30,7 +32,7 @@ scalebox task add --app-id N --task-file tasks.txt
 ```
 
 任务文件格式、控制 header 与 `--conflict-action` 见
-[appendix/3 §1.3.2](../appendix/3_commandline_tools.md)。
+[appendix/3 §3.3.2](../appendix/3_commandline_tools.md)。
 
 ## 3.3 查看状态
 
