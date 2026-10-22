@@ -24,7 +24,7 @@
 | 节点代理 | `agent` | 领任务、起容器、收集结果、写回流 |
 | Web 界面 | `webui` | 浏览器操作入口；生成 `app-schema.json` 的宿主 |
 | 集群管理应用 | `cluster-admin` | 与 HPC 调度系统交互的资源申请应用（系统级 app） |
-| 主路由 | `main_router` | 入口任务的默认目的地；决定任务初始分发 |
+| 主路由 | `main_router` | 应用内的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作；不是平台控制面（详见 `user/2_core_concepts`） |
 | 等待队列 | wait-queue | vtask 标准模块：准入、`bind`、预扣额度 |
 
 ## 任务与接口

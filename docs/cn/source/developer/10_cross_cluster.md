@@ -11,6 +11,7 @@ CLI ──(始终)──▶ 本地 controld ──(gRPC 代理)──▶ 远端 
 - CLI **永远只连接本地集群**的 controld
 - 跨集群操作由本地 controld 解析 YAML 中的 `cluster` 字段，比对 `grpc_server` 后代理转发
 - `t_cluster` 表在所有集群数据库间全网格复制（`name='local'` 标识本地集群），保证所有 controld 都能查到任意集群的 `grpc_server`
+- 跨物理集群的信息共享使用 `queue`；同一物理集群内跨应用共享使用 `global`
 
 ## 10.2 数据复制模型
 
@@ -121,6 +122,7 @@ CLI 始终连本地 controld，`clusterName` 作为 `AddTaskList` 路由参数�
 | task list / get / header | 本地 controld |
 | run | 本地 controld（controld 内部代理到远端） |
 | semaphore / semagroup / variable / global | 本地 controld |
+| queue | 目标集群数据库/controld（`--cluster` 选择远端，本地 controld 代理转发） |
 
 ## 10.7 GRPC_SERVER 解析优先级
 

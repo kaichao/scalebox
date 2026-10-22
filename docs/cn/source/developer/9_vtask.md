@@ -6,6 +6,10 @@
 
 ## 9.1 为什么需要 VTask
 
+VTask 是对计算逻辑中跨模块协作部分（并行逻辑）及其状态的粗粒度封装。它不封装算法逻辑；算法仍在各模块内。它也不是独立调度器：调度由平台与主路由完成。全局变量是同一物理集群内跨应用配置，不属于 vtask 作用域；vtask 主要使用 vtask 作用域的信号量/变量和资源信号量。
+
+概念定义见 {doc}`核心概念 §2.6 <../user/2_core_concepts>`；实现与优化见 {doc}`主路由与应用状态：实现与优化 <4_main_router_status>`。
+
 ### 9.1.1 task 模型的局限
 
 Scalebox 的基础模型是 module → slot → task。每个 task 是一次独立的执行单元，在细粒度调度层面工作良好，但在应用层面有三个缺口：
@@ -123,7 +127,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**——vtask �
 
 **资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_size_sema` 随 root task 传播；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §9.4.5。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
 
-### 9.2.4 根 task 标识
+### 9.2.5 根 task 标识
 
 `vtask_role=head` 模块的 task 为 vtask 根。controld 创建 head 模块 task 时自动建立自引用：
 
@@ -135,7 +139,7 @@ WHERE id = $1
 
 `ListVTasks` 查询条件为 `WHERE vtask = id`。
 
-### 9.2.5 状态派生
+### 9.2.6 状态派生
 
 vtask 状态由根 task 的 `status_code` + 子任务完成比例派生：
 
@@ -242,6 +246,8 @@ wait-queue slot 每轮 poll
 wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh` 末尾手动 increment 放行下一个 vtask。
 
 ### 9.4.5 vtask 生命周期中的信号量变化
+
+> 本小节面向平台贡献者/高级开发者；普通应用开发者可先读 §9.4.3 流控流程。
 
 管道涉及两类信号量，生命周期与归还责任不同：
 
@@ -445,6 +451,8 @@ scalebox vtask add-subtask --app-id=10 --module=vtask-core \
 | 手工归还（不知信号量名） | `vtask unbind --vtask-id=N` |
 
 ## 9.9 实现索引
+
+> 本节是平台实现索引，面向平台贡献者；普通应用开发者可跳过。
 
 | 层 | 文件 | 职责 |
 |----|------|------|
