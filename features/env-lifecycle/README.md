@@ -67,6 +67,6 @@ DEMO_VALUE=hello scalebox run --env-file=scalebox.env --app-file=feature.yaml
 
 ## 相关文档
 
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.3（环境变量）
+- 参数表：`docs/cn/source/reference/2_parameter_reference.md` §2.3（环境变量）
 - 设计文档：`go-scalebox/docs/env-loading.md`
 - 实战：`docs/agents/10-invariants.md` INV-01 / INV-02 / INV-03

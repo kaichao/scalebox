@@ -462,7 +462,7 @@ done
 
 ### 4. 应用属性（`_vtask_attr_<name>`）
 
-`_vtask_attr_<name>` 前缀的 task header 为应用自定义属性（契约见 `docs/cn/source/appendix/2_parameter_reference.md` 的 task-headers 表）：平台只运输、不解释。它随任务进入 wait-queue，由标准模块 run.sh 原样转发给 vtask-head，之后沿 `_` 前缀规则在 vtask 管道各模块间自动传播——vtask 内任意模块都可用 `scalebox::task_header "$2" _vtask_attr_<name>` 读取（见 `from-vtask-tail.sh` 中的打印示例）。
+`_vtask_attr_<name>` 前缀的 task header 为应用自定义属性（契约见 `docs/cn/source/reference/2_parameter_reference.md` 的 task-headers 表）：平台只运输、不解释。它随任务进入 wait-queue，由标准模块 run.sh 原样转发给 vtask-head，之后沿 `_` 前缀规则在 vtask 管道各模块间自动传播——vtask 内任意模块都可用 `scalebox::task_header "$2" _vtask_attr_<name>` 读取（见 `from-vtask-tail.sh` 中的打印示例）。
 
 ```bash
 # 创建 app（HOST-BOUND）

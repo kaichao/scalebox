@@ -68,6 +68,6 @@ DIR_QUOTA_GB='{"/data/ssd/tmp":22}' FREE_SPACE_GB='{"/data/ssd/tmp":1000}' \
 
 ## 相关文档
 
-- Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.2（准入控制）
+- Sphinx：`docs/cn/source/design/7_advanced_features.md` §7.2（准入控制）
 - 参数表：`docs/reference/app-yaml.md`（`module.arguments` 的 `free_space_gb` / `dir_quota_gb`）
 - 实战：app-fxcorr `docs/dynamic-flow-control.md`（挂载位置与死锁）

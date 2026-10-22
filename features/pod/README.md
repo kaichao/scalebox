@@ -68,6 +68,6 @@ echo 4 | scalebox run --app-file=feature.yaml
 
 ## 相关文档
 
-- Sphinx：`docs/cn/source/developer/5_node_local_compute.md` §5.4–5.5
+- Sphinx：`docs/cn/source/design/4_node_local_compute.md` §5.4–5.5
 - 参数表：`docs/reference/app-yaml.md`（`module.parameters` 的 `pod_id`）
 - 实战：app-fxcorr `docs/local-compute-plan.md`

@@ -1,6 +1,6 @@
 # 2. 主路由与应用状态
 
-> 本章讲实现与优化；概念定义见 {doc}`核心概念 <../user/2_core_concepts>` §1.5。
+> 本章讲实现与优化；概念定义见 {doc}`核心概念 <../application/1_core_concepts>` §1.5。
 > 读者：应用开发者、平台贡献者；普通用户可先读核心概念。
 
 ## 2.1 定位与实现形态
@@ -21,7 +21,7 @@
 3. **分发任务**：把任务发往算法模块或基础模块，并携带必要的任务头。
 4. **组织协作**：把多个模块串成完整计算过程，直到应用级目标完成。
 
-概念定义、边界与常见误解见 {doc}`核心概念 <../user/2_core_concepts>` §1.5。
+概念定义、边界与常见误解见 {doc}`核心概念 <../application/1_core_concepts>` §1.5。
 
 ### 2.1.2 原则上单实例与多实例
 
@@ -80,7 +80,7 @@
 
 静态拓扑只描述“有哪些模块、怎么连接”；动态规则由主路由脚本实现。例如，一个 `dir-list → file-copy → calc → merge` 的流水线，主路由根据当前阶段和回流消息决定下一步生成哪类任务。
 
-字段定义见 {doc}`技术规范 <../appendix/1_tech_specifications>` 与 [app-yaml.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)；应用设计方法见 {doc}`应用设计 <3_app_design>`。
+字段定义见 {doc}`技术规范 <../reference/1_tech_specifications>` 与 [app-yaml.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)；应用设计方法见 {doc}`应用设计 <../application/3_app_design>`。
 
 ### 2.2.2 主路由脚本
 
@@ -103,7 +103,7 @@ scalebox variable set my_stage compute
 scalebox global set my_config value
 ```
 
-批量处理是主路由效率的关键：一次读取多条任务、批量生成后续任务、批量更新信号量，减少数据库往返。实现细节见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 与 {doc}`VTask 虚拟任务 <9_vtask>`。
+批量处理是主路由效率的关键：一次读取多条任务、批量生成后续任务、批量更新信号量，减少数据库往返。实现细节见 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 与 {doc}`VTask 虚拟任务 <3_vtask>`。
 
 ### 2.2.3 任务头与任务体
 
@@ -151,7 +151,7 @@ scalebox semagroup increment <expr>
 scalebox semagroup decrement <expr>
 ```
 
-作用域、存储与生命周期见 [semaphore-variable.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md)；vtask 中的用法见 {doc}`VTask §3.4 <9_vtask>`。
+作用域、存储与生命周期见 [semaphore-variable.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md)；vtask 中的用法见 {doc}`VTask §3.4 <3_vtask>`。
 
 ### 2.3.2 共享变量
 
@@ -201,7 +201,7 @@ scalebox global ls
 批量操作：
 
 - 主路由一次读取多条任务（`task_batch_size`），批量生成后续任务，批量增减信号量。
-- vtask 的信号量写入使用 asyncbatch（10ms/50ms）降低逐条竞争（见 {doc}`VTask §3.7 <9_vtask>`）。
+- vtask 的信号量写入使用 asyncbatch（10ms/50ms）降低逐条竞争（见 {doc}`VTask §3.7 <3_vtask>`）。
 - 批量大小要平衡延迟与吞吐；不要因流控联动影响并行效率。
 
 **多实例并发**：默认单实例；多实例时由程序员保证同一状态不被多个实例并发写，平台不提供跨实例的自动互斥（见 §2.1.2）。
@@ -221,7 +221,7 @@ scalebox global ls
 - 不是应用内状态存储；跨集群信息共享用它，应用内状态用 semaphore/variable。
 - `global` 只在同一物理集群内跨应用；跨物理集群用 `queue`。
 
-命令与连接目标见 {doc}`跨集群架构 §5.6 <10_cross_cluster>` 和 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 的 `scalebox queue` 章节。
+命令与连接目标见 {doc}`跨集群架构 §5.6 <5_cross_cluster>` 和 [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 的 `scalebox queue` 章节。
 
 ## 2.4 状态迁移
 
@@ -252,7 +252,7 @@ vtask 是对并行逻辑及其状态的粗粒度封装，把跨模块 task 串�
 | 任务头 | 单条任务链 | 单次传递，人工维护 | 一次性参数、简单上下文 |
 | vtask | 跨模块计算链 | 平台自动维护 | 流控、资源绑定、容错、粗粒度状态 |
 
-完整设计见 {doc}`VTask 虚拟任务 <9_vtask>`。
+完整设计见 {doc}`VTask 虚拟任务 <3_vtask>`。
 
 ## 2.5 性能与优化
 
@@ -306,8 +306,8 @@ vtask 信号量命名模式：
 
 延伸阅读：
 
-- {doc}`核心概念 <../user/2_core_concepts>`：计算逻辑、应用状态、主路由、VTask。
-- {doc}`VTask 虚拟任务 <9_vtask>`：管道、信号量与命令。
-- {doc}`节点本地计算 <5_node_local_compute>`：本地计算的准入与容错。
+- {doc}`核心概念 <../application/1_core_concepts>`：计算逻辑、应用状态、主路由、VTask。
+- {doc}`VTask 虚拟任务 <3_vtask>`：管道、信号量与命令。
+- {doc}`节点本地计算 <4_node_local_compute>`：本地计算的准入与容错。
 - {doc}`高级编程特性 <7_advanced_features>`：流控、排序、超时与扩缩容。
-- {doc}`应用设计 <3_app_design>`：设计模式与最佳实践。
+- {doc}`应用设计 <../application/3_app_design>`：设计模式与最佳实践。

@@ -66,6 +66,6 @@ echo "hello" | scalebox task add --app-id=$APP_ID --sink-module=producer --heade
 
 ## 相关文档
 
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.1.4（task-headers）
-- Sphinx：`docs/cn/source/developer/9_vtask.md`（header 传播）
+- 参数表：`docs/cn/source/reference/2_parameter_reference.md` §2.1.4（task-headers）
+- Sphinx：`docs/cn/source/design/3_vtask.md`（header 传播）
 - 设计文档：`go-scalebox/docs/task-headers.md`、`go-scalebox/docs/vtask-design.md`

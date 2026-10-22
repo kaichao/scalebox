@@ -110,7 +110,7 @@ mycluster:
   comment:
 ```
 
-`parameters` 的字段语义见 [appendix/2 §2.2.1](2_parameter_reference.md)。`num_of_executors` 与 `channel_size` 仅 Inline cluster 使用。
+`parameters` 的字段语义见 [参数语义手册 §2.2.1](2_parameter_reference.md)。`num_of_executors` 与 `channel_size` 仅 Inline cluster 使用。
 
 ## 1.5 标识符命名规则
 

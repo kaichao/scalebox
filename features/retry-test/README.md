@@ -64,6 +64,6 @@ scalebox run --app-file=feature.yaml
 
 ## 相关文档
 
-- Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.1（摘要）
+- Sphinx：`docs/cn/source/design/7_advanced_features.md` §7.1（摘要）
 - 参数表：`docs/reference/app-yaml.md`（`module.parameters` 的 `retry_rules`）
-- 退出码：`docs/cn/source/appendix/6_exit_code_spec.md`
+- 退出码：`docs/cn/source/reference/4_exit_code_spec.md`

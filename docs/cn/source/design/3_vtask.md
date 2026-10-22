@@ -8,7 +8,7 @@
 
 VTask 是对计算逻辑中跨模块协作部分（并行逻辑）及其状态的粗粒度封装。它不封装算法逻辑；算法仍在各模块内。它也不是独立调度器：调度由平台与主路由完成。全局变量是同一物理集群内跨应用配置，不属于 vtask 作用域；vtask 主要使用 vtask 作用域的信号量/变量和资源信号量。
 
-概念定义见 {doc}`核心概念 §1.6 <../user/2_core_concepts>`；实现与优化见 {doc}`主路由与应用状态 <4_main_router_status>`。
+概念定义见 {doc}`核心概念 §1.6 <../application/1_core_concepts>`；实现与优化见 {doc}`主路由与应用状态 <2_main_router_status>`。
 
 ### 3.1.1 task 模型的局限
 

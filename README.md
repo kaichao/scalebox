@@ -81,29 +81,29 @@ cd vscode-scalebox && make install
 |------|------|------|
 | Getting Started | [Introduction to Scalebox](docs/cn/source/started/1_introduction.md) | Product positioning, key features, core value |
 | Getting Started | [Quick Start](docs/cn/source/started/2_quick_start.md) | Environment preparation, deployment, installation verification |
-| User Guide | [Installation](docs/cn/source/user/1_installation.md) | Docker Compose single-node / multi-node clusters |
-| User Guide | [Core Concepts](docs/cn/source/user/2_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster in detail |
-| User Guide | [Running Apps](docs/cn/source/user/3_running_apps.md) | Creating, managing, and monitoring apps and tasks |
-| User Guide | [Example Apps](docs/cn/source/user/4_example_apps.md) | From entry-level to advanced examples |
-| User Guide | [Operations](docs/cn/source/user/5_operations.md) | Monitoring, troubleshooting, backup, cluster management |
-| User Guide | [Standard Modules](docs/cn/source/user/6_standard_modules.md) | File transfer, scheduled tasks, directory listing, etc. |
-| User Guide | [WebUI Guide](docs/cn/source/user/7_webui.md) | REST gateway, page navigation, build and deployment |
-| User Guide | [VS Code Extension](docs/cn/source/user/8_vscode.md) | Installation and configuration, TreeView, DAG, LSP |
-| Developer Guide | [Programming Model](docs/cn/source/developer/1_programming_model.md) | Two-level programming model, event-driven architecture |
-| Developer Guide | [Module Development](docs/cn/source/developer/2_module_development.md) | Module design, sidecar pattern, unit testing |
-| Developer Guide | [App Design](docs/cn/source/developer/3_app_design.md) | Design principles, pipeline patterns, best practices |
-| Developer Guide | [Main Router & Status](docs/cn/source/developer/4_main_router_status.md) | Semaphores/variables/global variables, VTask overview |
-| Developer Guide | [Node-Local Computing](docs/cn/source/developer/5_node_local_compute.md) | Computing-storage integration, three-stage model, performance analysis |
-| Developer Guide | [Advanced Features](docs/cn/source/developer/7_advanced_features.md) | Fault tolerance, admission control, timeouts, slot auto-scaling |
-| Developer Guide | [VTask Design](docs/cn/source/developer/9_vtask.md) | Conceptual model, module structure, semaphores, pipeline flow |
-| Developer Guide | [Cross-Cluster Architecture](docs/cn/source/developer/10_cross_cluster.md) | Data replication, address resolution, gRPC proxy |
-| Developer Guide | [Security Framework](docs/cn/source/developer/11_security.md) | JWT + RBAC + TLS, certificate management |
-| Reference | [Technical Specifications](docs/cn/source/appendix/1_tech_specifications.md) | app.yaml / module / cluster definition specifications |
-| Reference | [Parameter Reference](docs/cn/source/appendix/2_parameter_reference.md) | All parameters and environment variables |
-| Reference | [CLI Commands](docs/cn/source/appendix/3_commandline_tools.md) | Complete reference of 24 subcommands |
-| Reference | [Shell Programming](docs/cn/source/appendix/4_shell_programming.md) | Built-in functions, container directories, file exchange interfaces |
-| Reference | [Exit Code Specification](docs/cn/source/appendix/6_exit_code_spec.md) | App exit code conventions and scheduling policies |
-| Reference | [FAQ](docs/cn/source/faq.md) | Common questions on deployment, tasks, semaphores, and WebUI |
+| User Guide | [Installation](docs/cn/source/deployment/1_installation.md) | Docker Compose single-node / multi-node clusters |
+| User Guide | [Core Concepts](docs/cn/source/application/1_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster in detail |
+| User Guide | [Running Apps](docs/cn/source/application/2_running_apps.md) | Creating, managing, and monitoring apps and tasks |
+| User Guide | [Example Apps](docs/cn/source/application/5_example_apps.md) | From entry-level to advanced examples |
+| User Guide | [Operations](docs/cn/source/deployment/2_operations.md) | Monitoring, troubleshooting, backup, cluster management |
+| User Guide | [Standard Modules](docs/cn/source/application/6_standard_modules.md) | File transfer, scheduled tasks, directory listing, etc. |
+| User Guide | [WebUI Guide](docs/cn/source/application/7_webui.md) | REST gateway, page navigation, build and deployment |
+| User Guide | [VS Code Extension](docs/cn/source/application/8_vscode.md) | Installation and configuration, TreeView, DAG, LSP |
+| Developer Guide | [Programming Model](docs/cn/source/design/1_programming_model.md) | Two-level programming model, event-driven architecture |
+| Developer Guide | [Module Development](docs/cn/source/application/4_module_development.md) | Module design, sidecar pattern, unit testing |
+| Developer Guide | [App Design](docs/cn/source/application/3_app_design.md) | Design principles, pipeline patterns, best practices |
+| Developer Guide | [Main Router & Status](docs/cn/source/design/2_main_router_status.md) | Semaphores/variables/global variables, VTask overview |
+| Developer Guide | [Node-Local Computing](docs/cn/source/design/4_node_local_compute.md) | Computing-storage integration, three-stage model, performance analysis |
+| Developer Guide | [Advanced Features](docs/cn/source/design/7_advanced_features.md) | Fault tolerance, admission control, timeouts, slot auto-scaling |
+| Developer Guide | [VTask Design](docs/cn/source/design/3_vtask.md) | Conceptual model, module structure, semaphores, pipeline flow |
+| Developer Guide | [Cross-Cluster Architecture](docs/cn/source/design/5_cross_cluster.md) | Data replication, address resolution, gRPC proxy |
+| Developer Guide | [Security Framework](docs/cn/source/design/6_security.md) | JWT + RBAC + TLS, certificate management |
+| Reference | [Technical Specifications](docs/cn/source/reference/1_tech_specifications.md) | app.yaml / module / cluster definition specifications |
+| Reference | [Parameter Reference](docs/cn/source/reference/2_parameter_reference.md) | All parameters and environment variables |
+| Reference | [CLI Commands](docs/cn/source/reference/3_commandline_tools.md) | Complete reference of 24 subcommands |
+| Reference | [Shell Programming](docs/cn/source/appendix/1_shell_programming.md) | Built-in functions, container directories, file exchange interfaces |
+| Reference | [Exit Code Specification](docs/cn/source/reference/4_exit_code_spec.md) | App exit code conventions and scheduling policies |
+| Reference | [FAQ](docs/cn/source/appendix/3_faq.md) | Common questions on deployment, tasks, semaphores, and WebUI |
 
 ### Design Documents
 

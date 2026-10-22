@@ -80,9 +80,9 @@ scalebox cluster status
 
 成功运行Hello Scalebox后，您可以：
 
-1. **学习核心概念**：阅读{doc}`核心概念 <../user/2_core_concepts>`，了解基本概念（App/Module/Task、Cluster/Host/Slot）、编程原语（semaphore/semagroup/variable/global/queue）与核心概念 3+1（计算逻辑、应用状态、主路由 + VTask）
+1. **学习核心概念**：阅读{doc}`核心概念 <../application/1_core_concepts>`，了解基本概念（App/Module/Task、Cluster/Host/Slot）、编程原语（semaphore/semagroup/variable/global/queue）与核心概念 3+1（计算逻辑、应用状态、主路由 + VTask）
 2. **尝试更多示例**：探索其他示例应用（app-primes、vtask 等）
 3. **使用 WebUI**：浏览器打开 `http://localhost:8088` 进入可视化管理界面
 4. **安装 VS Code 插件**：`cd vscode-scalebox && make install`，获得 TreeView + DAG + app.yaml 语法支持
 5. **开发自定义应用**：参考开发指南，开发自己的Scalebox应用
-6. **理解主路由与状态**：阅读{doc}`主路由与应用状态 <../developer/4_main_router_status>`，了解并行逻辑如何落地
+6. **理解主路由与状态**：阅读{doc}`主路由与应用状态 <../design/2_main_router_status>`，了解并行逻辑如何落地

@@ -75,7 +75,7 @@ grpcurl -plaintext localhost:50051 list
 ### 3.2.2 任务执行失败（exit code != 0）
 
 先用 `scalebox task show <task-id>` 查看 stdout/stderr 与 `status_code`；退出码含义见
-[退出码规范](appendix/6_exit_code_spec.md)。任务不动或下游不出现，按
+[退出码规范](../reference/4_exit_code_spec.md)。任务不动或下游不出现，按
 [卡链与失败诊断](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md) 排查。
 
 ### 3.2.3 批量任务重复创建
@@ -88,12 +88,12 @@ grpcurl -plaintext localhost:50051 list
 ### 3.3.1 信号量不存在错误
 
 设置 `SEMAPHORE_AUTO_CREATE=yes` 自动创建（初值 0），或显式创建信号量。命令与返回码见
-[appendix/3 §3.3.3](appendix/3_commandline_tools.md)。
+[命令行参考 §3.3.3](../reference/3_commandline_tools.md)。
 
 ### 3.3.2 信号量值异常（不收敛）
 
 检查流控版（无前缀，controld 维护）与可编程版（`:` 前缀，脚本操作）是否匹配。见
-[VTask §3.4](developer/9_vtask.md)。
+[VTask §3.4](../design/3_vtask.md)。
 
 ## 3.4 WebUI
 
@@ -177,30 +177,30 @@ docker compose -f runtime/compose.yaml logs --since "2026-01-01"
 
 主路由是应用内的控制面模块（应用的一部分），执行并行逻辑、读写应用状态、分发任务、组织模块协作；平台控制面是 controld/actuator，负责资源、slot、容器与任务调度。主路由不管理容器/节点/slot，平台不执行应用的计算逻辑。
 
-详见 {doc}`核心概念 §1.5 <user/2_core_concepts>` 与 {doc}`主路由与应用状态 <developer/4_main_router_status>`。
+详见 {doc}`核心概念 §1.5 <../application/1_core_concepts>` 与 {doc}`主路由与应用状态 <../design/2_main_router_status>`。
 
 ### 3.7.2 模块都无状态，应用状态存在哪里？
 
 应用状态存在平台存储中：semaphore（计数/流控/进度）、variable（应用内字符串状态）、global（同一物理集群内跨应用共享）。跨物理集群的信息共享使用 queue。task 不携带应用状态；module 不持有应用状态；主路由集中读写，controld 在 vtask 等场景也会读写信号量。
 
-详见 {doc}`核心概念 §1.4 <user/2_core_concepts>`。
+详见 {doc}`核心概念 §1.4 <../application/1_core_concepts>`。
 
 ### 3.7.3 计算逻辑、算法逻辑、并行逻辑是什么关系？
 
 计算逻辑 = 算法逻辑（模块内）+ 并行逻辑（模块间）。算法逻辑回答“一个小问题怎么算”，由模块实现；并行逻辑回答“大问题怎么分解、分解后怎么协作”，由主路由执行。应用逻辑与计算逻辑同义。
 
-详见 {doc}`核心概念 §1.3 <user/2_core_concepts>`。
+详见 {doc}`核心概念 §1.3 <../application/1_core_concepts>`。
 
 ### 3.7.4 VTask 和主路由是什么关系？
 
 VTask 是对并行逻辑及其状态的粗粒度封装，把跨模块 task 组织为一个计算单元；它不是独立调度器，调度由平台与主路由完成。主路由执行并行逻辑并读写应用状态；VTask 在跨模块层承载状态、流控、资源绑定与容错。
 
-详见 {doc}`核心概念 §1.6 <user/2_core_concepts>` 与 {doc}`VTask 虚拟任务 <developer/9_vtask>`。
+详见 {doc}`核心概念 §1.6 <../application/1_core_concepts>` 与 {doc}`VTask 虚拟任务 <../design/3_vtask>`。
 
 ### 3.7.5 global 和 queue 有什么区别？
 
 global 用于同一物理集群内多个应用之间共享信息/配置；queue 用于跨物理集群的管理面消息共享。queue 不是 wait-queue，也不是平台内部任务队列。
 
-详见 {doc}`核心概念 §1.10 <user/2_core_concepts>` 与 {doc}`跨集群架构 §5.6 <developer/10_cross_cluster>`。
+详见 {doc}`核心概念 §1.10 <../application/1_core_concepts>` 与 {doc}`跨集群架构 §5.6 <../design/5_cross_cluster>`。
 
 > 持续更新中，欢迎贡献问题与答案。

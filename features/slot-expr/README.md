@@ -87,5 +87,5 @@ MY_VAR=VAR_VALUE
 
 ## 相关文档
 
-- Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.7
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.2.3（slot-parameters）
+- Sphinx：`docs/cn/source/design/7_advanced_features.md` §7.7
+- 参数表：`docs/cn/source/reference/2_parameter_reference.md` §2.2.3（slot-parameters）

@@ -74,6 +74,6 @@ scalebox run --app-file=feature.yaml
 
 ## 相关文档
 
-- Sphinx：`docs/cn/source/developer/2_module_development.md` §2.3.1
-- 参数表：`docs/cn/source/appendix/2_parameter_reference.md` §2.3（环境变量）
-- 标准模块：`docs/cn/source/user/6_standard_modules.md`
+- Sphinx：`docs/cn/source/application/4_module_development.md` §2.3.1
+- 参数表：`docs/cn/source/reference/2_parameter_reference.md` §2.3（环境变量）
+- 标准模块：`docs/cn/source/application/6_standard_modules.md`

@@ -14,7 +14,7 @@
 
 ## 7.1 容错机制
 
-> 容错状态由应用状态与 vtask 承载；概念见 {doc}`核心概念 <../user/2_core_concepts>` §1.4，vtask 容错见 {doc}`VTask 虚拟任务 <9_vtask>`。
+> 容错状态由应用状态与 vtask 承载；概念见 {doc}`核心概念 <../application/1_core_concepts>` §1.4，vtask 容错见 {doc}`VTask 虚拟任务 <3_vtask>`。
 
 模块运行错误通常分为两类：
 - 逻辑错误：代码逻辑导致的结果错误；
@@ -78,7 +78,7 @@
 
 ## 7.2 准入控制机制
 
-> 准入控制读写应用状态（信号量/变量）；读写者与并发纪律见 {doc}`核心概念 <../user/2_core_concepts>` §1.4 与 {doc}`主路由与应用状态 <4_main_router_status>` §2.3.4。
+> 准入控制读写应用状态（信号量/变量）；读写者与并发纪律见 {doc}`核心概念 <../application/1_core_concepts>` §1.4 与 {doc}`主路由与应用状态 <2_main_router_status>` §2.3.4。
 
 准入控制(Admission Control)
 
@@ -122,7 +122,7 @@
 ### 7.2.3 vtask 计数准入控制
 
 标准流控属性 `vtask_size`：vtask-head 启动时计数器减一，vtask-tail（或主路由）完成后加一；计数器 <= 0 时新 vtask 不能运行。按 `task_dist_mode` 生成三种信号量（`vtask_size:<mod>` / `host_vtask_size:<mod>:<host>` / `group_vtask_size:<mod>:<组号>`）；命名、作用域与生命周期见
-[`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §4–§5，vtask 管道中的用法见 [VTask §3.4](9_vtask.md)。
+[`reference/semaphore-variable.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md) §4–§5，vtask 管道中的用法见 [VTask §3.4](3_vtask.md)。
 
 ### 7.2.4 节点组并行同步准入控制
 
@@ -144,7 +144,7 @@
 
 ## 7.3 关键模块的任务运行排序
 
-> 排序是并行逻辑的一部分，由主路由设置 `sort_tag` 等控制信息；概念见 {doc}`核心概念 <../user/2_core_concepts>` §1.3.2。
+> 排序是并行逻辑的一部分，由主路由设置 `sort_tag` 等控制信息；概念见 {doc}`核心概念 <../application/1_core_concepts>` §1.3.2。
 
 task运行排序是scalebox应用运行的重要基础。
 
@@ -191,7 +191,7 @@ scalebox 标准时间格式为 `2023-10-24T18:00:00.123456+0800`；`timestamps.t
 
 ## 7.6 跨集群应用
 
-见 [跨集群](10_cross_cluster.md)。
+见 [跨集群](5_cross_cluster.md)。
 
 ## 7.7 Slot 启动命令表达式
 
@@ -352,10 +352,10 @@ Slot 自动扩缩容根据资源使用情况自动调整任务执行槽数量，
 
 | 主题 | 文档 | 说明 |
 |------|------|------|
-| 核心概念 | {doc}`核心概念 <../user/2_core_concepts>` | 计算逻辑、应用状态、主路由、VTask |
-| 主路由实现 | {doc}`主路由与应用状态 <4_main_router_status>` | 并行逻辑、状态读写、多实例、批量处理 |
-| VTask 任务组 | {doc}`9_vtask` | 完整的概念模型、模块结构、信号量机制、管道流程、CLI 命令参考 |
-| 跨集群架构 | {doc}`10_cross_cluster` | 数据复制模型、地址解析、gRPC 代理转发、Task 跨集群路由 |
-| 安全框架 | {doc}`11_security` | JWT + RBAC + TLS、证书管理、Automation Token 轮换 |
-| WebUI 使用 | {doc}`WebUI 指南 <../user/7_webui>` | REST 网关、导航结构、构建部署 |
-| VS Code 插件 | {doc}`VS Code 插件 <../user/8_vscode>` | TreeView、DAG、LSP、安装配置 |
+| 核心概念 | {doc}`核心概念 <../application/1_core_concepts>` | 计算逻辑、应用状态、主路由、VTask |
+| 主路由实现 | {doc}`主路由与应用状态 <2_main_router_status>` | 并行逻辑、状态读写、多实例、批量处理 |
+| VTask 任务组 | {doc}`3_vtask` | 完整的概念模型、模块结构、信号量机制、管道流程、CLI 命令参考 |
+| 跨集群架构 | {doc}`5_cross_cluster` | 数据复制模型、地址解析、gRPC 代理转发、Task 跨集群路由 |
+| 安全框架 | {doc}`6_security` | JWT + RBAC + TLS、证书管理、Automation Token 轮换 |
+| WebUI 使用 | {doc}`WebUI 指南 <../application/7_webui>` | REST 网关、导航结构、构建部署 |
+| VS Code 插件 | {doc}`VS Code 插件 <../application/8_vscode>` | TreeView、DAG、LSP、安装配置 |

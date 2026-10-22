@@ -134,7 +134,7 @@ docker compose -f build/compose.yaml -f build/compose.security.yaml up -d
 
 **集群存储（可选）**：
 - 安装 glusterfs 客户端，挂载共享存储卷
-- 详见 {doc}`附录 7 - 基础软件安装 <../appendix/7_software_install>`
+- 详见 {doc}`附录 2 - 基础软件安装 <../appendix/2_software_install>`
 
 ## 1.3 配置说明
 

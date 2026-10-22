@@ -66,6 +66,6 @@ echo "body-1" | scalebox task add --app-id=$APP_ID --sink-module=identity
 
 ## 相关文档
 
-- 参数表：`docs/reference/app-yaml.md`（`module.parameters` 的 `task_dedup_cache_ttl_minutes`）；`docs/cn/source/appendix/2_parameter_reference.md` §2.1.4（task headers）
-- Sphinx：`docs/cn/source/developer/7_advanced_features.md` §7.1（重试）
+- 参数表：`docs/reference/app-yaml.md`（`module.parameters` 的 `task_dedup_cache_ttl_minutes`）；`docs/cn/source/reference/2_parameter_reference.md` §2.1.4（task headers）
+- Sphinx：`docs/cn/source/design/7_advanced_features.md` §7.1（重试）
 - 实战：`docs/agents/10-invariants.md` INV-06 / INV-07

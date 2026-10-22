@@ -105,9 +105,9 @@ scalebox app delete --app-id 1
 
 本章是最小单模块应用，没有主路由；多模块协作时，由主路由执行并行逻辑、读写应用状态。下一步先读核心概念，再按需读主路由实现。
 
-- [核心概念](../user/2_core_concepts.md)：基本概念、编程原语、计算逻辑 / 应用状态 / 主路由 / VTask。
-- [运行与管理应用](../user/3_running_apps.md)：投递、查看、清理的完整流程。
-- [主路由与应用状态](../developer/4_main_router_status.md)：并行逻辑如何落地。
+- [核心概念](../application/1_core_concepts.md)：基本概念、编程原语、计算逻辑 / 应用状态 / 主路由 / VTask。
+- [运行与管理应用](../application/2_running_apps.md)：投递、查看、清理的完整流程。
+- [主路由与应用状态](../design/2_main_router_status.md)：并行逻辑如何落地。
 - [app.yaml 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/app-yaml.md)
 - [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md)
 - [features/](https://github.com/kaichao/scalebox/tree/dev/features)：可执行的最小特性与测试。

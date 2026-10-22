@@ -5,7 +5,7 @@
 
 ## 0. 方法与输入
 
-**主干**：`docs/cn/source/appendix/2_parameter_reference.md`（7 类参数表）。
+**主干**：`docs/cn/source/reference/2_parameter_reference.md`（7 类参数表）。
 
 **叠加四路输入**：
 

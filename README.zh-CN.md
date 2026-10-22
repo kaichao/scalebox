@@ -85,29 +85,29 @@ cd vscode-scalebox && make install
 |------|------|------|
 | 入门 | [Scalebox 简介](docs/cn/source/started/1_introduction.md) | 产品定位、主要特性、核心价值 |
 | 入门 | [快速上手](docs/cn/source/started/2_quick_start.md) | 环境准备、部署运行、验证安装 |
-| 使用 | [安装部署](docs/cn/source/user/1_installation.md) | Docker Compose 单节点 / 多节点集群 |
-| 使用 | [核心概念](docs/cn/source/user/2_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster 详解 |
-| 使用 | [运行应用](docs/cn/source/user/3_running_apps.md) | 创建、管理、监控应用和任务 |
-| 使用 | [示例应用](docs/cn/source/user/4_example_apps.md) | 入门到高级示例 |
-| 使用 | [运维管理](docs/cn/source/user/5_operations.md) | 监控、排错、备份、集群管理 |
-| 使用 | [标准模块](docs/cn/source/user/6_standard_modules.md) | 文件传输、定时任务、目录列表等 |
-| 使用 | [WebUI 指南](docs/cn/source/user/7_webui.md) | REST 网关、页面导航、构建部署 |
-| 使用 | [VS Code 插件](docs/cn/source/user/8_vscode.md) | 安装配置、TreeView、DAG、LSP |
-| 开发 | [编程模型](docs/cn/source/developer/1_programming_model.md) | 两级编程模型、事件驱动架构 |
-| 开发 | [模块开发](docs/cn/source/developer/2_module_development.md) | 模块设计、sidecar 模式、单元测试 |
-| 开发 | [应用设计](docs/cn/source/developer/3_app_design.md) | 设计原则、流水线模式、最佳实践 |
-| 开发 | [主路由与状态](docs/cn/source/developer/4_main_router_status.md) | 信号量/变量/全局变量、VTask 概览 |
-| 开发 | [节点本地计算](docs/cn/source/developer/5_node_local_compute.md) | 存算一体、三阶段模型、性能分析 |
-| 开发 | [高级特性](docs/cn/source/developer/7_advanced_features.md) | 容错、准入控制、超时、slot 自动扩缩 |
-| 开发 | [VTask 设计](docs/cn/source/developer/9_vtask.md) | 概念模型、模块结构、信号量、管道流程 |
-| 开发 | [跨集群架构](docs/cn/source/developer/10_cross_cluster.md) | 数据复制、地址解析、gRPC 代理 |
-| 开发 | [安全框架](docs/cn/source/developer/11_security.md) | JWT + RBAC + TLS、证书管理 |
-| 参考 | [技术规范](docs/cn/source/appendix/1_tech_specifications.md) | app.yaml / module / cluster 定义规范 |
-| 参考 | [参数手册](docs/cn/source/appendix/2_parameter_reference.md) | 全部参数和环境变量 |
-| 参考 | [CLI 命令](docs/cn/source/appendix/3_commandline_tools.md) | 24 个子命令完整参考 |
-| 参考 | [Shell 编程](docs/cn/source/appendix/4_shell_programming.md) | 内置函数、容器目录、文件交换接口 |
-| 参考 | [退出码规范](docs/cn/source/appendix/6_exit_code_spec.md) | 应用退出码约定和调度策略 |
-| 参考 | [FAQ](docs/cn/source/faq.md) | 部署、任务、信号量、WebUI 常见问题 |
+| 使用 | [安装部署](docs/cn/source/deployment/1_installation.md) | Docker Compose 单节点 / 多节点集群 |
+| 使用 | [核心概念](docs/cn/source/application/1_core_concepts.md) | App/Module/Task/VTask/Host/Slot/Cluster 详解 |
+| 使用 | [运行应用](docs/cn/source/application/2_running_apps.md) | 创建、管理、监控应用和任务 |
+| 使用 | [示例应用](docs/cn/source/application/5_example_apps.md) | 入门到高级示例 |
+| 使用 | [运维管理](docs/cn/source/deployment/2_operations.md) | 监控、排错、备份、集群管理 |
+| 使用 | [标准模块](docs/cn/source/application/6_standard_modules.md) | 文件传输、定时任务、目录列表等 |
+| 使用 | [WebUI 指南](docs/cn/source/application/7_webui.md) | REST 网关、页面导航、构建部署 |
+| 使用 | [VS Code 插件](docs/cn/source/application/8_vscode.md) | 安装配置、TreeView、DAG、LSP |
+| 开发 | [编程模型](docs/cn/source/design/1_programming_model.md) | 两级编程模型、事件驱动架构 |
+| 开发 | [模块开发](docs/cn/source/application/4_module_development.md) | 模块设计、sidecar 模式、单元测试 |
+| 开发 | [应用设计](docs/cn/source/application/3_app_design.md) | 设计原则、流水线模式、最佳实践 |
+| 开发 | [主路由与状态](docs/cn/source/design/2_main_router_status.md) | 信号量/变量/全局变量、VTask 概览 |
+| 开发 | [节点本地计算](docs/cn/source/design/4_node_local_compute.md) | 存算一体、三阶段模型、性能分析 |
+| 开发 | [高级特性](docs/cn/source/design/7_advanced_features.md) | 容错、准入控制、超时、slot 自动扩缩 |
+| 开发 | [VTask 设计](docs/cn/source/design/3_vtask.md) | 概念模型、模块结构、信号量、管道流程 |
+| 开发 | [跨集群架构](docs/cn/source/design/5_cross_cluster.md) | 数据复制、地址解析、gRPC 代理 |
+| 开发 | [安全框架](docs/cn/source/design/6_security.md) | JWT + RBAC + TLS、证书管理 |
+| 参考 | [技术规范](docs/cn/source/reference/1_tech_specifications.md) | app.yaml / module / cluster 定义规范 |
+| 参考 | [参数手册](docs/cn/source/reference/2_parameter_reference.md) | 全部参数和环境变量 |
+| 参考 | [CLI 命令](docs/cn/source/reference/3_commandline_tools.md) | 24 个子命令完整参考 |
+| 参考 | [Shell 编程](docs/cn/source/appendix/1_shell_programming.md) | 内置函数、容器目录、文件交换接口 |
+| 参考 | [退出码规范](docs/cn/source/reference/4_exit_code_spec.md) | 应用退出码约定和调度策略 |
+| 参考 | [FAQ](docs/cn/source/appendix/3_faq.md) | 部署、任务、信号量、WebUI 常见问题 |
 
 ### 英文设计文档
 

@@ -113,7 +113,7 @@ VTask —— 跨模块协作与状态的粗粒度封装
 - 主路由脚本中的分支、循环与任务生成逻辑。
 - 任务头（`_` 前缀）与任务体中的控制字段。
 
-实现细节见 {doc}`主路由与应用状态 <../developer/4_main_router_status>`。
+实现细节见 {doc}`主路由与应用状态 <../design/2_main_router_status>`。
 
 ## 1.4 应用状态
 
@@ -239,7 +239,7 @@ VTask —— 跨模块协作与状态的粗粒度封装
 | HOST-BOUND | 单节点 | task → wait-queue → vtask-head → vtask-core → vtask-tail | 单节点独占计算 |
 | GROUP-BOUND | 节点组 | task → wait-queue → vtask-head → vtask-core-1 → ... → vtask-tail | 多节点协同计算 |
 
-VTask 是“3+1”中的“+1”：建立在计算逻辑、应用状态、主路由三角之上的第一类封装。完整设计见 {doc}`VTask 虚拟任务 <../developer/9_vtask>`。
+VTask 是“3+1”中的“+1”：建立在计算逻辑、应用状态、主路由三角之上的第一类封装。完整设计见 {doc}`VTask 虚拟任务 <../design/3_vtask>`。
 
 ## 1.7 核心概念如何协作
 
@@ -330,8 +330,8 @@ Module 是无状态算法：容器内不保存跨任务的持久状态；同一 
 | 运行槽 | Slot | 节点上与 Module 对应的资源切片，负责任务执行与状态管理，是 Task 调度的基础单位 |
 | 集群 | Cluster | 计算资源的逻辑分组；支持单节点、静态、动态、内联等类型；组件包括头节点、计算节点与可选共享存储 |
 
-- App/Module/Task 的详细定义见 {doc}`应用设计 <../developer/3_app_design>` 与 {doc}`模块开发 <../developer/2_module_development>`。
-- Cluster 类型与运维见 {doc}`运维管理 <../user/5_operations>`；跨集群见 {doc}`跨集群架构 <../developer/10_cross_cluster>`。
+- App/Module/Task 的详细定义见 {doc}`应用设计 <3_app_design>` 与 {doc}`模块开发 <4_module_development>`。
+- Cluster 类型与运维见 {doc}`运维管理 <../deployment/2_operations>`；跨集群见 {doc}`跨集群架构 <../design/5_cross_cluster>`。
 - VTask 是核心概念，见 §1.6，不在此表重复。
 
 ## 1.10 编程原语详解
@@ -358,9 +358,9 @@ Module 是无状态算法：容器内不保存跨任务的持久状态；同一 
 
 命令与事实表：
 
-- {doc}`命令行参考 <../appendix/3_commandline_tools>`（信号量、变量、队列）。
+- {doc}`命令行参考 <../reference/3_commandline_tools>`（信号量、变量、队列）。
 - [semaphore-variable.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/semaphore-variable.md)（原语存储、作用域、生命周期）。
-- {doc}`跨集群架构 <../developer/10_cross_cluster>` §5.6（queue 连接目标）。
+- {doc}`跨集群架构 <../design/5_cross_cluster>` §5.6（queue 连接目标）。
 
 ## 1.11 并行化方式
 
@@ -376,14 +376,14 @@ Module 是无状态算法：容器内不保存跨任务的持久状态；同一 
 - **模块间并行**：不同模块通过流水线方式并行执行，实现流水线并行。
 - **混合并行**：结合以上方式，实现最优并行效率。
 
-详细策略见 {doc}`编程模型 <../developer/1_programming_model>` §1.7。
+详细策略见 {doc}`编程模型 <../design/1_programming_model>` §1.7。
 
 ## 1.12 延伸阅读
 
-- {doc}`主路由与应用状态 <../developer/4_main_router_status>`
-- {doc}`VTask 虚拟任务 <../developer/9_vtask>`
-- {doc}`节点本地计算 <../developer/5_node_local_compute>`
-- {doc}`编程模型 <../developer/1_programming_model>`
-- {doc}`应用设计 <../developer/3_app_design>`
-- {doc}`命令行参考 <../appendix/3_commandline_tools>`
+- {doc}`主路由与应用状态 <../design/2_main_router_status>`
+- {doc}`VTask 虚拟任务 <../design/3_vtask>`
+- {doc}`节点本地计算 <../design/4_node_local_compute>`
+- {doc}`编程模型 <../design/1_programming_model>`
+- {doc}`应用设计 <3_app_design>`
+- {doc}`命令行参考 <../reference/3_commandline_tools>`
 - [features/](https://github.com/kaichao/scalebox/tree/dev/features)：可执行的最小特性与测试

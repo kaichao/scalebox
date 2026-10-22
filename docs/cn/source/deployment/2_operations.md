@@ -171,7 +171,7 @@ docker compose restart
 
 ## 2.8 常见问题
 
-见 [FAQ](../faq.md)。
+见 [FAQ](../appendix/3_faq.md)。
 
 ## 2.9 集群管理
 
