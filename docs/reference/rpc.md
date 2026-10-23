@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `proto/*.proto` by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@233a3c4 (2026-10-21) -->
+<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
 
 
 # gRPC / Proto 参考
@@ -82,6 +82,7 @@
 | `ListTasksRequest` | `from_module` | `string` | 4 |  |
 | `ListTasksRequest` | `from_time` | `google.protobuf.Timestamp` | 5 |  |
 | `ListTasksRequest` | `to_time` | `google.protobuf.Timestamp` | 6 |  |
+| `ListTasksRequest` | `status_class` | `string` | 7 |  |
 | `ListTasksRequest` | `pagination` | `Pagination` | 10 |  |
 | `ListTasksResponse` | `items` | `Item (repeated)` | 1 |  |
 | `ListTasksResponse` | `page_info` | `PageInfo` | 2 |  |
@@ -98,6 +99,7 @@
 | `ListTasksResponse.Item` | `to_host` | `string` | 12 |  |
 | `ListTasksResponse.Item` | `vtask_id` | `int64` | 13 |  |
 | `GetTaskRequest` | `task_id` | `int64` | 1 |  |
+| `GetTaskRequest` | `omit_exec_logs` | `bool` | 2 |  |
 | `GetTaskResponse` | `id` | `int64` | 1 |  |
 | `GetTaskResponse` | `module_id` | `int32` | 2 |  |
 | `GetTaskResponse` | `module_name` | `string` | 3 |  |
@@ -138,6 +140,11 @@
 | `TaskExecRecord` | `t2` | `google.protobuf.Timestamp` | 19 |  |
 | `TaskExecRecord` | `t3` | `google.protobuf.Timestamp` | 20 |  |
 | `TaskExecRecord` | `ts_prepared` | `google.protobuf.Timestamp` | 21 |  |
+| `TaskExecRecord` | `has_stdout` | `bool` | 22 |  |
+| `TaskExecRecord` | `has_stderr` | `bool` | 23 |  |
+| `TaskExecRecord` | `has_auxout` | `bool` | 24 |  |
+| `TaskExecRecord` | `has_ctxlog` | `bool` | 25 |  |
+| `TaskExecRecord` | `has_extras` | `bool` | 26 |  |
 | `ListTaskExecsRequest` | `app_id` | `int32` | 1 |  |
 | `ListTaskExecsRequest` | `module_id` | `int32` | 2 |  |
 | `ListTaskExecsRequest` | `slot_id` | `int32` | 3 |  |
@@ -822,6 +829,7 @@
 | `ListSlotsRequest` | `host_id` | `int32` | 2 |  |
 | `ListSlotsRequest` | `module_id` | `int32` | 3 |  |
 | `ListSlotsRequest` | `status` | `string` | 4 |  |
+| `ListSlotsRequest` | `hostname` | `string` | 5 |  |
 | `ListSlotsResponse` | `items` | `Item (repeated)` | 1 |  |
 | `ListSlotsResponse.Item` | `id` | `int32` | 1 |  |
 | `ListSlotsResponse.Item` | `slot_name` | `string` | 2 |  |
@@ -832,6 +840,9 @@
 | `ListSlotsResponse.Item` | `module_name` | `string` | 8 |  |
 | `ListSlotsResponse.Item` | `started_at` | `google.protobuf.Timestamp` | 9 |  |
 | `ListSlotsResponse.Item` | `seq` | `string` | 10 |  |
+| `ListSlotsResponse.Item` | `ip_addr` | `string` | 11 |  |
+| `ListSlotsResponse.Item` | `cluster_name` | `string` | 12 |  |
+| `ListSlotsResponse.Item` | `heartbeat_at` | `google.protobuf.Timestamp` | 13 |  |
 | `GetSlotRequest` | `slot_id` | `int32` | 1 |  |
 | `GetSlotResponse` | `id` | `int32` | 1 |  |
 | `GetSlotResponse` | `host_id` | `int32` | 3 |  |

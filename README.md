@@ -90,6 +90,7 @@ cd vscode-scalebox && make install
 | 2. Application Development | [Standard Modules](docs/cn/source/application/6_standard_modules.md) | File transfer, scheduled tasks, directory listing, etc. |
 | 2. Application Development | [WebUI Guide](docs/cn/source/application/7_webui.md) | REST gateway, page navigation, build and deployment |
 | 2. Application Development | [VS Code Extension](docs/cn/source/application/8_vscode.md) | Installation and configuration, TreeView, DAG, LSP |
+| 2. Application Development | [AI-Assisted Development](docs/cn/source/application/9_ai_assisted_development.md) | AGENTS.md setup, MCP integration, platform references |
 | 3. Deployment & Operations | [Installation](docs/cn/source/deployment/1_installation.md) | Docker Compose single-node / multi-node clusters |
 | 3. Deployment & Operations | [Operations](docs/cn/source/deployment/2_operations.md) | Monitoring, troubleshooting, backup, cluster management |
 | 4. Design & Principles | [Programming Model](docs/cn/source/design/1_programming_model.md) | Two-level programming model, event-driven architecture |
@@ -101,7 +102,7 @@ cd vscode-scalebox && make install
 | 4. Design & Principles | [Advanced Features](docs/cn/source/design/7_advanced_features.md) | Fault tolerance, admission control, timeouts, slot auto-scaling |
 | 5. Reference | [Technical Specifications](docs/cn/source/reference/1_tech_specifications.md) | app.yaml / module / cluster definition specifications |
 | 5. Reference | [Parameter Reference](docs/cn/source/reference/2_parameter_reference.md) | All parameters and environment variables |
-| 5. Reference | [CLI Commands](docs/cn/source/reference/3_commandline_tools.md) | Complete reference of 24 subcommands |
+| 5. Reference | [CLI Commands](docs/cn/source/reference/3_commandline_tools.md) | Complete reference of all subcommands |
 | 5. Reference | [Exit Code Specification](docs/cn/source/reference/4_exit_code_spec.md) | App exit code conventions and scheduling policies |
 | 6. Appendix & Others | [Shell Programming](docs/cn/source/appendix/1_shell_programming.md) | Built-in functions, container directories, file exchange interfaces |
 | 6. Appendix & Others | [Software Installation](docs/cn/source/appendix/2_software_install.md) | Docker, GlusterFS, and base software setup |

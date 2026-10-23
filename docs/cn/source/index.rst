@@ -6,7 +6,7 @@
 Scalebox 中文文档
 ====================================
 
-本中文站面向用户、应用开发者与系统管理员；AI agent 工作流与机器可读参考见仓库 `docs/agents/`。
+本中文站面向用户、应用开发者与系统管理员；AI agent 工作流与机器可读参考见仓库 `docs/agents/`，应用仓接入方法见 :doc:`AI 辅助开发 <application/9_ai_assisted_development>`。
 
 根据您的使用场景，选择以下学习路径：
 
@@ -45,6 +45,7 @@ Scalebox 中文文档
    application/6_standard_modules
    application/7_webui
    application/8_vscode
+   application/9_ai_assisted_development
 
 .. toctree::
    :maxdepth: 2

@@ -64,6 +64,13 @@ scalebox app delete --app-id N              # 删 app（不自动停本地容器
 `base_image: scalebox.net/platform/agent:latest`。`features/` 的 `test.sh` 封装了
 建 app → 等任务 → 断言 → 清理的完整生命周期，可当作最小范例读。
 
+## MCP server
+
+`scalebox mcp serve --read-only` 向 MCP 客户端提供只读平台查询：
+`list_apps`、`get_app`、`list_tasks`、`get_task`、`get_task_exec`、`list_slots`。
+它只读、不执行 shell；`AGENTS.md` 仍是静态规则的入口。客户端配置见
+`docs/cn/source/application/9_ai_assisted_development.md`。
+
 ## 生成物
 
 `docs/reference/` 分两类：

@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `scalebox <command> --help` (Cobra) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@233a3c4 (2026-10-21) -->
+<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
 
 
 # Scalebox CLI 参考
@@ -24,6 +24,7 @@ Usage:
 | `cluster` | Manage clusters |
 | `global` | Manage global variables |
 | `host` | Manage hosts |
+| `mcp` | Model Context Protocol server for AI clients |
 | `module` | Manage modules |
 | `queue` | Cross-cluster message queue for management-plane data exchange |
 | `run` | Run an application |
@@ -766,6 +767,56 @@ Usage:
 |---|---|---|
 | `-h, --help` | `—` | help for status |
 | `--prefix` | `string` | Hostname prefix filter |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox mcp`
+
+Model Context Protocol server for AI clients
+
+```text
+Usage:
+  scalebox mcp [command]
+```
+
+**子命令**
+
+| 命令 | 说明 |
+|---|---|
+| `serve` | Serve Scalebox read-only MCP tools over stdio |
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for mcp |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox mcp serve`
+
+Serve Scalebox read-only MCP tools over stdio
+
+```text
+Usage:
+  scalebox mcp serve [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for serve |
+| `--read-only` | `—` | expose read-only tools only (default true) |
+| `--transport` | `string` | transport: stdio (default "stdio") |
 
 **Global Flags**
 

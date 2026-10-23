@@ -3,6 +3,7 @@
 > 状态：已完成（2026-10-22）。
 > 范围：`docs/cn/source` 中文站；英文站未检查、未构建。
 > 用途：替代 `tmp/scalebox-cn-stage-a/` 中的一次性审计制品，保留最终结构、关键决策与验收结果。
+> 后续增补（2026-10-23）：新增 `application/9_ai_assisted_development.md`，当前为 31 个源文件（30 个页面 + `index.rst`）。
 
 ## 1. 最终结构
 

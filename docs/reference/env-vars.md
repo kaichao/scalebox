@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from Go 源码中的 `os.Getenv` / `os.LookupEnv` / `getEnvString` 读取点 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@233a3c4 (2026-10-21) -->
+<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
 
 
 # 环境变量参考（平台读取点）
@@ -100,7 +100,7 @@
 | `APP_ID` |  | `cmd/cli/app/add_slots.go:32`, `cmd/cli/app/app.go:62` |
 | `CLUSTER` |  | `cmd/cli/task/task.go:134` |
 | `DATABASE_URL` |  | `cmd/cli/init.go:75` |
-| `GRPC_SERVER` |  | `cmd/cli/init.go:66`, `cmd/cli/root.go:89`, `cmd/cli/task/task.go:244` … (+2) |
+| `GRPC_SERVER` |  | `cmd/cli/init.go:66`, `cmd/cli/root.go:90`, `cmd/cli/task/task.go:244` … (+2) |
 | `LOG_LEVEL` | `info` | `cmd/cli/init.go:26`, `cmd/cli/run/command.go:423` |
 | `MODULE_NAME` |  | `cmd/cli/vtask/vtask.go:444`, `cmd/cli/task/task.go:86` |
 | `MY_APP_CLUSTER` |  | `cmd/cli/run/command.go:415` |

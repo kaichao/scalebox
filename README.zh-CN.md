@@ -94,6 +94,7 @@ cd vscode-scalebox && make install
 | 二、应用开发 | [标准模块](docs/cn/source/application/6_standard_modules.md) | 文件传输、定时任务、目录列表等 |
 | 二、应用开发 | [WebUI 指南](docs/cn/source/application/7_webui.md) | REST 网关、页面导航、构建部署 |
 | 二、应用开发 | [VS Code 插件](docs/cn/source/application/8_vscode.md) | 安装配置、TreeView、DAG、LSP |
+| 二、应用开发 | [AI 辅助开发](docs/cn/source/application/9_ai_assisted_development.md) | AGENTS.md 配置、MCP 接入、平台资料入口 |
 | 三、部署与运维 | [安装部署](docs/cn/source/deployment/1_installation.md) | Docker Compose 单节点 / 多节点集群 |
 | 三、部署与运维 | [运维管理](docs/cn/source/deployment/2_operations.md) | 监控、排错、备份、集群管理 |
 | 四、设计与原理 | [编程模型](docs/cn/source/design/1_programming_model.md) | 两级编程模型、事件驱动架构 |
@@ -105,7 +106,7 @@ cd vscode-scalebox && make install
 | 四、设计与原理 | [高级特性](docs/cn/source/design/7_advanced_features.md) | 容错、准入控制、超时、slot 自动扩缩 |
 | 五、参考 | [技术规范](docs/cn/source/reference/1_tech_specifications.md) | app.yaml / module / cluster 定义规范 |
 | 五、参考 | [参数手册](docs/cn/source/reference/2_parameter_reference.md) | 全部参数和环境变量 |
-| 五、参考 | [CLI 命令](docs/cn/source/reference/3_commandline_tools.md) | 24 个子命令完整参考 |
+| 五、参考 | [CLI 命令](docs/cn/source/reference/3_commandline_tools.md) | 全部子命令完整参考 |
 | 五、参考 | [退出码规范](docs/cn/source/reference/4_exit_code_spec.md) | 应用退出码约定和调度策略 |
 | 六、附录与其他 | [Shell 编程](docs/cn/source/appendix/1_shell_programming.md) | 内置函数、容器目录、文件交换接口 |
 | 六、附录与其他 | [基础软件安装](docs/cn/source/appendix/2_software_install.md) | Docker、GlusterFS 等基础软件安装配置 |
