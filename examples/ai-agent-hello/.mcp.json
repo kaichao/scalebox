@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "scalebox": {
+      "command": "scalebox",
+      "args": ["mcp", "serve", "--read-only"]
+    }
+  }
+}

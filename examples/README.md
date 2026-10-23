@@ -45,3 +45,20 @@ scalebox的基本模块支持基于rsync、rsync-over-ssh、ftp等的文件拷�
 各传输模块的用法见 `dockerfiles/files/*/README.md`。
 
 
+## 4. ai-agent-hello
+给 AI agent 使用的最小应用示例：一个模块、一个任务，附带 `AGENTS.md`、
+`CLAUDE.md` 和只读 `.mcp.json`。适合验证 AI 读取应用规则、用 MCP 查询
+应用/任务/slot 状态，再通过 CLI 运行应用的完整闭环。
+
+操作步骤如下：
+```bash
+cd examples/ai-agent-hello
+scalebox run --app-file=app.yaml
+echo "hello agent" | scalebox task add --app-id <id> --sink-module hello
+scalebox task list --app-id <id>
+scalebox task show <task-id>
+```
+Claude Code 的接入步骤和示例提示词见目录内 `README.md`。连接远端控制面时，
+`CODE_PATH` 必须指向远端计算节点可见的路径，见目录内 `README.md`。
+
+

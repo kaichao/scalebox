@@ -1,0 +1,9 @@
+name: ai-agent-hello
+cluster: local
+
+modules:
+  hello:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${CODE_PATH}
+      slot_options: slot_on_head
