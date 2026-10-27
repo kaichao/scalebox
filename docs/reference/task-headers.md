@@ -51,7 +51,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `to_slot` | 目标 slot 的 id | SLOT-BOUND 模块用；未给时可由 main-router 的 router_index 推导 |
 | `to_slot_index` | 目标 slot 的 seq | 仅头节点有效；controld 转换为 `to_slot` |
 | `repeatable` | `yes` = 允许重复分发 | 绕过调度去重窗口；重跑、重放场景用 |
-| `conflict_action` | 任务冲突处理策略 | `OVERWRITE` 转换为 `repeatable=yes` 后删除本 header；其他值无效果。`task add --conflict-action`；agent 也会从 `CONFLICT_ACTION` 环境变量映射 |
+| `conflict_action` | 任务冲突处理策略 | `OVERWRITE` = 重置已有任务并自动补 `repeatable=yes`；`IGNORE` = 跳过已存在的任务；空 = 冲突报错。可写在 `task add --conflict-action`、task headers、`sink-tasks.txt` 行级 headers 或 `CONFLICT_ACTION` 环境变量；优先级：sink 行级 > task header > 环境变量。controld 解析后从 headers 移除，不落库；一次 `AddTaskList` 内所有行在同一事务，任意一行失败整批回滚 |
 | `slot_broadcast` | `yes` = 向模块的每个 slot 各投一条任务 | controld 展开为多条 `to_slot` 任务 |
 | `host_broadcast` | `yes` = 向模块的每个 host 各投一条任务 | controld 展开为多条 `to_host` 任务 |
 | `action` | 应用自定义动作名 | 平台只运输、不解释；语义由模块（如 tape 类）自行约定 |

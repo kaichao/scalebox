@@ -49,7 +49,7 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=SuperSecret
 
   redis:
-    image: redis:5
+    image: redis:7
     command: redis-server --requirepass 123456
     ports:
       - "6379:6379"

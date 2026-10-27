@@ -112,12 +112,5 @@ services:
       timeout: 5s
       retries: 5
 
-  redis-server:
-    container_name: redis-server
-    image: redis:7
-    command: redis-server
-    ports:
-      - "6379:6379"
-
 volumes:
   pgdata:

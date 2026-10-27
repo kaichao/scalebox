@@ -61,6 +61,7 @@
 3. `arguments` 映射：`task_max_seconds` → `PLAT_TASK_MAX_SECONDS`、`task_min_seconds` →
    `PLAT_TASK_MIN_SECONDS`、`poll_interval_seconds` → `PLAT_POLL_INTERVAL_SECONDS`、
    `max_idle_polls` → `PLAT_MAX_IDLE_POLLS`、`heartbeat_seconds` → `PLAT_HEARTBEAT_SECONDS`、
+   `max_sink_tasks` → `MAX_SINK_TASKS`、
    `output_text_size` → `PLAT_OUTPUT_TEXT_SIZE`、`text_trunc_mode` → `PLAT_TEXT_TRUNC_MODE`；
    `dir_quota_gb` → `PLAT_DIR_QUOTA_GB`、`free_space_gb` → `PLAT_FREE_SPACE_GB`（后两者以 hex 编码传入）；
    模块 `parameters` 含 `vtask_size` 或 `node_progress_gap` 时另注入 `PLAT_SRV_THROTTLE=yes`；
@@ -86,8 +87,9 @@
 
 ## 6. 落点与分发
 
-- `slots`：主机正则列表，匹配 hostname 第一段（短名），只取 `status='ON'` 的主机；
-  写错则 slot 全不建（INV-15）。条目语法：
+- `slots`：主机正则列表，匹配 hostname 第一段（短名），只取本 cluster 内 `status='ON'` 的主机；
+  写错则 slot 全不建（INV-15）。host 非 ON 时 actuator 不启动其 slot，运行中变为非 ON 后
+  `GetTaskList` 也不再派发任务（INV-16）。条目语法：
   - `host_regex`：每台匹配主机建 1 个 slot（seq=0）；
   - `host_regex:N`：每台主机建 N 个 slot（seq=0…N-1）；
   - `host_regex:N:group_regex`：GROUP slots，按组名分配（组名为单个字母时直接作为组前缀）；
@@ -107,7 +109,8 @@
 | `task_max_seconds` | 单任务超时，缺省 0（不超时）；超时中断，任务返回 124。全局兜底：status=-3 且超过 `task_max_seconds × task_global_timeout_scale`（模块参数，缺省 2.0）的任务由 pgcron（每 15 分钟）置为 123 |
 | `task_min_seconds` | 单任务最小合理耗时，缺省 0；连续低于阈值判定 slot 异常（GREEDY）并退出 |
 | `poll_interval_seconds` | slot 轮询新任务的间隔，缺省 6 秒 |
-| `max_idle_polls` | 空闲轮询上限，超过后 slot 退出；缺省 100（约 10 分钟）；app 参数 `default_idle_polls` 可提供缺省 |
+| `max_idle_polls` | 空闲轮询上限，超过后 slot 退出并置 READY；缺省 100（约 10 分钟）；app 参数 `default_idle_polls` 可提供缺省。host 非 ON 时 agent 收空批次，依赖此机制回 READY（`always_running` 例外，INV-16） |
+| `max_sink_tasks` | 单次 `AddTaskList` 投递的最大行数；0 = 不分批（整份 `sink-tasks.txt` 一次投递）。缺省：router 0，其他模块 100；显式分批时跨批不保证事务原子性 |
 | `heartbeat_seconds` | 心跳间隔，缺省 60；非正整数禁用 |
 | `output_text_size` | 执行记录里 stdout/stderr/auxout 的最大字节数，缺省 65535，最小 255 |
 | `text_trunc_mode` | `TAIL` = 保留文本开头（截掉尾部）；其他或空 = 保留文本末尾（截掉开头），即缺省等价于 `HEAD` |

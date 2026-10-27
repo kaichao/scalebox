@@ -51,12 +51,20 @@ scalebox host list                         # 看 Hostname 与 Status
 - 用 `scalebox slot list --module-id M` 看 slot 明细（host/seq/status）。
 - 检查执行节点：SSH/容器引擎是否可用；镜像是否存在（`base_image` 必须能在节点拉到）。
 - 节点状态：`scalebox host list`，`ON` 不代表物理机可达（INV-16）。
+- host 还必须与 slot 同 cluster 且 `status=ON`：`GetSlotList` 只对本 cluster ON host 上的 READY slot 置 STARTING，非 ON host 的 slot 不会被启动；先恢复 host 状态（`scalebox host set-status`）。
 
 ### 任务 READY（-1）不动
 
 - slot 未建 / 未 READY → 按上一节查 slot。
+- slot 为 ON 但所属 host 非 ON → `GetTaskList` 实时门禁返回空批次，任务保持 READY；`scalebox host list` 确认 host 状态（同 cluster）。
 - slot READY 但任务不动 → 看 slot 是否属于正确的 module；`HOST-BOUND` 任务还要求目标 host 有该模块的 slot（见 `features/pod`）。
 - 检查是否有空闲 slot 被其他 app 占用（`scalebox slot status --module-id M`）。
+
+### host 非 ON 后 slot 仍显示 ON
+
+- 平台不会在 host 状态变更时直接改 slot 状态。agent 轮询被门禁拦下、收到空批次，按空闲计数退出（`max_idle_polls`，缺省 100 × 6 秒 ≈ 10 分钟），退出时 `SetSlotTerminated` 把 slot 置 READY（`intial_slot_status` 缺省 READY；动态注册的 slot 为 OFF）。
+- `slot_options: always_running` 的 slot 空闲不退出，会保持 ON；host 恢复 ON 后可继续领任务。
+- 节点断电 / agent 已死：无人上报退出，slot 停在 ON，actuator 不会重启它。恢复节点后手工执行 `scalebox slot set-status --slot-id=<id> --status=OFF`，再 `--status=READY`（ON→READY 不是合法单步转换），或重建 app。
 
 ### 任务 RUNNING（-3）很久
 
@@ -68,7 +76,7 @@ scalebox host list                         # 看 Hostname 与 Status
 
 | 码 | 含义 | 常见原因 |
 |---|---|---|
-| `112` | uniq_task 冲突 | 重复投递相同身份；重跑先清记录或显式处理冲突（INV-06/07） |
+| `112` | uniq_task 冲突 | 重复投递相同身份；一次投递整批回滚（不是单行跳过）；重跑先清记录或显式处理冲突（INV-06/07） |
 | `123` | 全局超时 | 任务长期运行态；检查 `task_global_timeout_scale` |
 | `124` | 单任务超时 | `task_max_seconds` 到期；见 `features/timeout` |
 | `1–10` | 全局语义 | 参数/输入/资源/依赖等，见 `docs/reference/exit-codes.md` |
@@ -80,6 +88,7 @@ scalebox host list                         # 看 Hostname 与 Status
 - 第一列是下游模块名；名字必须与 `modules:` 中的键完全一致。
 - 上游任务失败（`status_code > 0`）不会回流下游（失败即停）。
 - 经 router/wait-queue 时，`_` header 的自动继承有门控（INV-05/08）；需要显式转发。
+- sink 投递是原子操作：同一身份重复（或与库中已有任务冲突）会让整批回滚并报 112；vtask-tail 应在全部分片完成后投一次。
 
 ### `_` header 丢失
 

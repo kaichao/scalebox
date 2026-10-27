@@ -11,8 +11,8 @@
 | 层 | 是什么 | 关键事实 |
 |---|---|---|
 | Cluster | 计算资源的逻辑分组 | 单节点 / 静态 / 动态（Slurm）/ 内联；跨集群靠 `t_cluster` 全网格复制 + gRPC 代理 |
-| Host | 物理节点 | 必须 `status=ON` **且 ssh 可达**；`slots` 按 hostname 短名匹配 |
-| Slot | 节点上与某 Module 对应的资源切片 | 由 actuator 按 `slots` 正则展开后创建；容器在 slot 里长期存在、循环领任务 |
+| Host | 物理节点 | 必须 `status=ON`（同 cluster）**且 ssh 可达**；非 ON 时不启动其 slot、不派发任务；`slots` 按 hostname 短名匹配 |
+| Slot | 节点上与某 Module 对应的资源切片 | 由 actuator 按 `slots` 正则展开后创建；仅本 cluster ON host 上的 READY slot 会被启动；容器在 slot 里长期存在、循环领任务，空闲退出后回 READY |
 | Module | 容器化算法单元 | app 创建时快照镜像/参数/slot 展开结果；容器内跑 `run.sh` |
 | Task | 一次执行 | `body`（stdin）+ headers（环境变量）+ `status_code`；无状态、可重跑 |
 

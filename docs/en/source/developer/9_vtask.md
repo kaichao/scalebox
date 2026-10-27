@@ -177,6 +177,10 @@ modules:
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | no-op (quota restored automatically by controld `doVTaskFinished`) |
 
+> **Tail delivery contract**: `vtask-tail` must be delivered once after all core tasks complete.
+> The platform does not implicitly ignore duplicate deliveries; a duplicate tail identity rolls back
+> the whole batch (112) and may finish the vtask early if the first tail runs before all shards finish.
+
 ### 9.3.3 GROUP-BOUND
 
 Same structure as HOST-BOUND, with differences:

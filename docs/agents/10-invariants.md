@@ -21,7 +21,7 @@
 13. `_` 前缀 header 自动传播，但只对 `vtask_role≠""` 的 sink 模块放行；wait-queue 一跳需显式转发。
 14. 任务级 `free_space_gb` + 组原子性 = 死锁：空间闸门挂批入口。
 15. `slots` 条目是主机正则，匹配 hostname 第一段（短名，如 `h0`）；不是逗号列表，也不要写 FQDN；写错则 slot 全不建、链卡死。
-16. 节点池必须 ON 且 ssh 可达：Slurm 重命名或僵尸 ON 会静默卡死。
+16. 节点池必须 ON（同 cluster）且 ssh 可达：非 ON 的 host 不启动 slot、不派发任务；Slurm 重命名或僵尸 ON 会静默卡死。
 17. 容器可见路径只有 `/tmp`、`/dev/shm`、`/cluster_data_root`、`/local_data_root`、`/app/bin`。
 18. 状态码：-1 等待（含被闸门拦）、-3 执行中、0 完成、>0 失败。
 19. 计时用 `t_task_exec.t0–t3`；`t_task` 的时间戳与容器时钟不一致。
@@ -86,21 +86,21 @@
 ### INV-06 任务身份与 112
 
 - **现象**：重复投递报 duplicate key，路由/重跑失败，退出码 112。
-- **规则**：任务身份 = `(mod_id, from_mod, to_host, vtask, body)`；不要重复投递同一身份的任务；重跑前清 `t_task_exec` / `t_task` 并带 app 过滤。
-- **为什么**：数据库 `uniq_task` 唯一约束。
-- **反例/后果**：112；链停在中间；`OVERWRITE` 与 router 重建下游任务冲突时也会 112。
-- **源码指针**：`build/database/initdb.d/25-updated-schema.sql`（`uniq_task`）、`cmd/controld/task/add_local.go`（`conflict_action`）。
+- **规则**：任务身份 = `(mod_id, from_mod, to_host, vtask, body)`；不要重复投递同一身份的任务；重跑前清 `t_task_exec` / `t_task` 并带 app 过滤。一次 `AddTaskList` 的所有行在同一事务内落库，任意一行冲突/失败整批回滚。
+- **为什么**：数据库 `uniq_task` 唯一约束；controld 对单次投递做原子事务。
+- **反例/后果**：112；链停在中间；整批下游任务都未创建（不是部分创建）；`OVERWRITE` 与 router 重建下游任务冲突时也会 112。
+- **源码指针**：`build/database/initdb.d/25-updated-schema.sql`（`uniq_task`）、`cmd/controld/task/add_local.go`（`conflict_action` / 单事务）。
 - **置信度**：已交叉验证（app-fxcorr 明确 112；app-mwa 提到去重窗口）。
 - **适用范围**：所有任务投递。
 
-### INV-07 `OVERWRITE` 的适用条件（待官方确认）
+### INV-07 `OVERWRITE` 的适用条件（平台行为）
 
-- **现象**：同样使用 `CONFLICT_ACTION=OVERWRITE`，在一个人工重投场景有效，在 router 重建下游任务时却撞 112。
-- **规则**：人工重投同一任务可用 `OVERWRITE` + `repeatable=yes`；**router 重建下游任务时不要用 OVERWRITE**。两者边界待平台开发者给出权威定义。
-- **为什么**：`OVERWRITE` 的冲突处理与 `uniq_task` 的组合行为依赖调用场景（是否重建下游、是否已有 exec 记录）。
-- **反例/后果**：router 退出码 112；任务"没跑"或重跑不生效。
-- **源码指针**：`cmd/controld/task/add_local.go`（`conflict_action`）、`cmd/cli/task/task.go`。
-- **置信度**：**条件性冲突**（app-fxcorr 与 app-mwa 结论不同）。
+- **现象**：同样使用 `OVERWRITE`，在人工重投场景有效，在 router 重建下游任务时却撞 112。
+- **规则**：人工重投同一任务可用 `OVERWRITE`（行级或全局，平台自动补 `repeatable=yes`）；`router` 重建下游任务时必须保证身份唯一，不要用 `OVERWRITE` 绕过冲突。应用需保证每个身份只投一次（例如全部 core 完成后只投一次 tail），平台不做隐式忽略。
+- **为什么**：`OVERWRITE` 会重置已有任务（状态、执行信息），对正在收尾的 vtask 可能造成重复归还；整批投递是原子事务，一行冲突会回滚全部。
+- **反例/后果**：router 退出码 112，整批下游任务都未创建；任务"没跑"或重跑不生效。
+- **源码指针**：`cmd/controld/task/add_local.go`（`conflict_action` / 单事务）、`cmd/agent/sink_tasks.go`（行级策略传递、router 默认不分批）、`cmd/cli/task/task.go`。
+- **置信度**：**已确认**（2026-10 平台实现：行级策略 + 单事务投递）。
 - **适用范围**：人工重投、router 重建。
 
 ### INV-08 计数器初值必须精确
@@ -191,10 +191,12 @@
 
 - **现象**：`t_host` 里节点状态为 ON，但物理机已死或已被 Slurm 重新分配；链静默定格。
 - **规则**：每轮启动前核对 `t_host` 中 ON 且 ssh 可达的节点；节点名变化时同步更新 `NODES` / `slots`。
-- **为什么**：平台按 DB 状态建 slot，不主动探测物理可达性；旧名可能仍标 ON。
-- **反例/后果**：slot 建不出；任务静默等待；`STARTING → SSHFAILED`。
-- **源码指针**：`build/database/initdb.d/`（`t_host`）、`cmd/controld/slot/`。
-- **置信度**：单项目来源（app-fxcorr / p419）。
+- **状态门禁**：`GetSlotList` 只把本 cluster 内 `t_host.status='ON'` 的 host 上的 READY slot 置 `STARTING`，actuator 不启动非 ON host 的 slot；`GetTaskList` 每次实时校验 slot ON + module RUNNING + host ON（同 cluster），不满足返回空批次，不依赖 5/6 分钟缓存。
+- **host 离开 ON 后**：正在轮询的 agent 收到空批次，按 `max_idle_polls`（缺省 100 × 6 秒 ≈ 10 分钟）空闲退出，`SetSlotTerminated` 把 slot 置 READY（`intial_slot_status` 缺省 READY；动态注册的 slot 走 `DeregisterSlot` 置 OFF）。`slot_options: always_running` 不退出，slot 保持 ON；节点断电/agent 已死时无人上报，slot 停在 ON 且 actuator 不会重启，恢复节点后需手工把 slot 置 READY（`scalebox slot set-status`，ON→OFF→READY）或重建 app。
+- **为什么**：平台按 DB 状态建 slot，不主动探测物理可达性；旧名可能仍标 ON；非 ON 的 host 不具备算力资格，继续派发会把任务压到即将停止的节点。
+- **反例/后果**：slot 建不出；host 非 ON 时任务保持 READY、不再派发；`STARTING → SSHFAILED`；僵尸 ON 造成 `-3` 卡死。
+- **源码指针**：`build/database/initdb.d/`（`t_host`）、`cmd/controld/slot/slot.go`（`GetSlotList`）、`cmd/controld/task/get.go`（`isSlotDispatchable`）、`cmd/agent/run.go`（空闲退出）。
+- **置信度**：单项目来源（app-fxcorr / p419）+ 源码/本地库实测。
 - **适用范围**：所有多节点部署。
 
 ### INV-17 容器可见路径白名单

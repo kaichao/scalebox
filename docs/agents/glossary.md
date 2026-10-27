@@ -9,8 +9,8 @@
 | 应用 | App | 一次应用实例，由 `app.yaml` 定义模块与参数；创建时快照配置 | `reference/app-yaml.md` |
 | 模块 | Module | 容器化的算法单元；app 内的一个处理环节 | `reference/app-yaml.md`、`00-model.md` |
 | 任务 | Task | 模块的一次执行：`body` + headers + `status_code` | `10-invariants.md` INV-04/06 |
-| 节点 | Host | 执行计算的物理节点；须 `status=ON` 且 ssh 可达 | `10-invariants.md` INV-16 |
-| 运行槽 | Slot | 节点上与某模块对应的资源切片；容器在其内循环领任务 | `00-model.md` §1 |
+| 节点 | Host | 执行计算的物理节点；须 `status=ON`（同 cluster）且 ssh 可达；非 ON 时其 slot 不启动、不领任务 | `10-invariants.md` INV-16 |
+| 运行槽 | Slot | 节点上与某模块对应的资源切片；仅本 cluster ON host 上的 READY slot 会被启动，容器在其内循环领任务，空闲退出回 READY | `00-model.md` §1 |
 | 集群 | Cluster | Host 的逻辑分组（单节点/静态/动态/内联） | `application/1_core_concepts`（Sphinx） |
 | 虚拟任务 | VTask | 跨模块的 Task 集合，用于批/组级流控与资源绑定 | `10-invariants.md` INV-09…14 |
 
@@ -35,7 +35,7 @@
 | 任务头 | task header | 随任务传播的键值元数据；经环境变量注入 | `reference/task-headers.md` |
 | 回流 | `sink-tasks.txt` | 模块成功后写的下游任务清单；无文件即无下游 | `features/headers-propagation` |
 | 任务身份 | `uniq_task` | `(mod_id, from_mod, to_host, vtask, body)`；重复投递给 112 | `features/task-identity` |
-| 冲突处理 | `conflict_action` | 重复投递策略：`OVERWRITE` / `SKIP` 等 | `reference/cli.md`、INV-07 |
+| 冲突处理 | `conflict_action` | 重复投递策略：`OVERWRITE` / `IGNORE`；一次投递单事务，任意一行冲突整批回滚 | `reference/task-headers.md`、INV-07 |
 | 状态码 | `status_code` | `-1` 等待、`-3` 执行中、`0` 完成、`>0` 失败 | `reference/exit-codes.md` |
 | 退出码 | exit code | 任务进程返回值；平台语义见参考页 | `reference/exit-codes.md` |
 

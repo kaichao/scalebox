@@ -184,6 +184,9 @@ modules:
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | 空操作（额度由 controld `doVTaskFinished` 自动归还） |
 
+> **收尾契约**：`vtask-tail` 应在全部 core 任务完成后投递一次。平台不对重复投递做隐式忽略；
+> 重复的 tail 身份会让整批投递回滚（112），并可能因首个 tail 提前执行导致 vtask 提前收尾。
+
 ### 3.3.3 GROUP-BOUND
 
 与 HOST-BOUND 结构相同，差异：

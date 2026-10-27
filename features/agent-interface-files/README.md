@@ -31,6 +31,8 @@
 | 6 | `<module>,<body>,{"k":"v"}` | 指定模块 + headers |
 | 7 | `<module>,{"body":"..."},{"k":"v"}` | 指定模块 + JSON body + headers |
 
+行级 headers 中的 `conflict_action` 是投递控制参数：由 controld 逐行解析，解析后从该行 headers 移除，不写入 `t_task.headers`；优先级为 sink 行级 > 当前任务 headers > `CONFLICT_ACTION` 环境变量。
+
 ## 行为与不变式
 
 - `timestamps.txt` 每行 `<timestamp>[,<label>]`，`#` 开头为注释，label 缺省 `no-label`。支持 RFC3339Nano（`2006-01-02T15:04:05.999999999Z07:00`）、RFC3339（`2006-01-02T15:04:05Z07:00`）、`2006-01-02T15:04:05[.fffffffff]`、`2006-01-02 15:04:05[.fffffffff]`；格式错误会导致任务后处理错误。
@@ -38,6 +40,8 @@
 - `network-files.txt` 第 1 段 `from` 表示从外部读取、`to` 表示写到外部节点；第 3 段是本地路径（自动统计大小）或直接写字节数；第 5 段缺省等于第 3 段；`remote_host` 入库前统一转主机名。
 - `task-exec.yaml` 的 `statusCode` 在进程退出码 > 0 时被退出码覆盖。
 - `sink-tasks.txt` 为空文件会判为任务后处理错误（`null sink-tasks.txt`），不是"无下游"；无下游时**不要创建该文件**。
+- 投递原子性：router 默认整份 `sink-tasks.txt` 一次 `AddTaskList`（`max_sink_tasks: 0`），controld 在单事务内落库，任意一行冲突/失败整批回滚；其他模块缺省 100 行/批，可用 `arguments.max_sink_tasks` 覆盖，分批时跨批不保证原子性。
+- `sink-tasks.txt` 中同一 `(module, body, to_host, vtask)` 身份只能投递一次（例如 vtask-tail 应在全部分片完成后投一次）；平台不会隐式忽略重复投递。
 
 ## 落库字段与视图
 
@@ -52,6 +56,7 @@
 - **失败时不要写 sink 文件**：只有成功才写下游；失败任务不应触发下游。
 - **文件名用连字符**：`input-files.txt`，不是下划线；`extras.yaml` 不是接口文件（接口用 `extra-attrs.yaml`）。
 - **sink 行的 headers 会直传下游**：可用于带 `batch_status` 直连 `vtask-tail` 等场景。
+- **重复投递会让整批回滚**：同一身份在 `sink-tasks.txt` 中重复出现，或与库中已有任务冲突时，整份投递失败并报 112，不只是单行被跳过。
 
 ## 最小例子
 

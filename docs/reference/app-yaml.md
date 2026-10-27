@@ -61,6 +61,7 @@
 | `task_min_seconds` | string / number | 否 | — | 每个 task 运行的最小秒数，连续多次低于此值则判定 slot 为 GREEDY 异常并退出 |
 | `poll_interval_seconds` | string / number | 否 | — | Slot 检查新任务的轮询间隔（秒），缺省 6 秒 |
 | `max_idle_polls` | string / number | 否 | — | Slot 在退出前可进行的最大空闲轮询次数，缺省 100（10 分钟） |
+| `max_sink_tasks` | string / number | 否 | — | 单次 `AddTaskList` 投递的最大行数；0 表示整份 `sink-tasks.txt` 一次投递（router 缺省 0，其他模块缺省 100） |
 | `dir_quota_gb` | `string` | 否 | — | 目录容量配额限制（GB）。格式：'{"/dir-1":10,"/dir-2":100}' |
 | `free_space_gb` | `string` | 否 | — | 目录所在磁盘需要保留的最小空间（GB）。格式：'{"/dir-3":10,"/dir-4":100}' |
 | `heartbeat_seconds` | string / number | 否 | — | 心跳间隔（秒），缺省 60；非正整数则禁用心跳 |

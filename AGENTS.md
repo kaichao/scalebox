@@ -41,11 +41,12 @@
 3. 非 tty stdin 的任务列表**只读一次**；不要指望循环读 stdin（INV-03）。
 4. 非路由模块写 `${WORK_DIR}/sink-tasks.txt` 回流；`_` 前缀 header 才自动继承（INV-04/05）。
 5. **`slots` 用短名/正则**（`h0`、`n0-[01]`），不要写完整 FQDN（`h0.local`），不要逗号串（INV-15）。
-6. 相同 `(mod, from, host, vtask, body)` 重复投递触发 **uniq_task / 112**；重跑先清记录或显式处理冲突（INV-06/07）。
+6. 相同 `(mod, from, host, vtask, body)` 重复投递触发 **uniq_task / 112**；一次投递的所有行在同一事务内，任意一行冲突整批回滚。应用必须保证每个身份只投一次（如 vtask-tail 在所有分片完成后投一次）；重跑先清记录（INV-06/07）。
 7. **任务级空间闸门会死锁**；`free_space_gb` 挂批入口（vtask-head）而不是每个任务（INV-12）。
 8. vtask-head 负责释放 gate；vtask-tail 不要二次归还（INV-13/14）。
 9. **两套信号量 API 不要混用**（INV-11）。
 10. 模块容器优先用 `code_path` 挂到 `/app/bin`；容器路径有白名单（INV-17）。
+11. host 必须与模块同 cluster 且 `status=ON`：非 ON 的 host 不启动 slot、不派发任务；host 下线后运行中的 slot 靠空闲退出回 READY（`always_running` 例外，INV-16）。
 
 ## 常用命令
 
