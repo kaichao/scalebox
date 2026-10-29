@@ -9,8 +9,8 @@
 | 应用 | App | 一次应用实例，由 `app.yaml` 定义模块与参数；创建时快照配置 | `reference/app-yaml.md` |
 | 模块 | Module | 容器化的算法单元；app 内的一个处理环节 | `reference/app-yaml.md`、`00-model.md` |
 | 任务 | Task | 模块的一次执行：`body` + headers + `status_code` | `10-invariants.md` INV-04/06 |
-| 节点 | Host | 执行计算的物理节点；须 `status=ON`（同 cluster）且 ssh 可达；非 ON 时其 slot 不启动、不领任务 | `10-invariants.md` INV-16 |
-| 运行槽 | Slot | 节点上与某模块对应的资源切片；仅本 cluster ON host 上的 READY slot 会被启动，容器在其内循环领任务，空闲退出回 READY | `00-model.md` §1 |
+| 节点 | Host | 执行计算的物理节点；须 `status=ON`（同 cluster）且 ssh 可达；`DRAINING` 为排空状态：skip 模块停领并退出，其他模块继续 | `10-invariants.md` INV-16 / INV-21 |
+| 运行槽 | Slot | 节点上与某模块对应的资源切片；本 cluster `ON`/`DRAINING` host 上的 READY slot 会被启动（DRAINING 上按 `skip_draining_host` 过滤），容器在其内循环领任务，空闲退出回 READY | `00-model.md` §1 |
 | 集群 | Cluster | Host 的逻辑分组（单节点/静态/动态/内联） | `application/1_core_concepts`（Sphinx） |
 | 虚拟任务 | VTask | 跨模块的 Task 集合，用于批/组级流控与资源绑定 | `10-invariants.md` INV-09…14 |
 
@@ -58,6 +58,8 @@
 | 组绑定 | GROUP-BOUND | vtask 绑定到节点组；组内 slot 协同 | `application/1_core_concepts`（Sphinx） |
 | 槽绑定 | SLOT-BOUND | 任务指定 `to_slot` 落点 | `reference/2_parameter_reference §2.1.4` |
 | 节点本地计算 | `pod_id` | 同一 pod 的模块落在同一节点 | `features/pod` |
+| 独立组节点 | group slot | `slots` 条目的 `<host>:<count>:<group_prefix>` 形式；组锚点节点上领取匹配前缀的 task | `features/group-node-drain`、Sphinx `design/3_vtask.md` §3.3.3 |
+| 排空 | `DRAINING` / `skip_draining_host` | host 排空状态；skip 模块停领并退出 slot，其他模块继续消费本地链 | `features/group-node-drain`、INV-21 |
 | 头节点槽 | `slot_on_head` | 在头节点建一个 slot，便于单节点调试 | `reference/app-yaml.md` |
 
 ## 配置字段

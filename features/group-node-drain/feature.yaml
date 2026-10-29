@@ -1,0 +1,25 @@
+name: group-node-drain.features
+cluster: ${CLUSTER}
+
+modules:
+  # 生产者：本地数据的源头。host DRAINING 时停止领取并退出 slot。
+  producer:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/producer/code
+    parameters:
+      task_dist_mode: HOST-BOUND
+      skip_draining_host: 'yes'
+    slots:
+      - ${GROUP_SLOTS}
+
+  # 消费者：不配置 skip_draining_host，host DRAINING 时继续领取，
+  # 把组节点本地已有的数据消费完。
+  consumer:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/consumer/code
+    parameters:
+      task_dist_mode: HOST-BOUND
+    slots:
+      - ${GROUP_SLOTS}

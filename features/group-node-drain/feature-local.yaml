@@ -1,0 +1,30 @@
+name: group-node-drain.local
+cluster: ${CLUSTER}
+
+# 单节点变体：测试机的 local 集群 t_cluster.grpc_server 仍指向旧的 inline
+# 控制面（10.0.6.100:20051）。这里在模块 environments 中覆盖 GRPC_SERVER，
+# 让 slot agent 连接 local 平台实际的 controld（50051）。默认多节点测试使用
+# feature.yaml，不需要这个覆盖。
+modules:
+  producer:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/producer/code
+    parameters:
+      task_dist_mode: HOST-BOUND
+      skip_draining_host: 'yes'
+    environments:
+      - GRPC_SERVER=10.0.6.100:50051
+    slots:
+      - ${GROUP_SLOTS}
+
+  consumer:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/consumer/code
+    parameters:
+      task_dist_mode: HOST-BOUND
+    environments:
+      - GRPC_SERVER=10.0.6.100:50051
+    slots:
+      - ${GROUP_SLOTS}

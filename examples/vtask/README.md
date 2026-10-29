@@ -47,7 +47,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**：vtask 锚�
 | HOST-BOUND | head 模块 `slots` 正则展开的每台在线主机 | 短主机名（去 cluster 后缀） | `n0-0` |
 | GROUP-BOUND | head 模块的每个 slot（slot 列表长度即组数） | 组号 = head slot 的 `seq` | `0` |
 
-`vtask bind` 返回的 resource 即信号量名后缀；`vtask get` 显示 `host=n0-0` / `group=2`。**节点组的成员没有平台级定义**——组内哪些节点、组内如何分发，由应用业务逻辑决定（`from-vtask-head.sh` 的路由 + vtask-core 以 HOST-BOUND 部署在组内节点上）；平台只管理"组"这个锚点维度。
+`vtask bind` 返回的 resource 即信号量名后缀；`vtask get` 显示 `host=n0-0` / `group=2`。**节点组的成员没有平台级定义**——组内哪些节点、组内如何分发，由应用业务逻辑决定（`from-vtask-head.sh` 的路由 + vtask-core 以 HOST-BOUND 部署在组内节点上）；平台只管理"组"这个锚点维度。组内节点可以用组 slot（独立组节点）承载，见下文"独立组节点（GROUP_SLOTS）"。
 
 ### 统一信号量机制
 
@@ -225,6 +225,28 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 | to_host 来源 | `from_ip`（agent 自动）→ controld 转 `to_host` | 脚本按 body 哈希计算 |
 | 节点分配 | 单节点，同 node 路由 | 节点组，按业务逻辑分发到不同 node |
 | _vtask_size_sema | `host_vtask_size:vtask-head:<hostname>` | `group_vtask_size:vtask-head:<组号>` |
+
+### 独立组节点（GROUP_SLOTS）
+
+GROUP-BOUND 的 vtask-core 可以用**组 slot** 承载独立组节点：在 `slots` 中写 `<host>:<count>:<group_prefix>`。
+
+```yaml
+modules:
+  vtask-core:
+    parameters:
+      task_dist_mode: HOST-BOUND
+    slots:
+      - y00-00:4:x43      # 在 y00-00 上建 4 个组 slot，领取 to_host ~ x43.+ 的 task
+      - z00-00:4:x        # 第三段单字母：前缀 x，匹配所有 x 开头的 host
+```
+
+- 组 slot 在组锚点节点（`y00-00` / `z00-00`）本机执行 task；
+- `to_host` 未指定的 task 也可被组 slot 领取；
+- `group_prefix` 只影响领取条件，不改变组号（组号仍由 head slot 的 `seq` 决定）。
+
+本目录的 `group-node.env` 给出一个可替换 `group-bound.env` 的示例（`CORE_SLOTS=n0-0:2:n0`）。
+
+**排空与替换组节点**：host 先置 `DRAINING`，只给生产者模块配 `skip_draining_host: 'yes'`，消费者保持默认继续消费本地链；排空完成后再置 `OFF` / 换 IP。完整流程与断言见 [`features/group-node-drain`](../../features/group-node-drain/)。
 
 ### vtask-core（核心计算）
 

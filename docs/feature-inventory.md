@@ -98,6 +98,7 @@
 | `task_id_in_headers` | 无 | appendix/2 | 待补 | 低 | reference |
 | `node_progress_gap` | features/node_progress_gap（无断言） | appendix/2 | 待补 | 中 | feature 补齐 |
 | `vtask_role` / `vtask_size` / `vtask_size_sema_copy` | examples/vtask、app-fxcorr | appendix/2、developer/9、examples/vtask | 大量 | 低（sema_copy 已废弃需标注） | feature + reference |
+| `skip_draining_host`（host DRAINING 排空） | features/group-node-drain | design/3_vtask §3.3.3、agents/10-invariants INV-21 | app-mwa（p419，2026-10-29） | 低 | feature |
 
 ### 2.4 task-headers 与传播
 

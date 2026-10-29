@@ -4,7 +4,7 @@
 > 来源：`app-fxcorr` 38 条 + `app-mwa` 35 条实战实证（完整清单见 `docs/feature-inventory.md` 附录 A/C），按 `_template-invariant.md` 模板蒸馏。
 > 置信度：**已交叉验证** = 两个应用或应用+官方文档同时出现；**单项目来源** = 仅一个应用/一次实验实证。
 
-## TL;DR（20 条）
+## TL;DR（21 条）
 
 1. 建 app 即快照：改 env/镜像/slots/code_path/run.sh 后必须重建 app。
 2. 未定义的 `${VAR}` 会保留字面量：每个变量显式定义（空值也写）。
@@ -26,6 +26,7 @@
 18. 状态码：-1 等待（含被闸门拦）、-3 执行中、0 完成、>0 失败。
 19. 计时用 `t_task_exec.t0–t3`；`t_task` 的时间戳与容器时钟不一致。
 20. task header 优先于同名环境变量；测试可用 `task add -h` 覆盖。
+21. 节点换机先 `DRAINING` 排空：只给生产者模块配 `skip_draining_host`，消费者继续；排空前不要 `OFF`/换 IP。
 
 ---
 
@@ -191,7 +192,7 @@
 
 - **现象**：`t_host` 里节点状态为 ON，但物理机已死或已被 Slurm 重新分配；链静默定格。
 - **规则**：每轮启动前核对 `t_host` 中 ON 且 ssh 可达的节点；节点名变化时同步更新 `NODES` / `slots`。
-- **状态门禁**：`GetSlotList` 只把本 cluster 内 `t_host.status='ON'` 的 host 上的 READY slot 置 `STARTING`，actuator 不启动非 ON host 的 slot；`GetTaskList` 每次实时校验 slot ON + module RUNNING + host ON（同 cluster），不满足返回空批次，不依赖 5/6 分钟缓存。
+- **状态门禁**：`GetSlotList` 把本 cluster 内 `t_host.status` 为 `ON` 或 `DRAINING` 的 host 上的 READY slot 置 `STARTING`；DRAINING host 上只启动未配置 `skip_draining_host: 'yes'` 的模块（见 INV-21）。`GetTaskList` 每次实时校验 slot ON + module RUNNING + host 可用（`ON`，或 `DRAINING` 且模块非 skip），不满足返回空批次，不依赖 5/6 分钟缓存。
 - **host 离开 ON 后**：正在轮询的 agent 收到空批次，按 `max_idle_polls`（缺省 100 × 6 秒 ≈ 10 分钟）空闲退出，`SetSlotTerminated` 把 slot 置 READY（`intial_slot_status` 缺省 READY；动态注册的 slot 走 `DeregisterSlot` 置 OFF）。`slot_options: always_running` 不退出，slot 保持 ON；节点断电/agent 已死时无人上报，slot 停在 ON 且 actuator 不会重启，恢复节点后需手工把 slot 置 READY（`scalebox slot set-status`，ON→OFF→READY）或重建 app。
 - **为什么**：平台按 DB 状态建 slot，不主动探测物理可达性；旧名可能仍标 ON；非 ON 的 host 不具备算力资格，继续派发会把任务压到即将停止的节点。
 - **反例/后果**：slot 建不出；host 非 ON 时任务保持 READY、不再派发；`STARTING → SSHFAILED`；僵尸 ON 造成 `-3` 卡死。
@@ -208,6 +209,16 @@
 - **源码指针**：`cmd/controld/grpc/app_env_vol.go`（volume 生成）。
 - **置信度**：单项目来源（app-fxcorr）。
 - **适用范围**：所有模块。
+
+### INV-21 host `DRAINING` 只停 skip 模块，排空前不要 OFF
+
+- **现象**：换组节点/本地计算节点时直接置 `OFF`，上游模块产生的下游 task 的 `to_host` 解析失败（或为空），本地链断掉；正在消费本地数据的下游模块也停领。
+- **规则**：先把 host 置 `DRAINING`；只给生产者模块（产生本地数据的模块）配 `parameters.skip_draining_host: 'yes'`，消费者保持默认。等该 host 上 `to_host` 指向它的 pending/running task 为 0、组 slot 无执行中 task、本地数据不再增长后，再置 `OFF` / 换 IP。
+- **为什么**：`DRAINING` 仍参与 `to_host` 解析，位置不会退化为空；skip 模块被 `isSlotDispatchable` 拒绝领取，agent 收到 `slot_action=stop` 后退出，slot 回 `READY` 且 `GetSlotList` 不再启动它；未配置的模块继续领取，消费本地链。
+- **反例/后果**：复用 host 名直接改 IP，未排空的任务被调度到没有数据的新机器，全部失败；把消费者也配成 skip，排空永远不结束；排空前 `OFF` 会让下游 task 的 `to_host` 变成空/失效。
+- **源码指针**：`cmd/controld/task/get.go`（`isSlotDispatchable` / `getGroupBoundRows`）、`cmd/controld/task/cache.go`（`cacheIPAddr2HostName`）、`cmd/controld/slot/slot.go`（`GetSlotList`）、`cmd/controld/grpc/slot.go`（`slot_action`）、`cmd/agent/run.go`。
+- **置信度**：单项目来源（app-mwa p419，2026-10-29 实测）。
+- **适用范围**：GROUP-BOUND 的独立组节点、HOST-BOUND 的本地计算节点替换。
 
 ## 5. 可观测
 

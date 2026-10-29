@@ -20,6 +20,7 @@
 | [agent-interface-files](./agent-interface-files/) | 模块与 agent 的 8 类接口文件 | `test.sh` ✓ |
 | [check-test](./check-test/) | `free_space_gb` / `dir_quota_gb` / `ACTION_CHECK` | `test.sh` ✓ |
 | [env-lifecycle](./env-lifecycle/) | app 快照 / 未定义变量 / non-tty stdin | `test.sh` ✓ |
+| [group-node-drain](./group-node-drain/) | 独立组节点 / host `DRAINING` / `skip_draining_host` | `test.sh` ✓（需 inline 多节点） |
 | [headers-propagation](./headers-propagation/) | `_` 前缀传播 / `_vtask_attr_*` | `test.sh` ✓ |
 | [node-progress-gap](./node-progress-gap/) | HOST-BOUND 节点进度差 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
 | [pod](./pod/) | `pod_id` 节点本地计算 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |

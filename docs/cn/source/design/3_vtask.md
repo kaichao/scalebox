@@ -123,7 +123,9 @@ vtask bind 分配的资源本质是**计算位置（placement）**——vtask �
 
 `vtask bind` 返回的 resource 即信号量名后缀；`vtask get` 显示 `host=n0-0` / `group=2`。
 
-**节点组的成员没有平台级定义**：组内包含哪些节点、组内如何分发，是应用业务逻辑（vtask-head 脚本路由 + vtask-core 以 HOST-BOUND 部署在组内节点上）。平台只管理"组"这个锚点维度。
+**节点组的成员没有平台级定义**：组内包含哪些节点、组内如何分发，仍由应用业务逻辑决定（vtask-head 脚本路由 + vtask-core 以 HOST-BOUND 部署在组内节点上）。平台只管理"组"这个锚点维度。
+
+组内节点可以用**独立组节点**（组 slot）承载：在 vtask-core 的 `slots` 中写 `<host>:<count>:<group_prefix>`（如 `y00-00:4:x43`），平台在 `host` 上建 `count` 个组 slot，每个 slot 领取 `to_host` 匹配 `group_prefix.+` 或未指定 `to_host` 的 task。组节点的排空与替换见 §3.3.3。
 
 **资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_size_sema` 随 root task 传播；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §3.4.5。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
 
@@ -193,6 +195,31 @@ modules:
 - `vtask-head.task_dist_mode: SLOT-BOUND`（平台实现值），bind 返回组号（即 head slot 的 seq）
 - 流控信号量格式 `group_vtask_size`，head slot 作为节点组锚点
 - `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支计算 `to_host`（业务逻辑）
+
+**独立组节点**：vtask-core（及其他 HOST-BOUND 模块）的 `slots` 支持组 slot 语法：
+
+```
+<host>:<count>:<group_prefix>
+```
+
+| 配置 | 含义 |
+|---|---|
+| `y00-00:4:x43` | 在组锚点节点 y00-00 上建 4 个组 slot，领取 `to_host` 匹配 `x43.+` 的 task |
+| `z00-00:4:x` | 第三段为单个字母：前缀为 `x`，匹配所有 `x` 开头的 host |
+
+组 slot 在组锚点节点本机执行 task；`to_host` 未指定的 task 也可被组 slot 领取。组 slot 的 `group_prefix` 只影响领取条件，不改变组的资源标识（组号仍由 head slot 的 seq 决定）。
+
+**组节点生命周期**：
+
+```
+ON ──drain──> DRAINING ──排空完成──> OFF ──换 IP / 主机名──> ON
+```
+
+- `DRAINING` 期间 host 仍参与 `to_host` 位置解析，避免本地链下游 task 退化为空位置；
+- 配置 `parameters.skip_draining_host: 'yes'` 的模块在该 host 上停止领取，agent 收到 `slot_action=stop` 后退出，slot 回到 `READY`，且 `GetSlotList` 不再启动它；
+- 未配置该参数的模块继续领取，消费组节点本地已有的数据；
+- 排空完成后才置 `OFF` / 换 IP；直接 `OFF` 会切断领取资格，本地链会断掉；
+- 运维命令：`scalebox host drain <hostname>` / `scalebox host undrain <hostname>`（或 `host set-status`）。
 
 ### 3.3.4 vtask-core 级联
 
