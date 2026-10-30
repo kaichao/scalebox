@@ -64,7 +64,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**：vtask 锚�
 - check 准入闸门保证 bind 发生时必有空额：在制 vtask 数 ≤ `vtask_size`，信号量值 ∈ `[0, vtask_size]`，不会为负
 - `vtask bind` 的原子扣减兼具两个职责：流控（在制数 ≤ `vtask_size`）与资源分配（返回绑定的组号/hostname）
 - HOST-BOUND/GROUP-BOUND 的 head 模块领取**不再受信号量值 gate**，否则 bind 预扣后值=0，队列中的已绑任务无法领取（DEFAULT 模式无 bind，保留读值 gate）
-- `vtask_size_sema_copy` 参数已废弃：不再创建冒号前缀的可编程副本，bind/unbind 与 controld 流控操作同一信号量
+- 历史版本的信号量副本参数已废弃：不再创建冒号前缀的可编程副本，bind/unbind 与 controld 流控操作同一信号量
 
 ## 模块结构
 
@@ -543,4 +543,4 @@ echo "test-body" | scalebox task add --app-id=$app_id --header _vtask_attr_demo_
 | `from-vtask-core.sh` | main-router/ | 实际计算（示例中仅转发到 vtask-tail） |
 | `from-vtask-tail.sh` | main-router/ | 读取并打印 `_vtask_attr_*` 应用属性（示意 vtask 范围内的可见性）；资源由 controld `doVTaskFinished` 自动归还 |
 
-相对于旧版的主要变更：wait-queue 封装为标准模块（`check.sh` 准入闸门 + `run.sh` bind 逻辑进镜像，task 在 wait-queue slot 终结不回流）、统一信号量（`semagroup max/decrement` → `vtask bind`、`semaphore increment` → `vtask unbind` 仅错误回滚）、tail 不再 unbind（controld `doVTaskFinished` 自动归还）、取消 `vtask_size_sema_copy` 副本信号量、GROUP-BOUND 术语统一（`group_vtask_size` 信号量前缀，平台层 `task_dist_mode=SLOT-BOUND` 保持不变）。
+相对于旧版的主要变更：wait-queue 封装为标准模块（`check.sh` 准入闸门 + `run.sh` bind 逻辑进镜像，task 在 wait-queue slot 终结不回流）、统一信号量（`semagroup max/decrement` → `vtask bind`、`semaphore increment` → `vtask unbind` 仅错误回滚）、tail 不再 unbind（controld `doVTaskFinished` 自动归还）、取消信号量副本、GROUP-BOUND 术语统一（`group_vtask_size` 信号量前缀，平台层 `task_dist_mode=SLOT-BOUND` 保持不变）。

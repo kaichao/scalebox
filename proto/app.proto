@@ -32,6 +32,8 @@ service AppService {
   rpc SetTaskHeader(SetTaskHeaderRequest) returns (google.protobuf.Empty);
   rpc RemoveTaskHeader(RemoveTaskHeaderRequest) returns (google.protobuf.Empty);
   rpc DeleteTask(DeleteTaskRequest) returns (google.protobuf.Empty);
+  rpc ListTaskExecs(ListTaskExecsRequest) returns (ListTaskExecsResponse);
+  rpc GetTaskExec(GetTaskExecRequest) returns (TaskExecRecord);
   rpc RegisterRemoteAppLink(RegisterRemoteAppLinkRequest) returns (RegisterRemoteAppLinkResponse);
   rpc ValidateApp(ValidateAppRequest) returns (ValidateAppResponse);
   rpc GetVtaskVariable(GetVtaskVariableRequest) returns (GetVtaskVariableResponse);
@@ -48,6 +50,12 @@ service AppService {
   rpc AddVtaskSubtask(AddVtaskSubtaskRequest) returns (AddVtaskSubtaskResponse);
   rpc GetVtask(GetVtaskRequest) returns (GetVtaskResponse);
   rpc FailVtask(FailVtaskRequest) returns (google.protobuf.Empty);
+  // shared-body：同一 vtask 下各子模块共享同一批 body 的查询/操作
+  rpc GetVtaskSharedBodyModuleStats(GetVtaskSharedBodyModuleStatsRequest) returns (GetVtaskSharedBodyModuleStatsResponse);
+  rpc ListVtaskSharedBodyTaskMatrix(ListVtaskSharedBodyTaskMatrixRequest) returns (ListVtaskSharedBodyTaskMatrixResponse);
+  rpc ListVtaskSharedBodyEntries(ListVtaskSharedBodyEntriesRequest) returns (ListVtaskSharedBodyEntriesResponse);
+  rpc RetryVtaskSharedBodyTask(RetryVtaskSharedBodyTaskRequest) returns (RetryVtaskSharedBodyTaskResponse);
+  rpc LookupVtaskIdBySharedBody(LookupVtaskIdBySharedBodyRequest) returns (LookupVtaskIdBySharedBodyResponse);
 }
 
 // ===== Task Messages =====
@@ -55,22 +63,30 @@ service AppService {
 message ListTasksRequest {
   int32 app_id = 1; int32 module_id = 2; string status = 3; string from_module = 4;
   google.protobuf.Timestamp from_time = 5; google.protobuf.Timestamp to_time = 6;
+  // status_class 按调度/结果类别过滤：ready|queued|running|ok|error。
+  // 与 status（精确 status_code）互斥。
+  string status_class = 7;
   Pagination pagination = 10;
 }
 message ListTasksResponse {
   message Item {
     int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
     string body = 5; string from_module = 6; string from_ip = 7;
-    google.protobuf.Timestamp created_at = 8; google.protobuf.Timestamp finished_at = 9; int32 exit_code = 10;
+    google.protobuf.Timestamp created_at = 8; google.protobuf.Timestamp finished_at = 9;
     string status_code = 11; string to_host = 12; int64 vtask_id = 13;
   }
   repeated Item items = 1; PageInfo page_info = 2;
 }
-message GetTaskRequest { int64 task_id = 1; }
+message GetTaskRequest {
+  int64 task_id = 1;
+  // omit_exec_logs=true 时不返回 exec 的 stdout/stderr/auxout/ctxlog/extras，
+  // 仍返回 exec 元数据；完整日志用 GetTaskExec 按 id 获取。
+  bool omit_exec_logs = 2;
+}
 message GetTaskResponse {
   int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
   string body = 5; string headers = 6; string stdout = 7; string stderr = 8;
-  string from_module = 9; string from_ip = 10; int32 exit_code = 11;
+  string from_module = 9; string from_ip = 10;
   int64 input_bytes = 12; int64 output_bytes = 13; string extras = 14;
   google.protobuf.Timestamp created_at = 15; google.protobuf.Timestamp started_at = 16; google.protobuf.Timestamp finished_at = 17;
   int64 vtask_id = 18; string to_host = 19; string status_code = 20;
@@ -78,29 +94,48 @@ message GetTaskResponse {
 }
 
 message TaskExecRecord {
-  int64 id = 1; int64 task_id = 2; int32 exit_code = 3;
+  int64 id = 1; int64 task_id = 2;
   int64 input_bytes = 4; int64 output_bytes = 5;
   string stdout = 6; string stderr = 7; string extras = 8;
   google.protobuf.Timestamp started_at = 9; google.protobuf.Timestamp finished_at = 10;
-  int32 mod_id = 11; int32 slot = 12; int32 status_code = 13;
+  int32 mod_id = 11; int32 slot = 12; string status_code = 13;
   string body = 14; string auxout = 15; string ctxlog = 16;
   google.protobuf.Timestamp t0 = 17; google.protobuf.Timestamp t1 = 18;
   google.protobuf.Timestamp t2 = 19; google.protobuf.Timestamp t3 = 20;
   google.protobuf.Timestamp ts_prepared = 21;
+  bool has_stdout = 22; bool has_stderr = 23;
+  bool has_auxout = 24; bool has_ctxlog = 25; bool has_extras = 26;
 }
+message ListTaskExecsRequest {
+  int32 app_id = 1; int32 module_id = 2; int32 slot_id = 3;
+  Pagination pagination = 10;
+}
+message ListTaskExecsResponse {
+  // 轻量记录：不含 stdout/stderr/extras/auxout/ctxlog 等大字段与过程时间戳，
+  // 完整字段用 GetTaskExec 按 id 取。
+  message Item {
+    int64 id = 1; int64 task_id = 2;
+    int32 mod_id = 3; int32 slot = 4; string status_code = 5;
+    string body = 6;
+    int64 input_bytes = 7; int64 output_bytes = 8;
+    google.protobuf.Timestamp started_at = 9; google.protobuf.Timestamp finished_at = 10;
+  }
+  repeated Item items = 1; PageInfo page_info = 2;
+}
+message GetTaskExecRequest { int64 exec_id = 1; }
 message GetTaskHeaderRequest { int64 task_id = 1; string name = 2; }
 message GetTaskHeaderResponse { string value = 1; }
 message SetTaskHeaderRequest { int64 task_id = 1; string name = 2; string value = 3; }
 message RemoveTaskHeaderRequest { int64 task_id = 1; string name = 2; }
 // ===== App Messages =====
 
-message ListAppsRequest { int32 cluster_id = 1; string status = 2; int32 user_id = 3; Pagination pagination = 10; }
+message ListAppsRequest { string cluster_name = 4; string status = 2; int32 user_id = 3; Pagination pagination = 10; }
 message ListAppsResponse {
-  message Item { int32 id = 1; string name = 2; int32 cluster_id = 3; string cluster_name = 4; string status = 5; int32 module_count = 6; int32 user_id = 7; google.protobuf.Timestamp created_at = 8; string ext = 9; }
+  message Item { int32 id = 1; string name = 2; string cluster_name = 4; string status = 5; int32 module_count = 6; int32 user_id = 7; google.protobuf.Timestamp created_at = 8; string ext = 9; }
   repeated Item items = 1; PageInfo page_info = 2;
 }
 message GetAppRequest { int32 app_id = 1; }
-message GetAppResponse { int32 id = 1; string name = 2; int32 cluster_id = 3; string cluster_name = 8; string status = 4; int32 user_id = 5; string parameters = 6; google.protobuf.Timestamp created_at = 7; string yaml_text = 9; }
+message GetAppResponse { int32 id = 1; string name = 2; string cluster_name = 8; string status = 4; int32 user_id = 5; string parameters = 6; google.protobuf.Timestamp created_at = 7; string yaml_text = 9; }
 message CreateAppRequest {
   string yaml_content = 1;
   map<string, string> env_vars = 2;
@@ -115,11 +150,12 @@ message AppAddSlotsRequest { int32 app_id = 1; int32 module_id = 2; int32 count 
 message AppAddSlotsResponse { int32 added = 1; }
 message GetAppRouterRequest { int32 app_id = 1; }
 message GetAppRouterResponse { int32 module_id = 1; string module_name = 2; }
-message GetAppDAGRequest { int32 app_id = 1; }
+message GetAppDAGRequest { int32 app_id = 1; string dag_mode = 2; }
 message GetAppDAGResponse {
-  message ModuleNode { string name = 1; int32 slot_count = 2; string slot_regex = 3; string status = 4; string image = 5; }
+  message ModuleNode { string name = 1; int32 slot_count = 2; string slot_regex = 3; string status = 4; string image = 5; string cluster = 6; }
   message Edge { string from = 1; string to = 2; }
   repeated ModuleNode nodes = 1; repeated Edge edges = 2;
+  string dag_mode = 3;
 }
 
 // ===== Module Messages =====
@@ -129,8 +165,10 @@ message ListModulesResponse {
   message Item { int32 id = 1; int32 app_id = 2; string name = 3; string image = 4; string slot_regex = 5; string status = 6; int32 slot_count = 7; bool is_main_router = 8; string cluster = 9; }
   repeated Item items = 1;
 }
-message GetModuleRequest { int32 app_id = 1; string module_name = 2; }
-message GetModuleResponse { int32 id = 1; string name = 2; string image = 3; string slot_regex = 4; string status = 5; int32 slot_count = 6; bool is_main_router = 7; map<string, string> parameters = 8; }
+// slot_id > 0 时 arguments 按该 slot 的 seq/t_slot.parameters 求值（@seq/@p:/@v:）；
+// slot_id = 0 返回原始配置，供 CLI/webui 等管理端使用。
+message GetModuleRequest { int32 app_id = 1; string module_name = 2; int32 slot_id = 3; }
+message GetModuleResponse { int32 id = 1; string name = 2; string image = 3; string slot_regex = 4; string status = 5; int32 slot_count = 6; bool is_main_router = 7; map<string, string> parameters = 8; map<string, string> arguments = 9; }
 
 // ===== Cross-Cluster Messages =====
 
@@ -176,6 +214,7 @@ message ListVTasksResponse {
   message Item {
     int64 id = 1; int32 module_id = 2; string module_name = 3; string status = 4;
     string body = 5; google.protobuf.Timestamp created_at = 6; string from_module = 7; int32 app_id = 8;
+    string status_code = 9;  // 根 task 原始 status_code（-1/-2/-3/0/1）
   }
   repeated Item items = 1;
 }
@@ -189,14 +228,14 @@ message BindVtaskResourceRequest {
   string module_name = 2;  // 可选，不指定时自动查找 vtask_role=head 的模块
 }
 message BindVtaskResourceResponse {
-  string resource = 1;     // hostname（HOST-BOUND）/ slot_seq（SLOT-BOUND）/ 空（DEFAULT）
+  string resource = 1;     // 绑定的资源标识：hostname（HOST-BOUND vtask）/ 组号（GROUP-BOUND vtask，即 head slot 的 seq）/ 空（DEFAULT）
   string mode = 2;         // 实际使用的 task_dist_mode
 }
 
 message UnbindVtaskResourceRequest {
   int32 app_id = 1;
   int64 vtask_id = 2;      // 方式一：通过 vtask ID 自动查找 sema
-  string sema_name = 3;    // 方式二：直接指定信号量名（如 :host_vtask_size:vtask-head:n0-0）
+  string sema_name = 3;    // 方式二：直接指定信号量名（如 host_vtask_size:vtask-head:n0-0）
 }
 
 message AddVtaskSubtaskRequest {
@@ -221,9 +260,97 @@ message GetVtaskResponse {
   int32 subtask_count = 8;
   int32 finished_count = 9;
   google.protobuf.Timestamp created_at = 10;
+  string status_code = 11;  // 根 task 原始 status_code（-1/-2/-3/0/1）
 }
 
 message FailVtaskRequest { int64 vtask_id = 1; }
+
+// ===== VTask shared-body（同一 vtask 下各子模块共享同一批 body）=====
+
+// 接口一：多模块统计
+message GetVtaskSharedBodyModuleStatsRequest {
+  int64 vtask_id = 1;
+  repeated string modules = 2;   // 必选，首元素为基准模块
+}
+message GetVtaskSharedBodyModuleStatsResponse {
+  int64 vtask_id = 1;
+  repeated string modules = 2;      // 回显（按输入顺序）
+  int64 task_count = 3;             // 首模块的 task 数
+  int64 finished_count = 4;         // 全部指定模块 status_code=0 的 body 数
+  int64 input_bytes = 5;            // 指定模块累加
+  int64 output_bytes = 6;           // 指定模块累加
+  google.protobuf.Timestamp begin_time = 7;  // 指定模块 MIN(begin_time)
+  google.protobuf.Timestamp end_time = 8;    // 指定模块 MAX(end_time)
+}
+
+// 单条 task 的字段集（接口二每格 / 接口四文件条目共用）
+message VtaskSharedBodyTaskFields {
+  int64 task_id = 1;
+  string status_code = 2;   // 与既有消息一致，用 string 承载整数状态码
+  int64 input_bytes = 3;
+  int64 output_bytes = 4;
+  google.protobuf.Timestamp begin_time = 5;
+  google.protobuf.Timestamp end_time = 6;
+  map<string, string> headers = 7;   // 仅填充请求的 header 名
+}
+
+// 接口二：body 透视列表
+message ListVtaskSharedBodyTaskMatrixRequest {
+  int64 vtask_id = 1;
+  repeated string modules = 2;   // 空 = 全部模块
+  repeated string fields = 3;    // 空 = 全部字段
+  repeated string headers = 4;   // 请求的 header 名，空 = 不输出 headers
+  string body = 5;               // 模糊匹配词，空 = 不过滤
+  string status = 6;             // "abnormal" | ""（= all）
+  Pagination pagination = 10;
+}
+message ListVtaskSharedBodyTaskMatrixResponse {
+  message Row {
+    string body = 1;
+    map<string, VtaskSharedBodyTaskFields> modules = 2;   // key = 模块名
+  }
+  repeated Row items = 1;
+  PageInfo page_info = 2;
+}
+
+// 接口四：body 分层浏览
+message ListVtaskSharedBodyEntriesRequest {
+  int64 vtask_id = 1;
+  string prefix = 2;
+  repeated string modules = 3;   // 空 = 全部模块
+  repeated string fields = 4;    // 控制文件条目字段集，空 = 全部字段
+  repeated string headers = 5;   // 请求的 header 名，空 = 不输出 headers
+  Pagination pagination = 10;
+}
+message ListVtaskSharedBodyEntriesResponse {
+  message Item {
+    string name = 1;       // 相对 prefix 的下一层名称
+    string type = 2;       // "dir" | "file"
+    int64 body_count = 3;  // dir：目录下（任意深度）去重 body 数
+    google.protobuf.Timestamp begin_time = 4;  // dir：MIN(begin_time)
+    google.protobuf.Timestamp end_time = 5;    // dir：MAX(end_time)
+    map<string, VtaskSharedBodyTaskFields> modules = 6;  // file：各模块字段集
+    string body = 7;       // file：原始 t.body（管道入口）；dir 为空
+  }
+  repeated Item items = 1;
+  PageInfo page_info = 2;
+}
+
+// 接口五：单 body 重试
+message RetryVtaskSharedBodyTaskRequest { int64 vtask_id = 1; string body = 2; }
+message RetryVtaskSharedBodyTaskResponse { int64 task_id = 1; int64 deleted = 2; }
+
+// 接口六：body → vtask_id 反查
+message LookupVtaskIdBySharedBodyRequest {
+  int32 app_id = 1;
+  string module = 2;
+  string body = 3;   // 输入 body，可为 JSON 文本；服务端归一化
+}
+message LookupVtaskIdBySharedBodyResponse {
+  int64 vtask_id = 1;
+  int64 task_id = 2;
+  string body = 3;   // 命中的原始 t.body
+}
 
 // ===== DeleteTask =====
 

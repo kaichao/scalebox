@@ -99,4 +99,3 @@
 | `node_progress_gap` | `string` | 否 | — | 针对指定 module 同一组内 node 间运行同步，最快与最慢 node 间运行的 task 最大差值。格式示例：{"prefix1":4,"node_prefix2":6} |
 | `vtask_role` | `string` | 否 | — | vtask 处理中的当前角色：head 是起始模块，tail 是结束模块，core 是算法模块 取值：`head`, `core`, `tail` |
 | `vtask_size` | string / number | 否 | — | 可同时处于就绪/运行状态的 vtask 数量上限，app 解析时创建对应信号量及初值 |
-| `vtask_size_sema_copy` | `string` | 否 | — | 为 vtask_size 信号量生成一个拷贝（名称前缀 ':'）用于编程控制 取值：`no`, `yes` |

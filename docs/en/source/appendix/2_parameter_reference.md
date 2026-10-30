@@ -15,6 +15,10 @@
 
 ### 2.1.2 module-arguments Parameter Table
 
+> Note: since 2026-10, module arguments are fetched by the agent via the `GetModule`
+> RPC (whitelisted, evaluated per slot context). The "Standard environment variable"
+> column is a historical mapping; those variables are no longer injected.
+
 | Parameter name        | Standard environment variable | Meaning |
 | ---------------------- | ---------------------- | ---------------------------------------------------------------------- |
 | grpc_server           | GRPC_SERVER            | controld's service endpoint, ```${ip_addr}:${port}```, default port 50051 |
@@ -70,7 +74,6 @@
 | node_progress_gap    | standard flow control parameter, for synchronizing the execution of nodes within the same group of a specified module, the maximum difference in running tasks between the fastest node and the slowest node; its value is an integer. When the corresponding slot is generated, the corresponding semaphore is automatically created, named ```node_progress:${mod_name}:${hostname}```, initial value 0. Example format of this parameter: ```{"prefix1":4,"node_prefix2":6}```. Proposed rename to node_progress_max_gap? |
 | vtask_role   | 'head' / 'core' / 'tail', the current role in vtask processing, valid only for non-router modules. head is the starting module of vtask processing; tail is the ending module; core is the algorithm module. |
 | vtask_size   | standard flow control parameter, defines the upper limit of the number of vtasks that can be simultaneously in ready/running states; when the app is parsed, the corresponding semaphore and initial value are created.<br/>The semaphore name for global vtask flow control is: ```vtask_size:${mod_name}```;<br/>The semaphore name for SLOT-BOUND (GROUP-BOUND vtask) flow control is: ```group_vtask_size:${mod_name}:${group_seq}```;<br/>The semaphore name for HOST-BOUND vtask flow control is: ```host_vtask_size:${mod_name}:${hostname}``` |
-| vtask_size_sema_copy | 'no' / 'yes'. Generate a copy of the vtask_size semaphore for programmatic control. The copy semaphore name is the original semaphore name prefixed with a colon ```:```, with the same initial value as the original semaphore. |
 
 ### 2.1.4 task-headers Standard Parameter Table
 

@@ -57,16 +57,18 @@
 
 1. app 级变量（`scalebox.env` / `--env-file`）；
 2. 平台注入：`PLAT_MODULE_NAME`、`CLUSTER`、`GRPC_SERVER`、`LOCAL_IP_INDEX`、`SINK_MODULE`、
-   `MODULE_ID`（命令模板注入）、`APP_ID`/`SLOT_ID`（agent 注入）；
-3. `arguments` 映射：`task_max_seconds` → `PLAT_TASK_MAX_SECONDS`、`task_min_seconds` →
-   `PLAT_TASK_MIN_SECONDS`、`poll_interval_seconds` → `PLAT_POLL_INTERVAL_SECONDS`、
-   `max_idle_polls` → `PLAT_MAX_IDLE_POLLS`、`heartbeat_seconds` → `PLAT_HEARTBEAT_SECONDS`、
-   `max_sink_tasks` → `MAX_SINK_TASKS`、
-   `output_text_size` → `PLAT_OUTPUT_TEXT_SIZE`、`text_trunc_mode` → `PLAT_TEXT_TRUNC_MODE`；
-   `dir_quota_gb` → `PLAT_DIR_QUOTA_GB`、`free_space_gb` → `PLAT_FREE_SPACE_GB`（后两者以 hex 编码传入）；
-   模块 `parameters` 含 `vtask_size` 或 `node_progress_gap` 时另注入 `PLAT_SRV_THROTTLE=yes`；
-   app 参数 `default_idle_polls` 在模块未显式配置 `max_idle_polls` 时作为其缺省；
-4. `environments` 列表（`K=V`，最后覆盖）。
+   `IS_SINGULARITY`、`TMPFS_WORKDIR`、`MODULE_ID`（命令模板注入）、`APP_ID`/`SLOT_ID`（agent 注入）；
+3. `environments` 列表（`K=V`，最后覆盖）。
+
+**模块运行时参数不再注入环境变量**：`task_max_seconds`、`task_min_seconds`、
+`poll_interval_seconds`、`max_idle_polls`、`heartbeat_seconds`、`max_sink_tasks`、
+`output_text_size`、`text_trunc_mode`、`dir_quota_gb`、`free_space_gb`、`slot_options`
+由 agent 在 slot 注册后经 `GetModule` RPC 拉取（`arguments`，controld 白名单过滤）；
+值中的 `@seq`/`@p:`/`@v:` 表达式由 controld 按 slot 上下文求值后下发。
+派生标识同样不再注入：`is_main_router` 来自 `GetModuleResponse`，服务端流控由
+`parameters` 含 `vtask_size`/`node_progress_gap` 判断，`always_running` 由
+`slot_options` 推导。app 参数 `default_idle_polls` 在模块未显式配置 `max_idle_polls`
+时仍作为其缺省（写入 `t_module.arguments`）。
 
 **空值不注入**：合成后值为空串的变量会被删除。需要"变量存在但为空"时不能依赖它。
 完整变量表见 [`env-vars.md`](./env-vars.md)。
@@ -100,7 +102,7 @@
 - `slot_options`：`always_running`、`reserved_on_exit`、`tmpfs_workdir`、`disable_local_mapping`、
   `disable_data_mapping`、`disable_tmp_mapping`、`slot_on_head`（调试用）。
 - `slot_max_tasks`（`parameters`，schema 未覆盖）：slot 生命周期内累计执行任务数上限，达到后
-  slot 优雅退出并置 READY；0 不限；`PLAT_ALWAYS_RUNNING=yes` 忽略。
+  slot 优雅退出并置 READY；0 不限；`slot_options` 含 `always_running` 时忽略。
 
 ## 7. 运行时参数语义
 

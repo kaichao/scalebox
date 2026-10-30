@@ -1,5 +1,5 @@
-<!-- AUTO-GENERATED from Go 源码中的 `os.Getenv` / `os.LookupEnv` / `getEnvString` 读取点 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
+<!-- 平台各进程的环境变量读取点事实表；历史由 go-scalebox 的 make docs-gen 生成，生成器已移除，现手工维护。 -->
+<!-- 2026-10-30 同步：模块运行时参数（task_max_seconds、dir_quota_gb 等）改经 GetModule RPC 下发，相关 PLAT_* 变量已移除。 -->
 
 
 # 环境变量参考（平台读取点）
@@ -27,22 +27,9 @@
 | `LOCAL_TMPDIR` |  | `cmd/agent/init.go:292` |
 | `LOG_FORMAT` | `json` | `cmd/agent/config/config.go:57` |
 | `LOG_LEVEL` | `info` | `cmd/agent/config/config.go:56` |
-| `MAX_SINK_TASKS` |  | `cmd/agent/sink_tasks.go:125` |
 | `MODULE_ID` |  | `cmd/agent/init.go:126` |
 | `NUM_IDLE_POLLS` |  | `cmd/agent/run.go:49`, `cmd/agent/run.go:50`, `cmd/agent/run.go:149` |
-| `PLAT_ALWAYS_RUNNING` |  | `cmd/agent/init.go:188` |
-| `PLAT_DIR_QUOTA_GB` |  | `cmd/agent/check.go:99`, `cmd/agent/init.go:275` |
-| `PLAT_FREE_SPACE_GB` |  | `cmd/agent/check.go:75`, `cmd/agent/init.go:276` |
-| `PLAT_HEARTBEAT_SECONDS` |  | `cmd/agent/init.go:267` |
-| `PLAT_IS_ROUTER` |  | `cmd/agent/init.go:278` |
-| `PLAT_MAX_IDLE_POLLS` |  | `cmd/agent/init.go:195` |
-| `PLAT_MODULE_NAME` |  | `cmd/agent/init.go:281`, `cmd/agent/init.go:374` |
-| `PLAT_OUTPUT_TEXT_SIZE` |  | `cmd/agent/init.go:214` |
-| `PLAT_POLL_INTERVAL_SECONDS` |  | `cmd/agent/init.go:208` |
-| `PLAT_SRV_THROTTLE` |  | `cmd/agent/run.go:262` |
-| `PLAT_TASK_MAX_SECONDS` |  | `cmd/agent/init.go:191` |
-| `PLAT_TASK_MIN_SECONDS` |  | `cmd/agent/init.go:202` |
-| `PLAT_TEXT_TRUNC_MODE` |  | `cmd/agent/init.go:221` |
+| `PLAT_MODULE_NAME` |  | `cmd/agent/init.go:146`, `cmd/agent/init.go:366` |
 | `SINGULARITY_IMAGE` |  | `cmd/agent/config/config.go:62` |
 | `SINK_MODULE` |  | `cmd/agent/sink_tasks.go:66`, `cmd/agent/init.go:142` |
 | `SLOT_ID` |  | `cmd/agent/run.go:114`, `cmd/agent/config/config.go:44` |

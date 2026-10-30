@@ -1669,7 +1669,7 @@ Usage:
 | Flag | 类型 | 说明 |
 |---|---|---|
 | `--cluster` | `string` | Limit host match to a cluster |
-| `--concurrency` | `int` | Max parallel SSH sessions with --parallel (0 = unlimited) (default 5) |
+| `--concurrency` | `int` | Max parallel SSH sessions with --parallel (0 = unlimited) (default 8) |
 | `-h, --help` | `—` | help for ssh |
 | `--ip` | `—` | Connect to ip_addr instead of hostname |
 | `--parallel` | `—` | Run on matched hosts concurrently (output may interleave) |

@@ -55,7 +55,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `slot_broadcast` | `yes` = 向模块的每个 slot 各投一条任务 | controld 展开为多条 `to_slot` 任务 |
 | `host_broadcast` | `yes` = 向模块的每个 host 各投一条任务 | controld 展开为多条 `to_host` 任务 |
 | `action` | 应用自定义动作名 | 平台只运输、不解释；语义由模块（如 tape 类）自行约定 |
-| `slot_last_task` | `yes` = 本任务是本 slot 的最后一个任务 | agent 执行完当前批次后退出；`PLAT_ALWAYS_RUNNING=yes` 的 slot 忽略 |
+| `slot_last_task` | `yes` = 本任务是本 slot 的最后一个任务 | agent 执行完当前批次后退出；`slot_options` 含 `always_running` 的 slot 忽略 |
 | `_vtask_attr_<name>` | 应用自定义 vtask 属性 | 平台只运输、不解释；`<name>` 由应用定义 |
 | 其他任意名字 | 应用自定义 | 不以 `_` 开头；是否**自动**传播见 §4 |
 

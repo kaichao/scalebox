@@ -40,6 +40,8 @@ type AppServiceClient interface {
 	SetTaskHeader(ctx context.Context, in *SetTaskHeaderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	RemoveTaskHeader(ctx context.Context, in *RemoveTaskHeaderRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
 	DeleteTask(ctx context.Context, in *DeleteTaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	ListTaskExecs(ctx context.Context, in *ListTaskExecsRequest, opts ...grpc.CallOption) (*ListTaskExecsResponse, error)
+	GetTaskExec(ctx context.Context, in *GetTaskExecRequest, opts ...grpc.CallOption) (*TaskExecRecord, error)
 	RegisterRemoteAppLink(ctx context.Context, in *RegisterRemoteAppLinkRequest, opts ...grpc.CallOption) (*RegisterRemoteAppLinkResponse, error)
 	ValidateApp(ctx context.Context, in *ValidateAppRequest, opts ...grpc.CallOption) (*ValidateAppResponse, error)
 	GetVtaskVariable(ctx context.Context, in *GetVtaskVariableRequest, opts ...grpc.CallOption) (*GetVtaskVariableResponse, error)
@@ -56,6 +58,12 @@ type AppServiceClient interface {
 	AddVtaskSubtask(ctx context.Context, in *AddVtaskSubtaskRequest, opts ...grpc.CallOption) (*AddVtaskSubtaskResponse, error)
 	GetVtask(ctx context.Context, in *GetVtaskRequest, opts ...grpc.CallOption) (*GetVtaskResponse, error)
 	FailVtask(ctx context.Context, in *FailVtaskRequest, opts ...grpc.CallOption) (*emptypb.Empty, error)
+	// shared-body：同一 vtask 下各子模块共享同一批 body 的查询/操作
+	GetVtaskSharedBodyModuleStats(ctx context.Context, in *GetVtaskSharedBodyModuleStatsRequest, opts ...grpc.CallOption) (*GetVtaskSharedBodyModuleStatsResponse, error)
+	ListVtaskSharedBodyTaskMatrix(ctx context.Context, in *ListVtaskSharedBodyTaskMatrixRequest, opts ...grpc.CallOption) (*ListVtaskSharedBodyTaskMatrixResponse, error)
+	ListVtaskSharedBodyEntries(ctx context.Context, in *ListVtaskSharedBodyEntriesRequest, opts ...grpc.CallOption) (*ListVtaskSharedBodyEntriesResponse, error)
+	RetryVtaskSharedBodyTask(ctx context.Context, in *RetryVtaskSharedBodyTaskRequest, opts ...grpc.CallOption) (*RetryVtaskSharedBodyTaskResponse, error)
+	LookupVtaskIdBySharedBody(ctx context.Context, in *LookupVtaskIdBySharedBodyRequest, opts ...grpc.CallOption) (*LookupVtaskIdBySharedBodyResponse, error)
 }
 
 type appServiceClient struct {
@@ -219,6 +227,24 @@ func (c *appServiceClient) DeleteTask(ctx context.Context, in *DeleteTaskRequest
 	return out, nil
 }
 
+func (c *appServiceClient) ListTaskExecs(ctx context.Context, in *ListTaskExecsRequest, opts ...grpc.CallOption) (*ListTaskExecsResponse, error) {
+	out := new(ListTaskExecsResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/ListTaskExecs", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) GetTaskExec(ctx context.Context, in *GetTaskExecRequest, opts ...grpc.CallOption) (*TaskExecRecord, error) {
+	out := new(TaskExecRecord)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/GetTaskExec", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *appServiceClient) RegisterRemoteAppLink(ctx context.Context, in *RegisterRemoteAppLinkRequest, opts ...grpc.CallOption) (*RegisterRemoteAppLinkResponse, error) {
 	out := new(RegisterRemoteAppLinkResponse)
 	err := c.cc.Invoke(ctx, "/scalebox.AppService/RegisterRemoteAppLink", in, out, opts...)
@@ -354,6 +380,51 @@ func (c *appServiceClient) FailVtask(ctx context.Context, in *FailVtaskRequest, 
 	return out, nil
 }
 
+func (c *appServiceClient) GetVtaskSharedBodyModuleStats(ctx context.Context, in *GetVtaskSharedBodyModuleStatsRequest, opts ...grpc.CallOption) (*GetVtaskSharedBodyModuleStatsResponse, error) {
+	out := new(GetVtaskSharedBodyModuleStatsResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/GetVtaskSharedBodyModuleStats", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) ListVtaskSharedBodyTaskMatrix(ctx context.Context, in *ListVtaskSharedBodyTaskMatrixRequest, opts ...grpc.CallOption) (*ListVtaskSharedBodyTaskMatrixResponse, error) {
+	out := new(ListVtaskSharedBodyTaskMatrixResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/ListVtaskSharedBodyTaskMatrix", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) ListVtaskSharedBodyEntries(ctx context.Context, in *ListVtaskSharedBodyEntriesRequest, opts ...grpc.CallOption) (*ListVtaskSharedBodyEntriesResponse, error) {
+	out := new(ListVtaskSharedBodyEntriesResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/ListVtaskSharedBodyEntries", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) RetryVtaskSharedBodyTask(ctx context.Context, in *RetryVtaskSharedBodyTaskRequest, opts ...grpc.CallOption) (*RetryVtaskSharedBodyTaskResponse, error) {
+	out := new(RetryVtaskSharedBodyTaskResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/RetryVtaskSharedBodyTask", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *appServiceClient) LookupVtaskIdBySharedBody(ctx context.Context, in *LookupVtaskIdBySharedBodyRequest, opts ...grpc.CallOption) (*LookupVtaskIdBySharedBodyResponse, error) {
+	out := new(LookupVtaskIdBySharedBodyResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.AppService/LookupVtaskIdBySharedBody", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // AppServiceServer is the server API for AppService service.
 // All implementations should embed UnimplementedAppServiceServer
 // for forward compatibility
@@ -375,6 +446,8 @@ type AppServiceServer interface {
 	SetTaskHeader(context.Context, *SetTaskHeaderRequest) (*emptypb.Empty, error)
 	RemoveTaskHeader(context.Context, *RemoveTaskHeaderRequest) (*emptypb.Empty, error)
 	DeleteTask(context.Context, *DeleteTaskRequest) (*emptypb.Empty, error)
+	ListTaskExecs(context.Context, *ListTaskExecsRequest) (*ListTaskExecsResponse, error)
+	GetTaskExec(context.Context, *GetTaskExecRequest) (*TaskExecRecord, error)
 	RegisterRemoteAppLink(context.Context, *RegisterRemoteAppLinkRequest) (*RegisterRemoteAppLinkResponse, error)
 	ValidateApp(context.Context, *ValidateAppRequest) (*ValidateAppResponse, error)
 	GetVtaskVariable(context.Context, *GetVtaskVariableRequest) (*GetVtaskVariableResponse, error)
@@ -391,6 +464,12 @@ type AppServiceServer interface {
 	AddVtaskSubtask(context.Context, *AddVtaskSubtaskRequest) (*AddVtaskSubtaskResponse, error)
 	GetVtask(context.Context, *GetVtaskRequest) (*GetVtaskResponse, error)
 	FailVtask(context.Context, *FailVtaskRequest) (*emptypb.Empty, error)
+	// shared-body：同一 vtask 下各子模块共享同一批 body 的查询/操作
+	GetVtaskSharedBodyModuleStats(context.Context, *GetVtaskSharedBodyModuleStatsRequest) (*GetVtaskSharedBodyModuleStatsResponse, error)
+	ListVtaskSharedBodyTaskMatrix(context.Context, *ListVtaskSharedBodyTaskMatrixRequest) (*ListVtaskSharedBodyTaskMatrixResponse, error)
+	ListVtaskSharedBodyEntries(context.Context, *ListVtaskSharedBodyEntriesRequest) (*ListVtaskSharedBodyEntriesResponse, error)
+	RetryVtaskSharedBodyTask(context.Context, *RetryVtaskSharedBodyTaskRequest) (*RetryVtaskSharedBodyTaskResponse, error)
+	LookupVtaskIdBySharedBody(context.Context, *LookupVtaskIdBySharedBodyRequest) (*LookupVtaskIdBySharedBodyResponse, error)
 }
 
 // UnimplementedAppServiceServer should be embedded to have forward compatible implementations.
@@ -448,6 +527,12 @@ func (UnimplementedAppServiceServer) RemoveTaskHeader(context.Context, *RemoveTa
 func (UnimplementedAppServiceServer) DeleteTask(context.Context, *DeleteTaskRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteTask not implemented")
 }
+func (UnimplementedAppServiceServer) ListTaskExecs(context.Context, *ListTaskExecsRequest) (*ListTaskExecsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListTaskExecs not implemented")
+}
+func (UnimplementedAppServiceServer) GetTaskExec(context.Context, *GetTaskExecRequest) (*TaskExecRecord, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetTaskExec not implemented")
+}
 func (UnimplementedAppServiceServer) RegisterRemoteAppLink(context.Context, *RegisterRemoteAppLinkRequest) (*RegisterRemoteAppLinkResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method RegisterRemoteAppLink not implemented")
 }
@@ -492,6 +577,21 @@ func (UnimplementedAppServiceServer) GetVtask(context.Context, *GetVtaskRequest)
 }
 func (UnimplementedAppServiceServer) FailVtask(context.Context, *FailVtaskRequest) (*emptypb.Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FailVtask not implemented")
+}
+func (UnimplementedAppServiceServer) GetVtaskSharedBodyModuleStats(context.Context, *GetVtaskSharedBodyModuleStatsRequest) (*GetVtaskSharedBodyModuleStatsResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetVtaskSharedBodyModuleStats not implemented")
+}
+func (UnimplementedAppServiceServer) ListVtaskSharedBodyTaskMatrix(context.Context, *ListVtaskSharedBodyTaskMatrixRequest) (*ListVtaskSharedBodyTaskMatrixResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListVtaskSharedBodyTaskMatrix not implemented")
+}
+func (UnimplementedAppServiceServer) ListVtaskSharedBodyEntries(context.Context, *ListVtaskSharedBodyEntriesRequest) (*ListVtaskSharedBodyEntriesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListVtaskSharedBodyEntries not implemented")
+}
+func (UnimplementedAppServiceServer) RetryVtaskSharedBodyTask(context.Context, *RetryVtaskSharedBodyTaskRequest) (*RetryVtaskSharedBodyTaskResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method RetryVtaskSharedBodyTask not implemented")
+}
+func (UnimplementedAppServiceServer) LookupVtaskIdBySharedBody(context.Context, *LookupVtaskIdBySharedBodyRequest) (*LookupVtaskIdBySharedBodyResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method LookupVtaskIdBySharedBody not implemented")
 }
 
 // UnsafeAppServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -811,6 +911,42 @@ func _AppService_DeleteTask_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AppService_ListTaskExecs_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListTaskExecsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).ListTaskExecs(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/ListTaskExecs",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).ListTaskExecs(ctx, req.(*ListTaskExecsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_GetTaskExec_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetTaskExecRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).GetTaskExec(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/GetTaskExec",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).GetTaskExec(ctx, req.(*GetTaskExecRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _AppService_RegisterRemoteAppLink_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(RegisterRemoteAppLinkRequest)
 	if err := dec(in); err != nil {
@@ -1081,6 +1217,96 @@ func _AppService_FailVtask_Handler(srv interface{}, ctx context.Context, dec fun
 	return interceptor(ctx, in, info, handler)
 }
 
+func _AppService_GetVtaskSharedBodyModuleStats_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetVtaskSharedBodyModuleStatsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).GetVtaskSharedBodyModuleStats(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/GetVtaskSharedBodyModuleStats",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).GetVtaskSharedBodyModuleStats(ctx, req.(*GetVtaskSharedBodyModuleStatsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_ListVtaskSharedBodyTaskMatrix_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListVtaskSharedBodyTaskMatrixRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).ListVtaskSharedBodyTaskMatrix(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/ListVtaskSharedBodyTaskMatrix",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).ListVtaskSharedBodyTaskMatrix(ctx, req.(*ListVtaskSharedBodyTaskMatrixRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_ListVtaskSharedBodyEntries_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListVtaskSharedBodyEntriesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).ListVtaskSharedBodyEntries(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/ListVtaskSharedBodyEntries",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).ListVtaskSharedBodyEntries(ctx, req.(*ListVtaskSharedBodyEntriesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_RetryVtaskSharedBodyTask_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RetryVtaskSharedBodyTaskRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).RetryVtaskSharedBodyTask(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/RetryVtaskSharedBodyTask",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).RetryVtaskSharedBodyTask(ctx, req.(*RetryVtaskSharedBodyTaskRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _AppService_LookupVtaskIdBySharedBody_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(LookupVtaskIdBySharedBodyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(AppServiceServer).LookupVtaskIdBySharedBody(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.AppService/LookupVtaskIdBySharedBody",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(AppServiceServer).LookupVtaskIdBySharedBody(ctx, req.(*LookupVtaskIdBySharedBodyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // AppService_ServiceDesc is the grpc.ServiceDesc for AppService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -1157,6 +1383,14 @@ var AppService_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _AppService_DeleteTask_Handler,
 		},
 		{
+			MethodName: "ListTaskExecs",
+			Handler:    _AppService_ListTaskExecs_Handler,
+		},
+		{
+			MethodName: "GetTaskExec",
+			Handler:    _AppService_GetTaskExec_Handler,
+		},
+		{
 			MethodName: "RegisterRemoteAppLink",
 			Handler:    _AppService_RegisterRemoteAppLink_Handler,
 		},
@@ -1215,6 +1449,26 @@ var AppService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "FailVtask",
 			Handler:    _AppService_FailVtask_Handler,
+		},
+		{
+			MethodName: "GetVtaskSharedBodyModuleStats",
+			Handler:    _AppService_GetVtaskSharedBodyModuleStats_Handler,
+		},
+		{
+			MethodName: "ListVtaskSharedBodyTaskMatrix",
+			Handler:    _AppService_ListVtaskSharedBodyTaskMatrix_Handler,
+		},
+		{
+			MethodName: "ListVtaskSharedBodyEntries",
+			Handler:    _AppService_ListVtaskSharedBodyEntries_Handler,
+		},
+		{
+			MethodName: "RetryVtaskSharedBodyTask",
+			Handler:    _AppService_RetryVtaskSharedBodyTask_Handler,
+		},
+		{
+			MethodName: "LookupVtaskIdBySharedBody",
+			Handler:    _AppService_LookupVtaskIdBySharedBody_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

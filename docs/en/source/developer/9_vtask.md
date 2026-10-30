@@ -231,7 +231,7 @@ Each flow control semaphore has a single instance (no colon prefix), pre-deducte
 | controld `updateVTask` | tasks with `_vtask_size_sema` are pre-deducted and skipped at pickup; only bare tasks without the header are deducted as fallback | head slot picks up tasks |
 | controld `doVTaskFinished` / `FailVtask` | increment (located by `_vtask_size_sema`) | vtask-tail completes / vtask fails |
 
-> The historical dual-semaphore design (flow control version + `:`-prefixed programmable version, `vtask_size_sema_copy: yes`) is deprecated; the `vtask_size_sema_copy` parameter no longer takes effect.
+> The historical dual-semaphore design (flow control version + `:`-prefixed programmable version) is deprecated; the corresponding parameter no longer takes effect.
 
 ### 9.4.3 Flow Control Process
 

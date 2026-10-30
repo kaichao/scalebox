@@ -43,6 +43,12 @@ type CoordinationServiceClient interface {
 	DiffSemagroupMax(ctx context.Context, in *SemagroupRequest, opts ...grpc.CallOption) (*SemagroupDiffResponse, error)
 	IncrementSemagroup(ctx context.Context, in *SemagroupRequest, opts ...grpc.CallOption) (*SemagroupKeyValueResponse, error)
 	DecrementSemagroup(ctx context.Context, in *SemagroupRequest, opts ...grpc.CallOption) (*SemagroupKeyValueResponse, error)
+	// Queue：跨集群应用间消息队列（全局命名空间，无 app 归属）
+	PushQueue(ctx context.Context, in *PushQueueRequest, opts ...grpc.CallOption) (*PushQueueResponse, error)
+	PullQueue(ctx context.Context, in *PullQueueRequest, opts ...grpc.CallOption) (*PullQueueResponse, error)
+	PeekQueue(ctx context.Context, in *PeekQueueRequest, opts ...grpc.CallOption) (*PeekQueueResponse, error)
+	ListQueues(ctx context.Context, in *ListQueuesRequest, opts ...grpc.CallOption) (*ListQueuesResponse, error)
+	PurgeQueue(ctx context.Context, in *PurgeQueueRequest, opts ...grpc.CallOption) (*PurgeQueueResponse, error)
 }
 
 type coordinationServiceClient struct {
@@ -224,6 +230,51 @@ func (c *coordinationServiceClient) DecrementSemagroup(ctx context.Context, in *
 	return out, nil
 }
 
+func (c *coordinationServiceClient) PushQueue(ctx context.Context, in *PushQueueRequest, opts ...grpc.CallOption) (*PushQueueResponse, error) {
+	out := new(PushQueueResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.CoordinationService/PushQueue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinationServiceClient) PullQueue(ctx context.Context, in *PullQueueRequest, opts ...grpc.CallOption) (*PullQueueResponse, error) {
+	out := new(PullQueueResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.CoordinationService/PullQueue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinationServiceClient) PeekQueue(ctx context.Context, in *PeekQueueRequest, opts ...grpc.CallOption) (*PeekQueueResponse, error) {
+	out := new(PeekQueueResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.CoordinationService/PeekQueue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinationServiceClient) ListQueues(ctx context.Context, in *ListQueuesRequest, opts ...grpc.CallOption) (*ListQueuesResponse, error) {
+	out := new(ListQueuesResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.CoordinationService/ListQueues", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinationServiceClient) PurgeQueue(ctx context.Context, in *PurgeQueueRequest, opts ...grpc.CallOption) (*PurgeQueueResponse, error) {
+	out := new(PurgeQueueResponse)
+	err := c.cc.Invoke(ctx, "/scalebox.CoordinationService/PurgeQueue", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CoordinationServiceServer is the server API for CoordinationService service.
 // All implementations should embed UnimplementedCoordinationServiceServer
 // for forward compatibility
@@ -248,6 +299,12 @@ type CoordinationServiceServer interface {
 	DiffSemagroupMax(context.Context, *SemagroupRequest) (*SemagroupDiffResponse, error)
 	IncrementSemagroup(context.Context, *SemagroupRequest) (*SemagroupKeyValueResponse, error)
 	DecrementSemagroup(context.Context, *SemagroupRequest) (*SemagroupKeyValueResponse, error)
+	// Queue：跨集群应用间消息队列（全局命名空间，无 app 归属）
+	PushQueue(context.Context, *PushQueueRequest) (*PushQueueResponse, error)
+	PullQueue(context.Context, *PullQueueRequest) (*PullQueueResponse, error)
+	PeekQueue(context.Context, *PeekQueueRequest) (*PeekQueueResponse, error)
+	ListQueues(context.Context, *ListQueuesRequest) (*ListQueuesResponse, error)
+	PurgeQueue(context.Context, *PurgeQueueRequest) (*PurgeQueueResponse, error)
 }
 
 // UnimplementedCoordinationServiceServer should be embedded to have forward compatible implementations.
@@ -310,6 +367,21 @@ func (UnimplementedCoordinationServiceServer) IncrementSemagroup(context.Context
 }
 func (UnimplementedCoordinationServiceServer) DecrementSemagroup(context.Context, *SemagroupRequest) (*SemagroupKeyValueResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DecrementSemagroup not implemented")
+}
+func (UnimplementedCoordinationServiceServer) PushQueue(context.Context, *PushQueueRequest) (*PushQueueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PushQueue not implemented")
+}
+func (UnimplementedCoordinationServiceServer) PullQueue(context.Context, *PullQueueRequest) (*PullQueueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PullQueue not implemented")
+}
+func (UnimplementedCoordinationServiceServer) PeekQueue(context.Context, *PeekQueueRequest) (*PeekQueueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PeekQueue not implemented")
+}
+func (UnimplementedCoordinationServiceServer) ListQueues(context.Context, *ListQueuesRequest) (*ListQueuesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ListQueues not implemented")
+}
+func (UnimplementedCoordinationServiceServer) PurgeQueue(context.Context, *PurgeQueueRequest) (*PurgeQueueResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PurgeQueue not implemented")
 }
 
 // UnsafeCoordinationServiceServer may be embedded to opt out of forward compatibility for this service.
@@ -665,6 +737,96 @@ func _CoordinationService_DecrementSemagroup_Handler(srv interface{}, ctx contex
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CoordinationService_PushQueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PushQueueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinationServiceServer).PushQueue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.CoordinationService/PushQueue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinationServiceServer).PushQueue(ctx, req.(*PushQueueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CoordinationService_PullQueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PullQueueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinationServiceServer).PullQueue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.CoordinationService/PullQueue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinationServiceServer).PullQueue(ctx, req.(*PullQueueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CoordinationService_PeekQueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PeekQueueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinationServiceServer).PeekQueue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.CoordinationService/PeekQueue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinationServiceServer).PeekQueue(ctx, req.(*PeekQueueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CoordinationService_ListQueues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListQueuesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinationServiceServer).ListQueues(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.CoordinationService/ListQueues",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinationServiceServer).ListQueues(ctx, req.(*ListQueuesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _CoordinationService_PurgeQueue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PurgeQueueRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinationServiceServer).PurgeQueue(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/scalebox.CoordinationService/PurgeQueue",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinationServiceServer).PurgeQueue(ctx, req.(*PurgeQueueRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CoordinationService_ServiceDesc is the grpc.ServiceDesc for CoordinationService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -747,6 +909,26 @@ var CoordinationService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DecrementSemagroup",
 			Handler:    _CoordinationService_DecrementSemagroup_Handler,
+		},
+		{
+			MethodName: "PushQueue",
+			Handler:    _CoordinationService_PushQueue_Handler,
+		},
+		{
+			MethodName: "PullQueue",
+			Handler:    _CoordinationService_PullQueue_Handler,
+		},
+		{
+			MethodName: "PeekQueue",
+			Handler:    _CoordinationService_PeekQueue_Handler,
+		},
+		{
+			MethodName: "ListQueues",
+			Handler:    _CoordinationService_ListQueues_Handler,
+		},
+		{
+			MethodName: "PurgeQueue",
+			Handler:    _CoordinationService_PurgeQueue_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

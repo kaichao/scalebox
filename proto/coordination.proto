@@ -10,7 +10,7 @@ import "google/protobuf/empty.proto";
 import "google/protobuf/timestamp.proto";
 
 // ===== CoordinationService =====
-// 分布式协调原语：Semaphore / Variable / Global
+// 分布式协调原语：Semaphore / Variable / Global / Queue
 // Semagroup 也将归入此 Service（后续迁移）
 
 service CoordinationService {
@@ -35,6 +35,13 @@ service CoordinationService {
   rpc DiffSemagroupMax(SemagroupRequest) returns (SemagroupDiffResponse);
   rpc IncrementSemagroup(SemagroupRequest) returns (SemagroupKeyValueResponse);
   rpc DecrementSemagroup(SemagroupRequest) returns (SemagroupKeyValueResponse);
+
+  // Queue：跨集群应用间消息队列（全局命名空间，无 app 归属）
+  rpc PushQueue(PushQueueRequest) returns (PushQueueResponse);
+  rpc PullQueue(PullQueueRequest) returns (PullQueueResponse);
+  rpc PeekQueue(PeekQueueRequest) returns (PeekQueueResponse);
+  rpc ListQueues(ListQueuesRequest) returns (ListQueuesResponse);
+  rpc PurgeQueue(PurgeQueueRequest) returns (PurgeQueueResponse);
 }
 
 // ===== Semaphore Messages =====
@@ -80,3 +87,39 @@ message DeleteGlobalRequest { string name = 1; }
 message SemagroupRequest { int32 app_id = 1; string sema_expr = 2; }
 message SemagroupKeyValueResponse { string name = 1; int32 value = 2; }
 message SemagroupDiffResponse { int32 value = 1; }
+
+// ===== Queue Messages =====
+// 出队顺序：priority DESC, id ASC（数值大者先出，同级先入先出）
+// cluster 非空时由本地 controld 解析远端地址并转发（CLI 只连本地）。
+
+message QueueMessage {
+  int64 id = 1;
+  string name = 2;
+  int32 priority = 3;
+  string body = 4;
+  map<string, string> headers = 5;
+  google.protobuf.Timestamp created_at = 6;
+}
+message PushQueueRequest {
+  string name = 1;
+  string body = 2;
+  int32 priority = 3;
+  map<string, string> headers = 4;
+  string cluster = 5;
+}
+message PushQueueResponse { int64 id = 1; }
+message PullQueueRequest { string name = 1; int32 count = 2; string cluster = 3; }
+message PullQueueResponse { repeated QueueMessage messages = 1; }
+message PeekQueueRequest { string name = 1; int32 count = 2; string cluster = 3; }
+message PeekQueueResponse { repeated QueueMessage messages = 1; }
+message ListQueuesRequest { string prefix = 1; string cluster = 2; }
+message ListQueuesResponse {
+  message QueueInfo {
+    string name = 1;
+    int64 count = 2;
+    google.protobuf.Timestamp oldest_at = 3;
+  }
+  repeated QueueInfo queues = 1;
+}
+message PurgeQueueRequest { string name = 1; string cluster = 2; }
+message PurgeQueueResponse { int64 deleted = 1; }

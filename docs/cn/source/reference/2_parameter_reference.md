@@ -18,7 +18,7 @@
 
 | 参数名 | 说明 |
 |---|---|
-| `slot_max_tasks` | slot 生命周期内累计执行 task 数上限（成败都算），达到后 slot 优雅退出并置 READY；0 表示不限；`PLAT_ALWAYS_RUNNING=yes` 的 slot 忽略此参数 |
+| `slot_max_tasks` | slot 生命周期内累计执行 task 数上限（成败都算），达到后 slot 优雅退出并置 READY；0 表示不限；`slot_options` 含 `always_running` 的 slot 忽略此参数 |
 
 ### 2.1.4 task-headers标准参数表
 
