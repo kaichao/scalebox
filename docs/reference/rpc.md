@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `proto/*.proto` by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
+<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
 
 
 # gRPC / Proto 参考
@@ -238,7 +238,7 @@
 | `ListModulesResponse.Item` | `cluster` | `string` | 9 |  |
 | `GetModuleRequest` | `app_id` | `int32` | 1 |  |
 | `GetModuleRequest` | `module_name` | `string` | 2 |  |
-| `GetModuleRequest` | `slot_id` | `int32` | 3 | `>0` 时 `arguments` 按该 slot 的 `seq`/`t_slot.parameters` 求值（`@seq`/`@p:`/`@v:`）；`0` 返回原始配置 |
+| `GetModuleRequest` | `slot_id` | `int32` | 3 |  |
 | `GetModuleResponse` | `id` | `int32` | 1 |  |
 | `GetModuleResponse` | `name` | `string` | 2 |  |
 | `GetModuleResponse` | `image` | `string` | 3 |  |
@@ -247,7 +247,7 @@
 | `GetModuleResponse` | `slot_count` | `int32` | 6 |  |
 | `GetModuleResponse` | `is_main_router` | `bool` | 7 |  |
 | `GetModuleResponse` | `parameters` | `map<string, string>` | 8 |  |
-| `GetModuleResponse` | `arguments` | `map<string, string>` | 9 | 白名单过滤后的模块运行时参数（agent 在 slot 注册后读取） |
+| `GetModuleResponse` | `arguments` | `map<string, string>` | 9 |  |
 | `RegisterRemoteAppLinkRequest` | `main_app_id` | `int32` | 1 |  |
 | `RegisterRemoteAppLinkRequest` | `new_app_id` | `int32` | 2 |  |
 | `RegisterRemoteAppLinkRequest` | `new_cluster` | `string` | 3 |  |

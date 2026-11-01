@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `scalebox <command> --help` (Cobra) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
+<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
 
 
 # Scalebox CLI 参考
@@ -596,12 +596,14 @@ Usage:
 | 命令 | 说明 |
 |---|---|
 | `delete` | Delete a static host |
+| `drain` | Mark a host as DRAINING for modules with skip_draining_host=yes |
 | `list` | List hosts in a cluster or by prefix |
 | `new` | Add a new static host |
 | `renew` | Renew a single host |
 | `set-status` | Manually set a host's status |
 | `show` | Show detailed information for a host |
 | `status` | Show host status |
+| `undrain` | Return a DRAINING host to ON |
 
 **Flags**
 
@@ -630,6 +632,27 @@ Usage:
 |---|---|---|
 | `-h, --help` | `—` | help for delete |
 | `--id` | `int` | Host ID |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox host drain`
+
+Mark a host as DRAINING for modules with skip_draining_host=yes
+
+```text
+Usage:
+  scalebox host drain <hostname> [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for drain |
 
 **Global Flags**
 
@@ -767,6 +790,27 @@ Usage:
 |---|---|---|
 | `-h, --help` | `—` | help for status |
 | `--prefix` | `string` | Hostname prefix filter |
+
+**Global Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-e, --env-file` | `string` | Environment variables file |
+
+## `scalebox host undrain`
+
+Return a DRAINING host to ON
+
+```text
+Usage:
+  scalebox host undrain <hostname> [flags]
+```
+
+**Flags**
+
+| Flag | 类型 | 说明 |
+|---|---|---|
+| `-h, --help` | `—` | help for undrain |
 
 **Global Flags**
 

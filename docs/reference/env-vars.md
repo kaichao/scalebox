@@ -1,5 +1,5 @@
-<!-- 平台各进程的环境变量读取点事实表；历史由 go-scalebox 的 make docs-gen 生成，生成器已移除，现手工维护。 -->
-<!-- 2026-10-30 同步：模块运行时参数（task_max_seconds、dir_quota_gb 等）改经 GetModule RPC 下发，相关 PLAT_* 变量已移除。 -->
+<!-- AUTO-GENERATED from Go 源码中的 `os.Getenv` / `os.LookupEnv` / `getEnvString` 读取点 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
+<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
 
 
 # 环境变量参考（平台读取点）
@@ -16,25 +16,25 @@
 | `ACTION_RUN` |  | `cmd/agent/actions.go:116` |
 | `ACTION_SETUP` |  | `cmd/agent/actions.go:139` |
 | `ACTION_TEARDOWN` |  | `cmd/agent/actions.go:161` |
-| `APP_ID` |  | `cmd/agent/init.go:134` |
-| `AUTH_TOKEN` |  | `cmd/agent/init.go:179` |
-| `CONFLICT_ACTION` |  | `cmd/agent/sink_tasks.go:116` |
+| `APP_ID` |  | `cmd/agent/init.go:137` |
+| `AUTH_TOKEN` |  | `cmd/agent/init.go:184` |
+| `CONFLICT_ACTION` |  | `cmd/agent/sink_tasks.go:120` |
 | `DEBUG_SIGBUS` |  | `cmd/agent/main.go:131` |
-| `GRPC_SERVER` |  | `cmd/agent/init.go:161` |
-| `IS_SINGULARITY` |  | `cmd/agent/init.go:257` |
+| `GRPC_SERVER` |  | `cmd/agent/init.go:166` |
+| `IS_SINGULARITY` |  | `cmd/agent/init.go:258` |
 | `LOCAL_IP` |  | `cmd/agent/iobytes.go:186`, `cmd/agent/config/config.go:45` |
-| `LOCAL_SHMDIR` |  | `cmd/agent/init.go:318` |
-| `LOCAL_TMPDIR` |  | `cmd/agent/init.go:292` |
+| `LOCAL_SHMDIR` |  | `cmd/agent/init.go:310` |
+| `LOCAL_TMPDIR` |  | `cmd/agent/init.go:284` |
 | `LOG_FORMAT` | `json` | `cmd/agent/config/config.go:57` |
 | `LOG_LEVEL` | `info` | `cmd/agent/config/config.go:56` |
-| `MODULE_ID` |  | `cmd/agent/init.go:126` |
+| `MODULE_ID` |  | `cmd/agent/init.go:129` |
 | `NUM_IDLE_POLLS` |  | `cmd/agent/run.go:49`, `cmd/agent/run.go:50`, `cmd/agent/run.go:149` |
 | `PLAT_MODULE_NAME` |  | `cmd/agent/init.go:146`, `cmd/agent/init.go:366` |
 | `SINGULARITY_IMAGE` |  | `cmd/agent/config/config.go:62` |
-| `SINK_MODULE` |  | `cmd/agent/sink_tasks.go:66`, `cmd/agent/init.go:142` |
+| `SINK_MODULE` |  | `cmd/agent/sink_tasks.go:66`, `cmd/agent/init.go:147` |
 | `SLOT_ID` |  | `cmd/agent/run.go:114`, `cmd/agent/config/config.go:44` |
-| `TMPDIR_GROUP` |  | `cmd/agent/init.go:343` |
-| `TMPFS_WORKDIR` |  | `cmd/agent/init.go:369` |
+| `TMPDIR_GROUP` |  | `cmd/agent/init.go:335` |
+| `TMPFS_WORKDIR` |  | `cmd/agent/init.go:361` |
 | `WORK_DIR` | `/work` | `cmd/agent/config/config.go:60` |
 
 ## controld
@@ -50,7 +50,7 @@
 | `EVENT_POOL_SIZE` |  | `cmd/controld/grpc/event.go:103` |
 | `GRPC_TLS_ENABLED` |  | `cmd/controld/main.go:84` |
 | `INITIAL_SLOT_STATUS` | `READY` | `cmd/controld/config/config.go:58` |
-| `LOG_LEVEL` | `info` | `cmd/controld/grpc/app_env_vol.go:35`, `cmd/controld/config/config.go:41`, `cmd/controld/task/init.go:14` |
+| `LOG_LEVEL` | `info` | `cmd/controld/grpc/app_env_vol.go:34`, `cmd/controld/config/config.go:41`, `cmd/controld/task/init.go:14` |
 | `MAX_GRPC_STREAMS` |  | `cmd/controld/main.go:75` |
 | `MY_APP_CLUSTER` |  | `cmd/controld/config/config.go:51` |
 | `MY_CODE_PATH` |  | `cmd/controld/config/config.go:53` |

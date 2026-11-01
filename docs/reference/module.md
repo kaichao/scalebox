@@ -103,6 +103,11 @@
   `disable_data_mapping`、`disable_tmp_mapping`、`slot_on_head`（调试用）。
 - `slot_max_tasks`（`parameters`，schema 未覆盖）：slot 生命周期内累计执行任务数上限，达到后
   slot 优雅退出并置 READY；0 不限；`slot_options` 含 `always_running` 时忽略。
+- `parameters.slot_start_batch_size`：controld 每轮 `GetSlotList` 每模块每节点最多置为 STARTING 的
+  slot 数，缺省 1，范围 1~100（非法值/0 按 1）。用于单节点几十上百个 slot 时加快启动：原实现每
+  5 秒每模块每节点只启动 1 个，设置为 n 后每轮投放 n 个。同一节点仍由 actuator 串行 SSH 启动，
+  总时间约 `max(N×T, N×5s/n)`（T 为单次 SSH 启动耗时）。实测 20 个 slot、T≈0.4s 时，
+  n=1 约 98 秒，n=5 约 18 秒。
 
 ## 7. 运行时参数语义
 

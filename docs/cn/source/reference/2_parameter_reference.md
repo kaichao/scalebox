@@ -19,6 +19,7 @@
 | 参数名 | 说明 |
 |---|---|
 | `slot_max_tasks` | slot 生命周期内累计执行 task 数上限（成败都算），达到后 slot 优雅退出并置 READY；0 表示不限；`slot_options` 含 `always_running` 的 slot 忽略此参数 |
+| `slot_start_batch_size` | 每模块每节点每轮批量启动的 slot 数（controld 每轮 `GetSlotList` 置为 STARTING 的上限）。缺省 1（保持原行为），非法值/0 按 1 处理，上限 100。仅加快启动投放；同一节点上的 slot 仍由 actuator 串行启动 |
 
 ### 2.1.4 task-headers标准参数表
 

@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `cmd/webui/frontend/src/schema/app-schema.json` (JSON Schema) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@3a8dd2e (2026-10-21) -->
+<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
 
 
 # App YAML 参考
@@ -61,7 +61,7 @@
 | `task_min_seconds` | string / number | 否 | — | 每个 task 运行的最小秒数，连续多次低于此值则判定 slot 为 GREEDY 异常并退出 |
 | `poll_interval_seconds` | string / number | 否 | — | Slot 检查新任务的轮询间隔（秒），缺省 6 秒 |
 | `max_idle_polls` | string / number | 否 | — | Slot 在退出前可进行的最大空闲轮询次数，缺省 100（10 分钟） |
-| `max_sink_tasks` | string / number | 否 | — | 单次 `AddTaskList` 投递的最大行数；0 表示整份 `sink-tasks.txt` 一次投递（router 缺省 0，其他模块缺省 100） |
+| `max_sink_tasks` | string / number | 否 | — | 单次 AddTaskList 投递的最大行数；0 表示整份 sink-tasks.txt 一次投递（router 缺省 0，其他模块缺省 100） |
 | `dir_quota_gb` | `string` | 否 | — | 目录容量配额限制（GB）。格式：'{"/dir-1":10,"/dir-2":100}' |
 | `free_space_gb` | `string` | 否 | — | 目录所在磁盘需要保留的最小空间（GB）。格式：'{"/dir-3":10,"/dir-4":100}' |
 | `heartbeat_seconds` | string / number | 否 | — | 心跳间隔（秒），缺省 60；非正整数则禁用心跳 |
@@ -99,3 +99,4 @@
 | `node_progress_gap` | `string` | 否 | — | 针对指定 module 同一组内 node 间运行同步，最快与最慢 node 间运行的 task 最大差值。格式示例：{"prefix1":4,"node_prefix2":6} |
 | `vtask_role` | `string` | 否 | — | vtask 处理中的当前角色：head 是起始模块，tail 是结束模块，core 是算法模块 取值：`head`, `core`, `tail` |
 | `vtask_size` | string / number | 否 | — | 可同时处于就绪/运行状态的 vtask 数量上限，app 解析时创建对应信号量及初值 |
+| `slot_start_batch_size` | string / number | 否 | 1 | 每模块每节点每轮批量启动的 slot 数，用于单节点大量 slot 时加快启动；合法范围 1~100，非法值/0 按 1 处理 |
