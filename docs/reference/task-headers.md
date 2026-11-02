@@ -46,7 +46,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 
 | 名称 | 含义 | 备注 |
 |---|---|---|
-| `to_host` | 目标主机名（`t_host` 主键） | HOST-BOUND 模块用；也可由 `pod_id` 相等自动推导 |
+| `to_host` | 目标主机名（`t_host` 主键） | HOST-BOUND 模块用；显式 `to_host`/`to_ip` 优先，未指定时可由两侧都 HOST-BOUND 且值相同的 `pod_id` 自动推导 |
 | `to_ip` | 目标主机 IPv4 | controld 转换为 `to_host`（自动补 `.<cluster>` 后缀） |
 | `to_slot` | 目标 slot 的 id | SLOT-BOUND 模块用；未给时可由 main-router 的 router_index 推导 |
 | `to_slot_index` | 目标 slot 的 seq | 仅头节点有效；controld 转换为 `to_slot` |
@@ -58,6 +58,8 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `slot_last_task` | `yes` = 本任务是本 slot 的最后一个任务 | agent 执行完当前批次后退出；`slot_options` 含 `always_running` 的 slot 忽略 |
 | `_vtask_attr_<name>` | 应用自定义 vtask 属性 | 平台只运输、不解释；`<name>` 由应用定义 |
 | 其他任意名字 | 应用自定义 | 不以 `_` 开头；是否**自动**传播见 §4 |
+
+**路由优先级**：显式 `to_host` > 显式 `to_ip` > `pod_id` 推导。`pod_id` 推导要求目标与来源模块均为 `task_dist_mode=HOST-BOUND`、两侧 `pod_id` 非空且相同，且调用方未指定 `to_host`/`to_ip`；经 main-router 中转时使用 `last_from_module`/`last_from_ip` 定位真实前序模块。推导结果补 `.<cluster>` 后缀。GROUP-BOUND vtask 的 head→core 由脚本显式 `to_host`，core→core 依赖相同的 `pod_id`。
 
 ## 3. 系统注入的 header
 

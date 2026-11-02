@@ -33,6 +33,7 @@
 |------|------|------|--------|
 | `VTASK_MODE` | vtask 应用层 | `DEFAULT` / `HOST-BOUND` / `GROUP-BOUND` | main-router 脚本、wait-queue 标准模块 |
 | `TASK_DIST_MODE` | 平台实现层 | `HOST-BOUND` / `SLOT-BOUND` / 空 | 仅驱动 vtask-head 模块的 `task_dist_mode` 平台参数 |
+| `POD_ID` | 模块参数 | 任意字符串；DEFAULT 置空 | vtask-head/vtask-core 的 `pod_id`：HOST-BOUND 下自动保持同节点；GROUP-BOUND 下用于 core→core 本地路由（head→core 由脚本显式 `to_host`） |
 
 映射关系收敛在 env 文件一处（如 `group-bound.env`）：`VTASK_MODE=GROUP-BOUND` 与 `TASK_DIST_MODE=SLOT-BOUND` 成对出现。应用作者在 vtask 层只接触 `VTASK_MODE`。
 
@@ -204,10 +205,9 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 **脚本侧**（`from-vtask-head.sh`）：
 
 ```bash
-① vtask add-subtask --module=vtask-core
-      [--header to_host=$to_host | --header to_ip=$from_ip] $body
+① vtask add-subtask --module=vtask-core [--header to_host=$to_host] $body
    ↓ _vtask_id、_vtask_size_sema 由 agent 自动传播（异步路径，无需显式传）
-   ↓ HOST-BOUND：传 to_ip，controld 自动转 to_host（同节点路由）
+   ↓ HOST-BOUND：不传路由 header，controld 按 pod_id 自动推导 to_host（同节点路由）
    ↓ GROUP-BOUND：按 body 哈希计算 to_host（业务逻辑），显式传 --header to_host
 
 ② 成功：semaphore increment vtask_size:${WAIT_QUEUE_MODULE:-wait-queue}
@@ -222,9 +222,11 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 | | HOST-BOUND | GROUP-BOUND |
 |--|-----------|-------------|
 | `task_dist_mode`（平台参数） | HOST-BOUND | SLOT-BOUND |
-| to_host 来源 | `from_ip`（agent 自动）→ controld 转 `to_host` | 脚本按 body 哈希计算 |
+| to_host 来源 | `pod_id` 相同（vtask-head/vtask-core）→ controld 解析来源节点 | 脚本按 body 哈希计算 |
 | 节点分配 | 单节点，同 node 路由 | 节点组，按业务逻辑分发到不同 node |
 | _vtask_size_sema | `host_vtask_size:vtask-head:<hostname>` | `group_vtask_size:vtask-head:<组号>` |
+
+GROUP-BOUND 的 core→core 链路（均为 HOST-BOUND）不经过 head 的 `to_host` 计算，需要所有 core 模块配置相同的 `pod_id`；`group_vtask_size` 只含组号，无法推出主机。
 
 ### 独立组节点（GROUP_SLOTS）
 
@@ -269,7 +271,7 @@ scalebox task add --sink-module=vtask-tail "$1"
 vtask-head → vtask-core-1（数据预处理）→ vtask-core-2（并行计算）→ vtask-tail
 ```
 
-每个 core 模块设 `task_dist_mode=HOST-BOUND` + `vtask_role: core`，级联通过 `task add --sink-module=vtask-core-N` 实现。节点内路由由 `pod_id` 参数自动匹配，节点间路由由显式 `--header to_host` 控制。
+每个 core 模块设 `task_dist_mode=HOST-BOUND` + `vtask_role: core`，级联通过 `task add --sink-module=vtask-core-N` 实现。同级模块配置相同的 `pod_id` 后，节点内路由自动保持；显式 `--header to_host` / `to_ip` 优先于 `pod_id` 推导（节点间重定向场景使用）。
 
 ### vtask-tail（完结标记）
 
@@ -314,7 +316,7 @@ vtask-head (from-vtask-head.sh)
   │ controld: vtask=id, headers._vtask_id=id
   │ controld: updateVTask（已预扣 task 跳过扣减）
   │ script: add-subtask + gate increment
-  │ body + _vtask_id + _vtask_size_sema + to_host/to_ip
+  │ body + _vtask_id + _vtask_size_sema（to_host 由 pod_id 自动推导）
   ▼
 vtask-core (from-vtask-core.sh)
   │ agent: _ 前缀 header 自动传播
@@ -437,7 +439,7 @@ DEFAULT 模式无资源绑定，不经过 wait-queue，信号量 `vtask_size:vta
 ```bash
 cd scalebox/examples/vtask
 
-# 创建 app
+# 创建 app（host-bound.env 设 POD_ID，vtask-head/vtask-core 据此自动保持同节点路由）
 app_id=$(cat host-tasks.txt | scalebox run -e host-bound.env | grep -o '"app_id":[0-9]*' | cut -d: -f2)
 echo "app_id=$app_id"
 

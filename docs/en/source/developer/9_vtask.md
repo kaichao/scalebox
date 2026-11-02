@@ -163,8 +163,8 @@ modules:
 modules:
   main-router:   # task add --sink-module=wait-queue $body
   wait-queue:    # standard module scalebox.net/platform/wait-queue (vtask_size: 1 serialization gate + check.sh admission + run.sh bind)
-  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND
-  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND
+  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id: <same as core>
+  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, pod_id: <same as head>
   vtask-tail:    # vtask_role: tail
 ```
 
@@ -173,7 +173,7 @@ modules:
 | Script | Location | Operation |
 |------|------|------|
 | `check.sh` / `run.sh` | wait-queue standard module image | Admission gate (ACTION_CHECK) + `vtask bind` → `vtask add-subtask --direct` (on failure, unbind + gate increment rollback); task terminates at this slot, no author scripting needed |
-| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core` (async), finally `semaphore increment vtask_size:wait-queue` |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core` (async; no `to_ip`/`to_host`, routing derived from matching `pod_id`), finally `semaphore increment vtask_size:wait-queue` |
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | no-op (quota restored automatically by controld `doVTaskFinished`) |
 
@@ -187,6 +187,8 @@ Same structure as HOST-BOUND, with differences:
 - `vtask-head.task_dist_mode: SLOT-BOUND` (platform-level value), bind returns the group number (i.e., the head slot's seq)
 - Flow control semaphore format `group_vtask_size`, head slot serves as the node group anchor
 - `from-vtask-head.sh` computes `to_host` from the body under the `VTASK_MODE=GROUP-BOUND` branch (business logic)
+- head→core uses the script's explicit `to_host`; the head is SLOT-BOUND, so `pod_id` derivation does not trigger
+- multiple core modules (all HOST-BOUND) must share the same `pod_id`; otherwise core→core loses local routing. `group_vtask_size` carries only the group number, not a host
 
 ### 9.3.4 vtask-core Cascading
 
@@ -209,6 +211,33 @@ Cascading rules:
 - All core modules share `vtask_role: core`; controld handles them with unified logic
 - `_`-prefixed headers (`_vtask_id`, `_vtask_size_sema`) auto-propagate along the core chain
 - Each core module independently configures slot counts, `task_dist_mode`, and images
+- HOST-BOUND core chains should share the same `pod_id`; otherwise core→core does not stay on the same node
+
+### 9.3.5 Placement Routing: to_host Sources and Priority
+
+For HOST-BOUND tasks, the target host is resolved in this order (`cmd/controld/task/add_local.go`):
+
+```
+explicit to_host  >  explicit to_ip  >  pod_id derivation
+```
+
+- **Explicit `to_host` / `to_ip` wins**: caller-supplied routing is explicit intent; `pod_id` never overrides it.
+- **`pod_id` derivation conditions** (all must hold):
+  1. target module has `task_dist_mode=HOST-BOUND`;
+  2. source module has `task_dist_mode=HOST-BOUND` (SLOT-BOUND / DEFAULT sources do not trigger it);
+  3. both `pod_id` values are non-empty and equal;
+  4. the caller did not set `to_host` or `to_ip`.
+- When relaying through the main-router, the agent writes `last_from_module` / `last_from_ip`; controld unwraps the router and evaluates the real predecessor module.
+- The derived `to_host` gets a `.<cluster>` suffix (the `t_slot.host` storage format).
+- If the source IP cannot be resolved from `t_host`, no `to_host` is written and controld logs a warning; the task then stays READY until the host registration is fixed or routing is made explicit.
+
+Configuration by vtask mode:
+
+| Mode | head→core | core→core | Configuration |
+|------|-----------|-----------|---------------|
+| HOST-BOUND | `pod_id` derivation (script passes no `to_ip`) | `pod_id` derivation | head and all cores share the same `pod_id` |
+| GROUP-BOUND | explicit `to_host` from the script (business grouping) | `pod_id` derivation | head is SLOT-BOUND, so pod_id does not trigger; all cores share the same `pod_id` |
+| DEFAULT | no binding | no binding | `pod_id` not needed |
 
 ## 9.4 The Semaphore Mechanism
 
@@ -387,7 +416,12 @@ scalebox vtask unbind --vtask-id=42
 
 ```bash
 # Inside agent (common): async path, _-prefixed headers auto-propagate
-scalebox vtask add-subtask --module=vtask-core --header to_ip=$from_ip $body
+# HOST-BOUND: vtask-head and vtask-core share the same pod_id; no routing header,
+# controld derives to_host automatically
+scalebox vtask add-subtask --module=vtask-core $body
+
+# GROUP-BOUND: compute to_host from business logic (head is SLOT-BOUND; pod_id is not used here)
+scalebox vtask add-subtask --module=vtask-core --header to_host=$to_host $body
 
 # Inside agent, needing synchronous error awareness (wait-queue standard module run.sh): add --direct
 scalebox vtask add-subtask --direct --module=vtask-head \

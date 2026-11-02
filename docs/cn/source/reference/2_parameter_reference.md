@@ -26,7 +26,7 @@
 task header 的名称、写入方、传播规则与转义以
 [`reference/task-headers.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md) 为唯一信源；本节只保留两条落点约定：
 
-- 针对 HOST-BOUND 的模块，需在代码中设定 `to_host`；或通过模块的 `pod_id` 相等来设定。
+- 针对 HOST-BOUND 的模块，需在代码中设定 `to_host`；或由模块的 `pod_id` 相等自动推导（要求目标与来源模块均为 HOST-BOUND、`pod_id` 非空且相同，且未显式指定 `to_host`/`to_ip`；显式路由优先）。
 - 针对 SLOT-BOUND 的模块，需在代码中设定 `to_slot`。
 
 ## 2.2 资源配置参数表

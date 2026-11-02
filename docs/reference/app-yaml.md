@@ -91,7 +91,7 @@
 | `slot_timeout_minutes` | string / number | 否 | — | slot 未正常启动一直处于 'STARTING' 状态的超时（分钟），到期转为 'TIMEOUT'，缺省 15 分钟 |
 | `task_global_timeout_scale` | string / number | 否 | — | task 全局超时恢复：相对 task_max_seconds 的倍数，缺省 2.0；恢复后状态码 123 |
 | `router_index` | string / number | 否 | — | 多主路由实例的应用中，指定当前 module 发给第 n 个主路由。缺省 0 |
-| `pod_id` | `string` | 否 | — | 标识本 module 属于 pod 管理，若消息来源的 pod 也有相同的 pod_id，则所有 task 标识为采用本地计算 |
+| `pod_id` | `string` | 否 | — | 标识本 module 属于 pod 管理。目标与来源模块均为 `task_dist_mode=HOST-BOUND` 且 `pod_id` 相同、调用方未显式指定 `to_host`/`to_ip` 时，下游 task 自动路由回来源节点；显式路由优先。GROUP-BOUND vtask 中用于 core→core（head→core 由脚本显式 `to_host`） |
 | `task_dedup_cache_ttl_minutes` | string / number | 否 | — | 任务去重缓存的生存时间（分钟），缺省 30 分钟；通常需大于 task_max_seconds |
 | `task_batch_size` | string / number | 否 | — | 批量获取任务的数量，slot 单批次读取的最大消息数，缺省 1 |
 | `visible` | `string` | 否 | — | 在流水线逻辑图中是否可见，缺省 'yes' 取值：`yes`, `no` |

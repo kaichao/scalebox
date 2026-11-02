@@ -146,7 +146,7 @@ Scalebox通过任务分发模式支持节点本地计算：
 
 ### 4.5.3 位置感知调度
 
-- **pod_id机制**：标识模块属于pod管理，若任务来源的pod也有相同的pod_id，则所有task标识为采用本地计算（task_dist_mode为HOST_BOUND）
+- **pod_id机制**：标识模块属于pod管理。目标与来源模块均为 HOST-BOUND 且 `pod_id` 相同时，下游 task 自动路由回来源节点；显式 `to_host`/`to_ip` 优先，`pod_id` 不会覆盖。GROUP-BOUND vtask 中 head→core 由业务脚本显式 `to_host`，core→core 依赖相同的 `pod_id`
 - **任务头中的位置信息**：支持前后模块间的本地级联处理
 
 ### 4.5.4 vtask支持框架

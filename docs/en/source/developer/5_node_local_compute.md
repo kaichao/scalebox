@@ -136,7 +136,7 @@ Scalebox supports node-local computing through task distribution modes:
 
 ### 5.5.2 Location-Aware Scheduling
 
-- **pod_id mechanism**: identifies modules managed by pods; if the pod that a task originates from has the same pod_id, all tasks are marked as using local computing (task_dist_mode is HOST_BOUND)
+- **pod_id mechanism**: identifies modules managed by pods. A downstream task is routed back to the source node when both the target and source modules are HOST-BOUND and share the same non-empty `pod_id`; explicit `to_host`/`to_ip` always wins and is never overridden by `pod_id`. In GROUP-BOUND vtasks, head→core uses the script's explicit `to_host` (the head is SLOT-BOUND, so pod_id does not trigger), while core→core relies on the shared `pod_id`
 - **Location information in task headers**: supports local cascaded processing between preceding and following modules
 
 ### 5.5.3 The vtask Support Framework

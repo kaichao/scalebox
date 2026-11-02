@@ -13,12 +13,13 @@
 ## 行为与不变式
 
 - 当来源模块与目标模块都是 HOST-BOUND 且 `pod_id` 相同，服务端在创建任务时自动把 `from_ip` 解析为 `to_host`，任务路由回同一节点。
+- **显式路由优先**：调用方已指定 `to_host` 或 `to_ip` 时不做 pod_id 推导，避免覆盖业务路由（如 GROUP-BOUND 按组号算出的 `to_host`）。
 - 主路由中转时，用 `last_from_module` / `last_from_ip` 定位真正的前序算法模块（见 `sink_tasks.go`），避免把主路由所在节点误当来源。
 - `pod_id` 只影响路由，不改变 slot 数量与资源分配；节点本地计算的其他部分（本地根、数据映射）由 `slot_options` / 部署参数决定。
 
 ## 坑
 
-- **只对 HOST-BOUND 生效**：SLOT-BOUND / DEFAULT 模块不会因 `pod_id` 改变路由。
+- **只对 HOST-BOUND 生效**：来源与目标模块都必须是 HOST-BOUND；SLOT-BOUND / DEFAULT 来源（如 GROUP-BOUND 的 vtask-head）不会因 `pod_id` 改变路由。
 - **两侧 `pod_id` 必须相同**：来源模块没设或值不同，不会自动推导 `to_host`。
 - **主路由中转**：跨主路由时 `from_module` 是主路由，必须依赖 `last_from_*`；不要把主路由的 `pod_id` 设成与算法模块相同。
 - **`slots` 写 FQDN 不建 slot**：平台用 `split_part(hostname,'.',1)` 取短名匹配；`h0.local` 匹配不到，写 `h0`。

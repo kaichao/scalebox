@@ -4,7 +4,7 @@
 > 来源：`app-fxcorr` 38 条 + `app-mwa` 35 条实战实证（完整清单见 `docs/feature-inventory.md` 附录 A/C），按 `_template-invariant.md` 模板蒸馏。
 > 置信度：**已交叉验证** = 两个应用或应用+官方文档同时出现；**单项目来源** = 仅一个应用/一次实验实证。
 
-## TL;DR（21 条）
+## TL;DR（22 条）
 
 1. 建 app 即快照：改 env/镜像/slots/code_path/run.sh 后必须重建 app。
 2. 未定义的 `${VAR}` 会保留字面量：每个变量显式定义（空值也写）。
@@ -27,6 +27,7 @@
 19. 计时用 `t_task_exec.t0–t3`；`t_task` 的时间戳与容器时钟不一致。
 20. task header 优先于同名环境变量；测试可用 `task add -h` 覆盖。
 21. 节点换机先 `DRAINING` 排空：只给生产者模块配 `skip_draining_host`，消费者继续；排空前不要 `OFF`/换 IP。
+22. to_host 传播优先级：显式 `to_host` > 显式 `to_ip` > `pod_id`；`pod_id` 仅在两侧都 HOST-BOUND、值相同且未显式指定路由时生效（INV-22）。
 
 ---
 
@@ -175,6 +176,26 @@
 - **源码指针**：`cmd/agent/check.go`（`CheckFreeSpace` / `CheckDirQuota`）。
 - **置信度**：单项目来源（app-fxcorr 三轮实验）。
 - **适用范围**：带空间流控的批处理应用。
+
+### INV-22 to_host 传播优先级与 pod_id 生效条件
+
+- **现象**：HOST-BOUND 下游任务停在 READY（`headers.to_host` 为空）；或 GROUP-BOUND 的 core 任务全部落到锚点 head 节点。
+- **规则**：路由优先级 **显式 `to_host` > 显式 `to_ip` > `pod_id`**。`pod_id` 推导仅在以下条件全部满足时生效：
+  1. 目标模块 `task_dist_mode=HOST-BOUND`；
+  2. 来源模块 `task_dist_mode=HOST-BOUND`（SLOT-BOUND / DEFAULT 来源不触发）；
+  3. 两侧 `pod_id` 非空且相同；
+  4. 调用方未指定 `to_host` 或 `to_ip`。
+
+  经 main-router 中转时，agent 写 `last_from_module` / `last_from_ip`，controld 解包主路由后按真实前序模块判断。推导结果补 `.<cluster>` 后缀（`t_slot.host` 的存储格式）。
+
+  vtask 配置：
+  - **HOST-BOUND**：`vtask-head` 与 `vtask-core` 配相同 `pod_id`；`from-vtask-head.sh` 不再传 `to_ip`。
+  - **GROUP-BOUND**：head→core 由脚本显式 `to_host`（head 是 SLOT-BOUND，pod_id 不触发）；多个 core 模块之间必须配相同 `pod_id`（`group_vtask_size` 只有组号，推不出主机）。
+- **为什么**：`pod_id` 是模块级声明，语义直观；显式路由是调用方的明确意图，优先级最高。旧实现会无条件覆盖显式 `to_host`，导致 GROUP-BOUND 的业务路由被改成锚点主机（core 在锚点无 slot → 永久 READY）。
+- **反例/后果**：漏配/配错 `pod_id` → `to_host` 为空 → 任务永久 READY（-1 不在 pgcron 重试范围）；来源模块非 HOST-BOUND 时依赖 pod_id → 同样不触发，需要显式 `to_host`。
+- **源码指针**：`cmd/controld/task/add_local.go`（`shouldDeriveToHostByPodID` / `withClusterSuffix`）、`cmd/agent/sink_tasks.go`（`last_from_*` 继承）、`features/pod/README.md`。
+- **置信度**：源码 + 2026-11-02 bio 实测（HOST-BOUND 10/10 自动落位；GROUP-BOUND 强制配 pod_id 仍保留业务 `to_host`，12/12）。
+- **适用范围**：所有 HOST-BOUND 目标模块（vtask 与非 vtask 的本地管道）。
 
 ## 4. 节点、数据与容器
 

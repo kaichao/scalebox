@@ -63,6 +63,7 @@ scalebox task list --app-id <app_id>
 |---|---|
 | 某模块 0 个 slot | `slots` 写错：逗号串、FQDN、正则不匹配 → `20-diagnosis`「slot 全是 0 行」 |
 | 节点 ON 但连接失败 | 僵尸节点 / Slurm 重分配 / ssh 端口（如非 22 需显式 `SSH_PORT`）→ INV-16 |
-| 任务全挤在一个节点 | `to_host` 缺失或 pod_id 绑定过强；HOST-BOUND 要求目标 host 有 slot |
+| 任务全挤在一个节点 | `to_host` 缺失、`pod_id` 缺失/不同，或 pod_id 绑定过强；HOST-BOUND 要求目标 host 有 slot |
+| HOST-BOUND 任务停在 READY，`headers.to_host` 为空 | 两侧 `pod_id` 不相同/未配，或来源模块不是 HOST-BOUND；显式 `to_host`/`to_ip` 可绕过（INV-22） |
 | 节点读不到数据 | 路径不在 `data_root` 下，或用了本地盘却没搬运 |
 | 大 M 跑前几批正常、后面变慢 | 冷缓存：先顺序预热共享盘数据（应用侧经验） |

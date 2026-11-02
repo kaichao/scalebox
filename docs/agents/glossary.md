@@ -54,10 +54,10 @@
 
 | 中文 | 英文 / 标识符 | 含义 | 详见 |
 |---|---|---|---|
-| 主机绑定 | HOST-BOUND | vtask 绑定到单节点；需要 `to_host` 或 `pod_id` | `features/pod` |
+| 主机绑定 | HOST-BOUND | vtask 绑定到单节点；显式 `to_host`/`to_ip` 优先，未指定时由两侧相同的 `pod_id` 推导 | `features/pod`、INV-22 |
 | 组绑定 | GROUP-BOUND | vtask 绑定到节点组；组内 slot 协同 | `application/1_core_concepts`（Sphinx） |
 | 槽绑定 | SLOT-BOUND | 任务指定 `to_slot` 落点 | `reference/2_parameter_reference §2.1.4` |
-| 节点本地计算 | `pod_id` | 同一 pod 的模块落在同一节点 | `features/pod` |
+| 节点本地计算 | `pod_id` | 同一 pod 的 HOST-BOUND 模块落在同一节点；GROUP-BOUND 下用于 core→core，head→core 由脚本显式 `to_host` | `features/pod`、INV-22 |
 | 独立组节点 | group slot | `slots` 条目的 `<host>:<count>:<group_prefix>` 形式；组锚点节点上领取匹配前缀的 task | `features/group-node-drain`、Sphinx `design/3_vtask.md` §3.3.3 |
 | 排空 | `DRAINING` / `skip_draining_host` | host 排空状态；skip 模块停领并退出 slot，其他模块继续消费本地链 | `features/group-node-drain`、INV-21 |
 | 头节点槽 | `slot_on_head` | 在头节点建一个 slot，便于单节点调试 | `reference/app-yaml.md` |

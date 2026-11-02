@@ -58,6 +58,7 @@ scalebox host list                         # 看 Hostname 与 Status
 - slot 未建 / 未 READY → 按上一节查 slot。
 - slot 为 ON 但所属 host 非 ON → `GetTaskList` 实时门禁返回空批次，任务保持 READY；`scalebox host list` 确认 host 状态（同 cluster）。
 - slot READY 但任务不动 → 看 slot 是否属于正确的 module；`HOST-BOUND` 任务还要求目标 host 有该模块的 slot（见 `features/pod`）。
+- `HOST-BOUND` 任务的 `headers.to_host` 为空 → 检查 `pod_id`：目标与来源模块都必须 `task_dist_mode=HOST-BOUND`、`pod_id` 非空且相同，且调用方没有显式 `to_host`/`to_ip`（INV-22）；显式路由可以绕过 pod_id。
 - 检查是否有空闲 slot 被其他 app 占用（`scalebox slot status --module-id M`）。
 
 ### host 非 ON 后 slot 仍显示 ON

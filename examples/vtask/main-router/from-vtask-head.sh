@@ -10,9 +10,9 @@ body=$1
 sema_name=$(scalebox::task_header "$2" "_vtask_size_sema")
 
 if [ "$VTASK_MODE" = "HOST-BOUND" ]; then
-    from_ip=$(scalebox::task_header "$2" "from_ip")
-    scalebox vtask add-subtask --module=vtask-core \
-        --header to_ip=$from_ip $body
+    # to_host 由 pod_id 自动推导：vtask-head 与 vtask-core 配置相同的 pod_id，
+    # 且未显式指定 to_host/to_ip 时，controld 按来源节点（from_ip）解析 to_host。
+    scalebox vtask add-subtask --module=vtask-core $body
 elif [ "$VTASK_MODE" = "GROUP-BOUND" ]; then
     # 组号取自 _vtask_size_sema（group_vtask_size:vtask-head:<组号>）
     # to_host 按 body 哈希分配给计算节点（业务逻辑，保留在脚本中）

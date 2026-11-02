@@ -21,7 +21,11 @@ modules:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
       vtask_size: 2
-    slots: 
+      # HOST-BOUND：与 vtask-core 相同，用于推导 to_host（同节点路由）；
+      # GROUP-BOUND：head 是 SLOT-BOUND，head→core 由脚本显式 to_host 决定，
+      # 来源非 HOST-BOUND 时 pod_id 不触发
+      pod_id: ${POD_ID}
+    slots:
       - ${HEAD_SLOTS}
 
   vtask-core:
@@ -30,6 +34,9 @@ modules:
     parameters:
       task_dist_mode: ${CORE_MODE}
       vtask_role: core
+      # HOST-BOUND：与 vtask-head 相同，显式 to_host/to_ip 缺省时自动路由回来源节点；
+      # GROUP-BOUND：多个 core 模块（均为 HOST-BOUND）之间靠相同 pod_id 保持同节点
+      pod_id: ${POD_ID}
     environments:
       - RUNNING_SECONDS=${RUNNING_SECONDS}
     slots:

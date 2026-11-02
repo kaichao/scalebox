@@ -172,8 +172,8 @@ modules:
 modules:
   main-router:   # task add --sink-module=wait-queue $body
   wait-queue:    # 标准模块 scalebox.net/platform/wait-queue（vtask_size: 1 串行化门控 + check.sh 准入 + run.sh bind）
-  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND
-  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND
+  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id: <与 core 相同>
+  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, pod_id: <与 head 相同>
   vtask-tail:    # vtask_role: tail
 ```
 
@@ -182,7 +182,7 @@ modules:
 | 脚本 | 位置 | 操作 |
 |------|------|------|
 | `check.sh` / `run.sh` | wait-queue 标准模块镜像 | 准入闸门（ACTION_CHECK）+ `vtask bind` → `vtask add-subtask --direct`（失败时 unbind + gate increment 回滚）；task 在本 slot 终结，作者无需编写 |
-| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async），最后 `semaphore increment vtask_size:wait-queue` |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async，不传 `to_ip`/`to_host`，路由由相同 `pod_id` 推导），最后 `semaphore increment vtask_size:wait-queue` |
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | 空操作（额度由 controld `doVTaskFinished` 自动归还） |
 
@@ -195,6 +195,8 @@ modules:
 - `vtask-head.task_dist_mode: SLOT-BOUND`（平台实现值），bind 返回组号（即 head slot 的 seq）
 - 流控信号量格式 `group_vtask_size`，head slot 作为节点组锚点
 - `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支计算 `to_host`（业务逻辑）
+- head→core 使用脚本显式 `to_host`；head 是 SLOT-BOUND，`pod_id` 推导不触发
+- 多个 core 模块（均为 HOST-BOUND）之间必须配置相同的 `pod_id`，否则 core→core 会丢失本地路由；`group_vtask_size` 只含组号，无法推出主机
 
 **独立组节点**：vtask-core（及其他 HOST-BOUND 模块）的 `slots` 支持组 slot 语法：
 
@@ -242,6 +244,33 @@ modules:
 - 所有 core 模块共享 `vtask_role: core`，controld 按统一逻辑处理
 - `_` 前缀 header（`_vtask_id`、`_vtask_size_sema`）沿 core 链自动传播
 - 每个 core 模块独立配置 slot 数量、`task_dist_mode` 和镜像
+- HOST-BOUND 的 core 链应配置相同的 `pod_id`，否则 core→core 不会自动保持同节点
+
+### 3.3.5 位置路由：to_host 的来源与优先级
+
+HOST-BOUND 任务落到哪台主机，按以下优先级确定（`cmd/controld/task/add_local.go`）：
+
+```
+显式 to_host  >  显式 to_ip  >  pod_id 推导
+```
+
+- **显式 `to_host` / `to_ip` 优先**：调用方给出的路由是明确意图，`pod_id` 不会覆盖。
+- **`pod_id` 推导条件**（全部满足才生效）：
+  1. 目标模块 `task_dist_mode=HOST-BOUND`；
+  2. 来源模块 `task_dist_mode=HOST-BOUND`（SLOT-BOUND / DEFAULT 来源不触发）；
+  3. 两侧 `pod_id` 非空且相同；
+  4. 调用方未指定 `to_host` 或 `to_ip`。
+- 经 main-router 中转时，agent 写 `last_from_module` / `last_from_ip`，controld 解包主路由后按真实前序模块判断。
+- 推导出的 `to_host` 会补 `.<cluster>` 后缀（`t_slot.host` 的存储格式）。
+- 解析失败（来源 IP 不在 `t_host` 中）不会写入 `to_host`，controld 打 warn；此时任务会停在 READY，需要修正来源主机注册或显式指定路由。
+
+vtask 各模式的配置：
+
+| 模式 | head→core | core→core | 配置要点 |
+|------|-----------|-----------|---------|
+| HOST-BOUND | `pod_id` 推导（脚本不传 `to_ip`） | `pod_id` 推导 | head 与所有 core 配相同 `pod_id` |
+| GROUP-BOUND | 脚本显式 `to_host`（业务分组） | `pod_id` 推导 | head 是 SLOT-BOUND，pod_id 不触发；所有 core 配相同 `pod_id` |
+| DEFAULT | 无绑定 | 无绑定 | 不需要 `pod_id` |
 
 ## 3.4 信号量机制
 
@@ -433,7 +462,11 @@ Layer 3: vtask 高级操作
 
 ```bash
 # Agent 内（常见）：异步路径，_ 前缀 header 自动传播
-scalebox vtask add-subtask --module=vtask-core --header to_ip=$from_ip $body
+# HOST-BOUND：vtask-head 与 vtask-core 配相同 pod_id，不传路由 header，controld 自动推导 to_host
+scalebox vtask add-subtask --module=vtask-core $body
+
+# GROUP-BOUND：按业务计算 to_host（head 是 SLOT-BOUND，pod_id 不参与此跳）
+scalebox vtask add-subtask --module=vtask-core --header to_host=$to_host $body
 
 # Agent 内需同步感知错误（wait-queue 标准模块 run.sh）：加 --direct
 scalebox vtask add-subtask --direct --module=vtask-head \
