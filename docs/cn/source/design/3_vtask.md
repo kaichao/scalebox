@@ -171,7 +171,7 @@ modules:
 ```yaml
 modules:
   main-router:   # task add --sink-module=wait-queue $body
-  wait-queue:    # 标准模块 scalebox.net/platform/wait-queue（vtask_size: 1 串行化门控 + check.sh 准入 + run.sh bind）
+  wait-queue:    # 标准模块 scalebox.net/platform/wait-queue（vtask_size ≥ slot 数的并发 bind 准入 + check.sh 准入 + run.sh bind）
   vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id: <与 core 相同>
   vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, pod_id: <与 head 相同>
   vtask-tail:    # vtask_role: tail
@@ -182,7 +182,7 @@ modules:
 | 脚本 | 位置 | 操作 |
 |------|------|------|
 | `check.sh` / `run.sh` | wait-queue 标准模块镜像 | 准入闸门（ACTION_CHECK）+ `vtask bind` → `vtask add-subtask --direct`（失败时 unbind + gate increment 回滚）；task 在本 slot 终结，作者无需编写 |
-| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async，不传 `to_ip`/`to_host`，路由由相同 `pod_id` 推导），最后 `semaphore increment vtask_size:wait-queue` |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async，不传 `to_ip`/`to_host`，路由由相同 `pod_id` 推导）。**不再 +1 放行 gate**——gate 已由 wait-queue 的 `run.sh` 在 bind+投递成功后放行（2026-11-02 L1） |
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | 空操作（额度由 controld `doVTaskFinished` 自动归还） |
 
@@ -476,6 +476,10 @@ scalebox vtask add-subtask --direct --module=vtask-head \
     exit 1
 }
 
+# 成功后立即放行下一个 vtask（2026-11-02 L1：放行点从 from_head 挪到这里，
+# 节拍 2×poll → 1×poll）；与 from_head 的 +1 二选一，两处都做会双重归还
+scalebox semaphore increment vtask_size:wait-queue
+
 # Agent 外运维手工：须显式传 --app-id 和 _vtask_id
 scalebox vtask add-subtask --app-id=10 --module=vtask-core \
     --header _vtask_id=42 $body
@@ -498,7 +502,7 @@ scalebox vtask add-subtask --app-id=10 --module=vtask-core \
 | `ON CONFLICT` | 同 body 的 task 不重复创建 |
 | 死锁重试 ×3 | `40P01` deadlock 自愈 |
 | asyncbatch（10ms/50ms） | 信号量批量写入不逐条竞争 |
-| `vtask_size=1`（wait-queue） | bind 操作串行化 |
+| `vtask_size ≥ slot 数`（wait-queue） | 并发 bind 准入（经验值 = 全部空额；不够会超卖，见 INV-23） |
 
 ## 3.8 运维场景速查
 

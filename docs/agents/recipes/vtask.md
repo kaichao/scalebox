@@ -30,7 +30,7 @@ VTASK_MODE=GROUP-BOUND TASK_DIST_MODE=SLOT-BOUND HEAD_SLOTS=<head 节点> CORE_M
 | 模块 | 关键参数 |
 |---|---|
 | `main-router` | `parameters.main_router: main-router` |
-| `wait-queue` | 标准镜像；`parameters.vtask_size: 1`（串行 bind） |
+| `wait-queue` | 标准镜像；`parameters.vtask_size: <≥ slot 数，经验值 = host 数 × head 的 vtask_size>`（并发 bind 准入，INV-23） |
 | `vtask-head` | `parameters.vtask_role: head`、`vtask_size: <在制上限>`、`pod_id: ${POD_ID}` |
 | `vtask-core` | `parameters.vtask_role: core`、`pod_id: ${POD_ID}`（与 head 及其他 core 相同） |
 | `vtask-tail` | `parameters.vtask_role: tail`；完成时平台自动归还额度 |
@@ -67,7 +67,7 @@ scalebox semaphore ls --vtask-size-            # 或 semaphore get vtask_size:vt
 
 | 现象 | 下一步 |
 |---|---|
-| 第一个 vtask 过后 wait-queue 停领 | head 未对 `vtask_size:wait-queue` 加 1（INV-10） |
+| 第一个 vtask 过后 wait-queue 停领 | wait-queue 的 run.sh 未放行（旧镜像）或 `vtask_size` 被扣成负数（INV-23）；`semaphore get vtask_size:wait-queue` 查值 |
 | 在制数超过 `vtask_size` | 脚本重复 unBind 或重复 bind（INV-11）；查 `semaphore get` 的值 |
 | `vtask bind` 报找不到信号量 | `host_vtask_size`/`group_vtask_size` 名不匹配；两套 API 混用（INV-12） |
 | `_vtask_attr_*` 在 head 丢失 | wait-queue 一跳需显式转发（INV-13） |

@@ -7,20 +7,38 @@ modules:
   wait-queue:
     base_image: scalebox.net/platform/wait-queue
     arguments:
-      slot_options: slot_on_head
+      poll_interval_seconds: 1
+      max_idle_polls: 3600
     parameters:
-      # 避免提早分配资源，使得vtask在wait-queue中
-      vtask_size: 1
+      # L1（2026-11-02）：不再用 slot_on_head（每 HEAD 节点只有 1 个 slot）。
+      # vtask_size 是**并发 bind 的准入总量**，必须 >= slots 数，否则多个 slot
+      # 同时读到同一个值、一起 bind，信号量被扣成负数后整条链停摆
+      #（2026-11-02 app 218 实测：8 slot / vtask_size=4 → 扣到 -4）。
+      # 经验值：host 数 x 每 host 容量（= 全部空额），见 host-bound.env 的 WQ_VTS。
+      vtask_size: ${WQ_VTS}
+      # 每个 slot 一次领取的任务数（预取深度）。只为摊薄 GetTaskList 的 RPC；
+      # agent 对领到的一批仍是串行执行，**不改变并发度**（并发度 = slot 数）。
+      # 约束：slot 数 x task_batch_size <= 全部空额，否则 bind 全部重试。
+      task_batch_size: ${WQ_BATCH}
+      # 多个 wait-queue slot 都落在控制机同一个 host 上，而 slot 批启动按
+      # (模块, host) 分区、actuator 每 5 秒一轮（cmd/actuator/cluster.go），
+      # 默认每轮 1 个太慢；取 WQ_SLOTS = 一轮起完
+      slot_start_batch_size: ${WQ_SLOTS}
+    slots:
+      - ${CONTROL_NODE}:${WQ_SLOTS}
     environments:
       - VTASK_MODE=${VTASK_MODE}
 
   vtask-head:
     arguments:
       slot_options: reserved_on_exit
+      poll_interval_seconds: 1
+      max_idle_polls: 3600
     parameters:
       task_dist_mode: ${TASK_DIST_MODE}
       vtask_role: head
-      vtask_size: 2
+      # 每 host 的在制 vtask 上限（全部空额 = host 数 x 本值）
+      vtask_size: ${HEAD_VTS}
       # HOST-BOUND：与 vtask-core 相同，用于推导 to_host（同节点路由）；
       # GROUP-BOUND：head 是 SLOT-BOUND，head→core 由脚本显式 to_host 决定，
       # 来源非 HOST-BOUND 时 pod_id 不触发
@@ -31,6 +49,11 @@ modules:
   vtask-core:
     arguments:
       code_path: ${PWD}/vtask-core
+      # 任务秒级完成时容器会被 --rm 立刻删掉，下个任务要重新创建；
+      # always_running 让容器常驻（2026-11-02）
+      slot_options: always_running
+      poll_interval_seconds: 1
+      max_idle_polls: 3600
     parameters:
       task_dist_mode: ${CORE_MODE}
       vtask_role: core
@@ -45,6 +68,8 @@ modules:
   vtask-tail:
     arguments:
       slot_options: slot_on_head
+      poll_interval_seconds: 1
+      max_idle_polls: 3600
     parameters:
       vtask_role: tail
 
@@ -52,5 +77,7 @@ modules:
     arguments:
       code_path: ${PWD}/main-router
       slot_options: slot_on_head
+      poll_interval_seconds: 1
+      max_idle_polls: 3600
     environments:
       - VTASK_MODE=${VTASK_MODE}

@@ -31,11 +31,7 @@ else
 fi
 code=$?
 
-if [ $code -eq 0 ]; then
-    # wait-queue vtask_size=1 保持串行化，放行下一个
-    wait_queue_module=${WAIT_QUEUE_MODULE:-wait-queue}
-    scalebox semaphore increment "vtask_size:${wait_queue_module}"
-    code=$?
-fi
+# 2026-11-02（L1）：串行门改由 wait-queue/run.sh 在 bind + 投递成功后立即归还，
+# 这里不再 +1——否则双重归还，vtask_size:wait-queue 只涨不落。
 
 exit $code

@@ -165,6 +165,34 @@ Different modules execute in parallel in a pipeline fashion, achieving pipeline 
 ### 1.7.4 Hybrid Parallelism
 Combines the above parallelism methods to achieve optimal parallel efficiency.
 
+### 1.7.5 Programming Constraint on Multi-Instance Main Router
+
+The main router is the convergence point for tasks flowing back from every module. It
+dispatches by `from_module` to a dedicated handler (`from_head` / `from_core` /
+`from_tail` …). **Whether the main router can run as multiple slots depends on whether
+the application can decompose the per-source logic into independent parts**:
+
+| Task source | Multi-instance allowed | Reason |
+|---|---|---|
+| **Different** `from_module` | Yes | Each handler operates on its own data structures |
+| **Same** `from_module` | **Single instance only** | Handlers share state or have ordering semantics (batch expansion, counter creation/update) |
+
+This is a **programming-model constraint, not a platform limit**. The platform allows any
+number of slots per module, but when several instances process tasks from the same source
+in parallel, the application itself cannot guarantee correctness. Whether multi-instance
+is safe is a judgment the programmer makes about their own business logic.
+
+**Performance impact**: a single router instance processes `1 / per-task-handling-time`
+tasks, and one vtask typically passes through the router several times (entry, head
+feedback, core feedback, tail feedback). Measured on app-fxcorr (6 vtasks, route=3):
+3.3 passes per vtask, 30 ms per pass — **about 10 vtasks/s effective**.
+
+- **Long-running tasks**: this ceiling is far above demand; a single instance is fine.
+- **Short tasks**: the router becomes the bottleneck and **cannot be relieved by adding
+  instances** (same source ⇒ single instance). This is an architectural ceiling for
+  short-task workloads; the only ways out are **fewer routing hops** (e.g. `sink_modules`
+  direct connections) or **splitting the sources**.
+
 ## 1.8 The Runtime Environment
 
 ### 1.8.1 Control Plane

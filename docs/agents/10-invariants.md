@@ -4,7 +4,7 @@
 > 来源：`app-fxcorr` 38 条 + `app-mwa` 35 条实战实证（完整清单见 `docs/feature-inventory.md` 附录 A/C），按 `_template-invariant.md` 模板蒸馏。
 > 置信度：**已交叉验证** = 两个应用或应用+官方文档同时出现；**单项目来源** = 仅一个应用/一次实验实证。
 
-## TL;DR（22 条）
+## TL;DR（23 条）
 
 1. 建 app 即快照：改 env/镜像/slots/code_path/run.sh 后必须重建 app。
 2. 未定义的 `${VAR}` 会保留字面量：每个变量显式定义（空值也写）。
@@ -28,6 +28,7 @@
 20. task header 优先于同名环境变量；测试可用 `task add -h` 覆盖。
 21. 节点换机先 `DRAINING` 排空：只给生产者模块配 `skip_draining_host`，消费者继续；排空前不要 `OFF`/换 IP。
 22. to_host 传播优先级：显式 `to_host` > 显式 `to_ip` > `pod_id`；`pod_id` 仅在两侧都 HOST-BOUND、值相同且未显式指定路由时生效（INV-22）。
+23. wait-queue 的 `vtask_size` **必须 ≥ 它的 slot 数**（并发 bind 准入，经验值 = 全部空额）；不够会超卖、扣成负数卡死（INV-23）。
 
 ---
 
@@ -127,14 +128,14 @@
 - **置信度**：单项目来源（app-mwa）+ 官方示例（`examples/vtask`）。
 - **适用范围**：所有经 wait-queue 的 vtask。
 
-### INV-10 vtask-head 必须释放 gate
+### INV-10 gate 只由 wait-queue 释放，head 与 router 不得再 +1
 
-- **现象**：第一个 vtask 正常，后续 vtask 永远进不了 wait-queue。
-- **规则**：vtask-head 在 `add-subtask` 成功后必须对 `vtask_size:wait-queue` 加 1；失败时不要释放。
-- **为什么**：wait-queue 的 gate 在 bind 时被预扣，只在 head 成功投递后归还；这是流水线化的前提。
-- **反例/后果**：wait-queue 停领；外部监控可见 gate 长期为 0。
-- **源码指针**：`dockerfiles/wait-queue/check.sh`、`cmd/controld/task/vtask.go`。
-- **置信度**：已交叉验证（app-fxcorr、app-mwa）。
+- **现象**：`vtask_size:wait-queue` 只涨不落（双重归还），或停在 0 后整条链不再放行。
+- **规则**：`vtask_size:wait-queue` 的 `+1` **只在 wait-queue 的 `run.sh` 里做**——`bind + add-subtask` 成功后立即执行；失败路径（`vtask unbind` 回滚）同样 +1，不能只回滚不放行。**vtask-head、main-router 的 `from_head` 都不得再 +1**。
+- **为什么**：2026-11-02（L1）把放行点从 head 回流挪到了 wait-queue 本地。原实现要等 head 执行完、回流 main-router 才放行，一个 vtask 穿过**两个**轮询边界（节拍 2×poll）；挪走后只剩**一个**（1×poll）。两处都 +1 会让信号量只涨不落、gate 永久失效。
+- **反例/后果**：gate 停在 0 → wait-queue 停领，全链停摆；gate 涨到 2 以上 → 并发 bind 失控、额度超卖。
+- **源码指针**：`dockerfiles/wait-queue/run.sh`；`examples/vtask/main-router/from-vtask-head.sh`（已删除 `+1`）。
+- **置信度**：实测（2026-11-02，`examples/vtask`，bio 4 节点 / p419 2 节点）。
 - **适用范围**：所有 HOST-BOUND / GROUP-BOUND vtask。
 
 ### INV-11 vtask-tail 不二次归还
@@ -272,6 +273,20 @@
 - **源码指针**：`build/agent/rootfs/usr/local/lib/scalebox/README.md`（`task_header`）。
 - **置信度**：单项目来源（app-mwa）。
 - **适用范围**：所有使用 `scalebox::task_header` 的脚本。
+
+---
+
+### INV-23 wait-queue 的 `vtask_size` 必须 ≥ 它的 slot 数
+
+- **现象**：wait-queue 配了 N 个 slot，但 `parameters.vtask_size` 小于 N。多个 slot 同时读到同一个 gate 值，一起领任务、一起 bind，信号量被扣成负数，之后 gate 恒 ≤ 0，整条链停摆。
+- **规则**：`parameters.vtask_size >= slots 数`。经验值取「全部空额」= host 数 × head 的 `vtask_size`，slot 数取同一个值。
+- **为什么**：`updateVTask` 的扣减走 asyncbatch（10 ms 批次），gate 读值与扣减落地之间有窗口，`check.sh` 的 `semagroup max > 0` 挡不住并发。
+- **反例/后果**：2026-11-02 实测，8 slot / `vtask_size: 4` → 信号量扣到 -4，app 218 的 120 个 vtask 只跑完 8 个就停摆。
+- **配套（同日）**：`semagroup.Decrement` 改为单语句 `UPDATE ... RETURNING` + `FOR UPDATE SKIP LOCKED` + `value > 0`，并发 bind 各取不同 host、不会重复分配也不会扣成负数；`wait-queue/run.sh` 在 bind 失败时等待重试并归还 gate。
+- **源码指针**：`dockerfiles/wait-queue/run.sh`；`internal/semagroup/decrement.go`；`cmd/controld/task/vtask.go`（`getVtaskBatchSize` / `updateVTask`）。
+- **置信度**：源码 + 实测（2026-11-02，`examples/vtask`，120 个 vtask × 4 节点）。
+- **适用范围**：所有经 wait-queue 的 vtask（HOST-BOUND / GROUP-BOUND）。
+- **一句话**：`vtask_size` 是并发 bind 的准入总量，**必须 ≥ slot 数**，经验值 = 全部空额。
 
 ---
 

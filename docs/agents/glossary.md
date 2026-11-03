@@ -25,7 +25,7 @@
 | Web 界面 | `webui` | 浏览器操作入口；生成 `app-schema.json` 的宿主 |
 | 集群管理应用 | `cluster-admin` | 与 HPC 调度系统交互的资源申请应用（系统级 app） |
 | 主路由 | `main_router` | 应用内的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作；不是平台控制面（详见 `application/1_core_concepts`） |
-| 等待队列 | wait-queue | vtask 标准模块：准入、`bind`、预扣额度 |
+| 等待队列 | wait-queue | vtask 标准模块：准入、`bind`、预扣额度、`bind+投递` 成功后放行下一个 vtask |
 
 ## 任务与接口
 
@@ -44,7 +44,7 @@
 | 中文 | 英文 / 标识符 | 含义 | 详见 |
 |---|---|---|---|
 | 信号量 | semaphore | 计数同步原语；两套 API 不可混用 | `reference/semaphore-variable.md`、INV-12 |
-| 任务组头 | vtask-head | 管道入口；`add-subtask` 后必须归还 wait-queue gate | INV-10 |
+| 任务组头 | vtask-head | 管道入口；gate 由 wait-queue 的 `run.sh` 放行，head 不参与 | INV-10 |
 | 任务组核心 | vtask-core | 实际计算段；HOST-BOUND/GROUP-BOUND 的绑定落点 | `features/pod` |
 | 任务组尾 | vtask-tail | 管道收尾；资源由 `doVTaskFinished` 自动归还 | INV-11 |
 | 空间闸门 | `free_space_gb` / `dir_quota_gb` | slot 停领任务的准入条件；挂批入口，不挂任务级 | `features/check-test`、INV-14 |

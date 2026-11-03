@@ -162,7 +162,7 @@ modules:
 ```yaml
 modules:
   main-router:   # task add --sink-module=wait-queue $body
-  wait-queue:    # standard module scalebox.net/platform/wait-queue (vtask_size: 1 serialization gate + check.sh admission + run.sh bind)
+  wait-queue:    # standard module scalebox.net/platform/wait-queue (vtask_size >= slot count: concurrent bind admission + check.sh admission + run.sh bind)
   vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id: <same as core>
   vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, pod_id: <same as head>
   vtask-tail:    # vtask_role: tail
@@ -460,7 +460,7 @@ scalebox vtask delete-semaphore --vtask-id <vtask-id> <sema-name>
 | `ON CONFLICT` | tasks with the same body are not created twice |
 | Deadlock retry ×3 | `40P01` deadlock self-healing |
 | asyncbatch (10ms/50ms) | semaphore batch writes don't compete per record |
-| `vtask_size=1` (wait-queue) | bind operations serialized |
+| `vtask_size >= slot count` (wait-queue) | concurrent bind admission (use total free capacity; too low causes oversell, see INV-23) |
 
 ## 9.8 Ops Scenario Quick Reference
 

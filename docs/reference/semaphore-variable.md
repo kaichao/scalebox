@@ -79,7 +79,8 @@
 | HOST-BOUND | `host_vtask_size:<module>:<host>` | `host_vtask_size:vtask-head:n0-0` |
 | SLOT-BOUND / GROUP-BOUND | `group_vtask_size:<module>:<group>` | `group_vtask_size:vtask-head:2` |
 
-wait-queue 的串行化 gate 用 `vtask_size:wait-queue`（值通常为 1）。
+wait-queue 的**并发 bind 准入**用 `vtask_size:wait-queue`，值必须 ≥ 它的 slot 数，
+经验值取全部空额（host 数 × head 的 `vtask_size`）；不够会超卖、扣成负数卡死（INV-23）。
 
 ## 5. 生命周期：谁预扣、谁归还
 

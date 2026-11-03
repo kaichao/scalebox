@@ -99,6 +99,7 @@
 | `node_progress_gap` | features/node_progress_gap（无断言） | appendix/2 | 待补 | 中 | feature 补齐 |
 | `vtask_role` / `vtask_size` / `vtask_size_sema_copy` | examples/vtask、app-fxcorr | appendix/2、developer/9、examples/vtask | 大量 | 低（sema_copy 已废弃需标注） | feature + reference |
 | `skip_draining_host`（host DRAINING 排空） | features/group-node-drain | design/3_vtask §3.3.3、agents/10-invariants INV-21 | app-mwa（p419，2026-10-29） | 低 | feature |
+| **slot 按 `from_module` 过滤**（主路由多实例按来源分工） | 无 | design/1_programming_model §1.7.5（2026-11-03 提出约束） | app-fxcorr：router 单实例 ≈10 vtask/s 上限，短任务场景下是架构性瓶颈 | **高**（无实现：一个模块的所有 slot 领同一队列，无法声明"只处理某来源"） | feature |
 
 ### 2.4 task-headers 与传播
 
@@ -304,7 +305,7 @@
 | # | 机制 | 规则/实证 | 来源 | 去向 |
 |---|---|---|---|---|
 | 13 | host-bound vtask 配额 | HOST-BOUND 下 `vtask_size` 展开为每节点 `host_vtask_size:<mod>:<host>`；bind 原子预扣，tail 完成/失败由 controld 自动归还 | router/README §5/E8 | invariant |
-| 14 | wait-queue gate | `vtask_size:wait-queue` 是批进入 gate（缺省 1 串行）；from_head 末尾必须 `AddValue(...,1)` 解锁，漏做则 wait-queue 停领 | router/README §5；main-router-golang-guide §6.4 | invariant |
+| 14 | wait-queue gate | `vtask_size:wait-queue` 是批进入 gate；~~from_head 末尾必须 `AddValue(...,1)` 解锁~~ → **2026-11-02 起改由 wait-queue 的 `run.sh` 在 bind + 投递成功后立即放行**（INV-10 已同步修订）；漏做则 wait-queue 停领 | router/README §5；main-router-golang-guide §6.4 | invariant |
 | 15 | WQ_VTS 与多节点零扩展 | `WQ_VTS=1` 时 4 节点 wall 与单节点相同（443.7 vs 440.1 s）；`WQ_VTS=8` 后 242.6 s、R 24.9→45.6；建议 `WQ_VTS≈2N` | p419-scale-plan §14.5 | feature |
 | 16 | 两套信号量 API 不可混用 | `vtask.CreateSemaphore` 建 vtask 作用域，须配 `vtask.AddSemaphoreValue`；`semaphore.Create` 须配 `semaphore.AddValue`；混用报 `semaphore not found: sql: no rows` | router/CLAUDE.md；main-router-golang-guide §6.2/6.3 | invariant |
 | 17 | 实验级任务与 `_` 头传播 | 无 `vtask_role` 的实验级任务不占 batch 配额；`_vtask_*` 只传播给 `vtask_role≠""` 的模块 | router/README §5 | invariant |
@@ -429,7 +430,7 @@
 
 | # | 机制 | 规则/实证 | 来源 | 去向 | 备注 |
 |---|---|---|---|---|---|
-| 7 | vtask 四段结构 | `wait-queue → vtask-head → core → vtask-tail`，用 `sink_vmodules` 串接；wait-queue 配 `VTASK_MODE=GROUP-BOUND`、`vtask_size: 1` 串行准入 | app/app.yaml、Design.md §3 | feature | 补充 |
+| 7 | vtask 四段结构 | `wait-queue → vtask-head → core → vtask-tail`，用 `sink_vmodules` 串接；wait-queue 配 `VTASK_MODE=GROUP-BOUND`、`vtask_size: 1` 串行准入（**2026-11-02 起改为 ≥ slot 数的并发准入，见 INV-23**） | app/app.yaml、Design.md §3 | feature | 补充 |
 | 8 | wait-queue 不重复 bind | 标准 run.sh 已做准入 + `vtask bind` + `add-subtask --direct`；路由端 `fromWaitQueue` 必须空实现，不能再 bind 或写 sink-tasks | app/router/wait_queue.go | invariant | 补充 A14 |
 | 9 | vtask-head 释放闸门 | head 创建 `cube-vtask-done:<body>` 计数器并对 `vtask_size:wait-queue` 加 1；漏做后续 vtask 永远进不来 | app/router/vtask_head.go | invariant | 补充 A14 |
 | 10 | vtask-tail 不重复归还 | tail 只递减计数器；资源由 controld `doVTaskFinished` 自动归还，不能再调 `UnbindResource` | app/router/vtask_tail.go、upgrade-impact-analysis §3 | invariant | 补充 A13 |
@@ -481,7 +482,7 @@
 |---|---|---|---|---|---|
 | 30 | `pkg/module` 统一模块入口 | `module.Run(handlers, "from_module")` 接管参数校验、header 解析、按 header 分派与退出码；模块 `main` 只剩 handlers 表 + `initApp`。`module.InitLogging()` 需早于 `initApp()`，且幂等（`Run` 内部再调一次无害） | app/router/main.go；`scalebox/pkg/module/module.go`（`Run`） | reference | C1 补充；`module.md` 待补「Go 模块入口」一节 |
 | 31 | 模块入口退出码契约 | `0` OK；`1` 参数不足 **或 handler 返回未包装的普通 error**；`2` headers JSON 解析失败（`ExitBadHeaders`）；`4` 无匹配 handler。handler 返回 `*errors.TracedError` 时用其 Code | `scalebox/pkg/module/module.go:20-23,58-96` | reference | 新增；注意与任务状态码 `2=StatusCodeInvalidArgs` 同名不同源；普通 error 会被压成 1，掩盖原因，应 `errors.WrapE(err, code, ...)` |
-| 32 | 标准 wait-queue 接管 vtask 生命周期 | 直接用镜像 `scalebox.net/platform/wait-queue`（`VTASK_MODE` 驱动准入/bind 模式，`vtask_size: 1` 串行）；`run.sh` 内做 `vtask bind` + `add-subtask --direct`。路由端 `fromWaitQueue` / `fromVtaskTail` 必须空实现，本地 `check.sh` 不再需要 | app/app.yaml；app/router/wait_queue.go | invariant | 补充 C8 |
+| 32 | 标准 wait-queue 接管 vtask 生命周期 | 直接用镜像 `scalebox.net/platform/wait-queue`（`VTASK_MODE` 驱动准入/bind 模式，`vtask_size: 1` 串行——**2026-11-02 起改为 ≥ slot 数的并发准入**）；`run.sh` 内做 `vtask bind` + `add-subtask --direct` + 成功后放行 gate。路由端 `fromWaitQueue` / `fromVtaskTail` 必须空实现，本地 `check.sh` 不再需要 | app/app.yaml；app/router/wait_queue.go | invariant | 补充 C8 |
 | 33 | vtask 应用属性与退役的双信号量 | 应用自定义数据用 `_vtask_cube_name` 等 `_` 头随 sink 链传播；`slot_vtask_size` / `:slot_vtask_size` 双信号量与 `vtask_size_sema_copy` 已退役 | app/router/beam_make.go；upgrade-impact-analysis §3 | reference | 新增；关闭 §6 的 `vtask_size_sema_copy` 待确认 |
 | 34 | 路由端不释放 vtask 资源 | vtask-tail 只递减业务计数器；资源由 controld `doVTaskFinished` 按 `_vtask_size_sema` 自动归还，脚本再调 `UnbindResource` 会多归还（额度虚增） | app/router/vtask_tail.go | invariant | 补充 C10 |
 | 35 | env 文件分层（应用约定） | `scalebox.env` 只放空基线（每个被引用变量都定义，防 `${VAR}` 字面量透传），站点 env（`p419*.env`、`dcu*.env`）覆盖；不靠 shell 变量跨站点 | pipelines/main/scalebox.env、p419.env | 应用仓 | 项目约定，不进平台；与 INV-02 互为表里 |

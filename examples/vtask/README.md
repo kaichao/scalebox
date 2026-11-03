@@ -57,7 +57,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**：vtask 锚�
 | 管理者 | 操作 | 时机 |
 |--------|------|------|
 | wait-queue `check.sh`（slot 级准入闸门，ACTION_CHECK） | 读 semagroup max，≤ 0 时返回非 0 → agent **停领 task** 并轮询重试 | agent 每轮 poll、`GetTaskList` 之前 |
-| `vtask bind`（服务端 `BindVtaskResource`） | 原子 decrement（semagroup 选值最大成员，返回组号/hostname） | vtask 分配资源时（wait-queue 串行准入） |
+| `vtask bind`（服务端 `BindVtaskResource`） | 原子 decrement（semagroup 选值最大成员，返回组号/hostname；`SKIP LOCKED` 让并发 bind 各取不同 host） | vtask 分配资源时（wait-queue 领到任务后） |
 | controld `updateVTask` | 带 `_vtask_size_sema` header 的 task 已预扣，领取时跳过；仅无 header 裸任务兜底扣减 | head slot 拾取 task 时 |
 | controld `doVTaskFinished` | increment（读 tail task 的 `_vtask_size_sema`） | vtask-tail 模块 task 完成时 |
 | controld `FailVtask` | increment（读 root task 的 `_vtask_size_sema`） | vtask 失败时 |
@@ -83,17 +83,18 @@ main-router → default.sh（入口路由）
                                 ① semagroup max ≤ 0 → exit 1，agent 停领并轮询
                                 ② max > 0 才放行领取 task
                               run.sh（镜像内置，无需作者编写）:
-                                ① vtask bind（原子化绑定资源）
+                                ① vtask bind（原子化绑定资源；无空额时等待重试）
                                 ② vtask add-subtask --direct（gRPC 直连，需同步感知错误）
                                    （_vtask_attr_* 应用属性随此调用转发进 vtask 范围）
-                                ③ 失败时 vtask unbind 回滚
-                                ④ task 在本 slot 终结，不回流 main-router
+                                ③ semaphore increment vtask_size（立即放行下一个 vtask）
+                                ④ 失败时 vtask unbind 回滚 + increment
+                                ⑤ task 在本 slot 终结，不回流 main-router
                                   │
                                   ▼
                             vtask-head（vtask 根标记 + 业务路由）
                               from-vtask-head.sh:
                                 ① vtask add-subtask（异步路径，_ 前缀自动传播）
-                                ② gate increment（放行下一个 vtask）
+                                （gate 已在 wait-queue 放行，这里不再 +1）
                                   │
                                   ▼
                             vtask-core（核心计算，可多级联）
@@ -109,8 +110,8 @@ main-router → default.sh（入口路由）
 | 模块 | 部署位置 | 关键参数 | 职责 |
 |------|---------|---------|------|
 | main-router | head 节点 (h0) | `main_router: main-router` | 入口路由，按 `VTASK_MODE` 分发 |
-| wait-queue | head 节点 (h0) | `vtask_size: 1` | 标准模块（`scalebox.net/platform/wait-queue`）：slot 级准入闸门（check.sh）+ 串行化 + `vtask bind` 分配资源 |
-| vtask-head | 计算节点 / head 节点 | `vtask_role: head`, `vtask_size: 2` | vtask 根标记 + 业务路由 + gate 释放 |
+| wait-queue | 控制机 (h0) | `vtask_size >= slot 数`、`task_batch_size` | 标准模块（`scalebox.net/platform/wait-queue`）：slot 级准入闸门（check.sh）+ 并发 bind 准入 + `vtask bind` 分配资源 |
+| vtask-head | 计算节点 / head 节点 | `vtask_role: head`, `vtask_size: <每 host 在制上限>` | vtask 根标记 + 业务路由 |
 | vtask-core | 计算节点 | `vtask_role: core` | 核心计算（可多级联，如 vtask-core-1 → vtask-core-2） |
 | vtask-tail | head 节点 (h0) | `vtask_role: tail` | 完结标记（controld 自动归还资源） |
 
@@ -129,7 +130,7 @@ HOST-BOUND / GROUP-BOUND → 进入 wait-queue（等待资源分配）
 
 ### wait-queue（准入控制 + 资源分配，标准模块）
 
-wait-queue 是整个 vtask 管道的准入控制点，**全部逻辑封装在标准模块镜像 `scalebox.net/platform/wait-queue` 中**，应用作者只需在 app.yaml 引用镜像并配置 `VTASK_MODE` / `vtask_size`，无需编写任何脚本。分两层：
+wait-queue 是整个 vtask 管道的准入控制点，**全部逻辑封装在标准模块镜像 `scalebox.net/platform/wait-queue` 中**，应用作者只需在 app.yaml 引用镜像并配置 `VTASK_MODE` / `vtask_size` / `task_batch_size` / `slots`，无需编写任何脚本。分两层：
 
 **第一层：slot 级准入闸门（`check.sh`，ACTION_CHECK）**
 
@@ -150,9 +151,33 @@ exit 0                              # 有空额 → 放行领取
 - 作用：保证 bind 发生时必有空额 → 在制 vtask 数 ≤ `vtask_size`，信号量值不为负
 - DEFAULT 模式不经 wait-queue，check.sh 直接 exit 0
 
-**第二层：串行化 gate（`vtask_size: 1`）**
+**第二层：并发 bind 准入（`vtask_size:wait-queue` ≥ slot 数）**
 
-核心参数 `vtask_size: 1` 保证了**同一时刻只有一个 vtask 在执行 bind**，这是并发安全的前提——bind 内部（`semagroup.Decrement`）当前未加 `FOR UPDATE`，依赖单线程串行化保证正确性。
+`vtask_size:wait-queue` 表示**同时可以有几个 vtask 处于 bind 阶段**。
+
+**规则：slot 数 ≤ `vtask_size`**。两者相等时每个 slot 各持一个名额，并发 bind 互不
+干扰；slot 数大于它时，多个 slot 会读到同一个值、一起 bind，而 `updateVTask` 的扣减
+走 asyncbatch（10 ms 批次），这段时间里 gate 还没落地，信号量会被扣成负数、整条链
+停摆（2026-11-02 实测：8 slot / vtask_size=4 → 扣到 -4，app 218 卡死）。
+
+**取值建议**：`vtask_size = 全部空额 = host 数 × head 的 `vtask_size``，slot 数取同一个值。
+
+`semagroup.Decrement` 已改为单语句 `UPDATE ... RETURNING` + `FOR UPDATE SKIP LOCKED`
++ `value > 0`（2026-11-02），并发 bind 各取不同 host、不会重复分配，也不会扣成负数，
+因此不再需要「`vtask_size: 1` 串行化」那一层保护。
+
+**容量四件套**（四个 env 文件统一定义，含义见 `host-bound.env` 的注释）：
+
+| 变量 | 含义 | 约束 |
+|---|---|---|
+| `HEAD_VTS` | vtask-head 的 `vtask_size`，**每 host** 在制上限 | — |
+| `WQ_VTS` | wait-queue 的 `vtask_size`，并发 bind 准入总量 | = host 数 × `HEAD_VTS` |
+| `WQ_SLOTS` | wait-queue 的 slot 数 | **≤ `WQ_VTS`** |
+| `WQ_BATCH` | `task_batch_size`，每 slot 一次领几个 | **`WQ_SLOTS × WQ_BATCH ≤ WQ_VTS`** |
+
+`task_batch_size` 只摊薄 `GetTaskList` 的 RPC——agent 对领到的一批**串行执行**
+（`cmd/agent/run.go` 的 `for` 循环），并发度仍等于 slot 数。只有 slot 数已经很多、
+RPC 成为可观开销时才需要调大；单 slot 或少数几个 slot 时保持 1 即可。
 
 镜像内置 `run.sh` 的执行流程（wait-queue slot 拾取 task 后）：
 
@@ -177,12 +202,12 @@ exit 0                              # 有空额 → 放行领取
 ```
 
 **关键细节**：
-- 步骤 ① 和 ③ 之间无事务保证。如果进程在两步之间被 kill，资源泄漏。这是已知的设计权衡（`vtask_size=1` 串行化 + 进程崩溃概率极低）
+- 步骤 ① 和 ③ 之间无事务保证。如果进程在两步之间被 kill，资源泄漏。这是已知的设计权衡（进程崩溃概率低，泄漏可用 `vtask fail` 人工释放）
 - run.sh 不写 sink-tasks.txt：vtask-head 任务已由 `--direct` 直投，task 在 wait-queue slot 直接终结（不回流 main-router）
 - 所有命令均不传 `--app-id`：`APP_ID` 环境变量在 agent 容器内已设定，`param` 包自动从环境变量解析
 - `_vtask_size_sema` 在 bind 返回后**由 run.sh 构造**，作为 header 传给 vtask-head。后续 controld 的 `updateVTask` 对已预扣 task 跳过 decrement，`doVTaskFinished` 按此 header 定位加回
 
-### vtask-head（vtask 根标记 + 业务路由 + gate 释放）
+### vtask-head（vtask 根标记 + 业务路由）
 
 vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 
@@ -210,12 +235,13 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
    ↓ HOST-BOUND：不传路由 header，controld 按 pod_id 自动推导 to_host（同节点路由）
    ↓ GROUP-BOUND：按 body 哈希计算 to_host（业务逻辑），显式传 --header to_host
 
-② 成功：semaphore increment vtask_size:${WAIT_QUEUE_MODULE:-wait-queue}
-   ↓ 释放 gate，允许下一个 vtask 进入 wait-queue
-   ↓ 此时当前 vtask 的 core 模块可能还在执行——这就是流水线化
+（gate 已由 wait-queue 的 run.sh 放行——见上文「第二层」，2026-11-02 起 head 不再 +1）
 ```
 
-**gate 释放时机分析**：gate 在 add-subtask 到 vtask-core **成功**后才释放，不是在 bind 后就释放。如果 add-subtask 失败，gate 不释放 → wait-queue 永久阻塞。这是有意为之：阻止坏 vtask 继续消耗资源。生产环境需外部监控检测 wait-queue 阻塞。
+**gate 释放时机**：wait-queue 的 `bind + add-subtask` 都成功后**立即**放行，不等 head
+执行完。如果 add-subtask 失败，run.sh 会 `vtask unbind` 回滚并同样 +1 放行。这样
+每个 vtask 只穿过一个轮询边界——原实现把 +1 放在 head 里，要等 head 执行完、回流
+main-router 才放行，跨两个边界（节拍 2×poll → 1×poll）。
 
 **HOST-BOUND 和 GROUP-BOUND 在 vtask-head 的差异**：
 
@@ -315,7 +341,7 @@ wait-queue (标准模块：check.sh + run.sh)
 vtask-head (from-vtask-head.sh)
   │ controld: vtask=id, headers._vtask_id=id
   │ controld: updateVTask（已预扣 task 跳过扣减）
-  │ script: add-subtask + gate increment
+  │ script: add-subtask
   │ body + _vtask_id + _vtask_size_sema（to_host 由 pod_id 自动推导）
   ▼
 vtask-core (from-vtask-core.sh)
@@ -538,10 +564,10 @@ echo "test-body" | scalebox task add --app-id=$app_id --header _vtask_attr_demo_
 
 | 脚本 | 位置 | 职责 |
 |------|------|------|
-| `check.sh` / `run.sh` | 标准模块镜像 `scalebox.net/platform/wait-queue` | 准入闸门（ACTION_CHECK）+ bind 资源 + add-subtask `--direct`（失败时 unbind 回滚），作者无需编写 |
+| `check.sh` / `run.sh` | 标准模块镜像 `scalebox.net/platform/wait-queue` | 准入闸门（ACTION_CHECK）+ bind 资源（无空额时重试）+ add-subtask `--direct` + 成功后放行下一个 vtask（失败时 unbind 回滚并同样放行），作者无需编写 |
 | `run.sh` | main-router/ | 总入口，按 `from_module` 分发到对应脚本（wait-queue 回流空操作，未知 from_module 丢弃） |
 | `default.sh` | main-router/ | 入口路由（仅 from_module 为空的入口 task）：DEFAULT→vtask-head，其他→wait-queue；HOST-BOUND/GROUP-BOUND 显式转发 `_vtask_attr_*` 应用属性（wait-queue 无 vtask_role，agent 的自动继承被门控拦下） |
-| `from-vtask-head.sh` | main-router/ | add-subtask（异步路径，`_` 前缀自动传播）+ gate 释放 |
+| `from-vtask-head.sh` | main-router/ | add-subtask（异步路径，`_` 前缀自动传播）；gate 已由 wait-queue 放行，这里不再 +1 |
 | `from-vtask-core.sh` | main-router/ | 实际计算（示例中仅转发到 vtask-tail） |
 | `from-vtask-tail.sh` | main-router/ | 读取并打印 `_vtask_attr_*` 应用属性（示意 vtask 范围内的可见性）；资源由 controld `doVTaskFinished` 自动归还 |
 
