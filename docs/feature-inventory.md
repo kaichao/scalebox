@@ -90,7 +90,7 @@
 | `slot_recoverable` / `slot_max_retries` / `slot_timeout_minutes` | 无 | appendix/2（SQL/schema 侧） | 待补 | 中 | reference（注明生效层） |
 | `slot_max_tasks`（slot 生命周期） | 无 | appendix/2 | 待补 | 中 | feature |
 | `task_global_timeout_scale`（拟改名） | 无 | appendix/2 | 待补 | 中 | reference |
-| `router_index`（多主路由） | 无 | appendix/2 | app-fxcorr（多主路由?） | 中 | feature |
+| `router_index`（多主路由） | **features/router-multi-instance**（2026-11-03） | appendix/2、features/router-multi-instance | app-fxcorr app 326/327（from_xp 排队 5.67→0.84 s） | 中 | ✓ 已补 |
 | `pod_id`（节点本地计算） | features/pod | appendix/2 | app-fxcorr（route=1/2） | 中（feature 太简） | feature 统一 |
 | `task_dedup_cache_ttl_minutes` / `repeatable` | 无 | appendix/2 | 待补 | 中 | feature + invariant |
 | `task_batch_size` | features/task_batch_size（README 三行） | appendix/2 | app-fxcorr（v9 定案 T=8） | 中 | feature 统一 + invariant |
@@ -109,6 +109,7 @@
 | `to_slot` / `to_slot_index` | examples/vtask | appendix/2 | 待补 | 中 | reference |
 | `repeatable` / `conflict_action` | 无 | appendix/2 | 待补 | 中 | feature |
 | `slot_last_task` | 无 | appendix/2 | 待补 | 中 | feature |
+| `sort_tag`（领取排序） | **features/sort-tag**（2026-11-03） | appendix/2、reference/task-headers、features/sort-tag | app-fxcorr app 327（fp 3840 + xp 480 全带批号） | 中 | ✓ 已补 |
 | `_vtask_attr_*`（应用自定义属性） | examples/vtask | appendix/2、examples/vtask | 待补 | 中 | feature + reference |
 | `_` 前缀 header 自动传播规则 | 无 | appendix/2（一句） | app-fxcorr（多处实证） | 高 | invariant |
 | headers 类型约定（全 string、数组逗号分隔） | 无 | go-scalebox `docs/task-headers.md` | app-fxcorr（`_vtask_id` 等） | 高 | invariant + reference |

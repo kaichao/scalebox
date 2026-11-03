@@ -66,6 +66,28 @@ scalebox app delete --app-id <app_id>
 scalebox run --app-file=app.yaml < /dev/null
 ```
 
+## 可选：主路由多实例（回流分流）
+
+主路由只有一个 slot 时，所有来源的回流串行处理。某个来源产出特别密集（例如每批几十条任务）
+会把它后面的轻量来源一起堵住。这时可以给主路由开多个 slot、按来源模块分流：
+
+```yaml
+modules:
+  router:
+    parameters:
+      task_dist_mode: SLOT-BOUND   # 必须写在主路由模块上
+      slot_start_batch_size: 2
+    slots:
+      - h0:2                       # seq 0 / 1，同一节点
+  heavy-source:
+    parameters:
+      router_index: 1              # 该来源的回流固定进 seq=1
+```
+
+要点：`slots` 必须落在**单节点**（跨节点时 seq 会重复）；`router_index` 与实例数不匹配时
+任务不会卡死，但会静默退化为负载均衡。完整说明、坑与实测见
+[`features/router-multi-instance`](../../../features/router-multi-instance/README.md)。
+
 ## 判据
 
 - `task show` 的 `status_code == 0`，stdout 为预期文本。

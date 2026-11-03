@@ -1,0 +1,13 @@
+name: sort-tag.features
+cluster: ${CLUSTER}
+
+modules:
+  # 单 slot、逐条领取：用 task list 里的 begin_time 顺序验证 sort_tag 生效
+  worker:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      slot_options: slot_on_head
+    parameters:
+      task_batch_size: 1
+    slots:
+      - h0

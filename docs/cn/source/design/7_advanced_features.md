@@ -153,7 +153,14 @@ task运行排序是scalebox应用运行的重要基础。
 通过设置以下参数，实现排序。
 
 ### 7.3.1  排序标签
-  消息头中sort_tag，是用于消息排序的专用标签，具有最高高优先级，通常由main-router设置
+  消息头中sort_tag，是用于消息排序的专用标签，具有最高优先级，通常由main-router设置。
+
+  三条必须知道的语义（详见 [`features/sort-tag`](https://github.com/kaichao/scalebox/blob/dev/features/sort-tag/README.md)）：
+
+  - **字符串比较**：`"10"` 排在 `"2"` 之前，数值标签必须零填充（如 `00000010`）。
+  - **未设的排在最后**：领任务 SQL 是 `ORDER BY headers->>'sort_tag', gid_0, gid_1, gid_2, id`，
+    ASC 缺省 `NULLS LAST`——同一模块里混着两类任务时，没设 sort_tag 的会一直排在后面。
+  - **只管领取顺序**：多 slot 并行时先领到的不保证先完成，完成顺序要靠下游计数器保证。
 
 ### 7.3.2 任务分组号
 

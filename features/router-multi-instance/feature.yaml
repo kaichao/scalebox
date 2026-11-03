@@ -1,0 +1,46 @@
+name: router-multi-instance.features
+cluster: ${CLUSTER}
+
+parameters:
+  main_router: router
+
+modules:
+  # 主路由：SLOT-BOUND + 两个实例落在同一节点（seq 0 / 1）
+  router:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/router-code
+      slot_options: slot_on_head
+    parameters:
+      task_dist_mode: SLOT-BOUND
+      slot_start_batch_size: 2
+    slots:
+      - h0:2
+
+  # 声明 router_index: 1 → 它的回流任务投到 router 的 seq=1 实例
+  src-a:
+    base_image: scalebox.net/platform/agent:latest
+    parameters:
+      router_index: 1
+    slots:
+      - h0
+    sink_modules:
+      - router
+
+  # 未声明 router_index → 缺省 0，回流进 seq=0 实例
+  src-b:
+    base_image: scalebox.net/platform/agent:latest
+    slots:
+      - h0
+    sink_modules:
+      - router
+
+  sink-a:
+    base_image: scalebox.net/platform/agent:latest
+    slots:
+      - h0
+
+  sink-b:
+    base_image: scalebox.net/platform/agent:latest
+    slots:
+      - h0

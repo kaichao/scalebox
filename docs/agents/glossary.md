@@ -25,6 +25,7 @@
 | Web 界面 | `webui` | 浏览器操作入口；生成 `app-schema.json` 的宿主 |
 | 集群管理应用 | `cluster-admin` | 与 HPC 调度系统交互的资源申请应用（系统级 app） |
 | 主路由 | `main_router` | 应用内的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作；不是平台控制面（详见 `application/1_core_concepts`） |
+| 主路由多实例 | `router_index` | 主路由模块设 `task_dist_mode: SLOT-BOUND` + 多个 slot，来源模块按 `router_index` 把回流钉到指定实例 | `features/router-multi-instance` |
 | 等待队列 | wait-queue | vtask 标准模块：准入、`bind`、预扣额度、`bind+投递` 成功后放行下一个 vtask |
 
 ## 任务与接口
@@ -49,6 +50,7 @@
 | 任务组尾 | vtask-tail | 管道收尾；资源由 `doVTaskFinished` 自动归还 | INV-11 |
 | 空间闸门 | `free_space_gb` / `dir_quota_gb` | slot 停领任务的准入条件；挂批入口，不挂任务级 | `features/check-test`、INV-14 |
 | 批大小 | `task_batch_size` | 一次领取的任务条数 | `features/task-batch-size` |
+| 排序标签 | `sort_tag` | 领任务的第一排序键（字符串序；未设的排在有值之后）；只影响领取顺序 | `features/sort-tag` |
 
 ## 绑定与落点
 

@@ -25,6 +25,8 @@
 | [node-progress-gap](./node-progress-gap/) | HOST-BOUND 节点进度差 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
 | [pod](./pod/) | `pod_id` 节点本地计算 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
 | [retry-test](./retry-test/) | `retry_rules` 退出码重试 | `test.sh` ✓（慢测：pgcron 5 分钟周期） |
+| [router-multi-instance](./router-multi-instance/) | 主路由 `SLOT-BOUND` 多实例 / `router_index` 分流 | `feature.yaml`（`test.sh` 待补） |
+| [sort-tag](./sort-tag/) | `sort_tag` 领取排序（字符串序 / NULLS LAST） | `feature.yaml`（`test.sh` 待补） |
 | [side-car](./side-car/) | `ACTION_RUN/SETUP/TEARDOWN/CHECK` | `test.sh` ✓ |
 | [slot-expr](./slot-expr/) | slot 启动表达式 | `test.sh` ✓（`@p:` 受限，见 README 坑） |
 | [task-batch-size](./task-batch-size/) | `task_batch_size` 批量领取 | `test.sh` ✓ |
