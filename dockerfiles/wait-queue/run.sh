@@ -8,7 +8,10 @@
 #   VTASK_MODE       vtask 类型：HOST-BOUND / GROUP-BOUND（缺省 HOST-BOUND）
 #   HEAD_MODULE      vtask-head 模块名（缺省 vtask-head）
 #   PLAT_MODULE_NAME 当前模块名（agent 注入，用于 gate 信号量）
-#   BIND_RETRY_SECONDS bind 失败时的重试上限（秒，缺省 120）
+#   BIND_RETRY_SECONDS bind 失败时的重试上限（**秒**，缺省 120；内部按 0.2 s
+#                      粒度轮询，即最多 600 次。2026-11-03 前实现把该值当
+#                      循环次数用，实际窗口只有 24 秒，单节点高在制批数时
+#                      会误判为"无空额"而丢整批——见文件尾注）
 #
 # 入参：$1 = task body，$2 = task headers（JSON，agent 注入）
 # 转发规则：`_vtask_attr_*` 前缀的 header 为应用属性，原样转发给 vtask-head
@@ -47,10 +50,12 @@ for k in "${!task_headers[@]}"; do
     fi
 done
 
-# bind 重试：无空额时等待（其他 vtask 还在跑），不丢任务
+# bind 重试：无空额时等待（其他 vtask 还在跑），不丢任务。
+# 轮询粒度 0.2 s，循环次数 = 秒数 × 5（2026-11-03 前误把秒数直接当循环次数，
+# 实际窗口只有标称值的 1/5）。
 bind_with_retry() {
     local i out
-    for ((i = 0; i < bind_retry; i++)); do
+    for ((i = 0; i < bind_retry * 5; i++)); do
         if out=$(scalebox vtask bind 2>/dev/null); then
             echo "$out"
             return 0
@@ -94,3 +99,15 @@ else
 fi
 
 exit 0
+
+# 2026-11-03：BIND_RETRY_SECONDS 的单位修正。原实现是
+#     for ((i = 0; i < bind_retry; i++)); do ...; sleep 0.2; done
+# 把"秒"当成"循环次数"用，标称 120 秒的实际窗口只有 24 秒。app 328
+# （单节点、VTS=12、120 批）实测：批 00000024 于 12:46:26 开始、12:46:53
+# 失败，恰好 26 秒。单节点上一个 vtask 从 bind 到完成约 127 秒，24 秒窗口
+# 等不到空额，整批 80 个任务丢失（wait-queue status=1，下游 vtask-head
+# 只得到 119/120）。现改为 bind_retry * 5 次，标称值即真实秒数。
+#
+# 应用侧兼容：app.yaml 的 BIND_RETRY_SECONDS 若按旧语义放大过（如 1200
+# 是为了凑 240 秒），在新镜像下会变成 1200 秒——功能上无害（有空额立即
+# 返回），但故障发现变慢，建议同步回调到 300 左右。
