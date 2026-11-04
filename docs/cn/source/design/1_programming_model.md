@@ -210,6 +210,11 @@ vtask、route=3）每个 vtask 平均穿过 3.3 次、单次 30 ms，**有效吞
   ——这是短任务场景下的架构性上限。突破只能靠**减少路由次数**（如 `sink_modules`
   直连下游模块）或**拆分来源**。
 
+前者的落地做法见 [bypass-router-short-tasks](https://github.com/kaichao/scalebox/blob/dev/docs/agents/recipes/bypass-router-short-tasks.md)
+（聚合粒度、要一起搬走的副作用、验收判据）与可跑最小形态
+[task-aggregation](https://github.com/kaichao/scalebox/blob/dev/features/task-aggregation/README.md)；
+后者见 [router-multi-instance](https://github.com/kaichao/scalebox/blob/dev/features/router-multi-instance/README.md)。
+
 概念分类见 {doc}`核心概念 §1.11 <../application/1_core_concepts>`。
 
 ## 1.8 运行时环境

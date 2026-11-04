@@ -29,6 +29,7 @@
 | [sort-tag](./sort-tag/) | `sort_tag` 领取排序（字符串序 / NULLS LAST） | `feature.yaml`（`test.sh` 待补） |
 | [side-car](./side-car/) | `ACTION_RUN/SETUP/TEARDOWN/CHECK` | `test.sh` ✓ |
 | [slot-expr](./slot-expr/) | slot 启动表达式 | `test.sh` ✓（`@p:` 受限，见 README 坑） |
+| [task-aggregation](./task-aggregation/) | 短任务聚合 + `sink_modules` 直连下游（绕开主路由瓶颈） | `test.sh` ✓（待实跑） |
 | [task-batch-size](./task-batch-size/) | `task_batch_size` 批量领取 | `test.sh` ✓ |
 | [task-identity](./task-identity/) | `uniq_task` / 112 / `conflict-action` / `repeatable` | `test.sh` ✓ |
 | [timeout](./timeout/) | `task_max_seconds` 超时 | `test.sh` ✓ |

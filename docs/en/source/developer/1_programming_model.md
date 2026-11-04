@@ -193,6 +193,10 @@ feedback, core feedback, tail feedback). Measured on app-fxcorr (6 vtasks, route
   short-task workloads; the only ways out are **fewer routing hops** (e.g. `sink_modules`
   direct connections) or **splitting the sources**.
 
+For the first route, see the recipe [bypass-router-short-tasks](https://github.com/kaichao/scalebox/blob/dev/docs/agents/recipes/bypass-router-short-tasks.md)
+and the runnable minimal form [task-aggregation](https://github.com/kaichao/scalebox/blob/dev/features/task-aggregation/README.md);
+for the second, see [router-multi-instance](https://github.com/kaichao/scalebox/blob/dev/features/router-multi-instance/README.md).
+
 ## 1.8 The Runtime Environment
 
 ### 1.8.1 Control Plane

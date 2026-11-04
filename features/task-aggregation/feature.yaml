@@ -1,0 +1,25 @@
+name: task-aggregation.features
+cluster: local
+
+modules:
+  # 聚合模块：一个任务 = 一组"短任务"成员，组内循环处理，完成后直连下游。
+  agg:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/code/agg
+      slot_options: slot_on_head
+    parameters:
+      # 逐条领取：让"任务数 = 组数"这件事在库里直接可见（不被批量领取掩盖）
+      task_batch_size: 1
+    # 直连声明：下游是 sink，不再回主路由（本 app 也没有 main_router）
+    sink_modules:
+      - sink
+    environments:
+      - AGG_STEPS=8
+
+  # 下游：只记录收到的 body
+  sink:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/code/sink
+      slot_options: slot_on_head

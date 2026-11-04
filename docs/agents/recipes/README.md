@@ -10,6 +10,7 @@
 | [`flow-control`](./flow-control.md) | 加空间/数量闸门，避免死锁 |
 | [`vtask`](./vtask.md) | 建 wait-queue → head → core → tail 管道 |
 | [`multi-node`](./multi-node.md) | 多节点落点与共享盘 |
+| [`bypass-router-short-tasks`](./bypass-router-short-tasks.md) | 短任务聚合 + 直连下游，绕开主路由瓶颈 |
 | [`debug-stuck-chain`](./debug-stuck-chain.md) | 链卡住时的处置流程 |
 | [`acceptance`](./acceptance.md) | 一轮运行结束后的验收清单 |
 
