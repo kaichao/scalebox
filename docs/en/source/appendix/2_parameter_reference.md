@@ -8,6 +8,7 @@
 | initial_status      | 'RUNNING' / 'INITIAL' / 'PAUSED' |
 | main_router         |  main router module name          |
 | default_idle_polls  | the default number of idle polls for the modules it belongs to |
+| default_poll_interval_seconds | the default poll interval (seconds) for the modules it belongs to when poll_interval_seconds is not set; positive integers only |
 | is_cluster_admin    |                                  |
 | default_sleep_count | the default value of each module's sleep_count |
 | global_directories  | list of global directories, used to classify read/write data volumes of the modules it belongs to (local/global/tmpfs) |
@@ -33,7 +34,7 @@
 |                       | IS_SINGULARITY         | the container engine is singularity or apptainer |
 | task_max_seconds      | PLAT_TASK_MAX_SECONDS       | the timeout in seconds for each task run; if the run time exceeds this limit, the task run is interrupted, returning timeout code 124; global timeout returns 123. |
 | task_min_seconds      | PLAT_TASK_MIN_SECONDS       | the minimum seconds for each task run; if the run time is continuously below this value multiple times, the slot is judged as GREEDY anomaly and exits |
-| poll_interval_seconds | PLAT_POLL_INTERVAL_SECONDS | the polling interval for slots checking new tasks. The slot sleeps and periodically checks task availability; this parameter specifies the interval in seconds, default 6 seconds. |
+| poll_interval_seconds | PLAT_POLL_INTERVAL_SECONDS | the polling interval for slots checking new tasks. The slot sleeps and periodically checks task availability; this parameter specifies the interval in seconds, default 6 seconds. The app parameter `default_poll_interval_seconds` provides the default when this argument is not set. |
 | max_idle_polls        | PLAT_MAX_IDLE_POLLS    | the maximum number of idle polls a slot can perform before exiting. The maximum number of sleeps before a slot exits. Default 100 (10 minutes) |
 | dir_quota_gb          | PLAT_DIR_QUOTA_GB      | standard flow control parameter, the capacity quota limit of the directory itself. Used to specify the maximum space of a directory in GB. Format: ```'{"/dir-1":10,"/dir-2":100}'``` |
 | free_space_gb         | PLAT_FREE_SPACE_GB     | standard flow control parameter, the minimum space that must be reserved on the disk where the directory resides. Used to specify the minimum reserved space in GB of the partition where the directory resides. Format: ```'{"/dir-3":10,"/dir-4":100}'``` |

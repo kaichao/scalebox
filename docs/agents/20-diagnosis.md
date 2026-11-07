@@ -102,6 +102,10 @@ scalebox host list                         # 看 Hostname 与 Status
 - `free_space_gb` / `dir_quota_gb` 是“停领任务”，不是任务失败：任务保持 READY、fail=0。
 - 任务级空间闸门 + 组内原子性会死锁；应挂批入口（vtask-head），见 INV-12。
 - 检查顺序：`free_space_gb` → `dir_quota_gb` → `ACTION_CHECK`。
+- **值为 0 的项表示不限制**，解析时直接丢弃：`{"/dev/shm":0}` 与留空等价（整段
+  跳过，连目录存在性都不查），`{"/a":0,"/b":5}` 等价于 `{"/b":5}`。想留"以后
+  再填"占位而不生效，写 0 即可；但别指望 0 是"要求剩余 ≥0"的宽规则——它根本不
+  进检查。
 
 ## 清理现场
 

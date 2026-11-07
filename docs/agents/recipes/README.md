@@ -11,6 +11,7 @@
 | [`vtask`](./vtask.md) | 建 wait-queue → head → core → tail 管道 |
 | [`multi-node`](./multi-node.md) | 多节点落点与共享盘 |
 | [`bypass-router-short-tasks`](./bypass-router-short-tasks.md) | 短任务聚合 + 直连下游，绕开主路由瓶颈 |
+| [`router-multi-instance`](./router-multi-instance.md) | 按来源拆主路由实例，隔离重负载来源 |
 | [`debug-stuck-chain`](./debug-stuck-chain.md) | 链卡住时的处置流程 |
 | [`acceptance`](./acceptance.md) | 一轮运行结束后的验收清单 |
 

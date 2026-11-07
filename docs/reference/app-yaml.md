@@ -26,6 +26,7 @@
 | `initial_status` | `string` | 否 | — | App 初始状态 取值：`RUNNING`, `INITIAL`, `PAUSED` |
 | `main_router` | `string` | 否 | — | 主路由模块名 |
 | `default_idle_polls` | string / number | 否 | — | 所属 module 的缺省的空闲轮询次数 |
+| `default_poll_interval_seconds` | string / number | 否 | — | 所属 module 的缺省轮询间隔（秒），模块未显式配置 `poll_interval_seconds` 时生效；仅正整数有效 |
 | `is_cluster_admin` | `string` | 否 | — | 集群管理员标记 |
 | `default_sleep_count` | string / number | 否 | — | 各模块 sleep_count 的默认值 |
 | `global_directories` | `string` | 否 | — | 全局目录列表，用于所属模块的读写数据量分类统计。（local/global/tmpfs） |
@@ -59,11 +60,11 @@
 | `local_ip_index` | `string` | 否 | — | hostname -I 返回 IP 地址列表，该参数指定列表中的第 n 个 IP 作为本机 IP |
 | `task_max_seconds` | string / number | 否 | — | 每个 task 运行中超时设置的秒数，超时中断返回码 124；全局超时返回 123 |
 | `task_min_seconds` | string / number | 否 | — | 每个 task 运行的最小秒数，连续多次低于此值则判定 slot 为 GREEDY 异常并退出 |
-| `poll_interval_seconds` | string / number | 否 | — | Slot 检查新任务的轮询间隔（秒），缺省 6 秒 |
+| `poll_interval_seconds` | string / number | 否 | — | Slot 检查新任务的轮询间隔（秒），缺省 6 秒；app 参数 `default_poll_interval_seconds` 可提供缺省 |
 | `max_idle_polls` | string / number | 否 | — | Slot 在退出前可进行的最大空闲轮询次数，缺省 100（10 分钟） |
 | `max_sink_tasks` | string / number | 否 | — | 单次 AddTaskList 投递的最大行数；0 表示整份 sink-tasks.txt 一次投递（router 缺省 0，其他模块缺省 100） |
-| `dir_quota_gb` | `string` | 否 | — | 目录容量配额限制（GB）。格式：'{"/dir-1":10,"/dir-2":100}' |
-| `free_space_gb` | `string` | 否 | — | 目录所在磁盘需要保留的最小空间（GB）。格式：'{"/dir-3":10,"/dir-4":100}' |
+| `dir_quota_gb` | `string` | 否 | — | 目录容量配额限制（GB）。格式：'{"/dir-1":10,"/dir-2":100}'；**值为 0 的项视为不限制**，解析时丢弃 |
+| `free_space_gb` | `string` | 否 | — | 目录所在磁盘需要保留的最小空间（GB）。格式：'{"/dir-3":10,"/dir-4":100}'；**值为 0 的项视为不限制**，解析时丢弃 |
 | `heartbeat_seconds` | string / number | 否 | — | 心跳间隔（秒），缺省 60；非正整数则禁用心跳 |
 | `output_text_size` | string / number | 否 | — | task 执行记录中大文本字段（stdout/stderr/auxout）的最大字节数，缺省 65535 |
 | `text_trunc_mode` | `string` | 否 | — | 文本截断模式：HEAD（头截断，保留末尾）/ TAIL，缺省 HEAD 取值：`HEAD`, `TAIL` |

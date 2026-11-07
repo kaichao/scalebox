@@ -119,6 +119,22 @@
 
 - 标准流控属性：`free_space_gb`，通过限制目录所在存储分区的最小空余空间实现流控；取值格式同上。
 
+#### 7.2.2.3 值为 0 的规则 = 不限制
+
+`dir_quota_gb` 与 `free_space_gb` 共用同一套规则解析（`cmd/agent/module_args.go`
+的 `parseCheckRules`），**值为 0 的项在解析时直接丢弃**（2026-11-07）：
+
+| 配置 | 解析结果 | 行为 |
+|---|---|---|
+| 留空 | `nil` | 整段检查跳过 |
+| `{"/dev/shm":0}` | `nil` | 同上——单条全为 0 与留空等价 |
+| `{"/a":0,"/b":5}` | `{"/b":5}` | 只按 `/b` 检查 |
+| `{"/a":0,"/b":0}` 或 `{}` | `nil` | 整段跳过 |
+
+改动前 0 被当作"要求剩余 ≥ 0 GB"：空间比较永不触发，但条目仍在，于是仍会做
+目录存在性检查（路径不存在时报 `cannot find existing directory`）。"配了但不管"
+与"没配"行为不一致，容易误判。
+
 ### 7.2.3 vtask 计数准入控制
 
 标准流控属性 `vtask_size`：vtask-head 启动时计数器减一，vtask-tail（或主路由）完成后加一；计数器 <= 0 时新 vtask 不能运行。按 `task_dist_mode` 生成三种信号量（`vtask_size:<mod>` / `host_vtask_size:<mod>:<host>` / `group_vtask_size:<mod>:<组号>`）；命名、作用域与生命周期见

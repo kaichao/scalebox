@@ -115,14 +115,14 @@
 |---|---|
 | `task_max_seconds` | 单任务超时，缺省 0（不超时）；超时中断，任务返回 124。全局兜底：status=-3 且超过 `task_max_seconds × task_global_timeout_scale`（模块参数，缺省 2.0）的任务由 pgcron（每 15 分钟）置为 123 |
 | `task_min_seconds` | 单任务最小合理耗时，缺省 0；连续低于阈值判定 slot 异常（GREEDY）并退出 |
-| `poll_interval_seconds` | slot 轮询新任务的间隔，缺省 6 秒 |
+| `poll_interval_seconds` | slot 轮询新任务的间隔，缺省 6 秒；app 参数 `default_poll_interval_seconds` 可提供缺省（`GetModule` 服务端合并，模块显式配置优先） |
 | `max_idle_polls` | 空闲轮询上限，超过后 slot 退出并置 READY；缺省 100（约 10 分钟）；app 参数 `default_idle_polls` 可提供缺省。host 非 ON 时 agent 收空批次，依赖此机制回 READY（`always_running` 例外，INV-16） |
 | `max_sink_tasks` | 单次 `AddTaskList` 投递的最大行数；0 = 不分批（整份 `sink-tasks.txt` 一次投递）。缺省：router 0，其他模块 100；显式分批时跨批不保证事务原子性 |
 | `heartbeat_seconds` | 心跳间隔，缺省 60；非正整数禁用 |
 | `output_text_size` | 执行记录里 stdout/stderr/auxout 的最大字节数，缺省 65535，最小 255 |
 | `text_trunc_mode` | `TAIL` = 保留文本开头（截掉尾部）；其他或空 = 保留文本末尾（截掉开头），即缺省等价于 `HEAD` |
-| `dir_quota_gb` | 目录配额闸门，格式 `'{"/dir":10}'`；挂批入口，不挂任务级（INV-14） |
-| `free_space_gb` | 磁盘保留空间闸门，格式同上；同上 |
+| `dir_quota_gb` | 目录配额闸门，格式 `'{"/dir":10}'`；挂批入口，不挂任务级（INV-14）；**值为 0 的项视为不限制**，解析时丢弃 |
+| `free_space_gb` | 磁盘保留空间闸门，格式同上；同上；**值为 0 的项视为不限制**，解析时丢弃 |
 
 ## 8. 模块类型
 

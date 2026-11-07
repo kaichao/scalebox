@@ -19,7 +19,11 @@
 - 空间检查失败返回码 4（`spaceutil.CheckFreeSpace` / `CheckDirQuota`），**不是任务失败**：任务保持 `status_code=-1`、无 `begin_time`、fail=0。
 - 条件恢复后约 5 秒内自动放行（下一轮 poll）。
 - `ACTION_CHECK` 失败同样只停领；脚本可用 `timeout` 包裹（受 `task_max_seconds` 限制）。
-- 值为 0 表示不限制。
+- **值为 0 的项表示不限制，解析时直接丢弃**（`parseCheckRules`，2026-11-07）：
+  - `{"/dev/shm":0}` 与留空等价——整段检查跳过，不再走目录存在性检查
+  - `{"/a":0,"/b":5}` 等价于 `{"/b":5}`，只按 `/b` 检查
+  - 全部为 0 或空对象 `{}` 同样跳过
+  - 两个参数（`free_space_gb` / `dir_quota_gb`）规则一致
 
 ## 坑
 
