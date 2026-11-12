@@ -14,9 +14,12 @@ if [ "$VTASK_MODE" = "HOST-BOUND" ]; then
     # 且未显式指定 to_host/to_ip 时，controld 按来源节点（from_ip）解析 to_host。
     scalebox vtask add-subtask --module=vtask-core $body
 elif [ "$VTASK_MODE" = "GROUP-BOUND" ]; then
-    # 组号取自 _vtask_size_sema（group_vtask_size:vtask-head:<组号>）
+    # 组号优先取 _vtask_group；老 wait-queue 回退 _vtask_size_sema
+    group_part=$(scalebox::task_header "$2" "_vtask_group")
+    if [ -z "$group_part" ]; then
+        group_part=${sema_name##*:}
+    fi
     # to_host 按 body 哈希分配给计算节点（业务逻辑，保留在脚本中）
-    group_part=${sema_name##*:}
     body_int=$((10#$body))
     host_part=$(( (body_int / 2) % 2 ))
     to_host="n${group_part}-${host_part}"

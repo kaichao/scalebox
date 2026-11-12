@@ -127,7 +127,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**——vtask �
 
 组内节点可以用**独立组节点**（组 slot）承载：在 vtask-core 的 `slots` 中写 `<host>:<count>:<group_prefix>`（如 `y00-00:4:x43`），平台在 `host` 上建 `count` 个组 slot，每个 slot 领取 `to_host` 匹配 `group_prefix.+` 或未指定 `to_host` 的 task。组节点的排空与替换见 §3.3.3。
 
-**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_size_sema` 随 root task 传播；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §3.4.5。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
+**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_head_module`/`_vtask_host`/`_vtask_group` 随 root task 传播；`_vtask_size_sema` 已降为兼容/内部（新任务不再写，由这三个属性重建）；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §3.4.5 与 §3.3.6。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
 
 ### 3.2.5 根 task 标识
 
@@ -172,8 +172,8 @@ modules:
 modules:
   main-router:   # task add --sink-module=wait-queue $body
   wait-queue:    # 标准模块 scalebox.net/platform/wait-queue（vtask_size ≥ slot 数的并发 bind 准入 + check.sh 准入 + run.sh bind）
-  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id: <与 core 相同>
-  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, pod_id: <与 head 相同>
+  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id 可选（非 vtask 兜底）
+  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, 优先 _vtask_host
   vtask-tail:    # vtask_role: tail
 ```
 
@@ -182,9 +182,11 @@ modules:
 | 脚本 | 位置 | 操作 |
 |------|------|------|
 | `check.sh` / `run.sh` | wait-queue 标准模块镜像 | 准入闸门（ACTION_CHECK）+ `vtask bind` → `vtask add-subtask --direct`（失败时 unbind + gate increment 回滚）；task 在本 slot 终结，作者无需编写 |
-| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async，不传 `to_ip`/`to_host`，路由由相同 `pod_id` 推导）。**不再 +1 放行 gate**——gate 已由 wait-queue 的 `run.sh` 在 bind+投递成功后放行（2026-11-02 L1） |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async，不传 `to_ip`/`to_host`；HOST-BOUND 优先由 wait-queue 写入的 `_vtask_host` 兜底，老路径/非 vtask 由 `pod_id` 推导）。**不再 +1 放行 gate**——gate 已由 wait-queue 的 `run.sh` 在 bind+投递成功后放行（2026-11-02 L1） |
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | 空操作（额度由 controld `doVTaskFinished` 自动归还） |
+
+> **2026-11-10 锚点变更**：wait-queue 写入 `_vtask_head_module` + `_vtask_host`，head→core 不再依赖 `pod_id`；`pod_id` 只作 core→core/非 vtask 兜底。详见 §3.3.6。
 
 > **收尾契约**：`vtask-tail` 应在全部 core 任务完成后投递一次。平台不对重复投递做隐式忽略；
 > 重复的 tail 身份会让整批投递回滚（112），并可能因首个 tail 提前执行导致 vtask 提前收尾。
@@ -194,9 +196,10 @@ modules:
 与 HOST-BOUND 结构相同，差异：
 - `vtask-head.task_dist_mode: SLOT-BOUND`（平台实现值），bind 返回组号（即 head slot 的 seq）
 - 流控信号量格式 `group_vtask_size`，head slot 作为节点组锚点
-- `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支计算 `to_host`（业务逻辑）
+- `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支从 `_vtask_group`（老 wait-queue 回退 `_vtask_size_sema`）计算 `to_host`（业务逻辑）
 - head→core 使用脚本显式 `to_host`；head 是 SLOT-BOUND，`pod_id` 推导不触发
 - 多个 core 模块（均为 HOST-BOUND）之间必须配置相同的 `pod_id`，否则 core→core 会丢失本地路由；`group_vtask_size` 只含组号，无法推出主机
+- 组号优先取 `_vtask_group`（老 wait-queue 回退 `_vtask_size_sema`）；`_vtask_host` 若存在只表示 head/入口节点，不能用于 core 自动填
 
 **独立组节点**：vtask-core（及其他 HOST-BOUND 模块）的 `slots` 支持组 slot 语法：
 
@@ -242,19 +245,20 @@ modules:
 
 级联规则：
 - 所有 core 模块共享 `vtask_role: core`，controld 按统一逻辑处理
-- `_` 前缀 header（`_vtask_id`、`_vtask_size_sema`）沿 core 链自动传播
+- `_` 前缀 header（`_vtask_id`、`_vtask_head_module`、`_vtask_host`/`_vtask_group`；`_vtask_size_sema` 仅老任务/自定义）沿 core 链自动传播
 - 每个 core 模块独立配置 slot 数量、`task_dist_mode` 和镜像
-- HOST-BOUND 的 core 链应配置相同的 `pod_id`，否则 core→core 不会自动保持同节点
+- HOST-BOUND 的 core 链优先用 `_vtask_host` 保持同节点；`pod_id` 仍是 core→core/非 vtask 的兜底
 
 ### 3.3.5 位置路由：to_host 的来源与优先级
 
 HOST-BOUND 任务落到哪台主机，按以下优先级确定（`cmd/controld/task/add_local.go`）：
 
 ```
-显式 to_host  >  显式 to_ip  >  pod_id 推导
+显式 to_host  >  显式 to_ip  >  _vtask_host（HOST-BOUND core）  >  pod_id 推导
 ```
 
-- **显式 `to_host` / `to_ip` 优先**：调用方给出的路由是明确意图，`pod_id` 不会覆盖。
+- **显式 `to_host` / `to_ip` 优先**：调用方给出的路由是明确意图，`_vtask_host`/`pod_id` 不会覆盖。
+- **`_vtask_host` 优先于 `pod_id`**：仅对 `HOST-BOUND` + `vtask_role=core` 且无 `_vtask_group` 的任务生效；GROUP-BOUND 跳过，`_vtask_group` 不是主机（详见 §3.3.6）。
 - **`pod_id` 推导条件**（全部满足才生效）：
   1. 目标模块 `task_dist_mode=HOST-BOUND`；
   2. 来源模块 `task_dist_mode=HOST-BOUND`（SLOT-BOUND / DEFAULT 来源不触发）；
@@ -268,9 +272,58 @@ vtask 各模式的配置：
 
 | 模式 | head→core | core→core | 配置要点 |
 |------|-----------|-----------|---------|
-| HOST-BOUND | `pod_id` 推导（脚本不传 `to_ip`） | `pod_id` 推导 | head 与所有 core 配相同 `pod_id` |
-| GROUP-BOUND | 脚本显式 `to_host`（业务分组） | `pod_id` 推导 | head 是 SLOT-BOUND，pod_id 不触发；所有 core 配相同 `pod_id` |
+| HOST-BOUND | `_vtask_host`（wait-queue 写入；老路径 `pod_id`） | `_vtask_host`/`pod_id` | head/core 同锚点；`pod_id` 仅 core→core/非 vtask |
+| GROUP-BOUND | 脚本显式 `to_host`（由 `_vtask_group` 计算） | `pod_id` 推导 | head 是 SLOT-BOUND；`_vtask_host` 不用于 core |
 | DEFAULT | 无绑定 | 无绑定 | 不需要 `pod_id` |
+
+### 3.3.6 vtask 锚点属性（2026-11-10）
+
+HOST-BOUND vtask 的语义是 core 段回到 head 锚点。2026-11-10 起平台用三个保留属性表达锚点，
+core 链不再强制依赖 `pod_id` 或显式 `to_host`：
+
+| 属性 | 作用域 | 含义 |
+|---|---|---|
+| `_vtask_head_module` | 所有 vtask | vtask-head 模块名（sema 重建用） |
+| `_vtask_host` | HOST-BOUND | 锚点主机完整名（如 `n0-0.inline`）；GROUP-BOUND 可选表示 head/入口节点 |
+| `_vtask_group` | GROUP-BOUND | 组号（head slot 的 seq），**不是主机** |
+| `_vtask_size_sema` | 内部/兼容 | 老任务或自定义 `--sema-name`；新任务不再写，由上面三个重建 |
+
+**写入**：wait-queue `run.sh` 在 `vtask bind` 后把 `_vtask_head_module` + `_vtask_host`
+（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）写入 head task；不再写 `_vtask_size_sema`。
+`_vtask_*` 随 agent 的 `_` 前缀规则沿 core 链传播；router 是 `SLOT-BOUND`，自身不消费锚点，
+只透传，不会被拉到计算节点。
+
+**消费**：controld 在任务入库时：
+
+- 目标模块 `task_dist_mode=HOST-BOUND` + `vtask_role=core` + 无 `_vtask_group` + 无显式
+  `to_host`/`to_ip`：`to_host = _vtask_host`；
+- GROUP-BOUND core：**不自动填**；`to_host` 仍由 `from-vtask-head.sh`/组 slot 逐任务决定；
+  `_vtask_group` 只用于 sema 重建/观测；`_vtask_host`（如果存在）表示 head 节点，不用于 core；
+- 显式 `to_host`/`to_ip` 优先；`pod_id` 保留为 HOST-BOUND core→core/非 vtask 的兜底。
+
+**优先级**：
+
+```
+显式 to_host  >  显式 to_ip  >  _vtask_host（仅 HOST-BOUND core）  >  pod_id 推导
+```
+
+GROUP-BOUND 跳过 `_vtask_host` 这一项：`显式 to_host > pod_id > 组 slot`。
+
+**sema 重建**（`VTaskSizeSema`）：
+
+- HOST-BOUND：`host_vtask_size:<_vtask_head_module>:<short(_vtask_host)>`
+- GROUP-BOUND：`group_vtask_size:<_vtask_head_module>:<_vtask_group>`
+- `updateVTask` 的“已预扣”判断、`doVTaskFinished`、`FailVtask`、`vtask unbind`、
+  `vtask get` 都先看 `_vtask_size_sema`（老任务/自定义），没有再按上述重建；
+- 缺字段时显式告警，不静默跳过释放；tail 的完成标记不被阻断。
+
+**约束**：
+
+- `_vtask_host` 用完整主机名（与 `t_slot.host` 同格式）；sema 的短名由平台截取。
+- GROUP-BOUND 的 `_vtask_host` 只是 head/入口节点，不能触发 core 自动填。
+- core 数据面任务不建议显式覆盖 `to_host`；如覆盖，下游必须跟随实际来源，否则 `/dev/shm`
+  等本地数据读不到。
+- router 的 `SLOT-BOUND` 不因 `_vtask_host` 改变；它不会被分发到计算节点。
 
 ## 3.4 信号量机制
 
@@ -302,7 +355,7 @@ wait-queue slot 每轮 poll
 
 ### 3.4.4 等待队列门控
 
-wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh` 末尾手动 increment 放行下一个 vtask。
+wait-queue 模块的 `vtask_size` 保持 1（串行化）。gate 由 wait-queue `run.sh` 在 bind+投递成功后立即 increment（2026-11-02 L1）；`from-vtask-head.sh` 不再 +1。
 
 ### 3.4.5 vtask 生命周期中的信号量变化
 
@@ -313,19 +366,19 @@ wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh`
 | 类型 | 信号量 | 作用 | 归还责任 |
 |------|--------|------|---------|
 | 资源容量 | `host_vtask_size:<head>:<host>` / `group_vtask_size:<head>:<组>` | 该 host/组在制 vtask 数 ≤ `vtask_size` | **controld 自动**（tail 完成 / fail）|
-| gate 锁 | `vtask_size:<wait-queue>` | wait-queue 段串行化（同一时刻只有一个 vtask 在执行 bind）| **主路由 from-vtask-head 解锁**；失败回滚在 run.sh；`vtask fail` 兜底 |
+| gate 锁 | `vtask_size:<wait-queue>` | wait-queue 段串行化（同一时刻只有一个 vtask 在执行 bind）| **wait-queue run.sh 解锁（L1）**；失败回滚在 run.sh；`vtask fail` 兜底 |
 
 生命周期各阶段的变化：
 
 | 阶段 | 触发点 | 资源容量 | gate 锁 |
 |------|--------|---------|---------|
-| 领取 | controld 领取 wait-queue 的裸任务（无 `_vtask_size_sema`）| — | **−1**（`updateVTask` 兜底扣）|
+| 领取 | controld 领取 wait-queue 的裸任务（无 `_vtask_size_sema`/新锚点）| — | **−1**（`updateVTask` 兜底扣）|
 | 准入 | wait-queue `check.sh`（ACTION_CHECK）| semagroup max ≤ 0 → 停领 | —（不检查 gate）|
 | bind | wait-queue run.sh `vtask bind` | **−1**（原子预扣，返回 host/组号）| — |
 | 建链回滚 | run.sh `vtask add-subtask --direct` 失败 | **+1**（`vtask unbind`）| **+1**（run.sh increment，放行）|
-| vtask-head 运行 | 主路由 `from-vtask-head` | —（已预扣，head 领取时跳过）| **+1**（解锁，放行下一个 vtask）|
+| vtask-head 运行 | 主路由 `from-vtask-head` | —（已预扣，head 领取时跳过）| —（gate 已在 wait-queue run.sh 放行）|
 | vtask 管道运行 | core 各阶段 | — | — |
-| 完成 | controld `doVTaskFinished`（tail 完成）| **+1**（按 tail task 的 `_vtask_size_sema` 自动加回）| — |
+| 完成 | controld `doVTaskFinished`（tail 完成）| **+1**（按 tail 的 `_vtask_size_sema` 或由 `_vtask_head_module`+host/group 重建后加回）| — |
 | 失败 | `FailVtask` / `vtask fail` | **+1**（释放资源）| **+1**（释放门控）|
 
 要点：
@@ -333,13 +386,12 @@ wait-queue 模块的 `vtask_size` 保持 1（串行化）。`from-vtask-head.sh`
 - gate 锁的实际 gate 点是 controld `getVtaskBatchSize`：无 `vtask_role` 的模块（如
   wait-queue，DEFAULT 分发）每轮领取数 = min(`vtask_size:<mod>` 当前值, TaskBatchSize)，
   值为 0 时停领——与 check.sh（查 host/group 容量）是两个独立闸门；
-- gate 的**扣减**由平台做（controld 领取裸任务时），**解锁**由主路由
-  `from-vtask-head` 做（`scalebox semaphore increment vtask_size:<wait-queue>`，见
-  `examples/vtask/main-router/from-vtask-head.sh`；Go 版 `semaphore.AddValue(name, 1, appID)`）
-  ——vtask-head 任务运行即放行下一个 vtask；
-- 应用作者无需编写 wait-queue 相关脚本（标准模块承担），但**主路由需在
-  from-vtask-head 中包含 gate 解锁一行**；漏做时 wait-queue 段停领，兜底：
-  `vtask fail` 释放门控、人工 `semaphore increment` 补偿。
+- gate 的**扣减**由平台做（controld 领取裸任务时），**解锁**由 wait-queue
+  `run.sh` 做（`scalebox semaphore increment vtask_size:<wait-queue>`，2026-11-02 L1；
+  bind + 投递成功后立即放行下一个 vtask；失败回滚也在 run.sh）；
+- 应用作者无需编写 wait-queue 相关脚本（标准模块承担）；gate 放行已在 wait-queue
+  `run.sh`（2026-11-02 L1）。主路由/`from-vtask-head` **不要**再 +1，否则双重归还；
+  异常兜底用 `vtask fail` + 人工 `semaphore increment` 补偿。
 
 ## 3.5 管道流程
 
@@ -352,12 +404,12 @@ header 的名称、写入方与 `_` 前缀传播规则见
 ```
 main-router task add
   → agent addSinkTasks: _vtask_* 门控（仅 vtask_role≠"" 的 sink 模块通过）
-  → wait-queue task: 不传入 _vtask_id / _vtask_size_sema
+  → wait-queue task: 不传入 _vtask_id / _vtask_size_sema；run.sh 写 _vtask_head_module + host/group
 
 wait-queue task 执行标准模块 run.sh
   → --direct gRPC 创建 vtask-head task
   → vtask_role=head → self-ref vtask=id
-  → _vtask_size_sema 由 run.sh 显式设置
+  → _vtask_head_module + _vtask_host/_vtask_group 由 run.sh 写入；不再写 _vtask_size_sema
   → task 在 wait-queue slot 终结（不写 sink-tasks.txt，无回流）
 
 vtask-head task 执行 from-vtask-head.sh
@@ -367,8 +419,8 @@ vtask-head task 执行 from-vtask-head.sh
 vtask-core → vtask-tail（同上路径）
 
 vtask-tail 完成
-  → doVTaskFinished: 读取 _vtask_size_sema → increment 流控版
-  → from-vtask-tail.sh: 读取 _vtask_size_sema → unbind 可编程版
+  → doVTaskFinished: 读取 _vtask_size_sema 或由新属性重建 → increment
+  → from-vtask-tail.sh: 同上（老路径 sema / 新属性重建）
 ```
 
 ### 3.5.2 生命周期
@@ -379,9 +431,9 @@ task 创建 → ON CONFLICT 防重
 task 调度 → FOR UPDATE SKIP LOCKED（单 slot 独占）
   ↓
 task 执行 → agent → status_code: RUNNING → OK/ERROR
-  ↓  _vtask_id / _vtask_size_sema 通过 _ 前缀自动传播
+  ↓  _vtask_id / _vtask_head_module / _vtask_host / _vtask_group 通过 _ 前缀自动传播（_vtask_size_sema 兼容）
   ↓
-tail 完成 → doVTaskFinished → semaphore increment
+tail 完成 → doVTaskFinished → sema 重建/兼容 → increment
   ↓  headers.vtask_tail_id = tail task ID
   ↓
 from-vtask-tail.sh → unbind（仅 HOST-BOUND / SLOT-BOUND）
@@ -450,7 +502,7 @@ Layer 3: vtask 高级操作
 
 - `vtask bind` 自动查找 head 模块，返回计算资源标识。
 - `vtask unbind --sema-name=...`：错误回滚时传信号量名；正常完成由 controld 自动加回。
-- `vtask unbind --vtask-id=...`：运维手工，服务端自动查 `_vtask_size_sema`。
+- `vtask unbind --vtask-id=...`：运维手工；服务端查 `_vtask_size_sema`，没有则由 `_vtask_head_module` + host/group 重建。
 
 | vtask 类型 | bind 返回 |
 |-----------|----------|
@@ -462,15 +514,19 @@ Layer 3: vtask 高级操作
 
 ```bash
 # Agent 内（常见）：异步路径，_ 前缀 header 自动传播
-# HOST-BOUND：vtask-head 与 vtask-core 配相同 pod_id，不传路由 header，controld 自动推导 to_host
+# HOST-BOUND：wait-queue 写 _vtask_host；不传路由 header，controld 用锚点兜底 to_host
+# （老路径/非 vtask 仍可用相同 pod_id 推导）
 scalebox vtask add-subtask --module=vtask-core $body
 
-# GROUP-BOUND：按业务计算 to_host（head 是 SLOT-BOUND，pod_id 不参与此跳）
+# GROUP-BOUND：从 _vtask_group 计算 to_host（head 是 SLOT-BOUND，pod_id 不参与此跳）
+# 老 wait-queue 回退 _vtask_size_sema
+group=$(scalebox::task_header "$2" _vtask_group)
 scalebox vtask add-subtask --module=vtask-core --header to_host=$to_host $body
 
 # Agent 内需同步感知错误（wait-queue 标准模块 run.sh）：加 --direct
 scalebox vtask add-subtask --direct --module=vtask-head \
-    --header to_host=$to_host --header _vtask_size_sema=$sema_name $body || {
+    --header to_host=$to_host --header _vtask_host=$to_host \
+    --header _vtask_head_module=$head_module $body || {
     scalebox vtask unbind --sema-name="${sema_name}"
     scalebox semaphore increment vtask_size:wait-queue
     exit 1

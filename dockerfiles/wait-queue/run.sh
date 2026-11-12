@@ -16,7 +16,9 @@
 # 入参：$1 = task body，$2 = task headers（JSON，agent 注入）
 # 转发规则：`_vtask_attr_*` 前缀的 header 为应用属性，原样转发给 vtask-head
 #（平台只运输、不解释）；其余 `_vtask_*` 不继承——_vtask_id 由服务端自指，
-# _vtask_size_sema 用本次 bind 的新值。
+# 本次 bind 显式写入 _vtask_head_module，以及 _vtask_host（HOST-BOUND）或
+# _vtask_group（GROUP-BOUND）；不再写 _vtask_size_sema，由 controld 从这三个
+# 属性重建（老任务/自定义 sema 仍兼容）。
 #
 # 2026-11-02（vtask 规模化 L1）三处改动：
 #   1) bind + add-subtask 成功后**立即**归还串行门。原来这一步在 main-router 的
@@ -74,7 +76,9 @@ if [ "$VTASK_MODE" = "GROUP-BOUND" ]; then
     sema_name="group_vtask_size:${head_module}:${group_seq}"
     scalebox vtask add-subtask --direct --module=$head_module \
         "${attr_headers[@]}" \
-        --header to_slot_index=$group_seq --header _vtask_size_sema=$sema_name $body || {
+        --header to_slot_index=$group_seq \
+        --header _vtask_group=$group_seq \
+        --header _vtask_head_module=$head_module $body || {
         scalebox vtask unbind --sema-name="${sema_name}"
         scalebox semaphore increment vtask_size:${module_name}
         exit 1
@@ -89,7 +93,9 @@ else
     sema_name="host_vtask_size:${head_module}:${to_host}"
     scalebox vtask add-subtask --direct --module=$head_module \
         "${attr_headers[@]}" \
-        --header to_host=$to_host --header _vtask_size_sema=$sema_name $body || {
+        --header to_host=$to_host \
+        --header _vtask_host=$to_host \
+        --header _vtask_head_module=$head_module $body || {
         # 回滚已扣减的资源，并放行下一个 vtask
         scalebox vtask unbind --sema-name="${sema_name}"
         scalebox semaphore increment vtask_size:${module_name}

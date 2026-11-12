@@ -29,7 +29,7 @@ modules:
 ## 行为
 
 1. **准入（check.sh，ACTION_CHECK）**：agent 每轮 `GetTaskList` 之前执行；对应 vtask 类型的信号量组 max ≤ 0 时返回非 0，agent 停领并轮询重试
-2. **分配（run.sh）**：`vtask bind` 原子扣减额度并返回资源（hostname / 组号）→ 构造 `_vtask_size_sema` → `vtask add-subtask --direct` 直投 vtask-head（同步感知错误，失败时 `vtask unbind` 回滚 + gate 放行）；task 上 `_vtask_attr_*` 前缀的 header（应用属性）随同一调用原样转发进 vtask 范围
+2. **分配（run.sh）**：`vtask bind` 原子扣减额度并返回资源（hostname / 组号）→ 写入 `_vtask_head_module` + `_vtask_host`（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）→ `vtask add-subtask --direct` 直投 vtask-head（同步感知错误，失败时 `vtask unbind` 回滚 + gate 放行）；不再写 `_vtask_size_sema`，由 controld 从新属性重建（老任务/自定义 sema 兼容）；task 上 `_vtask_attr_*` 前缀的 header（应用属性）随同一调用原样转发进 vtask 范围
 3. **终结**：run.sh 不写 sink-tasks.txt，task 在 wait-queue slot 直接终结（无需回流 main-router）
 
 额度由 controld `doVTaskFinished`（tail 完成）/ `FailVtask`（失败）自动加回，脚本侧无需参与。
@@ -40,4 +40,4 @@ task headers 中 `_vtask_attr_<name>` 前缀的键为应用自定义属性：run
 
 属性需由调用方在投递 wait-queue 任务时显式传入——wait-queue 无 `vtask_role`，agent 对"主路由 → wait-queue"这一跳的 `_` 前缀自动继承会被门控拦下（`cmd/agent/sink_tasks.go` 的 router 分支）。
 
-其余 `_vtask_*` 不属于应用属性、不会被继承：`_vtask_id` 由服务端自指为新 vtask，`_vtask_size_sema` 使用本次 bind 的新值。
+其余 `_vtask_*` 不属于应用属性、不会被继承：`_vtask_id` 由服务端自指为新 vtask；wait-queue 显式写入 `_vtask_head_module` + `_vtask_host`（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND），供 controld 做 vtask 锚点兜底与 sema 重建。`_vtask_size_sema` 不再由新任务写入；老任务或 `--sema-name` 自定义场景仍兼容。

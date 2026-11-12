@@ -129,6 +129,7 @@
 | 特性/参数 | 现有测试 | 现有文档 | 实战记录 | 缺口 | 去向 |
 |---|---|---|---|---|---|
 | vtask 三种模式（DEFAULT/HOST-BOUND/GROUP-BOUND） | examples/vtask | developer/9、examples/vtask、go-scalebox `docs/vtask-design.md` | app-fxcorr | 低 | 已有 |
+| vtask 锚点属性 `_vtask_host`/`_vtask_group`/`_vtask_head_module` | examples/vtask（HOST-BOUND/GROUP-BOUND） | developer/9 §9.3.6、reference/task-headers | app-fxcorr（B 链） | 低 | feature + invariant |
 | wait-queue 标准模块（check + bind + add-subtask） | examples/vtask | developer/9、examples/vtask | app-fxcorr | 低 | 已有 + reference |
 | 信号量/变量/global/semagroup 语义 | app-primes、examples/vtask | developer/9（部分）、appendix/3 | app-fxcorr（计数器） | 高 | reference + invariant |
 | vtask add-subtask 双路径（agent 内异步 / `--direct`） | examples/vtask | developer/9、examples/vtask | app-fxcorr | 中 | reference |
@@ -313,6 +314,7 @@
 | 18 | `free_space_gb` 准入 | 渲染为 hex 编码的 `PLAT_FREE_SPACE_GB`；不满足则 `status_code=-1`、无 `begin_time`、fail=0、留在原 slot 每轮重查，释放后约 5 秒放行 | dynamic-flow-control §2/§7 | feature |
 | 19 | 任务级空间闸门会死锁 | 任务级 `free_space_gb` × 组原子性 = 死锁（fail=0、数据不增长）；闸门应挂批入口 vtask-head；`VTASK_SIZE=1` 可消除首轮盲区 | dynamic-flow-control §7.1；local.env | invariant |
 | 20 | 阶梯阈值是背压阀 | `((@seq+5))` 给每个 slot 不同阈值；空盘时第一波仍全部放行；真正封顶 = 在产任务数 × 单任务大小 | dynamic-flow-control §5；archive/node-tuning §8.3 | reference |
+| 21 | vtask 锚点跨 SLOT-BOUND router | wait-queue 写 `_vtask_head_module` + `_vtask_host`/`_vtask_group`；HOST-BOUND core 用 `_vtask_host` 兜底 `to_host`，GROUP-BOUND 跳过并保留逐任务 `to_host`；`_vtask_size_sema` 可由三者重建（老任务兼容） | go-scalebox `vtask-to-host-design.md`；examples/vtask 230/231 | invariant |
 
 ### A.4 Slot、节点与落点
 

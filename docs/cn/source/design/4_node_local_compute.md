@@ -140,13 +140,13 @@
 
 Scalebox通过任务分发模式支持节点本地计算：
 
-- **HOST-BOUND**：任务绑定到特定主机，通过`headers->>'to_host'`指定目标主机
+- **HOST-BOUND**：任务绑定到特定主机，通过`headers->>'to_host'`指定目标主机；vtask core 可由 wait-queue 写入的 `_vtask_host` 兜底，显式 `to_host`/`to_ip` 优先
 - **SLOT-BOUND**：任务绑定到执行槽，通过`headers->>'to_slot'`指定目标执行槽，可作为vtask头节点的任务分发
-- **GROUP-BOUND**：任务绑定到组，通过执行槽slot的`parameters->>'group_prefix'`指定任务task的`headers->>'to_host'`
+- **GROUP-BOUND**：任务绑定到组，通过执行槽slot的`parameters->>'group_prefix'`指定任务task的`headers->>'to_host'`；vtask 锚点用 `_vtask_group`（组号），`_vtask_host` 若存在只表示 head 节点，不能用于 core 自动填
 
 ### 4.5.3 位置感知调度
 
-- **pod_id机制**：标识模块属于pod管理。目标与来源模块均为 HOST-BOUND 且 `pod_id` 相同时，下游 task 自动路由回来源节点；显式 `to_host`/`to_ip` 优先，`pod_id` 不会覆盖。GROUP-BOUND vtask 中 head→core 由业务脚本显式 `to_host`，core→core 依赖相同的 `pod_id`
+- **pod_id机制**：标识模块属于pod管理。目标与来源模块均为 HOST-BOUND 且 `pod_id` 相同时，下游 task 自动路由回来源节点；优先级：显式 `to_host`/`to_ip` > `_vtask_host`（HOST-BOUND core） > `pod_id`。经 SLOT-BOUND router 中转时 `pod_id` 不跨该跳，vtask core 用 `_vtask_host`。GROUP-BOUND vtask 中 head→core 由业务脚本显式 `to_host`（组号来自 `_vtask_group`），core→core 依赖相同的 `pod_id`；`_vtask_group` 不是主机
 - **任务头中的位置信息**：支持前后模块间的本地级联处理
 
 ### 4.5.4 vtask支持框架

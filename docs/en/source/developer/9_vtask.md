@@ -163,8 +163,8 @@ modules:
 modules:
   main-router:   # task add --sink-module=wait-queue $body
   wait-queue:    # standard module scalebox.net/platform/wait-queue (vtask_size >= slot count: concurrent bind admission + check.sh admission + run.sh bind)
-  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id: <same as core>
-  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, pod_id: <same as head>
+  vtask-head:    # vtask_role: head, task_dist_mode: HOST-BOUND, pod_id optional (non-vtask fallback)
+  vtask-core:    # vtask_role: core, task_dist_mode: HOST-BOUND, prefer _vtask_host
   vtask-tail:    # vtask_role: tail
 ```
 
@@ -173,9 +173,11 @@ modules:
 | Script | Location | Operation |
 |------|------|------|
 | `check.sh` / `run.sh` | wait-queue standard module image | Admission gate (ACTION_CHECK) + `vtask bind` → `vtask add-subtask --direct` (on failure, unbind + gate increment rollback); task terminates at this slot, no author scripting needed |
-| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core` (async; no `to_ip`/`to_host`, routing derived from matching `pod_id`), finally `semaphore increment vtask_size:wait-queue` |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core` (async; no `to_ip`/`to_host`; HOST-BOUND uses wait-queue's `_vtask_host` first, legacy/non-vtask paths use `pod_id`); **no +1 gate** — wait-queue `run.sh` releases it after bind+delivery (2026-11-02 L1) |
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | no-op (quota restored automatically by controld `doVTaskFinished`) |
+
+> **2026-11-10 anchor change**: wait-queue writes `_vtask_head_module` + `_vtask_host`; head→core no longer depends on `pod_id` (which remains the core→core/non-vtask fallback). See §9.3.6.
 
 > **Tail delivery contract**: `vtask-tail` must be delivered once after all core tasks complete.
 > The platform does not implicitly ignore duplicate deliveries; a duplicate tail identity rolls back
@@ -186,9 +188,10 @@ modules:
 Same structure as HOST-BOUND, with differences:
 - `vtask-head.task_dist_mode: SLOT-BOUND` (platform-level value), bind returns the group number (i.e., the head slot's seq)
 - Flow control semaphore format `group_vtask_size`, head slot serves as the node group anchor
-- `from-vtask-head.sh` computes `to_host` from the body under the `VTASK_MODE=GROUP-BOUND` branch (business logic)
+- `from-vtask-head.sh` computes `to_host` from `_vtask_group` (legacy `_vtask_size_sema`) under the `VTASK_MODE=GROUP-BOUND` branch (business logic)
 - head→core uses the script's explicit `to_host`; the head is SLOT-BOUND, so `pod_id` derivation does not trigger
 - multiple core modules (all HOST-BOUND) must share the same `pod_id`; otherwise core→core loses local routing. `group_vtask_size` carries only the group number, not a host
+- the group number comes from `_vtask_group` first (legacy wait-queue falls back to `_vtask_size_sema`); `_vtask_host`, if present, is only the head/entry node and must not be used to auto-fill core tasks
 
 ### 9.3.4 vtask-core Cascading
 
@@ -209,19 +212,20 @@ modules:
 
 Cascading rules:
 - All core modules share `vtask_role: core`; controld handles them with unified logic
-- `_`-prefixed headers (`_vtask_id`, `_vtask_size_sema`) auto-propagate along the core chain
+- `_`-prefixed headers (`_vtask_id`, `_vtask_head_module`, `_vtask_host`/`_vtask_group`; `_vtask_size_sema` only for old tasks/custom) auto-propagate along the core chain
 - Each core module independently configures slot counts, `task_dist_mode`, and images
-- HOST-BOUND core chains should share the same `pod_id`; otherwise core→core does not stay on the same node
+- HOST-BOUND core chains prefer `_vtask_host` to stay on the same node; `pod_id` remains the core→core/non-vtask fallback
 
 ### 9.3.5 Placement Routing: to_host Sources and Priority
 
 For HOST-BOUND tasks, the target host is resolved in this order (`cmd/controld/task/add_local.go`):
 
 ```
-explicit to_host  >  explicit to_ip  >  pod_id derivation
+explicit to_host  >  explicit to_ip  >  _vtask_host (HOST-BOUND core only)  >  pod_id derivation
 ```
 
-- **Explicit `to_host` / `to_ip` wins**: caller-supplied routing is explicit intent; `pod_id` never overrides it.
+- **Explicit `to_host` / `to_ip` wins**: caller-supplied routing is explicit intent; `_vtask_host`/`pod_id` never overrides it.
+- **`_vtask_host` wins over `pod_id`**: only for `HOST-BOUND` + `vtask_role=core` with no `_vtask_group`; GROUP-BOUND skips it because `_vtask_group` is a group number, not a host (see §9.3.6).
 - **`pod_id` derivation conditions** (all must hold):
   1. target module has `task_dist_mode=HOST-BOUND`;
   2. source module has `task_dist_mode=HOST-BOUND` (SLOT-BOUND / DEFAULT sources do not trigger it);
@@ -235,9 +239,61 @@ Configuration by vtask mode:
 
 | Mode | head→core | core→core | Configuration |
 |------|-----------|-----------|---------------|
-| HOST-BOUND | `pod_id` derivation (script passes no `to_ip`) | `pod_id` derivation | head and all cores share the same `pod_id` |
-| GROUP-BOUND | explicit `to_host` from the script (business grouping) | `pod_id` derivation | head is SLOT-BOUND, so pod_id does not trigger; all cores share the same `pod_id` |
+| HOST-BOUND | `_vtask_host` (wait-queue; legacy `pod_id`) | `_vtask_host`/`pod_id` | head/core share the anchor; `pod_id` is core→core/non-vtask fallback |
+| GROUP-BOUND | explicit `to_host` from the script (computed from `_vtask_group`) | `pod_id` derivation | head is SLOT-BOUND; `_vtask_host` is not used for core |
 | DEFAULT | no binding | no binding | `pod_id` not needed |
+
+### 9.3.6 vTask Anchor Attributes (2026-11-10)
+
+A HOST-BOUND vtask must bring its core stages back to the head anchor. Since 2026-11-10 the
+platform expresses that anchor with three reserved attributes instead of requiring `pod_id`
+or an explicit `to_host` on every core task:
+
+| Attribute | Scope | Meaning |
+|---|---|---|
+| `_vtask_head_module` | all vtasks | vtask-head module name (used to rebuild the semaphore name) |
+| `_vtask_host` | HOST-BOUND | anchor host, full name (e.g. `n0-0.inline`); GROUP-BOUND may carry it only as the head/entry node |
+| `_vtask_group` | GROUP-BOUND | group number (head slot seq); **not a host** |
+| `_vtask_size_sema` | internal/compat | old tasks or custom `--sema-name`; new tasks no longer write it; rebuilt from the three attributes above |
+
+**Writer**: wait-queue `run.sh` writes `_vtask_head_module` + `_vtask_host` (HOST-BOUND) or
+`_vtask_group` (GROUP-BOUND) on the head task after `vtask bind`; it no longer writes
+`_vtask_size_sema`. The `_vtask_*` headers propagate through the agent `_` rule; the router is
+`SLOT-BOUND`, does not consume the anchor, only passes it through, and is never moved to a compute node.
+
+**Consumer**: at task insertion, controld applies:
+
+- target `task_dist_mode=HOST-BOUND`, `vtask_role=core`, no `_vtask_group`, and no explicit
+  `to_host`/`to_ip`: `to_host = _vtask_host`;
+- GROUP-BOUND core: **no automatic fill**; `to_host` is still computed per task by
+  `from-vtask-head.sh`/group slots; `_vtask_group` is only for sema rebuild/observability.
+  `_vtask_host` (if present) is the head node, not the core anchor;
+- explicit `to_host`/`to_ip` still wins; `pod_id` remains the fallback for HOST-BOUND
+  core→core / non-vtask paths.
+
+**Priority**:
+
+```
+explicit to_host > explicit to_ip > _vtask_host (HOST-BOUND core only) > pod_id
+```
+
+GROUP-BOUND skips the `_vtask_host` step: `explicit to_host > pod_id > group slots`.
+
+**Sema reconstruction** (`VTaskSizeSema`):
+
+- HOST-BOUND: `host_vtask_size:<_vtask_head_module>:<short(_vtask_host)>`
+- GROUP-BOUND: `group_vtask_size:<_vtask_head_module>:<_vtask_group>`
+- `updateVTask` pre-deduct check, `doVTaskFinished`, `FailVtask`, `vtask unbind`, and
+  `vtask get` all prefer `_vtask_size_sema` (old tasks/custom) and otherwise rebuild it;
+- missing fields are logged loudly; the tail completion flag is not blocked.
+
+**Constraints**:
+
+- `_vtask_host` is the full host name (same format as `t_slot.host`); the sema uses the short form.
+- GROUP-BOUND's `_vtask_host` is only the head/entry node; it must not trigger core auto-fill.
+- Data-plane core tasks should not override `to_host`; if they do, downstream must follow the
+  actual source or local data (`/dev/shm`) will not be readable.
+- A `SLOT-BOUND` router never becomes a compute-node task because of `_vtask_host`.
 
 ## 9.4 The Semaphore Mechanism
 
@@ -257,8 +313,8 @@ Each flow control semaphore has a single instance (no colon prefix), pre-deducte
 |--------|------|------|
 | wait-queue `check.sh` (ACTION_CHECK) | reads semagroup max; when ≤ 0 returns non-zero → agent stops picking tasks and polls/retries | every agent poll, before `GetTaskList` |
 | `vtask bind` (`BindVtaskResource`) | atomic decrement (semagroup picks the member with max value, returns group number/hostname) | wait-queue serialized admission |
-| controld `updateVTask` | tasks with `_vtask_size_sema` are pre-deducted and skipped at pickup; only bare tasks without the header are deducted as fallback | head slot picks up tasks |
-| controld `doVTaskFinished` / `FailVtask` | increment (located by `_vtask_size_sema`) | vtask-tail completes / vtask fails |
+| controld `updateVTask` | tasks with `_vtask_size_sema` or `_vtask_head_module`+host/group are pre-deducted and skipped at pickup; only bare tasks are deducted as fallback | head slot picks up tasks |
+| controld `doVTaskFinished` / `FailVtask` | increment (by `_vtask_size_sema` or rebuilt from `_vtask_head_module`+host/group) | vtask-tail completes / vtask fails |
 
 > The historical dual-semaphore design (flow control version + `:`-prefixed programmable version) is deprecated; the corresponding parameter no longer takes effect.
 
@@ -277,7 +333,7 @@ wait-queue slot polls each round
 
 ### 9.4.4 Wait Queue Gating
 
-The wait-queue module's `vtask_size` stays at 1 (serialization). `from-vtask-head.sh` manually increments at the end to let the next vtask through.
+The wait-queue module's `vtask_size` stays at 1 (serialization). The gate is incremented by wait-queue `run.sh` immediately after bind + delivery (2026-11-02 L1); `from-vtask-head.sh` no longer adds +1.
 
 ## 9.5 Pipeline Flow
 
@@ -286,12 +342,12 @@ The wait-queue module's `vtask_size` stays at 1 (serialization). `from-vtask-hea
 ```
 main-router task add
   → agent addSinkTasks: _vtask_* gating (only sink modules with vtask_role≠"" pass)
-  → wait-queue task: does not receive _vtask_id / _vtask_size_sema
+  → wait-queue task: does not receive _vtask_id / _vtask_size_sema; run.sh writes _vtask_head_module + host/group
 
 wait-queue task executes the standard module run.sh
   → --direct gRPC creates the vtask-head task
   → vtask_role=head → self-ref vtask=id
-  → _vtask_size_sema explicitly set by run.sh
+  → _vtask_head_module + _vtask_host/_vtask_group written by run.sh; no _vtask_size_sema
   → task terminates at the wait-queue slot (no sink-tasks.txt written, no flow-back)
 
 vtask-head task executes from-vtask-head.sh
@@ -301,8 +357,8 @@ vtask-head task executes from-vtask-head.sh
 vtask-core → vtask-tail (same path as above)
 
 vtask-tail completes
-  → doVTaskFinished: reads _vtask_size_sema → increments the flow control version
-  → from-vtask-tail.sh: reads _vtask_size_sema → unbinds the programmable version
+  → doVTaskFinished: reads _vtask_size_sema or rebuilds from the new attributes → increments
+  → from-vtask-tail.sh: same (legacy sema / rebuilt attributes)
 ```
 
 ### 9.5.2 Lifecycle
@@ -313,9 +369,9 @@ task creation → ON CONFLICT dedup
 task scheduling → FOR UPDATE SKIP LOCKED (single slot exclusive)
   ↓
 task execution → agent → status_code: RUNNING → OK/ERROR
-  ↓  _vtask_id / _vtask_size_sema auto-propagate via the _ prefix
+  ↓  _vtask_id / _vtask_head_module / _vtask_host / _vtask_group auto-propagate via the _ prefix (_vtask_size_sema compat)
   ↓
-tail completes → doVTaskFinished → semaphore increment
+tail completes → doVTaskFinished → sema rebuilt/compat → increment
   ↓  headers.vtask_tail_id = tail task ID
   ↓
 from-vtask-tail.sh → unbind (HOST-BOUND / SLOT-BOUND only)
@@ -402,7 +458,7 @@ to_host=$(scalebox vtask bind) || exit 1
 # Unbind (semaphore name passed for error rollback; normal completion is restored by controld)
 scalebox vtask unbind --sema-name="host_vtask_size:vtask-head:n0-0"
 
-# Unbind (ops passes vtask-id; server auto-queries _vtask_size_sema)
+# Unbind (ops passes vtask-id; server reads _vtask_size_sema or rebuilds it from the new attributes)
 scalebox vtask unbind --vtask-id=42
 ```
 
@@ -416,16 +472,19 @@ scalebox vtask unbind --vtask-id=42
 
 ```bash
 # Inside agent (common): async path, _-prefixed headers auto-propagate
-# HOST-BOUND: vtask-head and vtask-core share the same pod_id; no routing header,
-# controld derives to_host automatically
+# HOST-BOUND: wait-queue writes _vtask_host; no routing header, controld uses the anchor
+# (legacy/non-vtask paths may still use the same pod_id)
 scalebox vtask add-subtask --module=vtask-core $body
 
-# GROUP-BOUND: compute to_host from business logic (head is SLOT-BOUND; pod_id is not used here)
+# GROUP-BOUND: compute to_host from _vtask_group (head is SLOT-BOUND; pod_id is not used here;
+# legacy wait-queue falls back to _vtask_size_sema)
+group=$(scalebox::task_header "$2" _vtask_group)
 scalebox vtask add-subtask --module=vtask-core --header to_host=$to_host $body
 
 # Inside agent, needing synchronous error awareness (wait-queue standard module run.sh): add --direct
 scalebox vtask add-subtask --direct --module=vtask-head \
-    --header to_host=$to_host --header _vtask_size_sema=$sema_name $body || {
+    --header to_host=$to_host --header _vtask_host=$to_host \
+    --header _vtask_head_module=$head_module $body || {
     scalebox vtask unbind --sema-name="${sema_name}"
     scalebox semaphore increment vtask_size:wait-queue
     exit 1

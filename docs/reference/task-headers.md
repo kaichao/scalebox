@@ -2,7 +2,7 @@
 
 > 唯一信源：task header 的名称、写入方、传播规则、转义都以本页为准。
 > 语义说明（何时设、坑）在 `features/` 与 `docs/agents/`；字段类型见 `reference/app-yaml.md`。
-> 最后校验：2026-10-21，对照 go-scalebox@09cd5a3。
+> 最后校验：2026-11-10，对照 go-scalebox@77b5574（`_vtask_host` 锚点设计）。
 
 ## 1. 定义
 
@@ -46,7 +46,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 
 | 名称 | 含义 | 备注 |
 |---|---|---|
-| `to_host` | 目标主机名（`t_host` 主键） | HOST-BOUND 模块用；显式 `to_host`/`to_ip` 优先，未指定时可由两侧都 HOST-BOUND 且值相同的 `pod_id` 自动推导 |
+| `to_host` | 目标主机名（`t_host` 主键） | HOST-BOUND 模块用；优先级显式 `to_host`/`to_ip` > `_vtask_host`（vtask core） > `pod_id`；显式路由优先 |
 | `to_ip` | 目标主机 IPv4 | controld 转换为 `to_host`（自动补 `.<cluster>` 后缀） |
 | `to_slot` | 目标 slot 的 id | SLOT-BOUND 模块用；未给时可由 main-router 的 router_index 推导 |
 | `to_slot_index` | 目标 slot 的 seq | 仅头节点有效；controld 转换为 `to_slot` |
@@ -60,7 +60,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `_vtask_attr_<name>` | 应用自定义 vtask 属性 | 平台只运输、不解释；`<name>` 由应用定义 |
 | 其他任意名字 | 应用自定义 | 不以 `_` 开头；是否**自动**传播见 §4 |
 
-**路由优先级**：显式 `to_host` > 显式 `to_ip` > `pod_id` 推导。`pod_id` 推导要求目标与来源模块均为 `task_dist_mode=HOST-BOUND`、两侧 `pod_id` 非空且相同，且调用方未指定 `to_host`/`to_ip`；经 main-router 中转时使用 `last_from_module`/`last_from_ip` 定位真实前序模块。推导结果补 `.<cluster>` 后缀。GROUP-BOUND vtask 的 head→core 由脚本显式 `to_host`，core→core 依赖相同的 `pod_id`。
+**路由优先级**：显式 `to_host` > 显式 `to_ip` > `_vtask_host`（仅 HOST-BOUND + `vtask_role=core`，由 wait-queue 写入）> `pod_id` 推导。GROUP-BOUND core 不使用 `_vtask_host`（`_vtask_group` 是组号，不是主机）；其 head→core 由脚本显式 `to_host`，core→core 依赖相同的 `pod_id`。`pod_id` 推导要求目标与来源模块均为 `task_dist_mode=HOST-BOUND`、两侧 `pod_id` 非空且相同，且调用方未指定 `to_host`/`to_ip`；经 main-router 中转时使用 `last_from_module`/`last_from_ip` 定位真实前序模块。推导结果补 `.<cluster>` 后缀。
 
 ## 3. 系统注入的 header
 
@@ -73,13 +73,16 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `from_cluster` | CLI（跨集群投递时） | 上一集群名 |
 | `task_id` | controld | 本任务自身的 id；仅当模块参数 `task_id_in_headers: yes`（缺省 `no`）时写入 |
 | `_vtask_id` | controld | 任务所属 vtask id（= vtask-head 任务的 id）；`vtask_role: head` 且非 main-router 的任务创建时写入；`0`/空表示不属于 vtask |
-| `_vtask_size_sema` | controld | vtask 额度信号量名；只对 `parameters.vtask_role` 非空的模块注入 |
+| `_vtask_size_sema` | 老任务/自定义 sema（平台内部） | vtask 额度信号量名；wait-queue 新任务不再写，由 `_vtask_head_module` + host/group 重建；兼容老任务/`--sema-name` |
+| `_vtask_head_module` | wait-queue / controld | vtask-head 模块名；与 host/group 重建 sema |
+| `_vtask_host` | wait-queue / controld | HOST-BOUND vtask 锚点完整主机名；HOST-BOUND core 的 `to_host` fallback；GROUP-BOUND 可选=head/入口节点 |
+| `_vtask_group` | wait-queue / controld | GROUP-BOUND 组号；只用于 sema 重建/观测，不参与 core `to_host` 自动填 |
 
 `from_cluster` 仅在跨集群投递（`--remote-cluster`）且本机有 `CLUSTER` 环境变量时写入。
 
 ## 4. `_` 前缀与传播
 
-- `_` 前缀是**平台保留命名空间**：`_vtask_id`、`_vtask_size_sema` 由平台维护；
+- `_` 前缀是**平台保留命名空间**：`_vtask_id`、`_vtask_head_module`、`_vtask_host`、`_vtask_group`、`_vtask_size_sema` 由平台维护；
   REST 入口直接拒绝外部设置 `_` 开头的 header；应用自定义属性只能放在 `_vtask_attr_*` 下。
 - **自动传播规则**（agent 投递下游任务时）：
 
