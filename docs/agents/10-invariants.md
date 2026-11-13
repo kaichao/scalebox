@@ -182,7 +182,11 @@
 ### INV-22 to_host 传播优先级与 pod_id 生效条件
 
 - **现象**：HOST-BOUND 下游任务停在 READY（`headers.to_host` 为空）；或 GROUP-BOUND 的 core 任务全部落到锚点 head 节点。
-- **规则**：路由优先级 **显式 `to_host` > 显式 `to_ip` > `pod_id`**。`pod_id` 推导仅在以下条件全部满足时生效：
+- **规则**：路由优先级 **显式 `to_host` > 显式 `to_ip` > `_vtask_host` > `pod_id`**。`_vtask_host` 适用于 `task_dist_mode=HOST-BOUND` + `vtask_role=core`：
+  - HOST-BOUND vtask：wait-queue 写入的不可变 bind 锚点；
+  - GROUP-BOUND vtask：该 core 任务实际运行的 host，由 controld 在 core 入库时随显式 `to_host` 更新，core→core 无显式路由时继承。
+
+  `pod_id` 推导仅在以下条件全部满足时生效：
   1. 目标模块 `task_dist_mode=HOST-BOUND`；
   2. 来源模块 `task_dist_mode=HOST-BOUND`（SLOT-BOUND / DEFAULT 来源不触发）；
   3. 两侧 `pod_id` 非空且相同；
@@ -191,12 +195,12 @@
   经 main-router 中转时，agent 写 `last_from_module` / `last_from_ip`，controld 解包主路由后按真实前序模块判断。推导结果补 `.<cluster>` 后缀（`t_slot.host` 的存储格式）。
 
   vtask 配置：
-  - **HOST-BOUND**：`vtask-head` 与 `vtask-core` 配相同 `pod_id`；`from-vtask-head.sh` 不再传 `to_ip`。
-  - **GROUP-BOUND**：head→core 由脚本显式 `to_host`（head 是 SLOT-BOUND，pod_id 不触发）；多个 core 模块之间必须配相同 `pod_id`（`group_vtask_size` 只有组号，推不出主机）。
-- **为什么**：`pod_id` 是模块级声明，语义直观；显式路由是调用方的明确意图，优先级最高。旧实现会无条件覆盖显式 `to_host`，导致 GROUP-BOUND 的业务路由被改成锚点主机（core 在锚点无 slot → 永久 READY）。
-- **反例/后果**：漏配/配错 `pod_id` → `to_host` 为空 → 任务永久 READY（-1 不在 pgcron 重试范围）；来源模块非 HOST-BOUND 时依赖 pod_id → 同样不触发，需要显式 `to_host`。
-- **源码指针**：`cmd/controld/task/add_local.go`（`shouldDeriveToHostByPodID` / `withClusterSuffix`）、`cmd/agent/sink_tasks.go`（`last_from_*` 继承）、`features/pod/README.md`。
-- **置信度**：源码 + 2026-11-02 bio 实测（HOST-BOUND 10/10 自动落位；GROUP-BOUND 强制配 pod_id 仍保留业务 `to_host`，12/12）。
+  - **HOST-BOUND**：`vtask-head` 与 `vtask-core` 可配相同 `pod_id` 作为兜底；`from-vtask-head.sh` 不传 `to_ip`/`to_host`，由 `_vtask_host` 兜底。
+  - **GROUP-BOUND**：head→core 由脚本显式 `to_host`（head 是 SLOT-BOUND，pod_id 不触发）；`vtask add-subtask` 必须带 `to_host`。core→core 继承 `_vtask_host`，不再要求所有 core 模块配相同 `pod_id`（`pod_id` 保留兜底）。
+- **为什么**：`_vtask_host` 表达实际位置，避免每跳显式配置；显式路由是调用方的明确意图，优先级最高。旧实现会无条件覆盖显式 `to_host`，导致 GROUP-BOUND 的业务路由被改成锚点主机（core 在锚点无 slot → 永久 READY）。
+- **反例/后果**：GROUP-BOUND 首跳漏写 `to_host` → 入库被拒（配置错误），不会随机落点；HOST-BOUND 漏配/配错 `pod_id` 且无 `_vtask_host` → `to_host` 为空 → 任务永久 READY（-1 不在 pgcron 重试范围）；来源模块非 HOST-BOUND 时依赖 pod_id → 同样不触发，需要显式 `to_host`。
+- **源码指针**：`cmd/controld/task/vtask_anchor.go`、`cmd/controld/task/add_local.go`（`shouldDeriveToHostByPodID` / `withClusterSuffix`）、`cmd/agent/sink_tasks.go`（`last_from_*` 继承）、`features/pod/README.md`。
+- **置信度**：源码 + 2026-11-02 bio 实测（HOST-BOUND 10/10 自动落位；GROUP-BOUND 强制配 pod_id 仍保留业务 `to_host`，12/12）；2026-11-12 GROUP-BOUND 的 `_vtask_host` 跟随已实现，待集成验证。
 - **适用范围**：所有 HOST-BOUND 目标模块（vtask 与非 vtask 的本地管道）。
 
 ## 4. 节点、数据与容器

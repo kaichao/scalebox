@@ -26,7 +26,7 @@
 task header 的名称、写入方、传播规则与转义以
 [`reference/task-headers.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/task-headers.md) 为唯一信源；本节只保留两条落点约定：
 
-- 针对 HOST-BOUND 的模块：显式 `to_host`/`to_ip` 优先；vtask core 可用 wait-queue 写入的 `_vtask_host` 兜底；再否则由两侧 HOST-BOUND、`pod_id` 相同推导。GROUP-BOUND 不用 `_vtask_host` 自动填（`_vtask_group` 是组号），head→core 由脚本显式 `to_host`，core→core 用 `pod_id`。
+- 针对 HOST-BOUND 的模块：显式 `to_host`/`to_ip` 优先；vtask core 可用 `_vtask_host` 兜底（HOST-BOUND 为 wait-queue 写入的绑定锚点；GROUP-BOUND 为该 core 任务实际 host）；再否则由两侧 HOST-BOUND、`pod_id` 相同推导。GROUP-BOUND 的 head→core 必须由脚本显式 `to_host`（`_vtask_group` 是组号，不是主机），core→core 优先继承 `_vtask_host`，`pod_id` 作兜底。
 - 针对 SLOT-BOUND 的模块，需在代码中设定 `to_slot`。
 
 ## 2.2 资源配置参数表

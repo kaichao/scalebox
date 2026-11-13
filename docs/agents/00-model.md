@@ -67,3 +67,4 @@ task add（入口，body 走 stdin，可带 -H header）
 - **建 app 是快照**：改 env / 镜像 / `slots` / `code_path` / `run.sh` 后必须重建 app（INV-01）。
 - **`slots` 是主机正则**：匹配 hostname 第一段（短名），不是逗号列表，不要写 FQDN（INV-15）。
 - **vtask 不是 "多节点"**：它是跨模块的任务集合；是否多节点由 HOST-BOUND / GROUP-BOUND 绑定决定。
+- **GROUP-BOUND 有两级归属**：`_vtask_group` 是组号（配额/组锚点），`_vtask_host` 是该 core 任务实际运行的 host（本地调度）；首跳必须由应用显式 `to_host`，core→core 继承 `_vtask_host`。

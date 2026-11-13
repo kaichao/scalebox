@@ -307,7 +307,7 @@
 | `ListVTaskSubtasksRequest` | `vtask_id` | `int64` | 1 |  |
 | `BindVtaskResourceRequest` | `app_id` | `int32` | 1 |  |
 | `BindVtaskResourceRequest` | `module_name` | `string` | 2 | 可选，不指定时自动查找 vtask_role=head 的模块 |
-| `BindVtaskResourceResponse` | `resource` | `string` | 1 | 绑定的资源标识：hostname（HOST-BOUND vtask）/ 组号（GROUP-BOUND vtask，即 head slot 的 seq）/ 空（DEFAULT） |
+| `BindVtaskResourceResponse` | `resource` | `string` | 1 | 绑定的资源标识：hostname（HOST-BOUND vtask）/ 组号（GROUP-BOUND vtask，即 head slot 的 seq，**不是主机**）/ 空（DEFAULT） |
 | `BindVtaskResourceResponse` | `mode` | `string` | 2 | 实际使用的 task_dist_mode |
 | `UnbindVtaskResourceRequest` | `app_id` | `int32` | 1 |  |
 | `UnbindVtaskResourceRequest` | `vtask_id` | `int64` | 2 | 方式一：通过 vtask ID 自动查找 sema |
@@ -315,7 +315,7 @@
 | `AddVtaskSubtaskRequest` | `app_id` | `int32` | 1 |  |
 | `AddVtaskSubtaskRequest` | `module` | `string` | 2 | 目标模块名 |
 | `AddVtaskSubtaskRequest` | `body` | `string` | 3 | 任务体 |
-| `AddVtaskSubtaskRequest` | `headers` | `map<string, string>` | 4 | 额外 headers |
+| `AddVtaskSubtaskRequest` | `headers` | `map<string, string>` | 4 | 额外 headers；GROUP-BOUND 首跳必须含 `to_host`，`--direct`/RPC 调用还须含 `_vtask_group`、`_vtask_head_module`、`_vtask_id` |
 | `AddVtaskSubtaskResponse` | `task_id` | `int64` | 1 |  |
 | `GetVtaskRequest` | `vtask_id` | `int64` | 1 |  |
 | `GetVtaskResponse` | `id` | `int64` | 1 |  |

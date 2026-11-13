@@ -79,6 +79,9 @@
 | HOST-BOUND | `host_vtask_size:<module>:<host>` | `host_vtask_size:vtask-head:n0-0` |
 | SLOT-BOUND / GROUP-BOUND | `group_vtask_size:<module>:<group>` | `group_vtask_size:vtask-head:2` |
 
+GROUP-BOUND 的配额只用组号；`_vtask_host` 是该 core 任务的实际 host，只用于路由/观测，
+不参与 `group_vtask_size` 重建。
+
 wait-queue 的**并发 bind 准入**用 `vtask_size:wait-queue`，值必须 ≥ 它的 slot 数，
 经验值取全部空额（host 数 × head 的 `vtask_size`）；不够会超卖、扣成负数卡死（INV-23）。
 
@@ -87,14 +90,15 @@ wait-queue 的**并发 bind 准入**用 `vtask_size:wait-queue`，值必须 ≥ 
 | 步骤 | 执行者 | 操作 |
 |---|---|---|
 | 准入 | wait-queue `check.sh` | 读 semagroup max，≤ 0 时非 0 退出，agent 停领任务（任务保持 READY） |
-| 预扣 | `vtask bind`（服务端 `BindVtaskResource`） | 对组原子 decrement，返回 hostname/组号，写入 `_vtask_size_sema` |
+| 预扣 | `vtask bind`（服务端 `BindVtaskResource`） | 对组原子 decrement，返回 hostname/组号；wait-queue 写入 `_vtask_head_module` + `_vtask_host`（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）；老任务/自定义可写 `_vtask_size_sema` |
 | 领取 | controld `updateVTask` | 已预扣的 task 跳过扣减；DEFAULT 裸任务兜底扣减 |
-| 归还 | controld `doVTaskFinished` | vtask-tail 完成时按 `_vtask_size_sema` increment |
-| 失败归还 | `vtask fail` / `FailVtask` | 对 root task 的 `_vtask_size_sema` increment，**并**释放所有 gate 信号量（app 内 `vtask_size>0` 且无 `vtask_role` 的模块 → `vtask_size:<name>`）；随后级联把未完成子任务置失败 |
+| 归还 | controld `doVTaskFinished` | vtask-tail 完成时按 `_vtask_size_sema`，或由 `_vtask_head_module` + host/group 重建后 increment |
+| 失败归还 | `vtask fail` / `FailVtask` | 对 root task 的 `_vtask_size_sema`（或重建值）increment，**并**释放所有 gate 信号量（app 内 `vtask_size>0` 且无 `vtask_role` 的模块 → `vtask_size:<name>`）；随后级联把未完成子任务置失败 |
 
 约定：
 - **脚本不要重复归还**（`vtask unbind` 只用于错误回滚，INV-11）。
-- **vtask-head 必须对 `vtask_size:wait-queue` 加 1**（INV-10），否则后续 vtask 进不来。
+- **gate 由 wait-queue 的 `run.sh` 在 bind + 投递成功后放行**（INV-10）；`from-vtask-head.sh`
+  不再 +1，否则双重归还、`vtask_size:wait-queue` 只涨不落。
 - 正常稳态下信号量值在 `[0, vtask_size]` 内；为负说明有脚本重复扣减，或 bind 绕过了
   wait-queue 的准入（`semagroup.decrement` 本身不设下限）。
 

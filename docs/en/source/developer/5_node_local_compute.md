@@ -132,11 +132,11 @@ Scalebox supports node-local computing through task distribution modes:
 
 - **HOST-BOUND**: tasks bound to a specific host, specified via `headers->>'to_host'`
 - **SLOT-BOUND**: tasks bound to an execution slot, specified via `headers->>'to_slot'`; can be used for task distribution of vtask head nodes
-- **GROUP-BOUND**: tasks bound to a group; the task's `headers->>'to_host'` is specified via the slot's `parameters->>'group_prefix'`
+- **GROUP-BOUND**: tasks bound to a group; the task's `headers->>'to_host'` is specified via the slot's `parameters->>'group_prefix'`. In a GROUP-BOUND vtask every core task belongs to both a group and a host: `_vtask_group` is the group number, `_vtask_host` is the host where that core task actually runs; core→core inherits it when no explicit routing is given
 
 ### 5.5.2 Location-Aware Scheduling
 
-- **pod_id mechanism**: identifies modules managed by pods. A downstream task is routed back to the source node when both the target and source modules are HOST-BOUND and share the same non-empty `pod_id`; explicit `to_host`/`to_ip` always wins and is never overridden by `pod_id`. In GROUP-BOUND vtasks, head→core uses the script's explicit `to_host` (the head is SLOT-BOUND, so pod_id does not trigger), while core→core relies on the shared `pod_id`
+- **pod_id mechanism**: identifies modules managed by pods. A downstream task is routed back to the source node when both the target and source modules are HOST-BOUND and share the same non-empty `pod_id`; explicit `to_host`/`to_ip` always wins and is never overridden by `pod_id`. In GROUP-BOUND vtasks, head→core uses the script's explicit `to_host` (the head is SLOT-BOUND, so pod_id does not trigger; `vtask add-subtask` must set it), while core→core inherits `_vtask_host` (the previous hop's actual host) with `pod_id` as the fallback. The routing priority is explicit `to_host`/`to_ip` > `_vtask_host` > `pod_id`
 - **Location information in task headers**: supports local cascaded processing between preceding and following modules
 
 ### 5.5.3 The vtask Support Framework

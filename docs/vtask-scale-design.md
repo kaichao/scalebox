@@ -1,6 +1,9 @@
 # vtask 规模化设计：L1 兼容改进与 L2 自扣模式
 
 > 状态：设计（2026-11-02），未实施。
+> 锚点语义：本文早于 `_vtask_host` 锚点（2026-11-10）和 GROUP-BOUND 跟随（2026-11-12）；
+> 文中涉及 `_vtask_size_sema` 的描述按历史实现理解，当前规范见
+> `reference/task-headers.md` 与 `cn/source/design/3_vtask.md` §3.3.6。
 > 相关：`docs/agents/recipes/vtask.md`（操作）、`docs/cn/source/design/3_vtask.md`（机制）、
 > `examples/vtask/`（可跑示例）、`docs/agents/10-invariants.md`（红线）。
 

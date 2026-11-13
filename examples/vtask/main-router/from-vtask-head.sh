@@ -10,8 +10,8 @@ body=$1
 sema_name=$(scalebox::task_header "$2" "_vtask_size_sema")
 
 if [ "$VTASK_MODE" = "HOST-BOUND" ]; then
-    # to_host 由 pod_id 自动推导：vtask-head 与 vtask-core 配置相同的 pod_id，
-    # 且未显式指定 to_host/to_ip 时，controld 按来源节点（from_ip）解析 to_host。
+    # 不传路由 header：controld 优先用 wait-queue 写入的 _vtask_host 兜底；
+    # 老路径/非 vtask 任务可用 vtask-head 与 vtask-core 相同的 pod_id 兜底。
     scalebox vtask add-subtask --module=vtask-core $body
 elif [ "$VTASK_MODE" = "GROUP-BOUND" ]; then
     # 组号优先取 _vtask_group；老 wait-queue 回退 _vtask_size_sema
@@ -19,7 +19,9 @@ elif [ "$VTASK_MODE" = "GROUP-BOUND" ]; then
     if [ -z "$group_part" ]; then
         group_part=${sema_name##*:}
     fi
-    # to_host 按 body 哈希分配给计算节点（业务逻辑，保留在脚本中）
+    # 组内跨 host 分发是业务逻辑，必须显式给 to_host（平台不猜组内节点）；
+    # async 路径由 agent 传播 _vtask_*；若改用 --direct，须显式转发
+    # _vtask_id/_vtask_group/_vtask_head_module。
     body_int=$((10#$body))
     host_part=$(( (body_int / 2) % 2 ))
     to_host="n${group_part}-${host_part}"

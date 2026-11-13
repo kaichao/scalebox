@@ -33,7 +33,7 @@
 |------|------|------|--------|
 | `VTASK_MODE` | vtask 应用层 | `DEFAULT` / `HOST-BOUND` / `GROUP-BOUND` | main-router 脚本、wait-queue 标准模块 |
 | `TASK_DIST_MODE` | 平台实现层 | `HOST-BOUND` / `SLOT-BOUND` / 空 | 仅驱动 vtask-head 模块的 `task_dist_mode` 平台参数 |
-| `POD_ID` | 模块参数 | 任意字符串；DEFAULT 置空 | vtask-head/vtask-core 的 `pod_id`：HOST-BOUND 下自动保持同节点；GROUP-BOUND 下用于 core→core 本地路由（head→core 由脚本显式 `to_host`） |
+| `POD_ID` | 模块参数 | 任意字符串；DEFAULT 置空 | vtask-head/vtask-core 的 `pod_id`：HOST-BOUND 下作为 `_vtask_host` 之后的兜底；GROUP-BOUND 下作为 core→core 的兜底（优先继承 `_vtask_host`，head→core 由脚本显式 `to_host`） |
 
 映射关系收敛在 env 文件一处（如 `group-bound.env`）：`VTASK_MODE=GROUP-BOUND` 与 `TASK_DIST_MODE=SLOT-BOUND` 成对出现。应用作者在 vtask 层只接触 `VTASK_MODE`。
 
@@ -58,9 +58,9 @@ vtask bind 分配的资源本质是**计算位置（placement）**：vtask 锚�
 |--------|------|------|
 | wait-queue `check.sh`（slot 级准入闸门，ACTION_CHECK） | 读 semagroup max，≤ 0 时返回非 0 → agent **停领 task** 并轮询重试 | agent 每轮 poll、`GetTaskList` 之前 |
 | `vtask bind`（服务端 `BindVtaskResource`） | 原子 decrement（semagroup 选值最大成员，返回组号/hostname；`SKIP LOCKED` 让并发 bind 各取不同 host） | vtask 分配资源时（wait-queue 领到任务后） |
-| controld `updateVTask` | 带 `_vtask_size_sema` header 的 task 已预扣，领取时跳过；仅无 header 裸任务兜底扣减 | head slot 拾取 task 时 |
-| controld `doVTaskFinished` | increment（读 tail task 的 `_vtask_size_sema`） | vtask-tail 模块 task 完成时 |
-| controld `FailVtask` | increment（读 root task 的 `_vtask_size_sema`） | vtask 失败时 |
+| controld `updateVTask` | 带 `_vtask_head_module` + host/group（或兼容 `_vtask_size_sema`）的 task 已预扣，领取时跳过；仅无 header 裸任务兜底扣减 | head slot 拾取 task 时 |
+| controld `doVTaskFinished` | increment（读 tail task 的 sema，或由 `_vtask_head_module` + host/group 重建） | vtask-tail 模块 task 完成时 |
+| controld `FailVtask` | increment（读 root task 的 sema，或由新属性重建） | vtask 失败时 |
 
 - check 准入闸门保证 bind 发生时必有空额：在制 vtask 数 ≤ `vtask_size`，信号量值 ∈ `[0, vtask_size]`，不会为负
 - `vtask bind` 的原子扣减兼具两个职责：流控（在制数 ≤ `vtask_size`）与资源分配（返回绑定的组号/hostname）
@@ -103,7 +103,7 @@ main-router → default.sh（入口路由）
                                   ▼
                             vtask-tail（完结标记）
                               controld: doVTaskFinished
-                                ① 读 tail task 的 _vtask_size_sema
+                                ① 读 tail task 的 sema，或由 _vtask_head_module + host/group 重建
                                 ② increment 流控信号量（脚本无需操作）
 ```
 
@@ -187,11 +187,14 @@ RPC 成为可观开销时才需要调大；单 slot 或少数几个 slot 时保�
    → semagroup.Decrement 原子减信号量 → 提取 hostname/组号 → 返回 resource
    ↓ HOST-BOUND 返回 "n0-0"（主机名），GROUP-BOUND 返回 "0"（组号）
 
-② 构造 _vtask_size_sema（如 host_vtask_size:vtask-head:n0-0）
+② 组装锚点 header（不再写 _vtask_size_sema）
+   HOST-BOUND:  _vtask_head_module + _vtask_host + to_host
+   GROUP-BOUND: _vtask_head_module + _vtask_group（不写 _vtask_host）
+   目标 vtask-head 是 SLOT-BOUND，GROUP-BOUND 用 to_slot_index 定位组
 
 ③ vtask add-subtask --direct --module=vtask-head
-      --header _vtask_size_sema=$sema_name
-      --header to_host=$to_host $body
+      --header _vtask_head_module=$head_module
+      --header _vtask_group=$group  --header to_slot_index=$group $body
    ↓ 内部：doAddLocalTaskList → INSERT t_task（vtask 列暂未设置）
    ↓ vtask-head slot 拾取 → controld 建立 vtask = id 自引用
 
@@ -205,7 +208,7 @@ RPC 成为可观开销时才需要调大；单 slot 或少数几个 slot 时保�
 - 步骤 ① 和 ③ 之间无事务保证。如果进程在两步之间被 kill，资源泄漏。这是已知的设计权衡（进程崩溃概率低，泄漏可用 `vtask fail` 人工释放）
 - run.sh 不写 sink-tasks.txt：vtask-head 任务已由 `--direct` 直投，task 在 wait-queue slot 直接终结（不回流 main-router）
 - 所有命令均不传 `--app-id`：`APP_ID` 环境变量在 agent 容器内已设定，`param` 包自动从环境变量解析
-- `_vtask_size_sema` 在 bind 返回后**由 run.sh 构造**，作为 header 传给 vtask-head。后续 controld 的 `updateVTask` 对已预扣 task 跳过 decrement，`doVTaskFinished` 按此 header 定位加回
+- bind 返回后 run.sh 写 `_vtask_head_module` + `_vtask_host`（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）；`_vtask_size_sema` 仅老任务/自定义使用。controld 的 `updateVTask` 对已预扣 task 跳过 decrement，`doVTaskFinished` 按 sema 或由新属性重建的值加回
 
 ### vtask-head（vtask 根标记 + 业务路由）
 
@@ -216,7 +219,7 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 当 slot 拾取 task 时，`GetTaskList` → `updateVTask` → `addLocalTaskList` 自动完成：
 
 1. **流控信号量 decrement**（`updateVTask`）：
-   - 带 `_vtask_size_sema` header 的 task 已由 `vtask bind` 原子预扣，领取时跳过扣减
+   - 带 `_vtask_head_module` + host/group（或兼容 `_vtask_size_sema`）的 task 已由 `vtask bind` 原子预扣，领取时跳过扣减
    - 无 header 的裸任务（DEFAULT 模式）按 slot 计算值兜底扣减，保持流控计数
 
 2. **vtask 自引用建立**（`addLocalTaskList`）：
@@ -231,9 +234,9 @@ vtask-head 是整个 vtask 树的根节点，承担最多的职责。
 
 ```bash
 ① vtask add-subtask --module=vtask-core [--header to_host=$to_host] $body
-   ↓ _vtask_id、_vtask_size_sema 由 agent 自动传播（异步路径，无需显式传）
-   ↓ HOST-BOUND：不传路由 header，controld 按 pod_id 自动推导 to_host（同节点路由）
-   ↓ GROUP-BOUND：按 body 哈希计算 to_host（业务逻辑），显式传 --header to_host
+   ↓ 异步路径由 agent 自动传播 _vtask_id/_vtask_head_module/_vtask_host/_vtask_group
+   ↓ HOST-BOUND：不传路由 header，controld 用 _vtask_host 兜底（pod_id 兜底）
+   ↓ GROUP-BOUND：必须显式 to_host（平台不猜组内节点）；入库时 controld 更新 _vtask_host
 
 （gate 已由 wait-queue 的 run.sh 放行——见上文「第二层」，2026-11-02 起 head 不再 +1）
 ```
@@ -248,11 +251,12 @@ main-router 才放行，跨两个边界（节拍 2×poll → 1×poll）。
 | | HOST-BOUND | GROUP-BOUND |
 |--|-----------|-------------|
 | `task_dist_mode`（平台参数） | HOST-BOUND | SLOT-BOUND |
-| to_host 来源 | `pod_id` 相同（vtask-head/vtask-core）→ controld 解析来源节点 | 脚本按 body 哈希计算 |
+| to_host 来源 | `_vtask_host`（wait-queue 写入；`pod_id` 兜底） | 首跳脚本显式；core→core 继承 `_vtask_host` |
 | 节点分配 | 单节点，同 node 路由 | 节点组，按业务逻辑分发到不同 node |
-| _vtask_size_sema | `host_vtask_size:vtask-head:<hostname>` | `group_vtask_size:vtask-head:<组号>` |
+| 锚点属性 | `_vtask_head_module` + `_vtask_host` | `_vtask_head_module` + `_vtask_group`；`_vtask_host` 由 core 入库写入 |
+| 配额 sema | `host_vtask_size:vtask-head:<hostname>` | `group_vtask_size:vtask-head:<组号>` |
 
-GROUP-BOUND 的 core→core 链路（均为 HOST-BOUND）不经过 head 的 `to_host` 计算，需要所有 core 模块配置相同的 `pod_id`；`group_vtask_size` 只含组号，无法推出主机。
+GROUP-BOUND 的 core→core 链路（均为 HOST-BOUND）优先继承上一跳的 `_vtask_host`，无需所有 core 模块配置相同的 `pod_id`；`pod_id` 仅作兜底，`group_vtask_size` 只含组号。
 
 ### 独立组节点（GROUP_SLOTS）
 
@@ -297,7 +301,7 @@ scalebox task add --sink-module=vtask-tail "$1"
 vtask-head → vtask-core-1（数据预处理）→ vtask-core-2（并行计算）→ vtask-tail
 ```
 
-每个 core 模块设 `task_dist_mode=HOST-BOUND` + `vtask_role: core`，级联通过 `task add --sink-module=vtask-core-N` 实现。同级模块配置相同的 `pod_id` 后，节点内路由自动保持；显式 `--header to_host` / `to_ip` 优先于 `pod_id` 推导（节点间重定向场景使用）。
+每个 core 模块设 `task_dist_mode=HOST-BOUND` + `vtask_role: core`，级联通过 `task add --sink-module=vtask-core-N` 实现。core→core 无显式 `to_host` 时继承 `_vtask_host`（上一跳实际 host），节点内路由自动保持；`pod_id` 可作兜底；显式 `--header to_host` / `to_ip` 优先（节点间重定向场景使用）。
 
 ### vtask-tail（完结标记）
 
@@ -307,7 +311,7 @@ tail 模块的完成触发 controld 的 `doVTaskFinished`，这是 vtask 生命�
 
 ```go
 func doVTaskFinished(te *TaskExecMessage) error {
-    // 1. 查 tail task 的 _vtask_size_sema
+    // 1. 读 tail task 的 _vtask_size_sema；否则由 _vtask_head_module + host/group 重建
     // 2. semaphore.AddValue(semaName, 1) → 流控信号量 increment
     // 3. UPDATE t_task SET headers.vtask_tail_id = taskID WHERE id = vtaskID
 }
@@ -321,7 +325,7 @@ vtask bind → 原子 decrement（分配时）
 tail task 完成 → controld doVTaskFinished → increment（同一信号量）
 ```
 
-decrement 与 increment 通过 `_vtask_size_sema` header 操作同一个信号量，脚本不再参与资源归还。
+decrement 与 increment 通过 `_vtask_size_sema`（或由 `_vtask_head_module` + host/group 重建的值）操作同一个信号量，脚本不再参与资源归还；GROUP-BOUND 只用组号。
 
 ### 管道数据流总览
 
@@ -336,17 +340,18 @@ wait-queue (标准模块：check.sh + run.sh)
   │ check.sh: semagroup max ≤ 0 → agent 停领（准入闸门）
   │ run.sh: vtask bind 原子 decrement（预扣额度）+ add-subtask --direct
   │ task 在本 slot 终结，vtask-head 任务直投
-  │ body + _vtask_size_sema + to_host
+  │ body + _vtask_head_module + _vtask_group/to_host
   ▼
 vtask-head (from-vtask-head.sh)
   │ controld: vtask=id, headers._vtask_id=id
   │ controld: updateVTask（已预扣 task 跳过扣减）
   │ script: add-subtask
-  │ body + _vtask_id + _vtask_size_sema（to_host 由 pod_id 自动推导）
+  │ body + _vtask_id + 锚点属性（HOST-BOUND 由 _vtask_host 兜底；
+  │        GROUP-BOUND 必须显式 to_host，入库时更新 _vtask_host）
   ▼
 vtask-core (from-vtask-core.sh)
   │ agent: _ 前缀 header 自动传播
-  │ body + _vtask_id + _vtask_size_sema
+  │ body + _vtask_id + 锚点属性（GROUP-BOUND 含上一跳 _vtask_host）
   ▼
 vtask-tail (from-vtask-tail.sh)
   │ controld: doVTaskFinished increment 流控信号量
@@ -354,7 +359,7 @@ vtask-tail (from-vtask-tail.sh)
 [vtask 完成]
 ```
 
-整个管道中，`_vtask_id` 和 `_vtask_size_sema` 是两个贯穿全链路的关键 header。`_vtask_id` 维护 vtask 树结构，`_vtask_size_sema` 确保 decrement/increment 操作同一个信号量。
+整个管道中，`_vtask_id` 维护 vtask 树结构；`_vtask_head_module` + `_vtask_host`（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）表达锚点，配额 sema 由它们重建（老任务兼容 `_vtask_size_sema`）。
 
 ## vtask 高级命令
 
@@ -364,7 +369,7 @@ vtask-tail (from-vtask-tail.sh)
 | `vtask unbind` | 释放计算资源（increment 信号量） | 错误回滚补偿（正常完成由 controld 自动加回） |
 | `vtask add-subtask` | 向 vtask 添加子任务（agent 内默认异步路径自动传播 `_` 前缀，`--direct` 强制 gRPC 直连） | wait-queue 标准模块 run.sh（`--direct`）, from-vtask-head.sh（异步） |
 | `vtask get` | 查询 vtask 详情（派生状态、资源绑定、子任务完成比例） | 运维 / 调试 |
-| `vtask fail` | 强制终止 vtask（释放 gate 与 `_vtask_size_sema` + 标记 status_code=1） | 运维 / 脚本错误处理 |
+| `vtask fail` | 强制终止 vtask（释放 gate 与配额 sema + 标记 status_code=1） | 运维 / 脚本错误处理 |
 | `vtask list` | 列出 app 下所有 vtask | 运维 |
 | `vtask list-subtasks` | 列出 vtask 的所有子任务（含 from_module） | 调试 |
 
@@ -383,7 +388,7 @@ scalebox vtask add-subtask --module=vtask-core \
 # unbind：通过信号量名释放资源（正常完成由 controld 自动加回，仅错误回滚时使用）
 scalebox vtask unbind --sema-name="host_vtask_size:vtask-head:${to_host}"
 
-# 或者通过 vtask-id（服务端自动查 _vtask_size_sema）
+# 或者通过 vtask-id（服务端查 _vtask_size_sema，或由新属性重建）
 scalebox vtask unbind --vtask-id=42
 
 # get：查看 vtask 详情
@@ -547,7 +552,7 @@ app_id=$(cat default-tasks.txt | scalebox run -e scalebox.env | grep -o '"app_id
 echo "test-body" | scalebox task add --app-id=$app_id --header _vtask_attr_demo_attr=demo-value
 ```
 
-`_vtask_size_sema` / `_vtask_id` 不属于应用属性、标准模块不会继承：前者用本次 `vtask bind` 的新值，后者由服务端自指为新 vtask。
+`_vtask_size_sema`（以及 `_vtask_head_module`/`_vtask_host`/`_vtask_group` 新锚点属性）/ `_vtask_id` 不属于应用属性、标准模块不会继承：锚点用本次 `vtask bind` 的新值（GROUP-BOUND 的 `_vtask_host` 由 core 入库时写入），`_vtask_id` 由服务端自指为新 vtask。
 
 ## 常见问题
 
@@ -557,7 +562,7 @@ echo "test-body" | scalebox task add --app-id=$app_id --header _vtask_attr_demo_
 | `vtask list` 返回空 | task 尚未被 slot 拾取，vtask 自引用未建立 | `sleep 5` 等待 slot 处理周期 |
 | wait-queue 不领取任务 | check.sh 检测到 semagroup max ≤ 0（额度耗尽，属正常流控） | 等待 vtask 完成释放额度；若长时间停领，查下游是否有卡死 |
 | bind 返回空 | 信号量已耗尽（check 闸门失效时才会发生） | `scalebox semaphore ls --leaf-only` 查看当前值 |
-| 信号量值不收敛 | decrement 和 increment 使用了不同的信号量名 | 检查 `_vtask_size_sema` header 传递是否正确 |
+| 信号量值不收敛 | decrement 和 increment 使用了不同的信号量名 | 检查 `_vtask_head_module` + host/group（或兼容 `_vtask_size_sema`）是否一致 |
 | `vtask fail` 后信号量未恢复 | fail handler 执行顺序问题 | 手动 `scalebox semaphore increment` 恢复 |
 
 ## 脚本清单

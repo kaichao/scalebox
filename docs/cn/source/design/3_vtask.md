@@ -127,7 +127,7 @@ vtask bind 分配的资源本质是**计算位置（placement）**——vtask �
 
 组内节点可以用**独立组节点**（组 slot）承载：在 vtask-core 的 `slots` 中写 `<host>:<count>:<group_prefix>`（如 `y00-00:4:x43`），平台在 `host` 上建 `count` 个组 slot，每个 slot 领取 `to_host` 匹配 `group_prefix.+` 或未指定 `to_host` 的 task。组节点的排空与替换见 §3.3.3。
 
-**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_head_module`/`_vtask_host`/`_vtask_group` 随 root task 传播；`_vtask_size_sema` 已降为兼容/内部（新任务不再写，由这三个属性重建）；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §3.4.5 与 §3.3.6。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
+**资源占用与释放**：占用 = `vtask bind` 原子扣减 + `_vtask_head_module`/`_vtask_host`/`_vtask_group` 随 task 链传播（HOST-BOUND 根 task 带 `_vtask_host`；GROUP-BOUND 根 task 带 `_vtask_group`，`_vtask_host` 由 core 任务携带）；`_vtask_size_sema` 已降为兼容/内部（新任务不再写，由这三个属性重建）；释放由 controld 自动完成（错误回滚用 `vtask unbind`），见 §3.4.5 与 §3.3.6。每个主机/组的在制 vtask 数 ≤ `vtask_size`。
 
 ### 3.2.5 根 task 标识
 
@@ -182,11 +182,11 @@ modules:
 | 脚本 | 位置 | 操作 |
 |------|------|------|
 | `check.sh` / `run.sh` | wait-queue 标准模块镜像 | 准入闸门（ACTION_CHECK）+ `vtask bind` → `vtask add-subtask --direct`（失败时 unbind + gate increment 回滚）；task 在本 slot 终结，作者无需编写 |
-| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async，不传 `to_ip`/`to_host`；HOST-BOUND 优先由 wait-queue 写入的 `_vtask_host` 兜底，老路径/非 vtask 由 `pod_id` 推导）。**不再 +1 放行 gate**——gate 已由 wait-queue 的 `run.sh` 在 bind+投递成功后放行（2026-11-02 L1） |
+| `from-vtask-head.sh` | main-router/ | `vtask add-subtask --module=vtask-core`（async；HOST-BOUND 不传 `to_ip`/`to_host`，由 `_vtask_host` 兜底，老路径/非 vtask 由 `pod_id` 推导；GROUP-BOUND 必须显式 `to_host`）。**不再 +1 放行 gate**——gate 已由 wait-queue 的 `run.sh` 在 bind+投递成功后放行（2026-11-02 L1） |
 | `from-vtask-core.sh` | main-router/ | `task add --sink-module=vtask-tail $1` |
 | `from-vtask-tail.sh` | main-router/ | 空操作（额度由 controld `doVTaskFinished` 自动归还） |
 
-> **2026-11-10 锚点变更**：wait-queue 写入 `_vtask_head_module` + `_vtask_host`，head→core 不再依赖 `pod_id`；`pod_id` 只作 core→core/非 vtask 兜底。详见 §3.3.6。
+> **2026-11-10 锚点变更（2026-11-12 更新）**：wait-queue 写入 `_vtask_head_module` + `_vtask_host`（HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）；HOST-BOUND head→core 不再依赖 `pod_id`；GROUP-BOUND 首跳必须显式 `to_host`，core→core 继承 `_vtask_host`，`pod_id` 只作兜底。详见 §3.3.6。
 
 > **收尾契约**：`vtask-tail` 应在全部 core 任务完成后投递一次。平台不对重复投递做隐式忽略；
 > 重复的 tail 身份会让整批投递回滚（112），并可能因首个 tail 提前执行导致 vtask 提前收尾。
@@ -196,10 +196,12 @@ modules:
 与 HOST-BOUND 结构相同，差异：
 - `vtask-head.task_dist_mode: SLOT-BOUND`（平台实现值），bind 返回组号（即 head slot 的 seq）
 - 流控信号量格式 `group_vtask_size`，head slot 作为节点组锚点
-- `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支从 `_vtask_group`（老 wait-queue 回退 `_vtask_size_sema`）计算 `to_host`（业务逻辑）
+- 每个 core task 同时属于**组**和**主机**：`_vtask_group` 是组号，`_vtask_host` 是该 core 任务实际运行的 host
+- `from-vtask-head.sh` 按 `VTASK_MODE=GROUP-BOUND` 分支从 `_vtask_group`（老 wait-queue 回退 `_vtask_size_sema`）计算 `to_host`（业务逻辑）；`vtask add-subtask` 必须显式 `to_host`，平台不猜组内节点
 - head→core 使用脚本显式 `to_host`；head 是 SLOT-BOUND，`pod_id` 推导不触发
-- 多个 core 模块（均为 HOST-BOUND）之间必须配置相同的 `pod_id`，否则 core→core 会丢失本地路由；`group_vtask_size` 只含组号，无法推出主机
-- 组号优先取 `_vtask_group`（老 wait-queue 回退 `_vtask_size_sema`）；`_vtask_host` 若存在只表示 head/入口节点，不能用于 core 自动填
+- core→core：显式 `to_host`/`to_ip` > `_vtask_host`（上一跳 core 的实际 host）> `pod_id`（兜底）；不再要求所有 core 模块配置相同的 `pod_id`
+- controld 在 core 入库时把 `_vtask_host` 更新为显式 `to_host`；最终无法确定 `to_host` 的 GROUP-BOUND core 任务拒绝入库
+- 组号优先取 `_vtask_group`（老 wait-queue 回退 `_vtask_size_sema`）；配额 `group_vtask_size` 只用组号，`_vtask_host` 不参与 sema 重建
 
 **独立组节点**：vtask-core（及其他 HOST-BOUND 模块）的 `slots` 支持组 slot 语法：
 
@@ -247,18 +249,18 @@ modules:
 - 所有 core 模块共享 `vtask_role: core`，controld 按统一逻辑处理
 - `_` 前缀 header（`_vtask_id`、`_vtask_head_module`、`_vtask_host`/`_vtask_group`；`_vtask_size_sema` 仅老任务/自定义）沿 core 链自动传播
 - 每个 core 模块独立配置 slot 数量、`task_dist_mode` 和镜像
-- HOST-BOUND 的 core 链优先用 `_vtask_host` 保持同节点；`pod_id` 仍是 core→core/非 vtask 的兜底
+- HOST-BOUND vtask 的 core 链优先用 `_vtask_host` 保持同节点；GROUP-BOUND 的 core→core 也优先继承 `_vtask_host`（上一跳实际 host），`pod_id` 仍是兜底
 
 ### 3.3.5 位置路由：to_host 的来源与优先级
 
 HOST-BOUND 任务落到哪台主机，按以下优先级确定（`cmd/controld/task/add_local.go`）：
 
 ```
-显式 to_host  >  显式 to_ip  >  _vtask_host（HOST-BOUND core）  >  pod_id 推导
+显式 to_host  >  显式 to_ip  >  _vtask_host（core）  >  pod_id 推导
 ```
 
 - **显式 `to_host` / `to_ip` 优先**：调用方给出的路由是明确意图，`_vtask_host`/`pod_id` 不会覆盖。
-- **`_vtask_host` 优先于 `pod_id`**：仅对 `HOST-BOUND` + `vtask_role=core` 且无 `_vtask_group` 的任务生效；GROUP-BOUND 跳过，`_vtask_group` 不是主机（详见 §3.3.6）。
+- **`_vtask_host` 优先于 `pod_id`**：对 `HOST-BOUND` + `vtask_role=core` 的任务生效。HOST-BOUND vtask 用不可变 bind 锚点；GROUP-BOUND vtask 用上一跳 core 的实际 host。GROUP-BOUND 的 head→core 首跳没有 `_vtask_host`，必须显式 `to_host`（详见 §3.3.6）。
 - **`pod_id` 推导条件**（全部满足才生效）：
   1. 目标模块 `task_dist_mode=HOST-BOUND`；
   2. 来源模块 `task_dist_mode=HOST-BOUND`（SLOT-BOUND / DEFAULT 来源不触发）；
@@ -273,23 +275,25 @@ vtask 各模式的配置：
 | 模式 | head→core | core→core | 配置要点 |
 |------|-----------|-----------|---------|
 | HOST-BOUND | `_vtask_host`（wait-queue 写入；老路径 `pod_id`） | `_vtask_host`/`pod_id` | head/core 同锚点；`pod_id` 仅 core→core/非 vtask |
-| GROUP-BOUND | 脚本显式 `to_host`（由 `_vtask_group` 计算） | `pod_id` 推导 | head 是 SLOT-BOUND；`_vtask_host` 不用于 core |
+| GROUP-BOUND | 脚本显式 `to_host`（由 `_vtask_group` 计算） | 显式 > `_vtask_host`（上一跳实际 host）> `pod_id` | head 是 SLOT-BOUND；首跳必须显式 |
 | DEFAULT | 无绑定 | 无绑定 | 不需要 `pod_id` |
 
-### 3.3.6 vtask 锚点属性（2026-11-10）
+### 3.3.6 vtask 锚点属性（2026-11-10，2026-11-12 更新）
 
-HOST-BOUND vtask 的语义是 core 段回到 head 锚点。2026-11-10 起平台用三个保留属性表达锚点，
-core 链不再强制依赖 `pod_id` 或显式 `to_host`：
+HOST-BOUND vtask 的语义是 core 段回到 head 锚点；GROUP-BOUND vtask 的语义是 core 段在组内按
+host 分发并本地调度。2026-11-10 起平台用三个保留属性表达锚点；2026-11-12 起 GROUP-BOUND
+的 `_vtask_host` 定义为该 core 任务实际运行的 host：
 
 | 属性 | 作用域 | 含义 |
 |---|---|---|
 | `_vtask_head_module` | 所有 vtask | vtask-head 模块名（sema 重建用） |
-| `_vtask_host` | HOST-BOUND | 锚点主机完整名（如 `n0-0.inline`）；GROUP-BOUND 可选表示 head/入口节点 |
+| `_vtask_host` | HOST-BOUND / GROUP-BOUND | HOST-BOUND：绑定锚点完整名（如 `n0-0.inline`），生命周期内不可变。GROUP-BOUND：该 core 任务实际运行的 host；随显式 `to_host` 更新、沿 core 链传播 |
 | `_vtask_group` | GROUP-BOUND | 组号（head slot 的 seq），**不是主机** |
 | `_vtask_size_sema` | 内部/兼容 | 老任务或自定义 `--sema-name`；新任务不再写，由上面三个重建 |
 
 **写入**：wait-queue `run.sh` 在 `vtask bind` 后把 `_vtask_head_module` + `_vtask_host`
 （HOST-BOUND）或 `_vtask_group`（GROUP-BOUND）写入 head task；不再写 `_vtask_size_sema`。
+GROUP-BOUND 不写 `_vtask_host`；它由 controld 在首个 core 任务入库时写入实际 host。
 `_vtask_*` 随 agent 的 `_` 前缀规则沿 core 链传播；router 是 `SLOT-BOUND`，自身不消费锚点，
 只透传，不会被拉到计算节点。
 
@@ -297,22 +301,24 @@ core 链不再强制依赖 `pod_id` 或显式 `to_host`：
 
 - 目标模块 `task_dist_mode=HOST-BOUND` + `vtask_role=core` + 无 `_vtask_group` + 无显式
   `to_host`/`to_ip`：`to_host = _vtask_host`；
-- GROUP-BOUND core：**不自动填**；`to_host` 仍由 `from-vtask-head.sh`/组 slot 逐任务决定；
-  `_vtask_group` 只用于 sema 重建/观测；`_vtask_host`（如果存在）表示 head 节点，不用于 core；
+- GROUP-BOUND core：有显式 `to_host`/`to_ip` 时优先，并把 `_vtask_host` 更新为该 host；
+  无显式路由时 `to_host = _vtask_host`（上一跳 core 的实际 host）；最后用 `pod_id` 兜底；
+  仍无法确定则拒绝入库。`_vtask_group` 只用于 sema 重建/观测；
 - 显式 `to_host`/`to_ip` 优先；`pod_id` 保留为 HOST-BOUND core→core/非 vtask 的兜底。
 
 **优先级**：
 
 ```
-显式 to_host  >  显式 to_ip  >  _vtask_host（仅 HOST-BOUND core）  >  pod_id 推导
+显式 to_host  >  显式 to_ip  >  _vtask_host（core）  >  pod_id 推导
 ```
 
-GROUP-BOUND 跳过 `_vtask_host` 这一项：`显式 to_host > pod_id > 组 slot`。
+HOST-BOUND 与 GROUP-BOUND 的 core→core 都包含 `_vtask_host` 这一项；GROUP-BOUND 的
+head→core 首跳 `_vtask_host` 为空，必须显式 `to_host`，不存在"组号直接当主机"的路径。
 
 **sema 重建**（`VTaskSizeSema`）：
 
 - HOST-BOUND：`host_vtask_size:<_vtask_head_module>:<short(_vtask_host)>`
-- GROUP-BOUND：`group_vtask_size:<_vtask_head_module>:<_vtask_group>`
+- GROUP-BOUND：`group_vtask_size:<_vtask_head_module>:<_vtask_group>`；`_vtask_host` 不参与
 - `updateVTask` 的“已预扣”判断、`doVTaskFinished`、`FailVtask`、`vtask unbind`、
   `vtask get` 都先看 `_vtask_size_sema`（老任务/自定义），没有再按上述重建；
 - 缺字段时显式告警，不静默跳过释放；tail 的完成标记不被阻断。
@@ -320,10 +326,13 @@ GROUP-BOUND 跳过 `_vtask_host` 这一项：`显式 to_host > pod_id > 组 slot
 **约束**：
 
 - `_vtask_host` 用完整主机名（与 `t_slot.host` 同格式）；sema 的短名由平台截取。
-- GROUP-BOUND 的 `_vtask_host` 只是 head/入口节点，不能触发 core 自动填。
-- core 数据面任务不建议显式覆盖 `to_host`；如覆盖，下游必须跟随实际来源，否则 `/dev/shm`
-  等本地数据读不到。
+- GROUP-BOUND 的 `_vtask_host` 是该 core 任务的实际 host，不是 head/入口节点；首跳必须显式。
+- GROUP-BOUND core 显式覆盖 `to_host` 是受支持的：controld 更新 `_vtask_host`，下游默认跟随。
+- HOST-BOUND vtask 的 core 数据面任务不建议显式覆盖 `to_host`；如覆盖，下游必须显式跟随
+  实际来源，否则 `/dev/shm` 等本地数据读不到。
 - router 的 `SLOT-BOUND` 不因 `_vtask_host` 改变；它不会被分发到计算节点。
+- `vtask add-subtask` 在 GROUP-BOUND 的 head→core 首跳必须带 `to_host`；`--direct` 时还需
+  显式转发 `_vtask_id`/`_vtask_group`/`_vtask_head_module`（CLI 不自动读取当前任务 headers）。
 
 ## 3.4 信号量机制
 
@@ -404,12 +413,13 @@ header 的名称、写入方与 `_` 前缀传播规则见
 ```
 main-router task add
   → agent addSinkTasks: _vtask_* 门控（仅 vtask_role≠"" 的 sink 模块通过）
-  → wait-queue task: 不传入 _vtask_id / _vtask_size_sema；run.sh 写 _vtask_head_module + host/group
+  → wait-queue task: 不传入 _vtask_id / 锚点属性；run.sh 写 _vtask_head_module + _vtask_host/_vtask_group
 
 wait-queue task 执行标准模块 run.sh
   → --direct gRPC 创建 vtask-head task
   → vtask_role=head → self-ref vtask=id
-  → _vtask_head_module + _vtask_host/_vtask_group 由 run.sh 写入；不再写 _vtask_size_sema
+  → _vtask_head_module + _vtask_host（HOST-BOUND）或 _vtask_group（GROUP-BOUND）由 run.sh 写入；
+    不再写 _vtask_size_sema；GROUP-BOUND 的 _vtask_host 由首个 core 入库时写入
   → task 在 wait-queue slot 终结（不写 sink-tasks.txt，无回流）
 
 vtask-head task 执行 from-vtask-head.sh
@@ -447,16 +457,17 @@ from-vtask-tail.sh → unbind（仅 HOST-BOUND / SLOT-BOUND）
 |--|:---:|:---:|
 | 执行时机 | agent 后处理（task 执行完毕后批量发送） | 脚本内同步调用 |
 | 错误感知 | 脚本无感知（写入成功 → exit 0） | 脚本立即获知（exit code ≠ 0） |
-| `_` 前缀 header | agent 自动传播 | 调用方显式传 `--header` |
+| `_` 前缀 header | agent 自动传播（`_vtask_id`、`_vtask_head_module`、`_vtask_host`、`_vtask_group`） | 调用方显式传 `--header`；GROUP-BOUND 首跳至少转发 `_vtask_id`/`_vtask_group`/`_vtask_head_module` |
 | `from_module`/`from_ip` | agent 注入（更准确） | CLI 从 env 注入 |
 
 **选择原则**：
 
 | 脚本 | 路径 | 原因 |
 |------|------|------|
-| `from-vtask-head.sh` | 异步（默认） | 无资源绑定前置操作，享受 header 自动传播 |
+| `from-vtask-head.sh` | 异步（默认） | 无资源绑定前置操作，享受 header 自动传播；GROUP-BOUND 必须显式 `to_host` |
 | wait-queue 标准模块 run.sh | 同步（`--direct`） | bind 已扣除资源，须同步感知成败，失败时回滚 |
 | 运维手工 CLI | 同步（gRPC） | agent 外无 sink-tasks.txt 机制 |
+| GROUP-BOUND 首跳需早失败 | 可选 `--direct` | 同步感知缺 `to_host` 的拒绝；须显式转发 `_vtask_*`，失败时自行 unbind |
 
 ## 3.6 命令参考
 
@@ -510,38 +521,46 @@ Layer 3: vtask 高级操作
 | GROUP-BOUND | 组号（head slot 的 seq，如 `0`） |
 | DEFAULT | 空（no-op） |
 
+GROUP-BOUND 的返回值是组号，不是主机；head→首个 core 的落点由应用显式 `to_host` 决定，
+core→core 可由 `_vtask_host` 继承。配额仍按组维护。
+
 ### 3.6.6 vtask add-subtask
 
 ```bash
-# Agent 内（常见）：异步路径，_ 前缀 header 自动传播
-# HOST-BOUND：wait-queue 写 _vtask_host；不传路由 header，controld 用锚点兜底 to_host
-# （老路径/非 vtask 仍可用相同 pod_id 推导）
+# HOST-BOUND：异步路径，_ 前缀 header 自动传播；不传路由 header，
+# controld 用 _vtask_host 兜底（老路径/非 vtask 可用相同 pod_id 推导）
 scalebox vtask add-subtask --module=vtask-core $body
 
-# GROUP-BOUND：从 _vtask_group 计算 to_host（head 是 SLOT-BOUND，pod_id 不参与此跳）
-# 老 wait-queue 回退 _vtask_size_sema
-group=$(scalebox::task_header "$2" _vtask_group)
-scalebox vtask add-subtask --module=vtask-core --header to_host=$to_host $body
+# GROUP-BOUND 首跳（head→首个 core）：必须显式 to_host（head 是 SLOT-BOUND，
+# 平台无法从组号推出组内节点）；异步路径由 agent 自动传播 _vtask_*
+scalebox vtask add-subtask --module=vtask-core \
+    --header to_host=$to_host $body
 
-# Agent 内需同步感知错误（wait-queue 标准模块 run.sh）：加 --direct
-scalebox vtask add-subtask --direct --module=vtask-head \
-    --header to_host=$to_host --header _vtask_host=$to_host \
-    --header _vtask_head_module=$head_module $body || {
-    scalebox vtask unbind --sema-name="${sema_name}"
-    scalebox semaphore increment vtask_size:wait-queue
+# GROUP-BOUND 首跳需同步感知错误：加 --direct
+# CLI 不会自动读取当前任务 headers，必须显式转发 _vtask_*
+scalebox vtask add-subtask --direct --module=vtask-core \
+    --header to_host=$to_host \
+    --header _vtask_id=$(scalebox::task_header "$2" _vtask_id) \
+    --header _vtask_group=$(scalebox::task_header "$2" _vtask_group) \
+    --header _vtask_head_module=$(scalebox::task_header "$2" _vtask_head_module) $body || {
+    scalebox vtask unbind --sema-name="group_vtask_size:${head_module}:${group}"
     exit 1
 }
 
-# 成功后立即放行下一个 vtask（2026-11-02 L1：放行点从 from_head 挪到这里，
-# 节拍 2×poll → 1×poll）；与 from_head 的 +1 二选一，两处都做会双重归还
-scalebox semaphore increment vtask_size:wait-queue
+# GROUP-BOUND core→core：由 sink 自动产生时继承上游 _vtask_host，
+# 无需重复指定 to_host/pod_id；要偏离上一跳位置时再显式传 to_host
 
-# Agent 外运维手工：须显式传 --app-id 和 _vtask_id
+# Agent 外运维手工：须显式 --app-id；GROUP-BOUND core 还须显式 _vtask_group/to_host
 scalebox vtask add-subtask --app-id=10 --module=vtask-core \
-    --header _vtask_id=42 $body
+    --header _vtask_id=42 --header _vtask_group=0 --header to_host=n0-0 $body
 ```
 
 自动注入：`from_module`（`PLAT_MODULE_NAME` env）、`from_ip`（本机 IPv4）。调用方显式传入时不覆盖。
+
+两条路径最终都经过 controld 的 `DoAddLocalTaskList` 入库：GROUP-BOUND core 若最终没有可用
+`to_host`（显式、`_vtask_host`、`pod_id` 都得不到），入库失败，不会随机落点。wait-queue
+标准模块投递 `vtask-head` 是 SLOT-BOUND（`to_slot_index`），不需要 `to_host`；gate 放行由
+run.sh 在 bind + 投递成功后立即执行。
 
 ### 3.6.7 vtask 作用域变量/信号量
 
