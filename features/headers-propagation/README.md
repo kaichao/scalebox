@@ -19,6 +19,7 @@
 - 经 **wait-queue** 一跳时，属性必须由生产方显式转发（wait-queue 没有 `vtask_role`，自动继承被门控拦下）。
 - `_vtask_id` / `_vtask_size_sema` 由平台维护；应用只应使用 `_vtask_attr_*` 子命名空间。
 - 普通 header（无 `_` 前缀）不会自动传播，需要显式写入 sink 行。
+- `from_task`（agent 注入的父 task id）不属于本特性：它不随 `_` 继承，而是由 agent 在每跳重写为当前 task 的 id，因此链上每段指向直接父。
 
 ## 坑
 

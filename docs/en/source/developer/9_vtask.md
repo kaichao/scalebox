@@ -233,7 +233,7 @@ explicit to_host  >  explicit to_ip  >  _vtask_host (core)  >  pod_id derivation
   2. source module has `task_dist_mode=HOST-BOUND` (SLOT-BOUND / DEFAULT sources do not trigger it);
   3. both `pod_id` values are non-empty and equal;
   4. the caller did not set `to_host` or `to_ip`.
-- When relaying through the main-router, the agent writes `last_from_module` / `last_from_ip`; controld unwraps the router and evaluates the real predecessor module.
+- When relaying through the main-router, the agent writes `pre_router_from_module` / `pre_router_from_ip` (the legacy `last_from_module` / `last_from_ip` names are dual-written during transition); controld unwraps the router and evaluates the real predecessor module.
 - The derived `to_host` gets a `.<cluster>` suffix (the `t_slot.host` storage format).
 - If the source IP cannot be resolved from `t_host`, no `to_host` is written and controld logs a warning; the task then stays READY until the host registration is fixed or routing is made explicit.
 

@@ -41,7 +41,7 @@ core→core 的兜底（head→core 必须由脚本显式 `to_host`，core→cor
 - 优先级：显式 `to_host` > 显式 `to_ip` > `_vtask_host` > `pod_id`。
 - HOST-BOUND：`from-vtask-head.sh` 不传 `to_ip`/`to_host`；controld 用 wait-queue 写入的 `_vtask_host` 兜底，`pod_id` 作为兜底。
 - GROUP-BOUND：head→core 由脚本显式 `--header to_host`（业务分组，`vtask add-subtask` 必须带）；core→core 无显式路由时继承 `_vtask_host`（上一跳实际 host），`pod_id` 作为兜底。
-- 主路由中转由 agent 写 `last_from_*`，服务端解包；推导出的 `to_host` 自动补 `.<cluster>`。
+- 主路由中转由 agent 写 `pre_router_from_*`（过渡期双写旧名 `last_from_*`），服务端解包；推导出的 `to_host` 自动补 `.<cluster>`。
 - GROUP-BOUND core 最终无法确定 `to_host` 时入库被拒，不会随机落点。
 
 3. 建 app 并投递一批：

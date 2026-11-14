@@ -40,7 +40,7 @@
 
 | feature | 覆盖特性 |
 |---|---|
-| sink-tasks | 回流格式 / `last_from_module` / 与 vtask 的区别（部分已并入 agent-interface-files） |
+| sink-tasks | 回流格式 / `pre_router_from_module` / 与 vtask 的区别（部分已并入 agent-interface-files） |
 | vtask-flow-control | wait-queue / bind / gate / fail |
 | check-flow-control | 空间闸门挂载位置与死锁（可并入 check-test） |
 

@@ -91,7 +91,7 @@ echo start-task | scalebox run --app-file=feature.yaml
 
 - `go-scalebox/cmd/agent/postexec.go`（`normlizeTaskExec` / `readTaskExec` / `getExtras` / `getTimestamps`）—— `task-exec.yaml`、`extra-attrs.yaml`、`timestamps.txt`、`auxout.txt`
 - `go-scalebox/cmd/agent/iobytes.go`（`sumIOBytes`）—— `input-files.txt` / `output-files.txt` / `network-files.txt`
-- `go-scalebox/cmd/agent/sink_tasks.go`（`addSinkTasks`）—— `sink-tasks.txt` 与 `last_from_*` 继承
+- `go-scalebox/cmd/agent/sink_tasks.go`（`addSinkTasks`）—— `sink-tasks.txt` 与 `pre_router_from_*` 继承
 - `go-scalebox/cmd/agent/run.go`—— 任务后处理调用顺序
 
 ## 相关文档

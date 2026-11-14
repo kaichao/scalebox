@@ -231,7 +231,7 @@
 - 信号量/变量/semagroup 语义（reference + invariant）
 - 两套信号量 API 不可混用 + wait-queue gate 解锁（invariant）
 - 任务身份与幂等（`uniq_task` / 112 / 禁用 OVERWRITE）（invariant + feature）
-- sink-tasks 回流规则与 `last_from_module`（invariant + feature）
+- sink-tasks 回流规则与 `pre_router_from_module`（invariant + feature）
 - `NODES` 主机正则与节点池可达性（invariant）
 - `t_task_exec` 诊断（recipe + reference）
 - wait-queue / vtask-tail 契约（不二次 bind、不二次归还、head 必须释放闸门）（invariant）
@@ -263,7 +263,7 @@
 8. `slot-expr`：补 test.sh（现有 README 质量好）
 9. `task-identity`：`uniq_task` / 112 / `conflict-action` / `repeatable` 重跑契约
 10. `env-lifecycle`：app 快照 / 未定义变量字面量 / non-tty stdin
-11. `sink-tasks`：回流格式、`last_from_module`、vs `vtask add-subtask` 的区别
+11. `sink-tasks`：回流格式、`pre_router_from_module`、vs `vtask add-subtask` 的区别
 
 ## 6. 待确认
 
@@ -288,7 +288,7 @@
 | 2 | 回流靠 sink 文件 | 算法模块成功后写 `sink-tasks.txt` 才产生下游；不写 sink = 无回流 | router/README E1/E6、§3.1；modules/README §2.1 | invariant |
 | 3 | sink 行格式 | 纯 body / `<mod>,<body>` / `<mod>,<body>,{json headers}`；行内 headers 可直连 vtask-tail 并携带 `batch_status` | modules/README §2.1；router/README §5/E7、§8 | feature |
 | 4 | 失败门控与重试 | 非 0 退出不回流；`retry_rules` 按退出码重试，重试执行带 `repeatable:yes`，成功后只回流一次 | router/README E4/§9；main-router-golang-guide §7 | invariant |
-| 5 | `last_from_module` | 经主路由转发的任务自动携带上一个非路由模块标识，同一 body 的多阶段模块靠它区分 | router/README E5/§2 | feature |
+| 5 | `pre_router_from_module` | 经主路由转发的任务自动携带越过路由链的上游模块标识（过渡期双写旧名 `last_from_module`），同一 body 的多阶段模块靠它区分 | router/README E5/§2 | feature |
 | 6 | vtask-tail 不自动创建 | 平台不会在 vtask 结束时自动投 tail，必须由 core 的 sink 直连或 router 显式投递 | route3-mpi-plan §3；router/README §5/E7 | invariant |
 
 ### A.2 任务身份、幂等与重跑

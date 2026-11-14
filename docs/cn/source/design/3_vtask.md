@@ -266,7 +266,7 @@ HOST-BOUND 任务落到哪台主机，按以下优先级确定（`cmd/controld/t
   2. 来源模块 `task_dist_mode=HOST-BOUND`（SLOT-BOUND / DEFAULT 来源不触发）；
   3. 两侧 `pod_id` 非空且相同；
   4. 调用方未指定 `to_host` 或 `to_ip`。
-- 经 main-router 中转时，agent 写 `last_from_module` / `last_from_ip`，controld 解包主路由后按真实前序模块判断。
+- 经 main-router 中转时，agent 写 `pre_router_from_module` / `pre_router_from_ip`（过渡期双写旧名 `last_from_module` / `last_from_ip`），controld 解包主路由后按真实前序模块判断。
 - 推导出的 `to_host` 会补 `.<cluster>` 后缀（`t_slot.host` 的存储格式）。
 - 解析失败（来源 IP 不在 `t_host` 中）不会写入 `to_host`，controld 打 warn；此时任务会停在 READY，需要修正来源主机注册或显式指定路由。
 

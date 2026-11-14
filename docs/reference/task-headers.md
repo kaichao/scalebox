@@ -2,7 +2,7 @@
 
 > 唯一信源：task header 的名称、写入方、传播规则、转义都以本页为准。
 > 语义说明（何时设、坑）在 `features/` 与 `docs/agents/`；字段类型见 `reference/app-yaml.md`。
-> 最后校验：2026-11-10，对照 go-scalebox@77b5574（`_vtask_host` 锚点设计）。
+> 最后校验：2026-11-14，对照 go-scalebox 工作区的 `from_task` 改动。
 
 ## 1. 定义
 
@@ -60,7 +60,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 | `_vtask_attr_<name>` | 应用自定义 vtask 属性 | 平台只运输、不解释；`<name>` 由应用定义 |
 | 其他任意名字 | 应用自定义 | 不以 `_` 开头；是否**自动**传播见 §4 |
 
-**路由优先级**：显式 `to_host` > 显式 `to_ip` > `_vtask_host`（`task_dist_mode=HOST-BOUND` 且 `vtask_role=core`）> `pod_id` 推导。HOST-BOUND vtask 的 `_vtask_host` 由 wait-queue 写入，生命周期内不可变；GROUP-BOUND vtask 的 `_vtask_host` 是该 core 任务**实际运行的 host**，由 controld 在入库时随显式 `to_host` 更新、沿 core 链传播，core→core 无显式路由时继承。GROUP-BOUND 的 head→core 必须由脚本显式 `to_host`（head 是 SLOT-BOUND，平台不猜组内节点）；`_vtask_group` 是组号，不参与该路由。`pod_id` 推导要求目标与来源模块均为 `task_dist_mode=HOST-BOUND`、两侧 `pod_id` 非空且相同，且调用方未指定 `to_host`/`to_ip`；经 main-router 中转时使用 `last_from_module`/`last_from_ip` 定位真实前序模块。推导结果补 `.<cluster>` 后缀。GROUP-BOUND core 最终无法确定 `to_host` 时任务拒绝入库。
+**路由优先级**：显式 `to_host` > 显式 `to_ip` > `_vtask_host`（`task_dist_mode=HOST-BOUND` 且 `vtask_role=core`）> `pod_id` 推导。HOST-BOUND vtask 的 `_vtask_host` 由 wait-queue 写入，生命周期内不可变；GROUP-BOUND vtask 的 `_vtask_host` 是该 core 任务**实际运行的 host**，由 controld 在入库时随显式 `to_host` 更新、沿 core 链传播，core→core 无显式路由时继承。GROUP-BOUND 的 head→core 必须由脚本显式 `to_host`（head 是 SLOT-BOUND，平台不猜组内节点）；`_vtask_group` 是组号，不参与该路由。`pod_id` 推导要求目标与来源模块均为 `task_dist_mode=HOST-BOUND`、两侧 `pod_id` 非空且相同，且调用方未指定 `to_host`/`to_ip`；经 main-router 中转时使用 `pre_router_from_module`/`pre_router_from_ip` 定位真实前序模块（过渡期 agent 同时双写旧名 `last_from_module`/`last_from_ip`）。推导结果补 `.<cluster>` 后缀。GROUP-BOUND core 最终无法确定 `to_host` 时任务拒绝入库。
 
 ## 3. 系统注入的 header
 
@@ -68,8 +68,9 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 |---|---|---|
 | `from_ip` | CLI `task add` / agent | 生成该任务的主机 IPv4 |
 | `from_module` | agent | 生成该任务的模块名 |
-| `last_from_module` | agent（router 中转时） | 主路由之前的真实上游模块 |
-| `last_from_ip` | agent（router 中转时） | 主路由之前的真实上游 IP |
+| `from_task` | agent（`addSinkTasks`） | 生成该任务的父 task id（十进制字符串）。仅 `sink-tasks.txt` 路径写入；同一批 sink 任务共享同一值。只记直接父、不穿透 main-router；跨集群投递（CLI `--remote-cluster` 直连）与 `--direct`/agent 外直连不写入，链在集群边界自然截断。按 `headers->>'from_task'` 可逐跳反查任务链（webui 点击展开后续 task 列表）。`conflict_action=OVERWRITE` 重投时随 headers 整体替换为最新投递者 |
+| `pre_router_from_module` | agent（router 中转时） | 越过（连续）main-router 链后的真实上游模块。`pre_router` 指 router 处理之前的状态；多级 router 时取整条链之前的值。过渡期双写旧名 `last_from_module`（已弃用，一个版本后移除） |
+| `pre_router_from_ip` | agent（router 中转时） | 越过（连续）main-router 链后的真实上游 IP。过渡期双写旧名 `last_from_ip`（已弃用，一个版本后移除） |
 | `from_cluster` | CLI（跨集群投递时） | 上一集群名 |
 | `task_id` | controld | 本任务自身的 id；仅当模块参数 `task_id_in_headers: yes`（缺省 `no`）时写入 |
 | `_vtask_id` | controld | 任务所属 vtask id（= vtask-head 任务的 id）；`vtask_role: head` 且非 main-router 的任务创建时写入；`0`/空表示不属于 vtask |
@@ -94,6 +95,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 - **wait-queue 一跳**：wait-queue 没有 `vtask_role`，`_vtask_attr_*` 不会自动继承；
   需要由 wait-queue 标准模块显式转发（标准镜像已实现）。
 - 普通（不带 `_`）header **不会**自动传播；下游需要时由模块自己写进 `sink-tasks.txt` 的第三列。
+- `from_task` 属于后者：不随 `_` 传播，而是由 agent 在每一跳重写为**当前** task 的 id——因此链上每一段指向直接父，不会把上游的 `from_task` 原样带到下游。
 
 ## 5. 转义链路与历史问题
 
