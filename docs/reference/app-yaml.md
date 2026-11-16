@@ -44,6 +44,7 @@
 | `volumes` | array<`string`> | 否 | — | 挂载卷列表 |
 | `environments` | array<`string`> | 否 | — | 环境变量列表 |
 | `slots` | array<`string`> | 否 | — | Slot 列表（支持正则；匹配 hostname 第一段，如 h0、n0-[01]） |
+| `slot_cpusets` | array<`string`> | 否 | — | 每节点按 slot 序号（seq）依次分配的 CPU 亲和列表（如 0-1、2-3）；项数必须等于每节点 slot 数。配置后容器启动时注入 SLOT_SEQ / SLOT_CPUSET 环境变量 |
 | `sink_modules` | array<`string`> | 否 | — | 下游模块集合（VTask 管道路由，DAG 边来源） |
 | `sink_vmodules` | array<`string`> | 否 | — | 下游虚拟模块集合 |
 | `arguments` | object（任意键值） | 否 | — | 容器启动参数（module-arguments 参数表） |

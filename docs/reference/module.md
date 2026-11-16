@@ -3,7 +3,7 @@
 > 唯一信源：`app.yaml` 中 `modules.<name>` 这一条**怎么跑起来**——启动命令、挂载、注入的环境变量、
 > 路由与落点。字段清单与类型见 [`app-yaml.md`](./app-yaml.md)（生成物）；模块与 agent 的
 > 接口文件（stdin/stdout/exit code/sink-tasks）见 [`features/agent-interface-files`](../../features/agent-interface-files/README.md)。
-> 最后校验：2026-10-21，对照 go-scalebox@09cd5a3。
+> 最后校验：2026-11-16，对照 go-scalebox@c21cfe4（slot_cpusets 为工作区改动）。
 
 ## 1. 条目结构
 
@@ -12,7 +12,7 @@
 | 组 | 字段 | 作用 |
 |---|---|---|
 | 启动 | `base_image`、`command`、`volumes`、`environments` | 容器从哪个镜像起、怎么起、挂什么、注入什么 |
-| 落点 | `slots`、`parameters.task_dist_mode`、`arguments.slot_options` | 在哪些节点、以什么方式建 slot |
+| 落点 | `slots`、`slot_cpusets`、`parameters.task_dist_mode`、`arguments.slot_options` | 在哪些节点、以什么方式建 slot，slot 的 CPU 亲和 |
 | 数据 | `arguments.code_path`、`volumes`、`slot_options` 的映射开关 | 容器内可见路径 |
 | 路由 | `sink_modules`、`sink_vmodules`、`parameters.vtask_role` | 下游是谁、任务如何回流 |
 | 调优 | `arguments.*`、`parameters.*` | 超时、轮询、心跳、闸门、分组 |
@@ -73,6 +73,15 @@
 **空值不注入**：合成后值为空串的变量会被删除。需要"变量存在但为空"时不能依赖它。
 完整变量表见 [`env-vars.md`](./env-vars.md)。
 
+另有两个按 slot 运行时注入的变量（`GetSlotList` 生成启动命令时直接拼入，不走 `{{ENVS}}`，
+也不经 `escapeBrackets`）：
+
+- `SLOT_SEQ`：节点内 slot 序号（`t_slot.seq`），所有 slot 都注入；
+- `SLOT_CPUSET`：仅声明了 `slot_cpusets` 的模块注入，值为该 slot 对应的列表项。
+
+命令中已显式声明同名变量时跳过注入（显式配置优先）；命令里没有 `-e`（Docker）或
+`--env`（Singularity）锚点时跳过并打 warn，不阻断 slot 启动。
+
 ## 5. 路由与下游
 
 - `sink_modules`：声明的下游模块名列表（DAG 边来源）；容器内 `SINK_MODULE` 取**第一个**。
@@ -97,6 +106,13 @@
   - `host_regex:N:group_regex`：GROUP slots，按组名分配（组名为单个字母时直接作为组前缀）；
   - 正则不含元字符时自动按前缀匹配（追加 `.*`）。
   - `slot_options` 含 `slot_on_head` 时忽略 `slots`，只在集群 HEAD 节点建 1 个 slot（seq=0）。
+- `slot_cpusets`：与 `slots` 并排的列表，按节点内 seq 依次分配 CPU 亲和（如 `["0-1","2-3"]`
+  表示 seq=0 用 0-1、seq=1 用 2-3）。项数必须等于每节点 slot 数：
+  `ValidateApp` 按 `slots` 定义估算并提前报错；`CreateApp` 按主机展开后逐 host 权威校验，
+  不一致则创建失败。每项写入对应 `t_slot.parameters.cpuset`，`GetSlotList` 生成启动命令时
+  注入 `SLOT_CPUSET`（同时所有 slot 注入 `SLOT_SEQ`）。
+  动态新增的 slot（`AppAddSlots` / autoscale）不带 cpuset，只注入 `SLOT_SEQ`；
+  可用 `slot set-parameter` 单独设置某个 slot 的 `cpuset`。
 - `parameters.task_dist_mode`：`DEFAULT` / `HOST-BOUND` / `SLOT-BOUND`（保存时空值归一化为
   `DEFAULT`），决定任务是否要求 `to_host` / `to_slot`。
 - `slot_options`：`always_running`、`reserved_on_exit`、`tmpfs_workdir`、`disable_local_mapping`、

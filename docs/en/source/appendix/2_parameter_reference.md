@@ -20,6 +20,11 @@
 > RPC (whitelisted, evaluated per slot context). The "Standard environment variable"
 > column is a historical mapping; those variables are no longer injected.
 
+The module-level `slot_cpusets` field (sibling of `slots`) assigns CPU affinity per node
+by slot sequence (`seq`); the number of items must equal the number of slots per node.
+Syntax, validation, and the injected `SLOT_SEQ`/`SLOT_CPUSET` variables are documented in
+[`reference/module.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/module.md) §4 and §6.
+
 | Parameter name        | Standard environment variable | Meaning |
 | ---------------------- | ---------------------- | ---------------------------------------------------------------------- |
 | grpc_server           | GRPC_SERVER            | controld's service endpoint, ```${ip_addr}:${port}```, default port 50051 |
@@ -165,6 +170,8 @@ task-header parameters can be customized, where parameters starting with ```_```
 | TMPDIR_GROUP    | the group number (numeric) in TMPDIR |
 | TMPFS_WORKDIR   | use tmpfs for the local working directory to improve large-file loading performance |
 | SLOT_ROLE       | ''/'group', the group slot in group computing mode, which can fetch all tasks in the group across nodes |
+| SLOT_SEQ        | intra-node slot sequence (`t_slot.seq`); injected for every slot when GetSlotList builds the launch command |
+| SLOT_CPUSET     | CPU affinity (cpuset) of the slot; injected only when the module declares `slot_cpusets`, taken from `t_slot.parameters.cpuset` |
 
 All environment variables starting with PLAT_ do not need to be accessed by user programs.
 

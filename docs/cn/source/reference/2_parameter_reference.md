@@ -12,6 +12,8 @@
 
 字段清单与类型见同一参考页的 `module.arguments`。`arguments` 允许扩展键；`slot_options` 的子选项（`always_running`、`reserved_on_exit`、`tmpfs_workdir`、`disable_local_mapping`、`disable_data_mapping`、`slot_on_head`）以该页为准。`PLAT_MODULE_NAME` 等环境变量见 §2.3。
 
+模块顶层字段 `slot_cpusets`（与 `slots` 并排）按节点内 slot 序号（seq）依次分配 CPU 亲和，项数必须等于每节点 slot 数。语法、校验规则与注入的 `SLOT_SEQ`/`SLOT_CPUSET` 环境变量见 [`reference/module.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/module.md) §4、§6。
+
 ### 2.1.3 module-parameters参数表
 
 字段清单与类型见同一参考页的 `module.parameters`。schema 未覆盖的补充参数：
@@ -97,6 +99,8 @@ task header 的名称、写入方、传播规则与转义以
 | TMPDIR_GROUP    | TMPDIR中分组号（数字）                                                            |
 | TMPFS_WORKDIR   | 本地工作目录设置使用tmpfs，以提高大文件加载性能                                        |
 | SLOT_ROLE       | ''/'group'，组计算模式中的组slot，可跨节点获取组内所有task                            |
+| SLOT_SEQ        | 节点内 slot 序号（t_slot.seq）。所有 slot 都注入，GetSlotList 生成启动命令时拼入         |
+| SLOT_CPUSET     | 该 slot 的 CPU 亲和（cpuset）。仅模块声明 slot_cpusets 时注入，取自 t_slot.parameters.cpuset |
 
 PLAT_ 开头的所有环境变量，用户程序无需访问。
 
