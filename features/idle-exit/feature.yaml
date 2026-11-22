@@ -1,0 +1,50 @@
+name: idle-exit.features
+cluster: local
+
+# 四个模块分别验证：
+#   idle-reset  task 完成后空闲预算重置
+#   idle-exit   非 always_running 的 slot 在预算耗尽后退出
+#   idle-always always_running 豁免空闲退出
+#   idle-clamp  max_idle_polls=0 回落 100，不立即退出
+modules:
+  idle-reset:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/code
+      max_idle_polls: 20
+      poll_interval_seconds: 1
+      slot_options: slot_on_head
+    parameters:
+      start_task: reset-probe
+    environments:
+      - ACTION_CHECK=/app/bin/check.sh
+
+  idle-exit:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/code
+      max_idle_polls: 5
+      poll_interval_seconds: 1
+      slot_options: slot_on_head
+    environments:
+      - ACTION_CHECK=/app/bin/check.sh
+
+  idle-always:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/code
+      max_idle_polls: 2
+      poll_interval_seconds: 1
+      slot_options: slot_on_head,always_running
+    environments:
+      - ACTION_CHECK=/app/bin/check.sh
+
+  idle-clamp:
+    base_image: scalebox.net/platform/agent:latest
+    arguments:
+      code_path: ${PWD}/code
+      max_idle_polls: 0
+      poll_interval_seconds: 1
+      slot_options: slot_on_head
+    environments:
+      - ACTION_CHECK=/app/bin/check.sh

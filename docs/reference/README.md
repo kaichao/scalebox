@@ -4,8 +4,8 @@
 
 - **生成物**：`cli.md`、`app-yaml.md`、`exit-codes.md`、`rpc.md`、`env-vars.md`——不要手工编辑，
   改动会被下一次生成覆盖，`make docs-check` 也会报差异。
-- **手写/半自动**：`task-headers.md`、`module.md`、`semaphore-variable.md`——结构以源码为准，
-  由人维护；修改时对照源码并注明依据。
+- **手写/半自动**：`task-headers.md`、`module.md`、`semaphore-variable.md`、
+  `slot-runtime.md`、`data-view.md`——结构以源码为准，由人维护；修改时对照源码并注明依据。
 
 结构事实（命令、字段、状态码、header、环境变量、RPC）以本目录为唯一信源；语义说明
 （何时用、副作用、坑）在 [`features/`](../../features/) 与 Sphinx。
@@ -20,6 +20,8 @@
 | `task-headers.md` | 源码（`cmd/agent`、`cmd/controld`）+ 实测 | 手写 |
 | `module.md` | `app-schema.json` modules 段 + agent 接口 | 半自动：字段表生成，语义手写 |
 | `semaphore-variable.md` | `pkg/semaphore`、`pkg/variable` + `docs/vtask-design.md` | 手写 |
+| `slot-runtime.md` | `t_slot.status` / `t_slot_runtime` + agent 空闲退出 | 手写 |
+| `data-view.md` | `t_data_view` / `t_app_data_view` + REST/UI | 手写 |
 
 生成头部的 `source: go-scalebox@<sha> (<date>)` 是生成时的源码版本；源码变化后重新生成，diff 会显示变化。
 
@@ -36,7 +38,7 @@ python3 scripts/gen-reference/gen_reference.py \
 如果本地 Makefile 含 docs 目标（注意该仓库的 `Makefile` 被 `.gitignore` 忽略）：
 
 ```sh
-make docs-gen     # 更新本目录三个文件
+make docs-gen     # 更新本目录五个生成文件
 make docs-check   # 生成到临时目录并 diff；源码漂移时失败
 ```
 

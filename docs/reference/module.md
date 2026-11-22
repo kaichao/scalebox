@@ -3,7 +3,7 @@
 > 唯一信源：`app.yaml` 中 `modules.<name>` 这一条**怎么跑起来**——启动命令、挂载、注入的环境变量、
 > 路由与落点。字段清单与类型见 [`app-yaml.md`](./app-yaml.md)（生成物）；模块与 agent 的
 > 接口文件（stdin/stdout/exit code/sink-tasks）见 [`features/agent-interface-files`](../../features/agent-interface-files/README.md)。
-> 最后校验：2026-11-16，对照 go-scalebox@c21cfe4（slot_cpusets 为工作区改动）。
+> 最后校验：2026-11-22，对照 go-scalebox@762bb55 + 空闲预算工作区改动。
 
 ## 1. 条目结构
 
@@ -119,6 +119,8 @@
   `disable_data_mapping`、`disable_tmp_mapping`、`slot_on_head`（调试用）。
 - `slot_max_tasks`（`parameters`，schema 未覆盖）：slot 生命周期内累计执行任务数上限，达到后
   slot 优雅退出并置 READY；0 不限；`slot_options` 含 `always_running` 时忽略。
+- slot 生命周期与运行态（`WAITING` / `BLOCKED` / `STALE`、等待原因、心跳年龄、空闲预算）分开看：
+  生命周期见本节，运行态见 [`slot-runtime.md`](./slot-runtime.md)。
 - `parameters.slot_start_batch_size`：controld 每轮 `GetSlotList` 每模块每节点最多置为 STARTING 的
   slot 数，缺省 1，范围 1~100（非法值/0 按 1）。用于单节点几十上百个 slot 时加快启动：原实现每
   5 秒每模块每节点只启动 1 个，设置为 n 后每轮投放 n 个。同一节点仍由 actuator 串行 SSH 启动，
@@ -132,13 +134,24 @@
 | `task_max_seconds` | 单任务超时，缺省 0（不超时）；超时中断，任务返回 124。全局兜底：status=-3 且超过 `task_max_seconds × task_global_timeout_scale`（模块参数，缺省 2.0）的任务由 pgcron（每 15 分钟）置为 123 |
 | `task_min_seconds` | 单任务最小合理耗时，缺省 0；连续低于阈值判定 slot 异常（GREEDY）并退出 |
 | `poll_interval_seconds` | slot 轮询新任务的间隔，缺省 6 秒；app 参数 `default_poll_interval_seconds` 可提供缺省（`GetModule` 服务端合并，模块显式配置优先） |
-| `max_idle_polls` | 空闲轮询上限，超过后 slot 退出并置 READY；缺省 100（约 10 分钟）；app 参数 `default_idle_polls` 可提供缺省。host 非 ON 时 agent 收空批次，依赖此机制回 READY（`always_running` 例外，INV-16） |
+| `max_idle_polls` | **最后一次非空 task 批次后**的空闲轮询上限，超过后 slot 退出并置 READY；缺省 100（约 10 分钟）；非正整数/非法值回落 100；app 参数 `default_idle_polls` 可提供缺省。非空 task 批次会重置预算；`always_running` 豁免。host OFF（或 DRAINING + `skip_draining_host=yes`）时优先由 `slot_action=stop` 退出，空闲预算是兜底（INV-16） |
 | `max_sink_tasks` | 单次 `AddTaskList` 投递的最大行数；0 = 不分批（整份 `sink-tasks.txt` 一次投递）。缺省：router 0，其他模块 100；显式分批时跨批不保证事务原子性 |
 | `heartbeat_seconds` | 心跳间隔，缺省 60；非正整数禁用 |
 | `output_text_size` | 执行记录里 stdout/stderr/auxout 的最大字节数，缺省 65535，最小 255 |
 | `text_trunc_mode` | `TAIL` = 保留文本开头（截掉尾部）；其他或空 = 保留文本末尾（截掉开头），即缺省等价于 `HEAD` |
 | `dir_quota_gb` | 目录配额闸门，格式 `'{"/dir":10}'`；挂批入口，不挂任务级（INV-14）；**值为 0 的项视为不限制**，解析时丢弃 |
 | `free_space_gb` | 磁盘保留空间闸门，格式同上；同上；**值为 0 的项视为不限制**，解析时丢弃 |
+
+空闲预算的直观公式是 `max_idle_polls × poll_interval_seconds`。它从**最后一次非空 task 批次**
+之后开始计算；持续有 task 时不会累计到退出。agent 每轮把剩余次数写入
+`t_slot_runtime.idle_polls_remaining`，空闲退出时 `SLOT_COMPLETE` 记录
+`slot exit=idle timeout` 及 `max/remaining/interval` 三项。运行态、等待原因和页面观测见
+[`slot-runtime.md`](./slot-runtime.md)。
+
+host 置 `OFF` 时不再等空闲预算耗尽：controld 下发 `slot_action=stop`，并级联复位该 host 上的
+活动 slot（预分配→READY/`initial_slot_status`，动态→OFF）。`DRAINING` 下只有
+`skip_draining_host=yes` 的模块停止领取并退出；其他模块继续运行。空闲退出是 agent 不可达时的
+兜底路径，见 [`docs/agents/10-invariants.md`](../agents/10-invariants.md) INV-16。
 
 ## 8. 模块类型
 

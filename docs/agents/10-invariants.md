@@ -4,7 +4,7 @@
 > 来源：`app-fxcorr` 38 条 + `app-mwa` 35 条实战实证（完整清单见 `docs/feature-inventory.md` 附录 A/C），按 `_template-invariant.md` 模板蒸馏。
 > 置信度：**已交叉验证** = 两个应用或应用+官方文档同时出现；**单项目来源** = 仅一个应用/一次实验实证。
 
-## TL;DR（24 条）
+## TL;DR（25 条）
 
 1. 建 app 即快照：改 env/镜像/slots/code_path/run.sh 后必须重建 app。
 2. 未定义的 `${VAR}` 会保留字面量：每个变量显式定义（空值也写）。
@@ -21,7 +21,7 @@
 13. `_` 前缀 header 自动传播，但只对 `vtask_role≠""` 的 sink 模块放行；wait-queue 一跳需显式转发。
 14. 任务级 `free_space_gb` + 组原子性 = 死锁：空间闸门挂批入口。
 15. `slots` 条目是主机正则，匹配 hostname 第一段（短名，如 `h0`）；不是逗号列表，也不要写 FQDN；写错则 slot 全不建、链卡死。
-16. 节点池必须 ON（同 cluster）且 ssh 可达：非 ON 的 host 不启动 slot、不派发任务；Slurm 重命名或僵尸 ON 会静默卡死。
+16. 节点池必须 ON（同 cluster）且 ssh 可达：非 ON 的 host 不启动 slot、不派发任务；host OFF 会下发 `slot_action=stop` 并级联复位活动 slot，空闲退出只是兜底；Slurm 重命名或僵尸 ON 仍会静默卡死。
 17. 容器可见路径只有 `/tmp`、`/dev/shm`、`/cluster_data_root`、`/local_data_root`、`/app/bin`。
 18. 状态码：-1 等待（含被闸门拦）、-3 执行中、0 完成、>0 失败。
 19. 计时用 `t_task_exec.t0–t3`；`t_task` 的时间戳与容器时钟不一致。
@@ -30,6 +30,7 @@
 22. to_host 传播优先级：显式 `to_host` > 显式 `to_ip` > `pod_id`；`pod_id` 仅在两侧都 HOST-BOUND、值相同且未显式指定路由时生效（INV-22）。
 23. wait-queue 的 `vtask_size` **必须 ≥ 它的 slot 数**（并发 bind 准入，经验值 = 全部空额）；不够会超卖、扣成负数卡死（INV-23）。
 24. 短任务回流会压死主路由，**加 router 实例解决不了**（同一来源只能单实例）：只能在算法侧把 N 个短任务聚合成 1 个粗粒度任务，用 `sink_modules` 直连下游（INV-24）。
+25. 空闲预算是**最后一批 task 之后**的预算：非空 task 批次会重置；非正整数/非法值回落 100；`always_running` 豁免（INV-25）。
 
 ---
 
@@ -220,10 +221,10 @@
 - **现象**：`t_host` 里节点状态为 ON，但物理机已死或已被 Slurm 重新分配；链静默定格。
 - **规则**：每轮启动前核对 `t_host` 中 ON 且 ssh 可达的节点；节点名变化时同步更新 `NODES` / `slots`。
 - **状态门禁**：`GetSlotList` 把本 cluster 内 `t_host.status` 为 `ON` 或 `DRAINING` 的 host 上的 READY slot 置 `STARTING`；DRAINING host 上只启动未配置 `skip_draining_host: 'yes'` 的模块（见 INV-21）。`GetTaskList` 每次实时校验 slot ON + module RUNNING + host 可用（`ON`，或 `DRAINING` 且模块非 skip），不满足返回空批次，不依赖 5/6 分钟缓存。
-- **host 离开 ON 后**：正在轮询的 agent 收到空批次，按 `max_idle_polls`（缺省 100 × 6 秒 ≈ 10 分钟）空闲退出，`SetSlotTerminated` 把 slot 置 READY（`intial_slot_status` 缺省 READY；动态注册的 slot 走 `DeregisterSlot` 置 OFF）。`slot_options: always_running` 不退出，slot 保持 ON；节点断电/agent 已死时无人上报，slot 停在 ON 且 actuator 不会重启，恢复节点后需手工把 slot 置 READY（`scalebox slot set-status`，ON→OFF→READY）或重建 app。
+- **host 离开 ON 后**：不再等空闲预算耗尽。`SubmitSlotEvent` 在 host `OFF`（以及 `DRAINING` + 模块 `skip_draining_host=yes`）时返回 `slot_action=stop`，agent 处理完当前已拉取批次后退出：`SLOT_COMPLETE` → `SetSlotTerminated`（`ON → READY`）或 `DeregisterSlot`（动态 slot → OFF）。controld 在 host 置 OFF 时还会立即级联复位该 host 上 `ON/STARTING/GREEDY` 的 slot：预分配 slot → READY（或模块 `initial_slot_status`），动态 slot → OFF。两路幂等，覆盖 agent 不可达/已死的场景。空闲退出（`max_idle_polls`）只是兜底，不再是 host 下线的首选路径；`always_running` 只豁免空闲退出，不豁免 host OFF 的 `slot_action=stop`。
 - **为什么**：平台按 DB 状态建 slot，不主动探测物理可达性；旧名可能仍标 ON；非 ON 的 host 不具备算力资格，继续派发会把任务压到即将停止的节点。
 - **反例/后果**：slot 建不出；host 非 ON 时任务保持 READY、不再派发；`STARTING → SSHFAILED`；僵尸 ON 造成 `-3` 卡死。
-- **源码指针**：`build/database/initdb.d/`（`t_host`）、`cmd/controld/slot/slot.go`（`GetSlotList`）、`cmd/controld/task/get.go`（`isSlotDispatchable`）、`cmd/agent/run.go`（空闲退出）。
+- **源码指针**：`build/database/initdb.d/`（`t_host`）、`cmd/controld/slot/slot.go`（`GetSlotList`）、`cmd/controld/task/get.go`（`isSlotDispatchable`）、`cmd/controld/grpc/slot.go`（`slot_action`）、`internal/slot/host_off.go`（`TerminateSlotsOnHost`）、`cmd/agent/run.go`（`slotStopReason` / 空闲退出）。
 - **置信度**：单项目来源（app-fxcorr / p419）+ 源码/本地库实测。
 - **适用范围**：所有多节点部署。
 
@@ -310,6 +311,20 @@
 - **置信度**：应用 + 官方文档（设计文档已述机制，app-fxcorr 实测）。
 - **适用范围**：所有自研主路由、存在短任务来源的应用。
 - **一句话**：主路由的吞吐上限不随节点数增长，也不能靠多实例突破——**减少穿过次数**（聚合 + 直连）才是解。
+
+---
+
+### INV-25 空闲预算是“最后一批 task 之后”的预算
+
+- **现象**：把 `max_idle_polls` 当成 slot 总寿命，或用它估算“slot 还有多久退出”；有 task 持续到达时，slot 并不按配置的秒数退出。
+- **规则**：`max_idle_polls` 从**最后一次非空 task 批次**完成后开始计数；只要 agent 领到并处理了 task，`numIdlePolls` 就重置为 `max_idle_polls`。预算时长 = `max_idle_polls × poll_interval_seconds`。`max_idle_polls <= 0` 或非法值回落 100；`poll_interval_seconds <= 0` 回落 6 秒。`slot_options` 含 `always_running` 的 slot 豁免空闲退出。
+- **为什么**：agent 在 task 批次成功处理后重置计数；否则长跑应用会在累计轮询次数耗尽后被误杀。旧实现只在 node-agent 的 `NUM_IDLE_POLLS` 环境变量存在时重置，普通 agent 不会重置，是已修复的缺陷。
+- **反例/后果**：按“slot 总寿命”设置 `max_idle_polls`，有任务时 slot 不退出；按旧文档把 0 当“立即退出”，实际回落 100（约 10 分钟）。需要 one-shot 时用 `slot_max_tasks: 1` 或 task header `slot_last_task=yes`，不要依赖 `max_idle_polls=0`。
+- **观测**：`t_slot_runtime.idle_polls_remaining` 是 agent 最近上报的剩余次数；WebUI App → Slots 的 Tooltip/Details 显示 `remaining/max × interval`。空闲退出时 `SLOT_COMPLETE.details` 写 `slot exit=idle timeout`、`slot exit:num_idle_polls`、`slot exit:max_idle_polls`、`slot exit:poll_interval_seconds`。
+- **源码指针**：`cmd/agent/run.go`（`idlePollBudget` / `idleExitDetails`）、`cmd/agent/module_args.go`（`normalizeIdlePolls` / `normalizePollInterval`）、`cmd/controld/grpc/slot.go`（`num_idle_polls` 落表）、`docs/reference/slot-runtime.md`。
+- **置信度**：源码 + 2026-11-22 bio 实测（`max_idle_polls=3600`、`poll_interval_seconds=1`；最后 task 后约 60 分钟退出，`SLOT_COMPLETE` 含 idle timeout）。
+- **适用范围**：所有非 `always_running` 的 slot；`host OFF` 的退出优先走 `slot_action=stop`，不要用本预算估算下线时间。
+- **一句话**：`max_idle_polls` 是“闲下来之后还能等多久”，不是 slot 的总寿命。
 
 ---
 

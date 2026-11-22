@@ -14,6 +14,8 @@
 
 模块顶层字段 `slot_cpusets`（与 `slots` 并排）按节点内 slot 序号（seq）依次分配 CPU 亲和，项数必须等于每节点 slot 数。语法、校验规则与注入的 `SLOT_SEQ`/`SLOT_CPUSET` 环境变量见 [`reference/module.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/module.md) §4、§6。
 
+`max_idle_polls` 与 `poll_interval_seconds` 组成空闲预算：从**最后一次非空 task 批次**完成后开始计算，时长约为 `max_idle_polls × poll_interval_seconds`；有 task 到达会重置。`max_idle_polls <= 0` 或非法值回落 100，`poll_interval_seconds <= 0` 回落 6 秒；`slot_options` 含 `always_running` 时豁免空闲退出。运行态、等待原因、心跳与空闲预算的观测见 [`reference/slot-runtime.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/slot-runtime.md)。
+
 ### 2.1.3 module-parameters参数表
 
 字段清单与类型见同一参考页的 `module.parameters`。schema 未覆盖的补充参数：
@@ -69,6 +71,13 @@ task header 的名称、写入方、传播规则与转义以
 | group_prefix | slot的分组前缀，在HOST-BOUND模块中的分组slot |
 
 `slot get-parameter` 未设置时返回空字符串；`set-parameter` 的值以字符串存入 `t_slot.parameters`，可用于 slot 启动命令表达式 `((@p:...))`。
+
+slot 的两层状态不要混用：`t_slot.status` 是生命周期（READY/STARTING/ON/OFF/ERROR/SSHFAILED/TIMEOUT/GREEDY），
+`t_slot_runtime` 是 ON 期间的运行态（RUNNING/ASSIGNED/WAITING/BLOCKED/STALE）与等待原因、心跳、
+空闲预算。host OFF 时 controld 下发 `slot_action=stop` 并级联复位活动 slot；`DRAINING` 下只有
+`skip_draining_host=yes` 的模块停领并退出。详见
+[`reference/slot-runtime.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/slot-runtime.md)
+与 [`docs/agents/10-invariants.md`](https://github.com/kaichao/scalebox/blob/dev/docs/agents/10-invariants.md) INV-16。
 
 ## 2.3 环境变量参考
 

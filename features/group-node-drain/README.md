@@ -30,13 +30,16 @@ GROUP_SLOTS='y00-00:4:x43'
   2. `to_host` 指向该 host 的 pending/running task 为 0；
   3. 本地数据目录不再增长（业务侧确认）。
 - 排空后置 `OFF`、换 IP / 换主机名，再置 `ON`（或 `undrain`）；READY slot 会重新启动。
+- host 置 `OFF` 时不再等空闲预算：`SubmitSlotEvent` 返回 `slot_action=stop`，agent 处理完当前批次后退出；
+  controld 同时级联复位该 host 上 `ON/STARTING/GREEDY` 的 slot（预分配→READY，动态→OFF），
+  覆盖 agent 不可达/已死。`always_running` 只豁免空闲退出，不豁免 host OFF 的 stop。
 - 恢复 `ON` 后，之前被跳过的 slot 重新可领取。
 
 ## 坑
 
 - **`DRAINING` ≠ `OFF`**：直接置 `OFF` 会切断位置解析和领取资格，正在排空的本地链会断掉（表现为空 `to_host` 或下游 task 无人领取）。先 `drain`，排空后再 `OFF`。
 - **只给生产者配 `skip_draining_host`**：把消费者也配成 `yes`，本地链没有模块消费，排空永远不结束。生产者是产生本地数据的模块（如 beam-make），消费者是下游（如 down-sample、fits-redist）。
-- **agent 退出有延迟**：退出由 agent 的 poll 周期驱动（默认 10 秒），不是设置 `DRAINING` 立即退出；判断排空时要留出这段窗口。
+- **agent 退出有延迟**：`DRAINING` 的 `slot_action=stop` 由 agent 心跳/poll 感知；无自定义 check 时通常等心跳（默认 60 秒），不是设置 `DRAINING` 立即退出。host `OFF` 有 controld 级联兜底，不依赖 agent 感知。
 - **复用 host 名换 IP**：`to_host` 存的是逻辑主机名，本地数据绑在物理机上。排空完成后再改 IP；不要在还有 pending/running task 时换 IP，否则任务会被调度到没有数据的新机器。
 - **组 slot 的 `group_prefix` 是正则前缀**：`n0-0:2:n0` 匹配 `to_host ~ 'n0.+'`；写成单字母 `x` 表示匹配所有 `x` 开头的 host。写错会导致组 slot 领不到 task。
 - **历史空串 `to_host` / `to_slot`**：平台已用 `NULLIF` 把它们当作"未指定"处理，不会再永久卡在 `-1`；新 task 也不会再写入空串。

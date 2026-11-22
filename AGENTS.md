@@ -22,6 +22,9 @@
 | 从零写一个 app.yaml | [`docs/reference/app-yaml.md`](./docs/reference/app-yaml.md)、[`examples/hello-scalebox`](./examples/hello-scalebox/) |
 | 查 CLI 命令与 flags | [`docs/reference/cli.md`](./docs/reference/cli.md) |
 | 模块怎么跑起来（挂载/注入/路由） | [`docs/reference/module.md`](./docs/reference/module.md) |
+| slot 运行态 / 等待原因 / 心跳 / 空闲预算 | [`docs/reference/slot-runtime.md`](./docs/reference/slot-runtime.md)、[`20-diagnosis.md`](./docs/agents/20-diagnosis.md) |
+| 在 WebUI 里查 App 数据 / 写只读 SQL 视图 | [`docs/reference/data-view.md`](./docs/reference/data-view.md)、[`WebUI 指南`](./docs/cn/source/application/7_webui.md) |
+| 跨集群 queue 查看/清空 | [`docs/reference/cli.md`](./docs/reference/cli.md) 的 `scalebox queue`、WebUI Coordination → Queues |
 | task header / 信号量 / 变量 / 环境变量 / RPC | [`docs/reference/`](./docs/reference/)（`task-headers.md`、`semaphore-variable.md`、`env-vars.md`、`rpc.md`） |
 | 写模块脚本、接口文件（sink/task-exec） | [`features/agent-interface-files/README.md`](./features/agent-interface-files/README.md) |
 | 任务回流 / `_` header 传播 | [`features/headers-propagation/README.md`](./features/headers-propagation/README.md) |
@@ -46,7 +49,7 @@
 8. vtask-head 负责释放 gate；vtask-tail 不要二次归还（INV-13/14）。
 9. **两套信号量 API 不要混用**（INV-11）。
 10. 模块容器优先用 `code_path` 挂到 `/app/bin`；容器路径有白名单（INV-17）。
-11. host 必须与模块同 cluster 且 `status=ON`：非 ON 的 host 不启动 slot、不派发任务；host 下线后运行中的 slot 靠空闲退出回 READY（`always_running` 例外，INV-16）。
+11. host 必须与模块同 cluster 且 `status=ON`：非 ON 的 host 不启动 slot、不派发任务。host OFF 时 controld 下发 `slot_action=stop`，并级联复位该 host 上的活动 slot（预分配→READY，动态→OFF）；空闲退出只是 agent 不可达时的兜底。`DRAINING` + `skip_draining_host=yes` 同样 stop（INV-16/21）。
 
 ## 常用命令
 
@@ -72,12 +75,17 @@ scalebox app delete --app-id N              # 删 app（不自动停本地容器
 它只读、不执行 shell；`AGENTS.md` 仍是静态规则的入口。客户端配置见
 `docs/cn/source/application/9_ai_assisted_development.md`。
 
+> `list_slots` 只返回生命周期、心跳与主机信息，不返回 `runtime_state` / `wait_reason` / 空闲预算；
+> 这些用 WebUI `App → Slots` 或 `GET /api/v1/slots?include_runtime=true`，见
+> [`docs/reference/slot-runtime.md`](./docs/reference/slot-runtime.md)。
+
 ## 生成物
 
 `docs/reference/` 分两类：
 
 - **生成物**（`cli.md`、`app-yaml.md`、`exit-codes.md`、`rpc.md`、`env-vars.md`）：由 go-scalebox 的
   `scripts/gen-reference/` 生成，**不要手改**；源码变化后重新生成并提交 diff。
-- **手写参考**（`task-headers.md`、`module.md`、`semaphore-variable.md`）：结构以源码为准，修改时对照源码。
+- **手写参考**（`task-headers.md`、`module.md`、`semaphore-variable.md`、`slot-runtime.md`、`data-view.md`）：
+  结构以源码为准，修改时对照源码。
 
 语义说明写在本页、`docs/agents/` 或 `features/`，不要写进生成器。

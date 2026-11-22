@@ -14,7 +14,7 @@
 - 环境变量为空时用缺省脚本；相对路径自动加 `/app/bin/` 前缀。
 - `/app/bin/` 下不存在可执行文件时，回退查找 `/app/share/bin/`。
 - `task_max_seconds > 0` 时，四个脚本都会用 `timeout Ns` 包裹。
-- `slot_options: reserved_on_exit` 可在 slot 退出后保留容器，便于排错；`max_idle_polls` 控制空闲轮询次数。
+- `slot_options: reserved_on_exit` 可在 slot 退出后保留容器，便于排错；`max_idle_polls` 控制**最后一次非空 task 批次之后**的空闲轮询次数，有 task 到达会重置；非正值回落 100；`always_running` 豁免空闲退出。
 
 ## 行为与不变式
 

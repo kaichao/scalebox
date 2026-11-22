@@ -11,6 +11,9 @@
 | 任务 | Task | 模块的一次执行：`body` + headers + `status_code` | `10-invariants.md` INV-04/06 |
 | 节点 | Host | 执行计算的物理节点；须 `status=ON`（同 cluster）且 ssh 可达；`DRAINING` 为排空状态：skip 模块停领并退出，其他模块继续 | `10-invariants.md` INV-16 / INV-21 |
 | 运行槽 | Slot | 节点上与某模块对应的资源切片；本 cluster `ON`/`DRAINING` host 上的 READY slot 会被启动（DRAINING 上按 `skip_draining_host` 过滤），容器在其内循环领任务，空闲退出回 READY | `00-model.md` §1 |
+| 运行态 | runtime state | `ON` 期间的细分状态：`RUNNING` / `ASSIGNED` / `WAITING` / `BLOCKED` / `STALE` / `UNKNOWN`；不是生命周期状态 | `reference/slot-runtime.md` |
+| 等待原因 | `wait_reason` | `WAITING/BLOCKED` 的原因：无任务、vtask 流控、节点进度、去重、不可调度、派发错误 | `reference/slot-runtime.md` |
+| 空闲预算 | `max_idle_polls` / `idle_polls_remaining` | 最后一次非空 task 批次后的空闲轮询预算；task 会重置；`always_running` 豁免 | `reference/slot-runtime.md`、INV-25 |
 | 集群 | Cluster | Host 的逻辑分组（单节点/静态/动态/内联） | `application/1_core_concepts`（Sphinx） |
 | 虚拟任务 | VTask | 跨模块的 Task 集合，用于批/组级流控与资源绑定 | `10-invariants.md` INV-09…14 |
 
@@ -22,7 +25,9 @@
 | 启动器 | `actuator` | 在节点上启动 slot（SSH 或外部调度器） |
 | 数据库 | `database` | PostgreSQL，存 app/module/slot/task/vtask 元数据 |
 | 节点代理 | `agent` | 领任务、起容器、收集结果、写回流 |
-| Web 界面 | `webui` | 浏览器操作入口；生成 `app-schema.json` 的宿主 |
+| Web 界面 | `webui` | 浏览器操作入口；生成 `app-schema.json` 的宿主；含 App Slots、Data View、Queue 查看 |
+| 数据视图 | Data View | WebUI 只读 SQL 模板 + App 绑定；表格或应用定制 3D/2D 视图 | `reference/data-view.md` |
+| 跨集群队列 | `queue` | 跨物理集群的管理面消息队列；不是 wait-queue，也不是平台内部任务队列 | CLI `scalebox queue`、WebUI Coordination → Queues |
 | 集群管理应用 | `cluster-admin` | 与 HPC 调度系统交互的资源申请应用（系统级 app） |
 | 主路由 | `main_router` | 应用内的控制面模块：执行并行逻辑、读写应用状态、分发任务、组织模块协作；不是平台控制面（详见 `application/1_core_concepts`） |
 | 主路由多实例 | `router_index` | 主路由模块设 `task_dist_mode: SLOT-BOUND` + 多个 slot，来源模块按 `router_index` 把回流钉到指定实例 | `features/router-multi-instance` |
@@ -34,6 +39,7 @@
 |---|---|---|---|
 | 任务体 | `body` | 任务输入，从 stdin 传入；JSON 或无空白字符串 | `features/agent-interface-files` |
 | 任务头 | task header | 随任务传播的键值元数据；经环境变量注入 | `reference/task-headers.md` |
+| 父任务 | `from_task` | agent 在 `sink-tasks.txt` 投递时写入的直接父 task id；不随 `_` 传播，按 header 逐跳反查 | `reference/task-headers.md` |
 | 回流 | `sink-tasks.txt` | 模块成功后写的下游任务清单；无文件即无下游 | `features/headers-propagation` |
 | 任务身份 | `uniq_task` | `(mod_id, from_mod, to_host, vtask, body)`；重复投递给 112 | `features/task-identity` |
 | 冲突处理 | `conflict_action` | 重复投递策略：`OVERWRITE` / `IGNORE`；一次投递单事务，任意一行冲突整批回滚 | `reference/task-headers.md`、INV-07 |

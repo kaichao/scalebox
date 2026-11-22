@@ -138,6 +138,11 @@ MCP server 只读，不创建应用、不投递任务、不执行 shell。它提
 `AGENTS.md` 仍负责静态项目约定，两者互补。MCP server 使用当前 CLI 的集群配置和环境文件；
 在应用目录启动时会读取该目录的 `scalebox.env`，也可用全局 `--env-file` 指定。
 
+> `list_slots` 返回生命周期状态、心跳时间与主机信息，**不返回** `runtime_state` / `wait_reason` /
+> 空闲预算。需要判断 slot 是 `WAITING`、`BLOCKED` 还是 `STALE` 时，用 WebUI
+> `App → Slots`，或 REST `GET /api/v1/slots?include_runtime=true`；详见
+> [`reference/slot-runtime.md`](https://github.com/kaichao/scalebox/blob/dev/docs/reference/slot-runtime.md)。
+
 ### 9.3.4 可选权限配置
 
 在应用仓的 `.claude/settings.local.json` 中放行常用命令，可以减少逐条确认：
@@ -165,6 +170,9 @@ AI 在应用仓工作时，按任务查以下资料：
 | 建立平台整体模型 | [AGENTS.md](https://github.com/kaichao/scalebox/blob/dev/AGENTS.md)、[00-model.md](https://github.com/kaichao/scalebox/blob/dev/docs/agents/00-model.md) |
 | 确认平台红线与已知坑 | [10-invariants.md](https://github.com/kaichao/scalebox/blob/dev/docs/agents/10-invariants.md) |
 | 任务卡住或失败 | [20-diagnosis.md](https://github.com/kaichao/scalebox/blob/dev/docs/agents/20-diagnosis.md) |
+| slot 运行态 / 等待原因 / 心跳 / 空闲预算 | [reference/slot-runtime.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/slot-runtime.md) |
+| 在 WebUI 查 App 数据 / 写只读 SQL 视图 | [reference/data-view.md](https://github.com/kaichao/scalebox/blob/dev/docs/reference/data-view.md)、[WebUI 指南](7_webui.md) |
+| 跨集群 queue 查看/清空 | [CLI 参考](https://github.com/kaichao/scalebox/blob/dev/docs/reference/cli.md) 的 `scalebox queue`、WebUI Coordination → Queues |
 | 建 app、加模块、配置流控、VTask、多节点 | [recipes/](https://github.com/kaichao/scalebox/blob/dev/docs/agents/recipes/README.md) |
 | 查 CLI、字段、header、信号量 | [docs/reference/](https://github.com/kaichao/scalebox/blob/dev/docs/reference/) |
 | 找可运行的最小特性与测试 | [features/](https://github.com/kaichao/scalebox/blob/dev/features/README.md) |

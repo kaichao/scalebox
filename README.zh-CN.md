@@ -14,7 +14,7 @@ Scalebox 是一种云原生的流式计算引擎，可在分布式、异构计�
 
 - **本地计算优化**：以节点本地存储为中心，通过"算子级空间展开 + 本地存储驻留 + 显式数据流编排"，将节点间通信前移到节点内部完成，显著降低对网络带宽和外部存储的依赖。
 
-- **WebUI 管理界面**：REST 网关（:8088），76 个端点覆盖全部管理功能。SPA 前端内嵌单文件部署，提供 Dashboard 统计大盘、App 卡片网格、DAG 拓扑图、Task/VTask 管理、信号量/变量层级树。
+- **WebUI 管理界面**：REST 网关（:8088），109 个端点覆盖全部管理功能。SPA 前端内嵌单文件部署，提供 Dashboard 统计大盘、App 卡片网格与可视化编辑器、DAG 拓扑图、Task/VTask 管理、App Slots 运行态、Data View（只读 SQL 模板）、跨集群 Queue 查看、信号量/变量层级树。
 
 - **VS Code 插件**：侧边栏 TreeView（App → Modules/Tasks/VTasks 三级懒加载树）、任务日志 Webview、DAG 力导向图（ECharts）、app.yaml LSP（语法校验/自动补全/悬停提示）。Docker 打包，零本地 Node.js 依赖。
 

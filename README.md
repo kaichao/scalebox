@@ -14,7 +14,7 @@ Scalebox is a cloud-native stream computing engine that runs containerized user 
 
 - **Node-Local Computing Optimization**: centered on node-local storage, using "operator-level spatial expansion + local storage residency + explicit data-flow orchestration" to move inter-node communication into the node itself, significantly reducing dependence on network bandwidth and external storage.
 
-- **WebUI Management Interface**: REST gateway (:8088) with 76 endpoints covering all management functions. SPA frontend embedded as a single-file deployment, providing Dashboard statistics, App card grid, DAG topology, Task/VTask management, and semaphore/variable hierarchy trees.
+- **WebUI Management Interface**: REST gateway (:8088) with 109 endpoints covering all management functions. SPA frontend embedded as a single-file deployment, providing Dashboard statistics, App card grid and visual app editor, DAG topology, Task/VTask management, App Slots runtime state, Data View (read-only SQL templates), cross-cluster Queue viewing, and semaphore/variable hierarchy trees.
 
 - **VS Code Extension**: sidebar TreeView (three-level lazy-loading tree of App → Modules/Tasks/VTasks), task log Webview, DAG force-directed graph (ECharts), app.yaml LSP (syntax validation/autocompletion/hover hints). Packaged with Docker, zero local Node.js dependencies.
 

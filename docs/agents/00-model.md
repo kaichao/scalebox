@@ -11,8 +11,8 @@
 | 层 | 是什么 | 关键事实 |
 |---|---|---|
 | Cluster | 计算资源的逻辑分组 | 单节点 / 静态 / 动态（Slurm）/ 内联；跨集群靠 `t_cluster` 全网格复制 + gRPC 代理 |
-| Host | 物理节点 | 必须 `status=ON`（同 cluster）**且 ssh 可达**；非 ON 时不启动其 slot、不派发任务；`slots` 按 hostname 短名匹配 |
-| Slot | 节点上与某 Module 对应的资源切片 | 由 actuator 按 `slots` 正则展开后创建；仅本 cluster ON host 上的 READY slot 会被启动；容器在 slot 里长期存在、循环领任务，空闲退出后回 READY |
+| Host | 物理节点 | 必须 `status=ON`（同 cluster）**且 ssh 可达**；非 ON 时不启动其 slot、不派发任务；host OFF 时 controld 下发 `slot_action=stop` 并级联复位活动 slot；`slots` 按 hostname 短名匹配 |
+| Slot | 节点上与某 Module 对应的资源切片 | 由 actuator 按 `slots` 正则展开后创建；仅本 cluster ON host 上的 READY slot 会被启动；容器在 slot 里长期存在、循环领任务。生命周期看 `t_slot.status`，ON 期间的运行态（RUNNING/ASSIGNED/WAITING/BLOCKED/STALE）看 `t_slot_runtime`；空闲预算是**最后一批 task 之后**的预算，task 会重置 |
 | Module | 容器化算法单元 | app 创建时快照镜像/参数/slot 展开结果；容器内跑 `run.sh` |
 | Task | 一次执行 | `body`（stdin）+ headers（环境变量）+ `status_code`；无状态、可重跑 |
 
@@ -44,7 +44,8 @@ task add（入口，body 走 stdin，可带 -H header）
 | 控制面 | `controld` | gRPC 服务：app/module/slot/task/vtask 的增删查与调度决策 |
 | 控制面 | `actuator` | 在节点上启动 slot（SSH / 外部调度器） |
 | 控制面 | `database` | PostgreSQL：`t_app`、`t_module`、`t_slot`、`t_task`、`t_task_exec` 等 |
-| 控制面 | `webui` / `cluster-admin` | Web 接口；与 HPC 调度器交互的资源申请应用 |
+| 控制面 | `webui` | Web 接口：App/Slots 运行态、Data View、Queue 查看、统计与配置；REST 网关同时服务 VS Code 插件 |
+| 控制面 | `cluster-admin` | 与 HPC 调度器交互的资源申请应用（系统级 app） |
 | 数据面 | `agent` | 节点代理：领任务、起容器、收集 stdout/stderr 与退出码、写回流 |
 | 数据面 | Slot / 容器 | 实际执行单元；只有 `/tmp`、`/dev/shm`、`/cluster_data_root`、`/local_data_root`、`/app/bin` 可见 |
 | 数据面 | 共享存储 | 可选；放 `data_root` 之下的工作目录，容器间通过挂载可见 |

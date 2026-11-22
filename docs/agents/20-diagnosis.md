@@ -12,7 +12,14 @@ scalebox slot status --module-id M        # 该模块 slot 汇总
 scalebox slot list --module-id M          # slot 明细（host/seq/status）
 scalebox task list --app-id N             # 任务与 status_code
 scalebox task show T                      # 单任务详情（位置参数，含 stdout/stderr）
+
+# 运行态（CLI 的 slot list/status 只有生命周期；runtime 用 WebUI 或 REST）
+curl -s "${WEBUI:-http://localhost:8088}/api/v1/slots?include_runtime=true&app_id=N" \
+  | python3 -m json.tool | less
 ```
+
+WebUI 路径：`Apps → <app> → Slots`。状态单元格显示 `RUN/HB`，Details 里有 `WAITING/BLOCKED/STALE`、
+`wait_reason`、心跳年龄和空闲预算；SlotLog 里有生命周期/心跳事件。
 
 数据库兜底（CLI 版本过旧或需要精确查询时）：
 
@@ -61,11 +68,35 @@ scalebox host list                         # 看 Hostname 与 Status
 - `HOST-BOUND` 任务的 `headers.to_host` 为空 → 检查 `pod_id`：目标与来源模块都必须 `task_dist_mode=HOST-BOUND`、`pod_id` 非空且相同，且调用方没有显式 `to_host`/`to_ip`（INV-22）；显式路由可以绕过 pod_id。
 - 检查是否有空闲 slot 被其他 app 占用（`scalebox slot status --module-id M`）。
 
+### slot 显示 ON，但任务不动
+
+先看运行态，不要只看生命周期：
+
+| 运行态 | 含义 | 下一步 |
+|---|---|---|
+| `RUNNING` | 正在执行 task | 看 `task_elapsed_sec` / `t_task_exec`；长任务不是卡住 |
+| `ASSIGNED` | task 已派发、agent 未开始 | 看 agent 日志、`ACTION_SETUP` / `ACTION_CHECK` |
+| `WAITING` | 正常等待 | 看 `wait_reason`：`NO_ELIGIBLE_TASK`（没任务）、`FLOW_VTASK`（vtask 额度）、`FLOW_NODE_PROGRESS`（节点进度）、`DEDUP`（去重） |
+| `BLOCKED` | 调度前置不满足 | `NOT_DISPATCHABLE`（slot/module/host 状态或主机匹配）、`DISPATCH_ERROR`（派发错误） |
+| `STALE` | 心跳过期 | 检查 agent 容器/网络；`last_poll_at` 仍在前进但 `last_seen_at` 不前进，通常是心跳 goroutine 问题 |
+| `UNKNOWN` | 无有效运行/等待信息 | 看 `last_poll_at` 是否过期、controld 是否重启过 |
+
+- `wait_reason` 超过 120 秒未更新会回到 `UNKNOWN`；不要拿旧原因判断当前状态。
+- 空闲预算 `idle_polls_remaining / idle_polls_max × poll_interval_sec` 只表示“最后一批 task 后还能空转多久”；
+  有 task 到达会重置，不能据此判断 slot 总寿命。
+- SlotLog（WebUI Details → SlotLog，或 `GET /api/v1/slots/{id}/logs`）按时间倒序显示 `SLOT_START`、
+  `SLOT_IDLE`、`SLOT_ONGOING`、`SLOT_COMPLETE`、`SLOT_CREATE` 等事件；`details["slot exit"]`
+  给出退出原因（`idle timeout`、`host is OFF`、`module status changed` 等）。
+
 ### host 非 ON 后 slot 仍显示 ON
 
-- 平台不会在 host 状态变更时直接改 slot 状态。agent 轮询被门禁拦下、收到空批次，按空闲计数退出（`max_idle_polls`，缺省 100 × 6 秒 ≈ 10 分钟），退出时 `SetSlotTerminated` 把 slot 置 READY（`intial_slot_status` 缺省 READY；动态注册的 slot 为 OFF）。
-- `slot_options: always_running` 的 slot 空闲不退出，会保持 ON；host 恢复 ON 后可继续领任务。
-- 节点断电 / agent 已死：无人上报退出，slot 停在 ON，actuator 不会重启它。恢复节点后手工执行 `scalebox slot set-status --slot-id=<id> --status=OFF`，再 `--status=READY`（ON→READY 不是合法单步转换），或重建 app。
+- host 置 `OFF` 时有两路处理，最终都收敛到 READY/`initial_slot_status`（预分配）或 OFF（动态）：
+  1. **通知 agent 退出**：`SubmitSlotEvent` 返回 `host_status=OFF`、`slot_action=stop`；agent 处理完当前已拉取批次后 `SLOT_COMPLETE` → `SetSlotTerminated`（预分配）或 `DeregisterSlot`（动态）。感知延迟最多一个心跳周期（缺省 60 秒）。
+  2. **controld 级联兜底**：`TerminateSlotsOnHost` 立即把该 host 上 `ON/STARTING/GREEDY` 的 slot 复位：预分配 → READY（或 `initial_slot_status`），动态 → OFF。覆盖 agent 不可达/已死。
+- 两路幂等，不需要等 `max_idle_polls` 耗尽；空闲退出只是旧版本/异常路径的兜底。
+- `DRAINING` 不是 `OFF`：只有 `skip_draining_host=yes` 的模块会收到 `slot_action=stop`；其他模块继续领取，用于消费本地链。
+- `slot_options: always_running` 只豁免空闲退出，**不豁免 host OFF 的 `slot_action=stop`**。
+- 节点断电 / agent 已死：级联会先复位 slot；若 controld 未覆盖该状态（如 `ERROR` / `EXPIRED`），按当前实现仍可能停在 ON，恢复后手工 `slot set-status`（ON→OFF→READY）或重建 app。
 
 ### 任务 RUNNING（-3）很久
 
@@ -106,6 +137,20 @@ scalebox host list                         # 看 Hostname 与 Status
   跳过，连目录存在性都不查），`{"/a":0,"/b":5}` 等价于 `{"/b":5}`。想留"以后
   再填"占位而不生效，写 0 即可；但别指望 0 是"要求剩余 ≥0"的宽规则——它根本不
   进检查。
+
+### 跨集群 queue 积压
+
+`queue` 是跨物理集群的管理面消息队列，不是 wait-queue，也不是平台内部任务队列。
+
+```sh
+scalebox queue ls --cluster <cluster>                 # 队列名、积压数、最早时间
+scalebox queue peek <name> --count 20 --cluster <cluster>   # 不删除，查看队首
+scalebox queue pull <name> --count 20 --cluster <cluster>   # 消费并删除
+```
+
+WebUI：`Coordination → Queues` 可查看、peek、purge；purge 只对 admin 开放。
+积压排查先确认目标集群 `grpc_server` 可达，再检查消费端是否在跑；本地 controld 会代理转发
+`--cluster` 指定的远端操作。
 
 ## 清理现场
 

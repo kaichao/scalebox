@@ -3,6 +3,9 @@ cluster: ${CLUSTER}
 parameters:
   main_router: main-router
 
+# 空闲预算 = max_idle_polls × poll_interval_seconds。本示例各模块为
+# 3600 × 1s ≈ 60min；每次非空 task 批次后重置，只有最后一批 task 之后
+# 持续空闲 60min 才退出。不要把 max_idle_polls 当成 slot 总寿命。
 modules:
   wait-queue:
     base_image: scalebox.net/platform/wait-queue

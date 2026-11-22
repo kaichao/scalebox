@@ -3,6 +3,11 @@
 > 状态：阶段 0 产物（2026-10-17），待补充实战来源后定稿。
 > **历史盘点（2026-10-17）**：文中的中文站文件名与路径为当时状态；现行结构见 `docs/cn/source/index.rst`。
 > 上位方案：`docs/ai-agent-support-plan.md`。本文件用于确定 feature 建设优先级，不替代任何设计文档。
+>
+> **2026-11-22 增量**：Data View、WebUI Queue 管理、slot runtime / 空闲预算、App Overview 改版
+> 已实现；现行入口与参考以 `AGENTS.md`、`docs/reference/slot-runtime.md`、
+> `docs/reference/data-view.md`、`docs/cn/source/application/7_webui.md` 为准。以下旧矩阵保留原貌，
+> 不再逐条更新。
 
 ## 0. 方法与输入
 

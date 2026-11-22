@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `cmd/webui/frontend/src/schema/app-schema.json` (JSON Schema) by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
+<!-- source: go-scalebox@762bb55 (2026-11-22) -->
 
 
 # App YAML 参考
@@ -25,8 +25,8 @@
 |---|---|---|---|---|
 | `initial_status` | `string` | 否 | — | App 初始状态 取值：`RUNNING`, `INITIAL`, `PAUSED` |
 | `main_router` | `string` | 否 | — | 主路由模块名 |
-| `default_idle_polls` | string / number | 否 | — | 所属 module 的缺省的空闲轮询次数 |
-| `default_poll_interval_seconds` | string / number | 否 | — | 所属 module 的缺省轮询间隔（秒），模块未显式配置 `poll_interval_seconds` 时生效；仅正整数有效 |
+| `default_idle_polls` | string / number | 否 | — | 所属 module 未显式配置 max_idle_polls 时的缺省空闲轮询次数；非空 task 批次后重置 |
+| `default_poll_interval_seconds` | string / number | 否 | — | 所属 module 的缺省轮询间隔（秒），模块未显式配置 poll_interval_seconds 时生效；仅正整数有效 |
 | `is_cluster_admin` | `string` | 否 | — | 集群管理员标记 |
 | `default_sleep_count` | string / number | 否 | — | 各模块 sleep_count 的默认值 |
 | `global_directories` | `string` | 否 | — | 全局目录列表，用于所属模块的读写数据量分类统计。（local/global/tmpfs） |
@@ -61,11 +61,11 @@
 | `local_ip_index` | `string` | 否 | — | hostname -I 返回 IP 地址列表，该参数指定列表中的第 n 个 IP 作为本机 IP |
 | `task_max_seconds` | string / number | 否 | — | 每个 task 运行中超时设置的秒数，超时中断返回码 124；全局超时返回 123 |
 | `task_min_seconds` | string / number | 否 | — | 每个 task 运行的最小秒数，连续多次低于此值则判定 slot 为 GREEDY 异常并退出 |
-| `poll_interval_seconds` | string / number | 否 | — | Slot 检查新任务的轮询间隔（秒），缺省 6 秒；app 参数 `default_poll_interval_seconds` 可提供缺省 |
-| `max_idle_polls` | string / number | 否 | — | Slot 在退出前可进行的最大空闲轮询次数，缺省 100（10 分钟） |
+| `poll_interval_seconds` | string / number | 否 | — | Slot 检查新任务的轮询间隔（秒），缺省 6 秒；非正/非法值回落 6；app 参数 default_poll_interval_seconds 可提供缺省 |
+| `max_idle_polls` | string / number | 否 | — | 最后一次非空 task 批次后的空闲轮询上限，缺省 100；非正整数/非法值回落 100；单次轮询间隔由 poll_interval_seconds 决定；slot_options 含 always_running 时忽略 |
 | `max_sink_tasks` | string / number | 否 | — | 单次 AddTaskList 投递的最大行数；0 表示整份 sink-tasks.txt 一次投递（router 缺省 0，其他模块缺省 100） |
-| `dir_quota_gb` | `string` | 否 | — | 目录容量配额限制（GB）。格式：'{"/dir-1":10,"/dir-2":100}'；**值为 0 的项视为不限制**，解析时丢弃 |
-| `free_space_gb` | `string` | 否 | — | 目录所在磁盘需要保留的最小空间（GB）。格式：'{"/dir-3":10,"/dir-4":100}'；**值为 0 的项视为不限制**，解析时丢弃 |
+| `dir_quota_gb` | `string` | 否 | — | 目录容量配额限制（GB）。格式：'{"/dir-1":10,"/dir-2":100}' |
+| `free_space_gb` | `string` | 否 | — | 目录所在磁盘需要保留的最小空间（GB）。格式：'{"/dir-3":10,"/dir-4":100}' |
 | `heartbeat_seconds` | string / number | 否 | — | 心跳间隔（秒），缺省 60；非正整数则禁用心跳 |
 | `output_text_size` | string / number | 否 | — | task 执行记录中大文本字段（stdout/stderr/auxout）的最大字节数，缺省 65535 |
 | `text_trunc_mode` | `string` | 否 | — | 文本截断模式：HEAD（头截断，保留末尾）/ TAIL，缺省 HEAD 取值：`HEAD`, `TAIL` |
@@ -92,8 +92,8 @@
 | `slot_max_retries` | string / number | 否 | — | slot 状态从 'TIMED-OUT' 设置为 'READY' 的重试次数 |
 | `slot_timeout_minutes` | string / number | 否 | — | slot 未正常启动一直处于 'STARTING' 状态的超时（分钟），到期转为 'TIMEOUT'，缺省 15 分钟 |
 | `task_global_timeout_scale` | string / number | 否 | — | task 全局超时恢复：相对 task_max_seconds 的倍数，缺省 2.0；恢复后状态码 123 |
-| `router_index` | string / number | 否 | — | 多主路由实例的应用中，指定当前 module 的回流发给第 n 个主路由实例（`t_slot.seq`）。缺省 0；主路由模块需设 `task_dist_mode: SLOT-BOUND`，详见 `features/router-multi-instance` |
-| `pod_id` | `string` | 否 | — | 标识本 module 属于 pod 管理。目标与来源模块均为 `task_dist_mode=HOST-BOUND` 且 `pod_id` 相同、调用方未显式指定 `to_host`/`to_ip` 时，下游 task 自动路由回来源节点；显式路由优先。GROUP-BOUND vtask 中 `pod_id` 是 core→core 的兜底（优先继承 `_vtask_host`；head→core 由脚本显式 `to_host`） |
+| `router_index` | string / number | 否 | — | 多主路由实例的应用中，指定当前 module 发给第 n 个主路由。缺省 0 |
+| `pod_id` | `string` | 否 | — | 标识本 module 属于 pod 管理，若消息来源的 pod 也有相同的 pod_id，则所有 task 标识为采用本地计算 |
 | `task_dedup_cache_ttl_minutes` | string / number | 否 | — | 任务去重缓存的生存时间（分钟），缺省 30 分钟；通常需大于 task_max_seconds |
 | `task_batch_size` | string / number | 否 | — | 批量获取任务的数量，slot 单批次读取的最大消息数，缺省 1 |
 | `visible` | `string` | 否 | — | 在流水线逻辑图中是否可见，缺省 'yes' 取值：`yes`, `no` |

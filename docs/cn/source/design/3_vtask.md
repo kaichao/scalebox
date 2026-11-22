@@ -226,6 +226,7 @@ ON ──drain──> DRAINING ──排空完成──> OFF ──换 IP / 主�
 - 配置 `parameters.skip_draining_host: 'yes'` 的模块在该 host 上停止领取，agent 收到 `slot_action=stop` 后退出，slot 回到 `READY`，且 `GetSlotList` 不再启动它；
 - 未配置该参数的模块继续领取，消费组节点本地已有的数据；
 - 排空完成后才置 `OFF` / 换 IP；直接 `OFF` 会切断领取资格，本地链会断掉；
+- host 置 `OFF` 时不再等空闲预算：`SubmitSlotEvent` 返回 `slot_action=stop`，agent 处理完当前已拉取批次后退出（预分配 slot → READY，动态 slot → OFF）；controld 同时级联复位该 host 上 `ON/STARTING/GREEDY` 的 slot，作为 agent 不可达时的兜底。`DRAINING` 不是 `OFF`，未配 `skip_draining_host` 的模块仍继续领取；
 - 运维命令：`scalebox host drain <hostname>` / `scalebox host undrain <hostname>`（或 `host set-status`）。
 
 ### 3.3.4 vtask-core 级联

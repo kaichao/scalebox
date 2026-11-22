@@ -1,6 +1,10 @@
 # Scalebox AI Agent 编程支持方案
 
 > **历史记录（2026-10-17）**：本文为当时的方案草稿，文中路径与目录为当时状态；现行中文站结构见 `docs/cn/source/index.rst`。
+>
+> **2026-11-22 现行入口**：AI agent 先读 `AGENTS.md`；平台状态/参考以
+> `docs/reference/`（含 `slot-runtime.md`、`data-view.md`）和 `docs/agents/` 为准。
+> 本文保留方案演进记录，不再作为操作手册。
 
 | 项 | 内容 |
 |---|---|

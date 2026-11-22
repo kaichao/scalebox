@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from Go 源码中的 `os.Getenv` / `os.LookupEnv` / `getEnvString` 读取点 by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
+<!-- source: go-scalebox@762bb55 (2026-11-22) -->
 
 
 # 环境变量参考（平台读取点）
@@ -16,25 +16,25 @@
 | `ACTION_RUN` |  | `cmd/agent/actions.go:116` |
 | `ACTION_SETUP` |  | `cmd/agent/actions.go:139` |
 | `ACTION_TEARDOWN` |  | `cmd/agent/actions.go:161` |
-| `APP_ID` |  | `cmd/agent/init.go:137` |
-| `AUTH_TOKEN` |  | `cmd/agent/init.go:184` |
-| `CONFLICT_ACTION` |  | `cmd/agent/sink_tasks.go:120` |
-| `DEBUG_SIGBUS` |  | `cmd/agent/main.go:131` |
-| `GRPC_SERVER` |  | `cmd/agent/init.go:166` |
-| `IS_SINGULARITY` |  | `cmd/agent/init.go:258` |
+| `APP_ID` |  | `cmd/agent/init.go:136` |
+| `AUTH_TOKEN` |  | `cmd/agent/init.go:183` |
+| `CONFLICT_ACTION` |  | `cmd/agent/sink_tasks.go:153` |
+| `DEBUG_SIGBUS` |  | `cmd/agent/main.go:134` |
+| `GRPC_SERVER` |  | `cmd/agent/init.go:165` |
+| `IS_SINGULARITY` |  | `cmd/agent/init.go:254` |
 | `LOCAL_IP` |  | `cmd/agent/iobytes.go:186`, `cmd/agent/config/config.go:45` |
-| `LOCAL_SHMDIR` |  | `cmd/agent/init.go:310` |
-| `LOCAL_TMPDIR` |  | `cmd/agent/init.go:284` |
+| `LOCAL_SHMDIR` |  | `cmd/agent/init.go:306` |
+| `LOCAL_TMPDIR` |  | `cmd/agent/init.go:280` |
 | `LOG_FORMAT` | `json` | `cmd/agent/config/config.go:57` |
 | `LOG_LEVEL` | `info` | `cmd/agent/config/config.go:56` |
-| `MODULE_ID` |  | `cmd/agent/init.go:129` |
-| `NUM_IDLE_POLLS` |  | `cmd/agent/run.go:49`, `cmd/agent/run.go:50`, `cmd/agent/run.go:149` |
-| `PLAT_MODULE_NAME` |  | `cmd/agent/init.go:146`, `cmd/agent/init.go:366` |
+| `MODULE_ID` |  | `cmd/agent/init.go:128` |
+| `NUM_IDLE_POLLS` |  | `cmd/agent/run.go:148`, `cmd/agent/run.go:235` |
+| `PLAT_MODULE_NAME` |  | `cmd/agent/init.go:145`, `cmd/agent/init.go:362` |
 | `SINGULARITY_IMAGE` |  | `cmd/agent/config/config.go:62` |
-| `SINK_MODULE` |  | `cmd/agent/sink_tasks.go:66`, `cmd/agent/init.go:147` |
-| `SLOT_ID` |  | `cmd/agent/run.go:114`, `cmd/agent/config/config.go:44` |
-| `TMPDIR_GROUP` |  | `cmd/agent/init.go:335` |
-| `TMPFS_WORKDIR` |  | `cmd/agent/init.go:361` |
+| `SINK_MODULE` |  | `cmd/agent/sink_tasks.go:99`, `cmd/agent/init.go:146` |
+| `SLOT_ID` |  | `cmd/agent/run.go:113`, `cmd/agent/config/config.go:44` |
+| `TMPDIR_GROUP` |  | `cmd/agent/init.go:331` |
+| `TMPFS_WORKDIR` |  | `cmd/agent/init.go:357` |
 | `WORK_DIR` | `/work` | `cmd/agent/config/config.go:60` |
 
 ## controld
@@ -44,6 +44,12 @@
 | `CLEANUP_INTERVAL_MINUTES` |  | `cmd/controld/task/cache_attrset.go:67` |
 | `CROSS_SERVER_MAX_RETRY_ATTEMPTS` |  | `cmd/controld/task/add_remote.go:18` |
 | `DATABASE_URL` |  | `cmd/controld/config/config.go:46` |
+| `DATA_VIEW_CELL_MAX_BYTES` | `8192` | `cmd/controld/grpc/data_view_service.go:71` |
+| `DATA_VIEW_MAX_CONCURRENT` | `2` | `cmd/controld/grpc/data_view_service.go:73` |
+| `DATA_VIEW_MAX_RESULT_BYTES` | `2097152` | `cmd/controld/grpc/data_view_service.go:70` |
+| `DATA_VIEW_PG_MAX_OPEN` | `2` | `cmd/controld/grpc/data_view_service.go:54` |
+| `DATA_VIEW_STATEMENT_TIMEOUT_MS` | `30000` | `cmd/controld/grpc/data_view_service.go:72` |
+| `DATA_VIEW_TABLE_DENYLIST` |  | `cmd/controld/grpc/data_view_service.go:92` |
 | `DEFAULT_EXPIRATION_MINUTES` |  | `cmd/controld/task/cache_attrset.go:62` |
 | `DEFAULT_SLOT_STATUS` | `READY` | `cmd/controld/config/config.go:57` |
 | `EVENT_MODE` |  | `cmd/controld/grpc/event.go:19` |
@@ -57,9 +63,9 @@
 | `MY_IMAGE_NAME` |  | `cmd/controld/config/config.go:52` |
 | `MY_SLOT_REGEX` |  | `cmd/controld/config/config.go:54` |
 | `PG_BATCH_SIZE` |  | `cmd/controld/grpc/event.go:121` |
-| `PORT` |  | `cmd/controld/main.go:145` |
+| `PORT` |  | `cmd/controld/main.go:146` |
 | `SEMAPHORE_AUTO_CREATE` |  | `cmd/controld/grpc/coordination_service.go:388` |
-| `TASK_POOL_SIZE` |  | `cmd/controld/task/task.go:75` |
+| `TASK_POOL_SIZE` |  | `cmd/controld/task/task.go:76` |
 
 ## actuator
 
@@ -77,7 +83,7 @@
 
 | 变量 | 默认值 | 读取位置 |
 |---|---|---|
-| `AUTH_TOKEN` |  | `cmd/webui/client/client.go:126` |
+| `AUTH_TOKEN` |  | `cmd/webui/client/client.go:130` |
 | `WEBUI_PORT` |  | `cmd/webui/main.go:44` |
 
 ## cli

@@ -22,6 +22,7 @@
 | [env-lifecycle](./env-lifecycle/) | app 快照 / 未定义变量 / non-tty stdin | `test.sh` ✓ |
 | [group-node-drain](./group-node-drain/) | 独立组节点 / host `DRAINING` / `skip_draining_host` | `test.sh` ✓（需 inline 多节点） |
 | [headers-propagation](./headers-propagation/) | `_` 前缀传播 / `_vtask_attr_*` | `test.sh` ✓ |
+| [idle-exit](./idle-exit/) | `max_idle_polls` 重置 / 空闲退出 / `always_running` / 0 值回落 | `test.sh` ✓ |
 | [node-progress-gap](./node-progress-gap/) | HOST-BOUND 节点进度差 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
 | [pod](./pod/) | `pod_id` 节点本地计算 | `test.sh` ✓（需 inline 多节点；bio 实跑 PASS） |
 | [retry-test](./retry-test/) | `retry_rules` 退出码重试 | `test.sh` ✓（慢测：pgcron 5 分钟周期） |

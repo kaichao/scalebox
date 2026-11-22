@@ -69,7 +69,7 @@ Scalebox以容器化封装算法并提供可编程控制，支持在分布式、
 VTask 是并行逻辑及其状态的粗粒度封装。详见 {doc}`VTask 虚拟任务 <../design/3_vtask>`。
 
 ### 1.2.7 多界面支持
-- **WebUI**：REST 网关（:8088），SPA 前端，Dashboard / App / DAG / Task / VTask 全功能管理
+- **WebUI**：REST 网关（:8088），SPA 前端，Dashboard / App / DAG / Task / VTask / App Slots 运行态 / Data View / Queue 全功能管理
 - **VS Code 插件**：侧边栏 TreeView、任务日志 Webview、DAG 拓扑图、app.yaml 语法支持
 - **CLI**：scalebox 主命令下 18 个命令域（含 validate），共 24 个叶子命令覆盖全部操作，支持脚本化和 CI/CD 集成
 

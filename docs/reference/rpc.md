@@ -1,5 +1,5 @@
 <!-- AUTO-GENERATED from `proto/*.proto` by `make docs-gen` (go-scalebox); DO NOT EDIT -->
-<!-- source: go-scalebox@5d194d7 (2026-10-30) -->
+<!-- source: go-scalebox@762bb55 (2026-11-22) -->
 
 
 # gRPC / Proto 参考
@@ -11,12 +11,13 @@
 
 | 文件 | package | 服务 | 消息 | 枚举 |
 |---|---|---|---|---|
-| `app.proto` | `scalebox` | 1 | 82 | 0 |
+| `app.proto` | `scalebox` | 1 | 89 | 0 |
 | `control.proto` | `scalebox` | 1 | 12 | 3 |
 | `coordination.proto` | `scalebox` | 1 | 40 | 0 |
-| `dashboard.proto` | `scalebox` | 1 | 12 | 0 |
+| `dashboard.proto` | `scalebox` | 1 | 15 | 0 |
+| `data_view.proto` | `scalebox` | 1 | 20 | 0 |
 | `error_detail.proto` | `scalebox` | 0 | 1 | 0 |
-| `infra.proto` | `scalebox` | 1 | 44 | 0 |
+| `infra.proto` | `scalebox` | 1 | 48 | 0 |
 | `user.proto` | `scalebox` | 1 | 14 | 0 |
 
 ## app.proto
@@ -29,6 +30,7 @@
 |---|---|---|---|
 | `ListApps` | `ListAppsRequest` | `ListAppsResponse` |  |
 | `GetApp` | `GetAppRequest` | `GetAppResponse` |  |
+| `UpdateApp` | `UpdateAppRequest` | `google.protobuf.Empty` |  |
 | `CreateApp` | `CreateAppRequest` | `CreateAppResponse` |  |
 | `DeleteApp` | `DeleteAppRequest` | `google.protobuf.Empty` |  |
 | `SetAppStatus` | `SetAppStatusRequest` | `google.protobuf.Empty` |  |
@@ -36,9 +38,11 @@
 | `AppAddSlots` | `AppAddSlotsRequest` | `AppAddSlotsResponse` |  |
 | `GetAppRouter` | `GetAppRouterRequest` | `GetAppRouterResponse` |  |
 | `GetAppDAG` | `GetAppDAGRequest` | `GetAppDAGResponse` |  |
+| `SaveAppDagLayout` | `SaveAppDagLayoutRequest` | `google.protobuf.Empty` |  |
 | `ListModules` | `ListModulesRequest` | `ListModulesResponse` |  |
 | `GetModule` | `GetModuleRequest` | `GetModuleResponse` |  |
 | `ListTasks` | `ListTasksRequest` | `ListTasksResponse` |  |
+| `ListErrorTasks` | `ListErrorTasksRequest` | `ListErrorTasksResponse` |  |
 | `GetTask` | `GetTaskRequest` | `GetTaskResponse` |  |
 | `GetTaskHeader` | `GetTaskHeaderRequest` | `GetTaskHeaderResponse` |  |
 | `SetTaskHeader` | `SetTaskHeaderRequest` | `google.protobuf.Empty` |  |
@@ -66,6 +70,7 @@
 | `ListVtaskSharedBodyEntries` | `ListVtaskSharedBodyEntriesRequest` | `ListVtaskSharedBodyEntriesResponse` |  |
 | `RetryVtaskSharedBodyTask` | `RetryVtaskSharedBodyTaskRequest` | `RetryVtaskSharedBodyTaskResponse` |  |
 | `LookupVtaskIdBySharedBody` | `LookupVtaskIdBySharedBodyRequest` | `LookupVtaskIdBySharedBodyResponse` |  |
+| `DeleteVtaskSharedBodyTasks` | `DeleteVtaskSharedBodyTasksRequest` | `DeleteVtaskSharedBodyTasksResponse` |  |
 
 ### 消息
 
@@ -98,6 +103,28 @@
 | `ListTasksResponse.Item` | `status_code` | `string` | 11 |  |
 | `ListTasksResponse.Item` | `to_host` | `string` | 12 |  |
 | `ListTasksResponse.Item` | `vtask_id` | `int64` | 13 |  |
+| `ListErrorTasksRequest` | `app_id` | `int32` | 1 |  |
+| `ListErrorTasksRequest` | `module_id` | `int32` | 2 |  |
+| `ListErrorTasksRequest` | `kind` | `string` | 3 |  |
+| `ListErrorTasksRequest` | `from_time` | `google.protobuf.Timestamp` | 4 |  |
+| `ListErrorTasksRequest` | `to_time` | `google.protobuf.Timestamp` | 5 |  |
+| `ListErrorTasksRequest` | `pagination` | `Pagination` | 10 |  |
+| `ListErrorTasksResponse` | `items` | `Item (repeated)` | 1 |  |
+| `ListErrorTasksResponse` | `page_info` | `PageInfo` | 2 |  |
+| `ListErrorTasksResponse.Item` | `id` | `int64` | 1 |  |
+| `ListErrorTasksResponse.Item` | `module_id` | `int32` | 2 |  |
+| `ListErrorTasksResponse.Item` | `module_name` | `string` | 3 |  |
+| `ListErrorTasksResponse.Item` | `status_code` | `string` | 4 |  |
+| `ListErrorTasksResponse.Item` | `body` | `string` | 5 |  |
+| `ListErrorTasksResponse.Item` | `from_module` | `string` | 6 |  |
+| `ListErrorTasksResponse.Item` | `to_host` | `string` | 7 |  |
+| `ListErrorTasksResponse.Item` | `vtask_id` | `int64` | 8 |  |
+| `ListErrorTasksResponse.Item` | `error_kind` | `string` | 9 |  |
+| `ListErrorTasksResponse.Item` | `failed_exec_count` | `int32` | 10 |  |
+| `ListErrorTasksResponse.Item` | `last_error_at` | `google.protobuf.Timestamp` | 11 |  |
+| `ListErrorTasksResponse.Item` | `last_error_code` | `int32` | 12 |  |
+| `ListErrorTasksResponse.Item` | `created_at` | `google.protobuf.Timestamp` | 13 |  |
+| `ListErrorTasksResponse.Item` | `finished_at` | `google.protobuf.Timestamp` | 14 |  |
 | `GetTaskRequest` | `task_id` | `int64` | 1 |  |
 | `GetTaskRequest` | `omit_exec_logs` | `bool` | 2 |  |
 | `GetTaskResponse` | `id` | `int64` | 1 |  |
@@ -193,6 +220,20 @@
 | `GetAppResponse` | `parameters` | `string` | 6 |  |
 | `GetAppResponse` | `created_at` | `google.protobuf.Timestamp` | 7 |  |
 | `GetAppResponse` | `yaml_text` | `string` | 9 |  |
+| `GetAppResponse` | `version` | `string` | 10 |  |
+| `GetAppResponse` | `label` | `string` | 11 |  |
+| `GetAppResponse` | `type` | `string` | 12 |  |
+| `GetAppResponse` | `comment` | `string` | 13 |  |
+| `GetAppResponse` | `ext` | `string` | 14 |  |
+| `GetAppResponse` | `begin_time` | `google.protobuf.Timestamp` | 15 |  |
+| `GetAppResponse` | `end_time` | `google.protobuf.Timestamp` | 16 |  |
+| `UpdateAppRequest` | `app_id` | `int32` | 1 |  |
+| `UpdateAppRequest` | `update_mask` | `google.protobuf.FieldMask` | 2 |  |
+| `UpdateAppRequest` | `name` | `string` | 3 |  |
+| `UpdateAppRequest` | `label` | `string` | 4 |  |
+| `UpdateAppRequest` | `version` | `string` | 5 |  |
+| `UpdateAppRequest` | `comment` | `string` | 6 |  |
+| `UpdateAppRequest` | `parameters` | `string` | 7 |  |
 | `CreateAppRequest` | `yaml_content` | `string` | 1 |  |
 | `CreateAppRequest` | `env_vars` | `map<string, string>` | 2 |  |
 | `CreateAppRequest` | `main_app_id` | `int32` | 3 |  |
@@ -217,6 +258,7 @@
 | `GetAppDAGResponse` | `nodes` | `ModuleNode (repeated)` | 1 |  |
 | `GetAppDAGResponse` | `edges` | `Edge (repeated)` | 2 |  |
 | `GetAppDAGResponse` | `dag_mode` | `string` | 3 |  |
+| `GetAppDAGResponse` | `layout_json` | `string` | 4 |  |
 | `GetAppDAGResponse.ModuleNode` | `name` | `string` | 1 |  |
 | `GetAppDAGResponse.ModuleNode` | `slot_count` | `int32` | 2 |  |
 | `GetAppDAGResponse.ModuleNode` | `slot_regex` | `string` | 3 |  |
@@ -225,6 +267,10 @@
 | `GetAppDAGResponse.ModuleNode` | `cluster` | `string` | 6 |  |
 | `GetAppDAGResponse.Edge` | `from` | `string` | 1 |  |
 | `GetAppDAGResponse.Edge` | `to` | `string` | 2 |  |
+| `SaveAppDagLayoutRequest` | `app_id` | `int32` | 1 |  |
+| `SaveAppDagLayoutRequest` | `dag_mode` | `string` | 2 | physical | logical |
+| `SaveAppDagLayoutRequest` | `layout_json` | `string` | 3 | {"nodes":{"name":{"x":..,"y":..}}} |
+| `SaveAppDagLayoutRequest` | `reset` | `bool` | 4 | true 清除该模式布局 |
 | `ListModulesRequest` | `app_id` | `int32` | 1 |  |
 | `ListModulesResponse` | `items` | `Item (repeated)` | 1 |  |
 | `ListModulesResponse.Item` | `id` | `int32` | 1 |  |
@@ -307,7 +353,7 @@
 | `ListVTaskSubtasksRequest` | `vtask_id` | `int64` | 1 |  |
 | `BindVtaskResourceRequest` | `app_id` | `int32` | 1 |  |
 | `BindVtaskResourceRequest` | `module_name` | `string` | 2 | 可选，不指定时自动查找 vtask_role=head 的模块 |
-| `BindVtaskResourceResponse` | `resource` | `string` | 1 | 绑定的资源标识：hostname（HOST-BOUND vtask）/ 组号（GROUP-BOUND vtask，即 head slot 的 seq，**不是主机**）/ 空（DEFAULT） |
+| `BindVtaskResourceResponse` | `resource` | `string` | 1 | 绑定的资源标识：hostname（HOST-BOUND vtask）/ 组号（GROUP-BOUND vtask，即 head slot 的 seq）/ 空（DEFAULT） |
 | `BindVtaskResourceResponse` | `mode` | `string` | 2 | 实际使用的 task_dist_mode |
 | `UnbindVtaskResourceRequest` | `app_id` | `int32` | 1 |  |
 | `UnbindVtaskResourceRequest` | `vtask_id` | `int64` | 2 | 方式一：通过 vtask ID 自动查找 sema |
@@ -315,7 +361,7 @@
 | `AddVtaskSubtaskRequest` | `app_id` | `int32` | 1 |  |
 | `AddVtaskSubtaskRequest` | `module` | `string` | 2 | 目标模块名 |
 | `AddVtaskSubtaskRequest` | `body` | `string` | 3 | 任务体 |
-| `AddVtaskSubtaskRequest` | `headers` | `map<string, string>` | 4 | 额外 headers；GROUP-BOUND 首跳必须含 `to_host`，`--direct`/RPC 调用还须含 `_vtask_group`、`_vtask_head_module`、`_vtask_id` |
+| `AddVtaskSubtaskRequest` | `headers` | `map<string, string>` | 4 | 额外 headers |
 | `AddVtaskSubtaskResponse` | `task_id` | `int64` | 1 |  |
 | `GetVtaskRequest` | `vtask_id` | `int64` | 1 |  |
 | `GetVtaskResponse` | `id` | `int64` | 1 |  |
@@ -383,6 +429,11 @@
 | `LookupVtaskIdBySharedBodyResponse` | `vtask_id` | `int64` | 1 |  |
 | `LookupVtaskIdBySharedBodyResponse` | `task_id` | `int64` | 2 |  |
 | `LookupVtaskIdBySharedBodyResponse` | `body` | `string` | 3 | 命中的原始 t.body |
+| `DeleteVtaskSharedBodyTasksRequest` | `app_id` | `int32` | 1 |  |
+| `DeleteVtaskSharedBodyTasksRequest` | `module` | `string` | 2 |  |
+| `DeleteVtaskSharedBodyTasksRequest` | `body` | `string` | 3 | 原始 t.body 精确匹配（JSON 文本要求整串一致） |
+| `DeleteVtaskSharedBodyTasksResponse` | `deleted` | `int64` | 1 |  |
+| `DeleteVtaskSharedBodyTasksResponse` | `task_ids` | `int64 (repeated)` | 2 | 被删除的 task id，升序 |
 | `DeleteTaskRequest` | `task_id` | `int64` | 1 |  |
 | `ValidateAppRequest` | `yaml_content` | `string` | 1 |  |
 | `ValidateAppResponse` | `valid` | `bool` | 1 |  |
@@ -652,6 +703,7 @@
 | `GetAppStats` | `GetAppStatsRequest` | `AppStats` |  |
 | `GetModuleStats` | `GetModuleStatsRequest` | `ModuleStats` |  |
 | `ListModuleStats` | `ListModuleStatsRequest` | `ListModuleStatsResponse` |  |
+| `ListRouterStats` | `ListRouterStatsRequest` | `ListRouterStatsResponse` |  |
 
 ### 消息
 
@@ -677,6 +729,7 @@
 | `AppStats` | `task_trend` | `TaskTrendPoint (repeated)` | 8 |  |
 | `AppStats` | `module_latency` | `ModuleLatency (repeated)` | 9 |  |
 | `AppStats` | `slot_util` | `SlotUtilization (repeated)` | 10 |  |
+| `AppStats` | `recovered_tasks_24h` | `int32` | 11 |  |
 | `AppStats.TaskTrendPoint` | `ts` | `google.protobuf.Timestamp` | 1 |  |
 | `AppStats.TaskTrendPoint` | `finished` | `int32` | 2 |  |
 | `AppStats.TaskTrendPoint` | `error` | `int32` | 3 |  |
@@ -717,6 +770,127 @@
 | `ListModuleStatsResponse.ModuleStatItem` | `sum_ibytes` | `int64` | 10 |  |
 | `ListModuleStatsResponse.ModuleStatItem` | `sum_obytes` | `int64` | 11 |  |
 | `ListModuleStatsResponse.ModuleStatItem` | `total_seconds` | `double` | 12 |  |
+| `ListModuleStatsResponse.ModuleStatItem` | `status` | `string` | 13 |  |
+| `ListRouterStatsRequest` | `app_id` | `int32` | 1 |  |
+| `ListRouterStatsResponse` | `items` | `RouterStatItem (repeated)` | 1 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `module_id` | `int32` | 1 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `module_name` | `string` | 2 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `from_mod_id` | `int32` | 3 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `from_module` | `string` | 4 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `num_tasks` | `int64` | 5 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `ntasks_ok` | `int64` | 6 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `ntasks_ready` | `int64` | 7 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `ntasks_queued` | `int64` | 8 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `ntasks_running` | `int64` | 9 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `ntasks_err` | `int64` | 10 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `total_seconds` | `double` | 11 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `avg_seconds` | `double` | 12 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `max_seconds` | `double` | 13 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `min_seconds` | `double` | 14 |  |
+| `ListRouterStatsResponse.RouterStatItem` | `stddev_seconds` | `double` | 15 |  |
+
+
+## data_view.proto
+
+### 服务
+
+#### `DataViewService`
+
+| 方法 | 请求 | 响应 | 说明 |
+|---|---|---|---|
+| `ListDataViews` | `ListDataViewsRequest` | `ListDataViewsResponse` |  |
+| `GetDataView` | `GetDataViewRequest` | `GetDataViewResponse` |  |
+| `CreateDataView` | `CreateDataViewRequest` | `CreateDataViewResponse` |  |
+| `UpdateDataView` | `UpdateDataViewRequest` | `google.protobuf.Empty` |  |
+| `DeleteDataView` | `DeleteDataViewRequest` | `google.protobuf.Empty` |  |
+| `PreviewDataView` | `PreviewDataViewRequest` | `DataViewResult` |  |
+| `ListAppDataViews` | `ListAppDataViewsRequest` | `ListAppDataViewsResponse` |  |
+| `BindAppDataView` | `BindAppDataViewRequest` | `BindAppDataViewResponse` |  |
+| `UpdateAppDataView` | `UpdateAppDataViewRequest` | `google.protobuf.Empty` |  |
+| `UnbindAppDataView` | `UnbindAppDataViewRequest` | `google.protobuf.Empty` |  |
+| `RunDataView` | `RunDataViewRequest` | `DataViewResult` |  |
+
+### 消息
+
+| 消息 | 字段 | 类型 | 编号 | 说明 |
+|---|---|---|---|---|
+| `DataViewItem` | `id` | `int32` | 1 |  |
+| `DataViewItem` | `name` | `string` | 2 |  |
+| `DataViewItem` | `title` | `string` | 3 |  |
+| `DataViewItem` | `description` | `string` | 4 |  |
+| `DataViewItem` | `sql_template` | `string` | 5 |  |
+| `DataViewItem` | `params_json` | `string` | 6 |  |
+| `DataViewItem` | `layout_json` | `string` | 7 |  |
+| `DataViewItem` | `max_rows` | `int32` | 8 |  |
+| `DataViewItem` | `status` | `string` | 9 |  |
+| `DataViewItem` | `created_by` | `int32` | 10 |  |
+| `DataViewItem` | `created_at` | `google.protobuf.Timestamp` | 11 |  |
+| `DataViewItem` | `updated_at` | `google.protobuf.Timestamp` | 12 |  |
+| `ListDataViewsRequest` | `status` | `string` | 1 |  |
+| `ListDataViewsResponse` | `items` | `DataViewItem (repeated)` | 1 |  |
+| `GetDataViewRequest` | `id` | `int32` | 1 |  |
+| `GetDataViewResponse` | `item` | `DataViewItem` | 1 |  |
+| `CreateDataViewRequest` | `name` | `string` | 1 |  |
+| `CreateDataViewRequest` | `title` | `string` | 2 |  |
+| `CreateDataViewRequest` | `description` | `string` | 3 |  |
+| `CreateDataViewRequest` | `sql_template` | `string` | 4 |  |
+| `CreateDataViewRequest` | `params_json` | `string` | 5 |  |
+| `CreateDataViewRequest` | `layout_json` | `string` | 6 |  |
+| `CreateDataViewRequest` | `max_rows` | `int32` | 7 |  |
+| `CreateDataViewRequest` | `status` | `string` | 8 |  |
+| `CreateDataViewResponse` | `id` | `int32` | 1 |  |
+| `UpdateDataViewRequest` | `id` | `int32` | 1 |  |
+| `UpdateDataViewRequest` | `name` | `string` | 2 |  |
+| `UpdateDataViewRequest` | `title` | `string` | 3 |  |
+| `UpdateDataViewRequest` | `description` | `string` | 4 |  |
+| `UpdateDataViewRequest` | `sql_template` | `string` | 5 |  |
+| `UpdateDataViewRequest` | `params_json` | `string` | 6 |  |
+| `UpdateDataViewRequest` | `layout_json` | `string` | 7 |  |
+| `UpdateDataViewRequest` | `max_rows` | `int32` | 8 |  |
+| `UpdateDataViewRequest` | `status` | `string` | 9 |  |
+| `DeleteDataViewRequest` | `id` | `int32` | 1 |  |
+| `PreviewDataViewRequest` | `sql_template` | `string` | 1 |  |
+| `PreviewDataViewRequest` | `params_json` | `string` | 2 |  |
+| `PreviewDataViewRequest` | `values` | `map<string, string>` | 3 |  |
+| `PreviewDataViewRequest` | `max_rows` | `int32` | 4 |  |
+| `AppDataViewItem` | `id` | `int32` | 1 |  |
+| `AppDataViewItem` | `app_id` | `int32` | 2 |  |
+| `AppDataViewItem` | `data_view_id` | `int32` | 3 |  |
+| `AppDataViewItem` | `title` | `string` | 4 |  |
+| `AppDataViewItem` | `bindings_json` | `string` | 5 |  |
+| `AppDataViewItem` | `tab_order` | `int32` | 6 |  |
+| `AppDataViewItem` | `visible` | `bool` | 7 |  |
+| `AppDataViewItem` | `data_view` | `DataViewItem` | 8 |  |
+| `AppDataViewItem` | `created_at` | `google.protobuf.Timestamp` | 9 |  |
+| `AppDataViewItem` | `updated_at` | `google.protobuf.Timestamp` | 10 |  |
+| `ListAppDataViewsRequest` | `app_id` | `int32` | 1 |  |
+| `ListAppDataViewsResponse` | `items` | `AppDataViewItem (repeated)` | 1 |  |
+| `BindAppDataViewRequest` | `app_id` | `int32` | 1 |  |
+| `BindAppDataViewRequest` | `data_view_id` | `int32` | 2 |  |
+| `BindAppDataViewRequest` | `title` | `string` | 3 |  |
+| `BindAppDataViewRequest` | `bindings_json` | `string` | 4 |  |
+| `BindAppDataViewRequest` | `tab_order` | `int32` | 5 |  |
+| `BindAppDataViewRequest` | `visible` | `bool` | 6 |  |
+| `BindAppDataViewResponse` | `binding_id` | `int32` | 1 |  |
+| `UpdateAppDataViewRequest` | `app_id` | `int32` | 1 |  |
+| `UpdateAppDataViewRequest` | `binding_id` | `int32` | 2 |  |
+| `UpdateAppDataViewRequest` | `title` | `string` | 3 |  |
+| `UpdateAppDataViewRequest` | `bindings_json` | `string` | 4 |  |
+| `UpdateAppDataViewRequest` | `tab_order` | `int32` | 5 |  |
+| `UpdateAppDataViewRequest` | `visible` | `bool` | 6 |  |
+| `UnbindAppDataViewRequest` | `app_id` | `int32` | 1 |  |
+| `UnbindAppDataViewRequest` | `binding_id` | `int32` | 2 |  |
+| `RunDataViewRequest` | `app_id` | `int32` | 1 |  |
+| `RunDataViewRequest` | `binding_id` | `int32` | 2 |  |
+| `RunDataViewRequest` | `params` | `map<string, string>` | 3 |  |
+| `DataViewColumn` | `name` | `string` | 1 |  |
+| `DataViewColumn` | `type` | `string` | 2 |  |
+| `DataViewResult` | `columns` | `DataViewColumn (repeated)` | 1 |  |
+| `DataViewResult` | `rows_json` | `string (repeated)` | 2 |  |
+| `DataViewResult` | `row_count` | `int32` | 3 |  |
+| `DataViewResult` | `truncated` | `bool` | 4 |  |
+| `DataViewResult` | `truncated_reason` | `string` | 5 |  |
+| `DataViewResult` | `elapsed_ms` | `int64` | 6 |  |
 
 
 ## error_detail.proto
@@ -754,6 +928,7 @@
 | `RenewHost` | `RenewHostRequest` | `google.protobuf.Empty` |  |
 | `ListSlots` | `ListSlotsRequest` | `ListSlotsResponse` |  |
 | `GetSlot` | `GetSlotRequest` | `GetSlotResponse` |  |
+| `ListSlotLogs` | `ListSlotLogsRequest` | `ListSlotLogsResponse` |  |
 | `AddSlots` | `AddSlotsRequest` | `AddSlotsResponse` |  |
 | `RemoveSlots` | `RemoveSlotsRequest` | `RemoveSlotsResponse` |  |
 | `SetSlotStatus` | `SetSlotStatusRequest` | `google.protobuf.Empty` |  |
@@ -832,6 +1007,7 @@
 | `ListSlotsRequest` | `module_id` | `int32` | 3 |  |
 | `ListSlotsRequest` | `status` | `string` | 4 |  |
 | `ListSlotsRequest` | `hostname` | `string` | 5 |  |
+| `ListSlotsRequest` | `include_runtime` | `bool` | 6 |  |
 | `ListSlotsResponse` | `items` | `Item (repeated)` | 1 |  |
 | `ListSlotsResponse.Item` | `id` | `int32` | 1 |  |
 | `ListSlotsResponse.Item` | `slot_name` | `string` | 2 |  |
@@ -845,6 +1021,7 @@
 | `ListSlotsResponse.Item` | `ip_addr` | `string` | 11 |  |
 | `ListSlotsResponse.Item` | `cluster_name` | `string` | 12 |  |
 | `ListSlotsResponse.Item` | `heartbeat_at` | `google.protobuf.Timestamp` | 13 |  |
+| `ListSlotsResponse.Item` | `runtime` | `SlotRuntime` | 14 |  |
 | `GetSlotRequest` | `slot_id` | `int32` | 1 |  |
 | `GetSlotResponse` | `id` | `int32` | 1 |  |
 | `GetSlotResponse` | `host_id` | `int32` | 3 |  |
@@ -859,6 +1036,44 @@
 | `GetSlotResponse` | `seq` | `string` | 13 |  |
 | `GetSlotResponse` | `parameters` | `string` | 14 |  |
 | `GetSlotResponse` | `cluster_name` | `string` | 15 |  |
+| `GetSlotResponse` | `runtime` | `SlotRuntime` | 16 |  |
+| `SlotRuntime` | `state` | `string` | 1 |  |
+| `SlotRuntime` | `wait_reason` | `string` | 2 |  |
+| `SlotRuntime` | `wait_detail_json` | `string` | 3 |  |
+| `SlotRuntime` | `wait_since` | `google.protobuf.Timestamp` | 4 |  |
+| `SlotRuntime` | `last_poll_at` | `google.protobuf.Timestamp` | 5 |  |
+| `SlotRuntime` | `current_exec_id` | `int64` | 6 |  |
+| `SlotRuntime` | `current_task_id` | `int64` | 7 |  |
+| `SlotRuntime` | `task_started_at` | `google.protobuf.Timestamp` | 8 |  |
+| `SlotRuntime` | `task_elapsed_sec` | `int64` | 9 |  |
+| `SlotRuntime` | `prepared_count` | `int32` | 10 |  |
+| `SlotRuntime` | `prepared_since` | `google.protobuf.Timestamp` | 11 |  |
+| `SlotRuntime` | `last_seen_at` | `google.protobuf.Timestamp` | 12 |  |
+| `SlotRuntime` | `heartbeat_age_sec` | `int64` | 13 |  |
+| `SlotRuntime` | `heartbeat_stale_after_sec` | `int32` | 14 |  |
+| `SlotRuntime` | `heartbeat_stale` | `bool` | 15 |  |
+| `SlotRuntime` | `start_error_code` | `int32` | 16 |  |
+| `SlotRuntime` | `start_error_at` | `google.protobuf.Timestamp` | 17 |  |
+| `SlotRuntime` | `module_status` | `string` | 18 |  |
+| `SlotRuntime` | `host_status` | `string` | 19 |  |
+| `SlotRuntime` | `run_started_at` | `google.protobuf.Timestamp` | 20 |  |
+| `SlotRuntime` | `idle_polls_remaining` | `int32` | 21 |  |
+| `SlotRuntime` | `idle_polls_max` | `int32` | 22 |  |
+| `SlotRuntime` | `poll_interval_sec` | `int32` | 23 |  |
+| `SlotRuntime` | `always_running` | `bool` | 24 |  |
+| `ListSlotLogsRequest` | `slot_id` | `int32` | 1 |  |
+| `ListSlotLogsRequest` | `pagination` | `Pagination` | 10 |  |
+| `ListSlotLogsResponse` | `items` | `Item (repeated)` | 1 |  |
+| `ListSlotLogsResponse` | `page_info` | `PageInfo` | 2 |  |
+| `ListSlotLogsResponse.Item` | `id` | `int64` | 1 |  |
+| `ListSlotLogsResponse.Item` | `event_type` | `string` | 2 |  |
+| `ListSlotLogsResponse.Item` | `t` | `google.protobuf.Timestamp` | 3 |  |
+| `ListSlotLogsResponse.Item` | `task_id` | `int64` | 4 |  |
+| `ListSlotLogsResponse.Item` | `task_tm` | `google.protobuf.Timestamp` | 5 |  |
+| `ListSlotLogsResponse.Item` | `details` | `string` | 6 |  |
+| `ListSlotLogsResponse.Item` | `extras` | `string` | 7 |  |
+| `ListSlotLogsResponse.Item` | `details_truncated` | `bool` | 8 |  |
+| `ListSlotLogsResponse.Item` | `extras_truncated` | `bool` | 9 |  |
 | `AddSlotsRequest` | `host_id` | `int32` | 1 |  |
 | `AddSlotsRequest` | `module_id` | `int32` | 2 |  |
 | `AddSlotsRequest` | `count` | `int32` | 3 |  |

@@ -2,7 +2,7 @@
 
 > 唯一信源：task header 的名称、写入方、传播规则、转义都以本页为准。
 > 语义说明（何时设、坑）在 `features/` 与 `docs/agents/`；字段类型见 `reference/app-yaml.md`。
-> 最后校验：2026-11-14，对照 go-scalebox 工作区的 `from_task` 改动。
+> 最后校验：2026-11-22，对照 go-scalebox 工作区的 `from_task` / `pre_router_from_*` 改动。
 
 ## 1. 定义
 
@@ -68,7 +68,7 @@ scalebox task add --headers='{"shard_names":"shard-0001.bin,shard-0002.bin"}'
 |---|---|---|
 | `from_ip` | CLI `task add` / agent | 生成该任务的主机 IPv4 |
 | `from_module` | agent | 生成该任务的模块名 |
-| `from_task` | agent（`addSinkTasks`） | 生成该任务的父 task id（十进制字符串）。仅 `sink-tasks.txt` 路径写入；同一批 sink 任务共享同一值。只记直接父、不穿透 main-router；跨集群投递（CLI `--remote-cluster` 直连）与 `--direct`/agent 外直连不写入，链在集群边界自然截断。按 `headers->>'from_task'` 可逐跳反查任务链（webui 点击展开后续 task 列表）。`conflict_action=OVERWRITE` 重投时随 headers 整体替换为最新投递者 |
+| `from_task` | agent（`addSinkTasks`） | 生成该任务的父 task id（十进制字符串）。仅 `sink-tasks.txt` 路径写入；同一批 sink 任务共享同一值。只记直接父、不穿透 main-router；跨集群投递（CLI `--remote-cluster` 直连）与 `--direct`/agent 外直连不写入，链在集群边界自然截断。按 `headers->>'from_task'` 可逐跳反查任务链；当前 WebUI 未提供“点击展开后续 task”，需要在 Task 查询/Data View 中按该 header 过滤。`conflict_action=OVERWRITE` 重投时随 headers 整体替换为最新投递者 |
 | `pre_router_from_module` | agent（router 中转时） | 越过（连续）main-router 链后的真实上游模块。`pre_router` 指 router 处理之前的状态；多级 router 时取整条链之前的值。过渡期双写旧名 `last_from_module`（已弃用，一个版本后移除） |
 | `pre_router_from_ip` | agent（router 中转时） | 越过（连续）main-router 链后的真实上游 IP。过渡期双写旧名 `last_from_ip`（已弃用，一个版本后移除） |
 | `from_cluster` | CLI（跨集群投递时） | 上一集群名 |
